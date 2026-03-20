@@ -5,7 +5,7 @@ import InterviewModeLegend from './components/InterviewModeLegend';
 import StatusTabs, { FilterDropdowns } from './components/StatusTabs';
 import ScheduleWeekGrid from './components/ScheduleWeekGrid';
 import TodaysSidebar from './components/TodaysSidebar';
-import { EventForm } from './EventForm';
+import { EventForm } from './components/EventForm';
 import type { ScheduleEvent } from './components/ScheduleWeekGrid';
 import type { CalendarDayActivity } from './components/ScheduleCalendarWidget';
 
@@ -205,7 +205,8 @@ function buildActivityMap(events: ScheduleEvent[]): CalendarDayActivity[] {
 /* ─── Main Page ─── */
 
 export default function SchedulePage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date()); // controls which week is shown in center
+  const [selectedDate, setSelectedDate] = useState(new Date()); // controls the right sidebar
   const [activeTab, setActiveTab] = useState('all');
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [selectedJobRole, setSelectedJobRole] = useState('all');
@@ -214,8 +215,20 @@ export default function SchedulePage() {
 
   const activities = buildActivityMap(events);
 
+  /** Left calendar date click — update both week view AND selected date */
   const handleDateClick = useCallback((date: Date) => {
     setCurrentDate(date);
+    setSelectedDate(date);
+  }, []);
+
+  /** Week navigation arrows in center grid */
+  const handleWeekChange = useCallback((date: Date) => {
+    setCurrentDate(date);
+  }, []);
+
+  /** Day header click in center grid — updates right sidebar */
+  const handleGridDateSelect = useCallback((date: Date) => {
+    setSelectedDate(date);
   }, []);
 
   const handleCellClick = useCallback((_date: string, _time: string) => {
@@ -237,17 +250,6 @@ export default function SchedulePage() {
     if (activeTab === 'all') return true;
     return ev.status === activeTab;
   });
-
-  /* ─── Compute stats ─── */
-  const stats = {
-    today: events.filter((e) => {
-      const d = new Date();
-      const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      return e.date === todayStr;
-    }).length,
-    upcoming: events.filter((e) => e.status === 'scheduled').length,
-    overdue: events.filter((e) => e.status === 'overdue').length,
-  };
 
   const counts = {
     all: events.length,
@@ -295,7 +297,7 @@ export default function SchedulePage() {
           <ScheduleCalendarWidget
             onDateClick={handleDateClick}
             activities={activities}
-            selectedDate={currentDate}
+            selectedDate={selectedDate}
           />
           <InterviewModeLegend />
         </div>
@@ -304,15 +306,17 @@ export default function SchedulePage() {
         <ScheduleWeekGrid
           events={filteredEvents}
           currentDate={currentDate}
+          selectedDate={selectedDate}
           onEventClick={handleEventClick}
           onCellClick={handleCellClick}
+          onDateSelect={handleGridDateSelect}
+          onWeekChange={handleWeekChange}
         />
 
-        {/* Right Panel: Today's Schedule */}
+        {/* Right Panel: Selected Date Schedule */}
         <TodaysSidebar
-          selectedDate={currentDate}
+          selectedDate={selectedDate}
           events={events}
-          stats={stats}
           onEventClick={handleEventClick}
         />
       </div>

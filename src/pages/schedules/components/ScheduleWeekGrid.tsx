@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 /* ─── Types ─── */
 
@@ -20,8 +21,11 @@ export interface ScheduleEvent {
 interface ScheduleWeekGridProps {
   events: ScheduleEvent[];
   currentDate: Date;
+  selectedDate?: Date;
   onEventClick?: (event: ScheduleEvent) => void;
   onCellClick?: (date: string, time: string) => void;
+  onDateSelect?: (date: Date) => void;
+  onWeekChange?: (date: Date) => void;
 }
 
 /* ─── Constants ─── */
@@ -39,6 +43,8 @@ const MODE_STYLES: Record<string, { bg: string; border: string; badge: string; b
   bgv: { bg: '#FCE4EC', border: '#E91E63', badge: '#E91E63', badgeText: '#FFFFFF', label: 'BGV' },
   mock: { bg: '#F3E5F5', border: '#9C27B0', badge: '#9C27B0', badgeText: '#FFFFFF', label: 'MOCK' },
 };
+
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /* ─── Helpers ─── */
 
@@ -61,16 +67,57 @@ function toDateStr(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-
-
 /* ─── Component ─── */
 
-export default function ScheduleWeekGrid({ events, currentDate, onEventClick, onCellClick }: ScheduleWeekGridProps) {
+export default function ScheduleWeekGrid({
+  events,
+  currentDate,
+  selectedDate,
+  onEventClick,
+  onCellClick,
+  onDateSelect,
+  onWeekChange,
+}: ScheduleWeekGridProps) {
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
   const today = new Date();
   const todayStr = toDateStr(today);
+  const selectedStr = selectedDate ? toDateStr(selectedDate) : null;
 
   const DAY_LABELS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
+  /** Week label like "Mar 17 - Mar 23, 2026" */
+  const weekLabel = useMemo(() => {
+    const start = weekDates[0];
+    const end = weekDates[6];
+    const sameMonth = start.getMonth() === end.getMonth();
+    const sameYear = start.getFullYear() === end.getFullYear();
+
+    if (sameMonth) {
+      return `${MONTHS_SHORT[start.getMonth()]} ${start.getDate()} - ${end.getDate()}, ${end.getFullYear()}`;
+    }
+    if (sameYear) {
+      return `${MONTHS_SHORT[start.getMonth()]} ${start.getDate()} - ${MONTHS_SHORT[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+    }
+    return `${MONTHS_SHORT[start.getMonth()]} ${start.getDate()}, ${start.getFullYear()} - ${MONTHS_SHORT[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+  }, [weekDates]);
+
+  /** Navigate weeks */
+  const goToPrevWeek = () => {
+    const prev = new Date(currentDate);
+    prev.setDate(prev.getDate() - 7);
+    onWeekChange?.(prev);
+  };
+
+  const goToNextWeek = () => {
+    const next = new Date(currentDate);
+    next.setDate(next.getDate() + 7);
+    onWeekChange?.(next);
+  };
+
+  const goToToday = () => {
+    onWeekChange?.(new Date());
+    onDateSelect?.(new Date());
+  };
 
   /** Group events by dateStr */
   const eventsByDate = useMemo(() => {
@@ -99,9 +146,45 @@ export default function ScheduleWeekGrid({ events, currentDate, onEventClick, on
   const nowMin = today.getMinutes();
   const currentTimeTop = ((nowHour * 60 + nowMin - 9 * 60) / 60) * 64;
 
+  /** Handle day header click */
+  const handleDayHeaderClick = (date: Date) => {
+    onDateSelect?.(date);
+  };
+
   return (
-    <div className="bg-white rounded-xl overflow-hidden flex-1" style={{ minWidth: 0 }}>
-      <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 230px)' }}>
+    <div className="bg-white rounded-xl overflow-hidden flex-1 flex flex-col" style={{ minWidth: 0 }}>
+
+      {/* ─── Week Navigation Bar ─── */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goToPrevWeek}
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer border-none bg-transparent"
+            title="Previous week"
+          >
+            <ChevronLeft className="w-4 h-4 text-[#4B5563]" />
+          </button>
+          <button
+            onClick={goToNextWeek}
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer border-none bg-transparent"
+            title="Next week"
+          >
+            <ChevronRight className="w-4 h-4 text-[#4B5563]" />
+          </button>
+          <span className="text-sm font-semibold text-[#1F2937] ml-1">
+            {weekLabel}
+          </span>
+        </div>
+        <button
+          onClick={goToToday}
+          className="px-3 py-1 text-xs font-medium text-[#0F47F2] bg-[#E7EDFF] rounded-md hover:bg-blue-100 transition-colors cursor-pointer border-none"
+        >
+          Today
+        </button>
+      </div>
+
+      {/* ─── Scrollable Grid ─── */}
+      <div className="overflow-auto flex-1" style={{ maxHeight: 'calc(100vh - 280px)' }}>
         <div className="relative" style={{ minWidth: '700px' }}>
           {/* ─── Day Headers ─── */}
           <div className="flex border-b border-gray-200 sticky top-0 bg-white z-10">
@@ -110,21 +193,27 @@ export default function ScheduleWeekGrid({ events, currentDate, onEventClick, on
             {weekDates.map((d, i) => {
               const dateStr = toDateStr(d);
               const isToday = dateStr === todayStr;
+              const isSelected = dateStr === selectedStr;
               const dayEvents = eventsByDate[dateStr] || [];
               const evCount = dayEvents.length;
 
               return (
                 <div
                   key={i}
-                  className="flex-1 py-2 px-1 border-l border-gray-100 text-center"
+                  className={`flex-1 py-2 px-1 border-l border-gray-100 text-center cursor-pointer transition-colors ${
+                    isSelected ? 'bg-[#E7EDFF]/50' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => handleDayHeaderClick(d)}
                 >
                   <div className="text-[11px] text-[#8E8E93] font-medium tracking-wide">
                     {DAY_LABELS[i]}
                   </div>
                   <div
-                    className={`text-lg font-semibold mt-0.5 inline-flex items-center justify-center w-8 h-8 rounded-full ${
+                    className={`text-lg font-semibold mt-0.5 inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
                       isToday
                         ? 'bg-[#0F47F2] text-white'
+                        : isSelected
+                        ? 'bg-[#0F47F2]/10 text-[#0F47F2] ring-2 ring-[#0F47F2]'
                         : 'text-[#1F2937]'
                     }`}
                   >
@@ -156,9 +245,13 @@ export default function ScheduleWeekGrid({ events, currentDate, onEventClick, on
               const dateStr = toDateStr(d);
               const dayEvents = eventsByDate[dateStr] || [];
               const isToday = dateStr === todayStr;
+              const isSelected = dateStr === selectedStr;
 
               return (
-                <div key={dayIdx} className="flex-1 relative border-l border-gray-100">
+                <div
+                  key={dayIdx}
+                  className={`flex-1 relative border-l border-gray-100 ${isSelected ? 'bg-[#E7EDFF]/20' : ''}`}
+                >
                   {/* Time slot rows */}
                   {TIME_SLOTS.map((_, slotIdx) => {
                     const hour = 9 + slotIdx;
@@ -166,7 +259,10 @@ export default function ScheduleWeekGrid({ events, currentDate, onEventClick, on
                     return (
                       <div
                         key={slotIdx}
-                        onClick={() => onCellClick?.(dateStr, displayTime)}
+                        onClick={() => {
+                          onDateSelect?.(d);
+                          onCellClick?.(dateStr, displayTime);
+                        }}
                         className="h-16 border-b border-dashed border-gray-200 cursor-pointer hover:bg-blue-50/30 transition-colors"
                       />
                     );

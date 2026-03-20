@@ -3,11 +3,6 @@ import type { ScheduleEvent } from './ScheduleWeekGrid';
 interface TodaysSidebarProps {
   selectedDate: Date;
   events: ScheduleEvent[];
-  stats: {
-    today: number;
-    upcoming: number;
-    overdue: number;
-  };
   onEventClick?: (event: ScheduleEvent) => void;
 }
 
@@ -34,32 +29,58 @@ function formatDateHeader(date: Date): string {
   return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
 }
 
+function toDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function getRelativeLabel(date: Date): string {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const diff = (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+  const diffDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diff === 0) return "Today's interview schedule";
-  if (diff === 1) return "Tomorrow's interview schedule";
-  if (diff === -1) return "Yesterday's interview schedule";
-  return "Interview schedule";
+  if (diffDays === 0) return "Today's interview schedule";
+  if (diffDays === 1) return "Tomorrow's interview schedule";
+  if (diffDays === -1) return "Yesterday's interview schedule";
+  if (diffDays > 1) return `${diffDays} days from now`;
+  return `${Math.abs(diffDays)} days ago`;
 }
 
-export default function TodaysSidebar({ selectedDate, events, stats, onEventClick }: TodaysSidebarProps) {
-  // Group by relative day (yesterday, today, tomorrow)
+function getRelativeDayLabel(selectedDate: Date, offset: number): string {
   const now = new Date();
-  const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const tomorrowDate = new Date(todayDate);
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+  target.setDate(target.getDate() + offset);
+  const diffDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
-  const tomorrowStr = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays === -1) return 'Yesterday';
+  return '';
+}
 
-  const todayEvents = events.filter(e => e.date === todayStr);
-  const tomorrowEvents = events.filter(e => e.date === tomorrowStr);
-
+export default function TodaysSidebar({ selectedDate, events, onEventClick }: TodaysSidebarProps) {
   const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+  // Selected date + next day
+  const selectedStr = toDateStr(selectedDate);
+  const nextDay = new Date(selectedDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  const nextDayStr = toDateStr(nextDay);
+
+  // Events for the selected date and next day
+  const selectedDateEvents = events.filter(e => e.date === selectedStr);
+  const nextDayEvents = events.filter(e => e.date === nextDayStr);
+
+  // Dynamic stats based on selected date's events
+  const selectedDayStats = {
+    total: selectedDateEvents.length,
+    upcoming: selectedDateEvents.filter(e => e.status === 'scheduled').length,
+    overdue: selectedDateEvents.filter(e => e.status === 'overdue').length,
+  };
+
+  const nextDayRelLabel = getRelativeDayLabel(selectedDate, 1);
 
   return (
     <div className="w-[280px] flex-shrink-0 flex flex-col gap-0 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 170px)' }}>
@@ -72,50 +93,59 @@ export default function TodaysSidebar({ selectedDate, events, stats, onEventClic
       {/* ─── Stats Row ─── */}
       <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100">
         <div className="text-center flex-1">
-          <div className="text-lg font-bold text-[#1F2937]">{stats.today}</div>
-          <div className="text-[10px] text-[#8E8E93] uppercase tracking-wide mt-0.5">Today</div>
+          <div className="text-lg font-bold text-[#1F2937]">{selectedDayStats.total}</div>
+          <div className="text-[10px] text-[#8E8E93] uppercase tracking-wide mt-0.5">Total</div>
         </div>
         <div className="w-px h-8 bg-gray-200" />
         <div className="text-center flex-1">
-          <div className="text-lg font-bold text-[#0F47F2]">{stats.upcoming}</div>
+          <div className="text-lg font-bold text-[#0F47F2]">{selectedDayStats.upcoming}</div>
           <div className="text-[10px] text-[#8E8E93] uppercase tracking-wide mt-0.5">Upcoming</div>
         </div>
         <div className="w-px h-8 bg-gray-200" />
         <div className="text-center flex-1">
-          <div className="text-lg font-bold text-[#EF4444]">{stats.overdue}</div>
+          <div className="text-lg font-bold text-[#EF4444]">{selectedDayStats.overdue}</div>
           <div className="text-[10px] text-[#8E8E93] uppercase tracking-wide mt-0.5">Overdue</div>
         </div>
       </div>
 
-      {/* ─── Today's Events ─── */}
-      <div className="bg-white flex-1 overflow-y-auto">
-        {todayEvents.length > 0 && (
+      {/* ─── Selected Date Events ─── */}
+      <div className="bg-white flex-1 overflow-y-auto rounded-b-xl">
+        {selectedDateEvents.length > 0 && (
           <div className="px-3 pt-3 pb-1">
-            {todayEvents.map((ev) => (
+            {selectedDateEvents.map((ev) => (
               <ScheduleCard key={ev.id} event={ev} onClick={() => onEventClick?.(ev)} />
             ))}
           </div>
         )}
 
-        {/* Tomorrow Section */}
-        {tomorrowEvents.length > 0 && (
+        {/* Next Day Section */}
+        {nextDayEvents.length > 0 && (
           <>
             <div className="px-4 pt-3 pb-1">
               <div className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider">
-                Tomorrow — {now.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()} {months[tomorrowDate.getMonth()]} {tomorrowDate.getDate()}
+                {nextDayRelLabel ? `${nextDayRelLabel} — ` : ''}{days[nextDay.getDay()]} {months[nextDay.getMonth()]} {nextDay.getDate()}
               </div>
             </div>
             <div className="px-3 pb-3">
-              {tomorrowEvents.map((ev) => (
+              {nextDayEvents.map((ev) => (
                 <ScheduleCard key={ev.id} event={ev} onClick={() => onEventClick?.(ev)} />
               ))}
             </div>
           </>
         )}
 
-        {todayEvents.length === 0 && tomorrowEvents.length === 0 && (
+        {selectedDateEvents.length === 0 && nextDayEvents.length === 0 && (
           <div className="px-4 py-8 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#F3F5F7] flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+            </div>
             <p className="text-sm text-[#8E8E93]">No interviews scheduled</p>
+            <p className="text-xs text-[#AEAEB2] mt-1">Select a date to view its schedule</p>
           </div>
         )}
       </div>
