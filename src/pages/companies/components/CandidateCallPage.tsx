@@ -32,6 +32,7 @@ interface CandidateCallParams {
   location: string;
   experience: string;
   phone?: string;
+  callAttention?: string[];
 }
 
 const DUMMY_FALLBACK: CandidateCallParams = {
@@ -76,14 +77,15 @@ export default function CandidateCallPage() {
     noticePeriod: false,
     location: false,
   });
-  const [skillsChecklist, setSkillsChecklist] = useState({
-    figma: false,
-    uxResearch: false,
-    designSystems: false,
-    b2c: false,
-    stakeholder: false,
-    mobileFirst: false,
-  });
+
+  // const [skillsChecklist, setSkillsChecklist] = useState({
+  //   figma: false,
+  //   uxResearch: false,
+  //   designSystems: false,
+  //   b2c: false,
+  //   stakeholder: false,
+  //   mobileFirst: false,
+  // });
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -356,7 +358,7 @@ export default function CandidateCallPage() {
         duration_seconds: seconds,
         tags: activeTags.length > 0 ? activeTags : undefined,
         checklist_data: checklist,
-        skills_data: skillsChecklist,
+        // skills_data: skillsChecklist,
       });
       alert("Notes and checklist saved successfully!");
     } catch (err) {
@@ -372,7 +374,7 @@ export default function CandidateCallPage() {
     seconds,
     activeTags,
     checklist,
-    skillsChecklist,
+    // skillsChecklist,
   ]);
 
   const toggleTag = (tag: string) => {
@@ -385,9 +387,9 @@ export default function CandidateCallPage() {
     setChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const toggleSkills = (key: keyof typeof skillsChecklist) => {
-    setSkillsChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+  // const toggleSkills = (key: keyof typeof skillsChecklist) => {
+  //   setSkillsChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
+  // };
 
   if (!candidate)
     return (
@@ -688,7 +690,7 @@ export default function CandidateCallPage() {
               </div>
 
               {/* Skills to ask */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">
+              {/* <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">
                 <h3 className="text-xs font-bold text-teal-500 mb-6 font-semibold uppercase tracking-widest">
                   Skills to Ask
                 </h3>
@@ -728,6 +730,29 @@ export default function CandidateCallPage() {
                       </label>
                     );
                   })}
+                </div>
+              </div> */}
+
+              {/* Call Attention Questions */}
+              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">
+                <h3 className="text-xs font-bold text-teal-500 mb-6 font-semibold uppercase tracking-widest">
+                  Questions to Ask
+                </h3>
+                <div className="flex flex-col gap-4 text-sm font-medium text-slate-700">
+                  {candidate.callAttention &&
+                  candidate.callAttention.length > 0 ? (
+                    <ul className="list-disc pl-5 space-y-3 marker:text-teal-500">
+                      {candidate.callAttention.map((question, index) => (
+                        <li key={index} className="pl-1 leading-relaxed">
+                          {question}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="italic text-slate-500 text-sm">
+                      No specific questions prepared for this candidate.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
