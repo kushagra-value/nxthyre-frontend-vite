@@ -58,6 +58,8 @@ export default function CandidateCallPage() {
     incomingCandidate,
   );
 
+  console.log("Candidate we are about to call:", candidate);
+
   // Call States
   const [seconds, setSeconds] = useState(0);
   const [isMuted, setIsMuted] = useState(false);

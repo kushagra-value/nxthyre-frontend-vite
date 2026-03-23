@@ -61,8 +61,6 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
     if (candidate) navigate(`/call/${candidate.id}`, { state: { candidate } });
   };
 
-  console.log("Candidate we ares about to call:", candidate);
-
   const handleLogOnly = async () => {
     if (!candidate) return;
     setIsSaving(true);
