@@ -16,6 +16,7 @@ export interface CallCandidateData {
   expectedCtc: string;
   location: string;
   noticePeriod: string;
+  callAttention?: string[];
 }
 
 interface CallCandidateModalProps {

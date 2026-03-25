@@ -17,7 +17,11 @@ import {
   Italic,
 } from "lucide-react";
 import { showToast } from "../../../utils/toast";
-import { jobPostService, Job, CreateJobData } from "../../../services/jobPostService";
+import {
+  jobPostService,
+  Job,
+  CreateJobData,
+} from "../../../services/jobPostService";
 import { candidateService } from "../../../services/candidateService";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -150,10 +154,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
       disabled={disabled}
       className={`
           flex items-center justify-start px-4 py-2 rounded-lg  text-md font-[400] transition-all duration-200
-          ${isSelected
-          ? "bg-[#ECF1FF] text-blue-700"
-          : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
-        }
+          ${
+            isSelected
+              ? "bg-[#ECF1FF] text-blue-700"
+              : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
+          }
           ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
         `}
     >
@@ -161,10 +166,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         <div
           className={`
               w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center transition-all duration-200
-              ${isSelected
-              ? "border-blue-500 bg-white"
-              : "border-gray-300 bg-white"
-            }
+              ${
+                isSelected
+                  ? "border-blue-500 bg-white"
+                  : "border-gray-300 bg-white"
+              }
             `}
         >
           {isSelected && (
@@ -406,42 +412,62 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     }));
   };
 
-  // Updated handleLocationAdd (use [0]?.trim(), set single array)
   const handleLocationAdd = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && locationInput[0]?.trim()) {
-      if (!isValidTextInput(locationInput[0])) {
-        showToast.error(
-          "Location can only contain letters, numbers, commas, and spaces.",
-        );
-        return;
-      }
-      setFormData((prev) => ({
-        ...prev,
-        location: [locationInput[0].trim()],
-      }));
-      setLocationInput([]);
-      setLocationSuggestions([]);
-    }
-  };
+    if (e.key !== "Enter") return;
 
-  // Updated handleLocationSelect (single string, set [location])
-  const handleLocationSelect = (location: string) => {
-    // Changed param to string
-    if (!isValidTextInput(location)) {
+    const value = locationInput[0]?.trim();
+    if (!value) return;
+
+    if (!isValidTextInput(value)) {
       showToast.error(
         "Location can only contain letters, numbers, commas, and spaces.",
       );
       return;
     }
+
+    // Prevent duplicate
+    if (formData.location.includes(value)) {
+      showToast.info("This location is already added.");
+      setLocationInput([]);
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
-      location: [location], // Single
+      location: [...prev.location, value],
     }));
+
     setLocationInput([]);
     setLocationSuggestions([]);
   };
 
-  // Updated handleLocationChange (use [query], fetch Geoapify)
+  const handleLocationSelect = (location: string) => {
+    const trimmed = location.trim();
+    if (!trimmed) return;
+
+    if (!isValidTextInput(trimmed)) {
+      showToast.error(
+        "Location can only contain letters, numbers, commas, and spaces.",
+      );
+      return;
+    }
+
+    // Prevent duplicate
+    if (formData.location.includes(trimmed)) {
+      showToast.info("This location is already added.");
+      setLocationInput([]);
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      location: [...prev.location, trimmed],
+    }));
+
+    setLocationInput([]);
+    setLocationSuggestions([]);
+  };
+
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setLocationInput([query]);
@@ -969,37 +995,42 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
             <div className="flex items-center space-x-64">
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${currentStep >= 1
-                    ? "text-blue-500 font-medium"
-                    : "text-gray-500"
-                    }`}
+                  className={`ml-2 text-sm ${
+                    currentStep >= 1
+                      ? "text-blue-500 font-medium"
+                      : "text-gray-500"
+                  }`}
                 >
                   Basic Info
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
-                    }`}
+                  className={`w-3 h-3 rounded-full ${
+                    currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
+                  }`}
                 ></div>
               </div>
               <div className="flex flex-col justify-center gap-2 items-center">
                 <span
-                  className={`ml-2 text-sm ${currentStep >= 2
-                    ? "text-blue-500 font-medium"
-                    : "text-gray-500"
-                    }`}
+                  className={`ml-2 text-sm ${
+                    currentStep >= 2
+                      ? "text-blue-500 font-medium"
+                      : "text-gray-500"
+                  }`}
                 >
                   Update and Refine JD
                 </span>
                 <div
-                  className={`w-3 h-3 rounded-full ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                    }`}
+                  className={`w-3 h-3 rounded-full ${
+                    currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                  }`}
                 ></div>
               </div>
             </div>
             <div className="relative top-[-6px] right-[25px]">
               <div
-                className={`w-[351px] h-px ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
+                className={`w-[351px] h-px ${
+                  currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
+                }`}
               ></div>
             </div>
             <div className="flex-1 overflow-y-auto mt-2 pr-10">
@@ -1128,17 +1159,47 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Location <span className="text-red-500">*</span>
                 </label>
-                <div className="relative border border-gray-300 rounded-lg px-4 pt-2 pb-2">
+                <div className="relative border border-gray-300 rounded-lg px-4 pt-3 pb-3 min-h-[42px]">
+                  {/* Selected locations as removable tags */}
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.location.map((loc, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                      >
+                        {loc}
+                        <X
+                          className="w-3.5 h-3.5 ml-1.5 cursor-pointer text-blue-600 hover:text-blue-900"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              location: prev.location.filter(
+                                (_, i) => i !== index,
+                              ),
+                            }))
+                          }
+                        />
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Input */}
                   <input
                     type="text"
                     ref={locationInputRef}
-                    placeholder="Type location and Press Enter"
-                    value={locationInput[0] || ""} // Updated
-                    onChange={handleLocationChange} // Updated
-                    onKeyPress={handleLocationAdd} // Updated
-                    className=" w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
+                    placeholder={
+                      formData.location.length === 0
+                        ? "Type location and press Enter"
+                        : "Add another location..."
+                    }
+                    value={locationInput[0] || ""}
+                    onChange={handleLocationChange}
+                    onKeyPress={handleLocationAdd}
+                    className="w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 bg-transparent"
                     disabled={isLoading}
                   />
+
+                  {/* Suggestions */}
                   {locationInput[0]?.length >= 2 &&
                     (isLoadingLocation || locationSuggestions.length > 0) && (
                       <div className="absolute left-0 z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
@@ -1150,28 +1211,28 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           locationSuggestions.map((suggestion, index) => (
                             <div
                               key={index}
-                              className="px-4 py-3 text-md text-gray-700 hover:bg-blue-100 cursor-pointer"
-                              onClick={() => handleLocationSelect(suggestion)}
+                              className={`px-4 py-3 text-md cursor-pointer ${
+                                formData.location.includes(suggestion)
+                                  ? "text-gray-400 bg-gray-50 pointer-events-none"
+                                  : "text-gray-700 hover:bg-blue-100"
+                              }`}
+                              onClick={() => {
+                                if (!formData.location.includes(suggestion)) {
+                                  handleLocationSelect(suggestion);
+                                }
+                              }}
                             >
                               {suggestion}
+                              {formData.location.includes(suggestion) && (
+                                <span className="ml-2 text-xs text-gray-500">
+                                  (already added)
+                                </span>
+                              )}
                             </div>
                           ))
                         )}
                       </div>
                     )}
-                  <div className="flex flex-wrap gap-2">
-                    {formData.location.length > 0 && ( // Updated to length
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center">
-                        <X
-                          className="w-3 h-3 mr-1 cursor-pointer"
-                          onClick={() =>
-                            setFormData((prev) => ({ ...prev, location: [] }))
-                          }
-                        />
-                        {formData.location[0]} {/* First only */}
-                      </span>
-                    )}
-                  </div>
                 </div>
               </div>
 
@@ -1329,8 +1390,9 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                        }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${
+                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                      }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <input
@@ -1345,8 +1407,9 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           }));
                         }
                       }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                        }`}
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
+                      }`}
                       disabled={isLoading || formData.confidential}
                     />
                     <button
@@ -1357,10 +1420,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           confidential: !prev.confidential,
                         }))
                       }
-                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${formData.confidential
-                        ? "bg-[#ECF1FF] text-blue-600"
-                        : "bg-[#F0F0F0] text-gray-400"
-                        }`}
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${
+                        formData.confidential
+                          ? "bg-[#ECF1FF] text-blue-600"
+                          : "bg-[#F0F0F0] text-gray-400"
+                      }`}
                       disabled={isLoading}
                     >
                       {formData.confidential ? (
@@ -1395,10 +1459,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "paste"
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-gray-600"
-                        }`}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        formData.uploadType === "paste"
+                          ? "bg-white text-blue-600 shadow-sm"
+                          : "text-gray-600"
+                      }`}
                       disabled={isLoading}
                     >
                       Paste Text
@@ -1411,10 +1476,11 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
                           jobDescription: "",
                         }))
                       }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${formData.uploadType === "upload"
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-gray-600"
-                        }`}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        formData.uploadType === "upload"
+                          ? "bg-white text-blue-600 shadow-sm"
+                          : "text-gray-600"
+                      }`}
                       disabled={isLoading}
                     >
                       Upload File
