@@ -9,6 +9,10 @@ import {
   CheckCircle2,
   ChevronLeft,
   Eye,
+  Check,
+  X,
+  FastForward,
+  MessageSquare,
 } from "lucide-react";
 import {
   initiateCall,
@@ -18,7 +22,12 @@ import {
   stopRecording,
   saveCallLog,
   getPlivoToken,
+  getRoleQuestions,
+  evaluateRoleQuestion,
+  getLiveTranscript,
   type CallStatus,
+  type RoleQuestion,
+  type LiveTranscript,
 } from "../../../services/jobPipelineDashboardService";
 
 interface CandidateCallParams {
@@ -58,7 +67,7 @@ export default function CandidateCallPage() {
     incomingCandidate,
   );
 
-  console.log("Candidate we are about to call:", candidate);
+  // console.log("Candidate we are about to call:", candidate);
 
   // Call States
   const [seconds, setSeconds] = useState(0);
@@ -69,6 +78,16 @@ export default function CandidateCallPage() {
   const [callState, setCallState] = useState<string>("initiating"); // initiating | dialing | answered | completed | error
   const [isSaving, setIsSaving] = useState(false);
   const [isEndingCall, setIsEndingCall] = useState(false);
+
+  // Copilot States & Tabs
+  const [activeTab, setActiveTab] = useState<
+    "roleQuestions" | "transcript" | "quickNotes"
+  >("roleQuestions");
+  const [roleQuestions, setRoleQuestions] = useState<RoleQuestion[]>([]);
+  const [transcripts, setTranscripts] = useState<LiveTranscript[]>([]);
+
+  // Dummy job ID for MVP (ideally pass this in via location.state or fetch dynamically)
+  const jobId = "job_default_123";
 
   // Notes & Checklist States
   const [notes, setNotes] = useState("");
@@ -90,6 +109,7 @@ export default function CandidateCallPage() {
   // });
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const transcriptPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [sdkReady, setSdkReady] = useState(false);
   const plivoRef = useRef<any>(null);
@@ -114,6 +134,15 @@ export default function CandidateCallPage() {
       setCandidate(DUMMY_FALLBACK);
     }
   }, [candidateId, candidate]);
+
+  // Fetch initial Role Questions on Mount
+  useEffect(() => {
+    if (candidate?.id) {
+      getRoleQuestions(jobId, candidate.id)
+        .then(setRoleQuestions)
+        .catch(console.error);
+    }
+  }, [candidate?.id]);
 
   // ─── Register Plivo Browser SDK (WebRTC) ─────────────
   useEffect(() => {
@@ -288,6 +317,24 @@ export default function CandidateCallPage() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // --- Transcript Polling Logic ---
+  useEffect(() => {
+    // Only poll transcript if we have an active call uuid
+    if (callUuid && callState !== "completed" && callState !== "error") {
+      transcriptPollRef.current = setInterval(async () => {
+        try {
+          const res = await getLiveTranscript(callUuid);
+          setTranscripts(res);
+        } catch (err) {
+          console.error("Transcript polling error:", err);
+        }
+      }, 5000); // UI updates every 5s with new STT & AI text
+    }
+    return () => {
+      if (transcriptPollRef.current) clearInterval(transcriptPollRef.current);
+    };
+  }, [callUuid, callState]);
+
   // ─── Call Controls ───────────────────────────────────
   const handleEndCall = useCallback(async () => {
     if (isEndingCall) return;
@@ -393,6 +440,18 @@ export default function CandidateCallPage() {
   //   setSkillsChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
   // };
 
+  const handleEvaluateQuestion = async (
+    qId: number,
+    status: RoleQuestion["status"],
+  ) => {
+    try {
+      const updated = await evaluateRoleQuestion(qId, status);
+      setRoleQuestions((prev) => prev.map((q) => (q.id === qId ? updated : q)));
+    } catch (err) {
+      console.error("Failed to update evaluation:", err);
+    }
+  };
+
   if (!candidate)
     return (
       <div className="p-10 flex min-h-screen items-center justify-center">
@@ -425,7 +484,7 @@ export default function CandidateCallPage() {
       : "text-[#22C55E]";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-white text-slate-800">
+    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
       {/* LEFT COLUMN: ACTIVE CALL UX */}
       <div className="w-[45%] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-hidden p-8">
         {/* Visual Audio Rings */}
@@ -542,295 +601,419 @@ export default function CandidateCallPage() {
       </div>
 
       {/* RIGHT COLUMN: RECRUITER ASSISTANT PANEL */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Header */}
-        <div className="h-[80px] bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0">
-          <div className="flex items-center gap-4 text-lg font-medium text-slate-800">
-            <span className="text-slate-400">
-              {callState === "completed"
-                ? "Call ended —"
-                : "Call in progress —"}
-            </span>
-            <span className="text-blue-600 font-semibold">
-              {candidate.name}
-            </span>
-            {callState !== "completed" && (
-              <span className="bg-green-100 text-green-700 text-xs px-2.5 py-0.5 rounded-full font-bold tracking-widest flex items-center gap-1.5 uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                Live
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-white shadow-xl shadow-slate-200">
+        {/* Header & Candidate Summary Strip */}
+        <div className="bg-white border-b border-slate-200 shrink-0">
+          <div className="h-[80px] flex items-center justify-between px-8">
+            <div className="flex items-center gap-4 text-lg font-medium text-slate-800">
+              <span className="text-slate-400">
+                {callState === "completed"
+                  ? "Call ended —"
+                  : "Call in progress —"}
               </span>
-            )}
+              <span className="text-blue-600 font-bold">{candidate.name}</span>
+              {callState !== "completed" && (
+                <span className="bg-green-100 text-green-700 text-xs px-2.5 py-0.5 rounded-full font-bold tracking-widest flex items-center gap-1.5 uppercase shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                  Live
+                </span>
+              )}
+            </div>
+            <button className="text-sm font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-4 py-1.5 rounded-lg flex items-center gap-2 hover:bg-blue-100 transition-colors">
+              <Eye className="w-4 h-4" /> View Profile
+            </button>
           </div>
-          <div className="text-sm font-medium text-slate-400 flex items-center gap-2">
-            {candidate.headline}
+          {/* New Tab Navigation */}
+          <div className="flex px-8 gap-8 border-t border-slate-100 bg-slate-50/50">
+            {["roleQuestions", "transcript", "quickNotes"].map((tab) => {
+              const labels = {
+                roleQuestions: "Role Questions (AI)",
+                transcript: "Transcript + AI",
+                quickNotes: "Quick Notes & Checklist",
+              };
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`py-4 font-semibold text-sm relative transition-colors ${isActive ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  {labels[tab as keyof typeof labels]}
+                  {isActive && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar bg-slate-50/30">
+          {/* TAB 1: ROLE QUESTIONS */}
+          {activeTab === "roleQuestions" && (
+            <div className="flex flex-col gap-5 max-w-4xl mx-auto">
+              <div className="mb-2">
+                <h2 className="text-lg font-bold text-slate-800">
+                  Interview Questions
+                </h2>
+                <p className="text-slate-500 text-sm">
+                  Suggested questions to evaluate {candidate.headline} skills.
+                </p>
+              </div>
+              {roleQuestions.map((q, idx) => (
+                <div
+                  key={q.id}
+                  className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-all hover:shadow-md"
+                >
+                  {/* Question Header */}
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex gap-4 items-start">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
+                        {idx + 1}
+                      </div>
+                      <div>
+                        <h3 className="text-slate-800 font-semibold mb-1.5 leading-snug">
+                          {q.question_text}
+                        </h3>
+                        <p className="text-slate-500 text-sm italic bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                          {q.ideal_answer_concept}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Divider */}
+                  <div className="h-px bg-slate-100 my-1"></div>
+                  {/* Actions & AI Score */}
+                  <div className="flex items-center justify-between">
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() =>
+                          handleEvaluateQuestion(q.id, "convinced")
+                        }
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-200 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                      >
+                        <Check className="w-3.5 h-3.5" /> Convinced
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleEvaluateQuestion(q.id, "not_convinced")
+                        }
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-200 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                      >
+                        <X className="w-3.5 h-3.5" /> Not convinced
+                      </button>
+                      <button
+                        onClick={() => handleEvaluateQuestion(q.id, "skipped")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                      >
+                        <FastForward className="w-3.5 h-3.5" /> Skip
+                      </button>
+                    </div>
+                    {/* AI Score */}
+                    {q.ai_score_percentage !== null && (
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                          AI Score
+                        </span>
+                        <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500"
+                            style={{ width: `${q.ai_score_percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-bold text-blue-700">
+                          {q.ai_score_percentage}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {roleQuestions.length === 0 && (
+                <div className="text-center p-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
+                  Generating questions with Gemini...
+                </div>
+              )}
+            </div>
+          )}
+          {/* TAB 2: TRANSCRIPT + AI */}
+          {activeTab === "transcript" && (
+            <div className="flex flex-col h-full max-w-4xl mx-auto">
+              <div className="mb-4">
+                <h2 className="text-lg font-bold text-slate-800">
+                  Live Transcript & Evaluations
+                </h2>
+              </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar">
-          <div className="flex gap-8 items-start">
-            {/* Notes and Checklists Section */}
-            <div className="flex-[3] flex flex-col gap-8">
-              {/* Quick Notes Input */}
-              <div>
-                <h3 className="text-sm font-bold text-slate-500 mb-3 font-semibold uppercase tracking-wider">
-                  Quick Notes
-                </h3>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add key points here during the call"
-                  className="w-full h-24 bg-slate-50 border border-transparent hover:border-slate-200 focus:border-blue-300 focus:bg-white focus:outline-none rounded-xl p-4 text-sm transition-all resize-none shadow-sm"
-                />
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {tags.map((tag) => {
-                    const isActive = activeTags.includes(tag);
-                    return (
+              <div className="flex-1 flex flex-col gap-6 p-2">
+                {transcripts.map((t) => (
+                  <div
+                    key={t.id}
+                    className={`flex flex-col max-w-[80%] ${t.speaker === "candidate" ? "self-start" : t.speaker === "recruiter" ? "self-end items-end" : "self-center items-center w-full max-w-full"}`}
+                  >
+                    {/* System/AI Suggestions */}
+                    {t.speaker === "system" ? (
+                      <div className="bg-purple-50 border border-purple-100 text-purple-800 px-5 py-3 rounded-2xl flex items-start gap-3 w-full shadow-sm">
+                        <MessageSquare className="w-5 h-5 text-purple-500 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-wider text-purple-500 mb-1">
+                            AI Suggests asking next
+                          </p>
+                          <p className="text-sm font-medium">
+                            {t.ai_suggested_followup || t.text}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 px-1">
+                          {t.speaker === "candidate"
+                            ? candidate.name
+                            : "Recruiter"}
+                        </span>
+                        <div
+                          className={`px-5 py-3 rounded-2xl text-sm ${t.speaker === "candidate" ? "bg-white border border-slate-200 text-slate-700 rounded-tl-sm shadow-sm" : "bg-blue-600 text-white rounded-tr-sm shadow-md"}`}
+                        >
+                          {t.text}
+                        </div>
+                        {t.ai_evaluation_pill && t.speaker === "candidate" && (
+                          <div className="mt-2 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full w-fit">
+                            ✓ {t.ai_evaluation_pill}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+
+                {transcripts.length === 0 && (
+                  <div className="flex items-center justify-center h-full text-slate-400 italic">
+                    {callState === "answered"
+                      ? "Listening for speech..."
+                      : "Waiting for call to connect..."}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: QUICK NOTES (Original Layout) */}
+          {activeTab === "quickNotes" && (
+            <div className="flex gap-8 items-start max-w-6xl mx-auto">
+              <div className="flex-[3] flex flex-col gap-8">
+                {/* Quick Notes Input */}
+                <div>
+                  <h3 className="text-sm font-bold text-slate-500 mb-3 font-semibold uppercase tracking-wider">
+                    Quick Notes
+                  </h3>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add key points here during the call"
+                    className="w-full h-24 bg-white border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:outline-none rounded-xl p-4 text-sm transition-all resize-none shadow-sm"
+                  />
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {tags.map((tag) => (
                       <button
                         key={tag}
                         onClick={() => toggleTag(tag)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${isActive ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:border-slate-300"}`}
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${activeTags.includes(tag) ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
                       >
                         {tag}
                       </button>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
-              </div>
-
-              {/* Recruiter Checklist */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
-                <h3 className="text-xs font-bold text-blue-500 mb-6 font-semibold uppercase tracking-widest">
-                  Recruiter Checklist
-                </h3>
-                <div className="flex flex-col gap-5 text-sm">
-                  <label className="flex items-start gap-4 cursor-pointer group">
-                    <div className="mt-0.5 relative flex items-center justify-center">
-                      <input
-                        type="checkbox"
-                        checked={checklist.ctcConfirmed}
-                        onChange={() => toggleChecklist("ctcConfirmed")}
-                        className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
-                      />
-                      <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                    </div>
-                    <div>
-                      <p
-                        className={`font-semibold transition-colors ${checklist.ctcConfirmed ? "text-slate-400 line-through" : "text-slate-700"}`}
-                      >
-                        Current CTC confirmed?
-                      </p>
-                      <p className="text-slate-400 text-xs mt-0.5">
-                        Ask exact in-hand + variables
-                      </p>
-                    </div>
-                  </label>
-                  <label className="flex items-start gap-4 cursor-pointer group">
-                    <div className="mt-0.5 relative flex items-center justify-center">
-                      <input
-                        type="checkbox"
-                        checked={checklist.ctcFlexibility}
-                        onChange={() => toggleChecklist("ctcFlexibility")}
-                        className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
-                      />
-                      <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                    </div>
-                    <div>
-                      <p
-                        className={`font-semibold transition-colors ${checklist.ctcFlexibility ? "text-slate-400 line-through" : "text-slate-700"}`}
-                      >
-                        Expected CTC & flexibility?
-                      </p>
-                      <p className="text-slate-400 text-xs mt-0.5">
-                        Range + negotiation room
-                      </p>
-                    </div>
-                  </label>
-                  <label className="flex items-start gap-4 cursor-pointer group">
-                    <div className="mt-0.5 relative flex items-center justify-center">
-                      <input
-                        type="checkbox"
-                        checked={checklist.noticePeriod}
-                        onChange={() => toggleChecklist("noticePeriod")}
-                        className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
-                      />
-                      <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                    </div>
-                    <div>
-                      <p
-                        className={`font-semibold transition-colors ${checklist.noticePeriod ? "text-slate-400 line-through" : "text-slate-700"}`}
-                      >
-                        Notice period & buyout option?
-                      </p>
-                      <p className="text-slate-400 text-xs mt-0.5">
-                        Exact days, can employer waive?
-                      </p>
-                    </div>
-                  </label>
-                  <label className="flex items-start gap-4 cursor-pointer group">
-                    <div className="mt-0.5 relative flex items-center justify-center">
-                      <input
-                        type="checkbox"
-                        checked={checklist.location}
-                        onChange={() => toggleChecklist("location")}
-                        className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
-                      />
-                      <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                    </div>
-                    <div>
-                      <p
-                        className={`font-semibold transition-colors ${checklist.location ? "text-slate-400 line-through" : "text-slate-700"}`}
-                      >
-                        Current location & relocation?
-                      </p>
-                      <p className="text-slate-400 text-xs mt-0.5">
-                        Open to Bengaluru onsite?
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Skills to ask */}
-              {/* <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">
-                <h3 className="text-xs font-bold text-teal-500 mb-6 font-semibold uppercase tracking-widest">
-                  Skills to Ask
-                </h3>
-                <div className="flex flex-col gap-4 text-sm font-medium text-slate-600">
-                  {Object.entries(skillsChecklist).map(([key, checked]) => {
-                    const labels: Record<string, string> = {
-                      figma: "Figma / Design Tools",
-                      uxResearch: "UX Research Process",
-                      designSystems: "Design Systems exp",
-                      b2c: "B2C Product Work",
-                      stakeholder: "Stakeholder Mgmt.",
-                      mobileFirst: "Mobile-first Design",
-                    };
-                    return (
-                      <label
-                        key={key}
-                        className="flex items-center gap-3 cursor-pointer group"
-                      >
-                        <div className="relative flex items-center justify-center">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() =>
-                              toggleSkills(key as keyof typeof skillsChecklist)
-                            }
-                            className="w-4 h-4 rounded border-slate-300 text-teal-500 focus:ring-teal-500 cursor-pointer peer appearance-none checked:bg-teal-500 checked:border-teal-500 transition"
-                          />
-                          <CheckCircle2 className="w-3 h-3 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                        </div>
-                        <span
-                          className={
-                            checked ? "text-slate-400 line-through" : ""
-                          }
+                {/* Recruiter Checklist (from your provided code) */}
+                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                  <h3 className="text-xs font-bold text-blue-500 mb-6 font-semibold uppercase tracking-widest">
+                    Recruiter Checklist
+                  </h3>
+                  <div className="flex flex-col gap-5 text-sm">
+                    <label className="flex items-start gap-4 cursor-pointer group">
+                      <div className="mt-0.5 relative flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={checklist.ctcConfirmed}
+                          onChange={() => toggleChecklist("ctcConfirmed")}
+                          className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
+                        />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                      </div>
+                      <div>
+                        <p
+                          className={`font-semibold transition-colors ${checklist.ctcConfirmed ? "text-slate-400 line-through" : "text-slate-700"}`}
                         >
-                          {labels[key]}
-                        </span>
-                      </label>
-                    );
-                  })}
+                          Current CTC confirmed?
+                        </p>
+                        <p className="text-slate-400 text-xs mt-0.5">
+                          Ask exact in-hand + variables
+                        </p>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-4 cursor-pointer group">
+                      <div className="mt-0.5 relative flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={checklist.ctcFlexibility}
+                          onChange={() => toggleChecklist("ctcFlexibility")}
+                          className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
+                        />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                      </div>
+                      <div>
+                        <p
+                          className={`font-semibold transition-colors ${checklist.ctcFlexibility ? "text-slate-400 line-through" : "text-slate-700"}`}
+                        >
+                          Expected CTC & flexibility?
+                        </p>
+                        <p className="text-slate-400 text-xs mt-0.5">
+                          Range + negotiation room
+                        </p>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-4 cursor-pointer group">
+                      <div className="mt-0.5 relative flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={checklist.noticePeriod}
+                          onChange={() => toggleChecklist("noticePeriod")}
+                          className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
+                        />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                      </div>
+                      <div>
+                        <p
+                          className={`font-semibold transition-colors ${checklist.noticePeriod ? "text-slate-400 line-through" : "text-slate-700"}`}
+                        >
+                          Notice period & buyout option?
+                        </p>
+                        <p className="text-slate-400 text-xs mt-0.5">
+                          Exact days, can employer waive?
+                        </p>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-4 cursor-pointer group">
+                      <div className="mt-0.5 relative flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={checklist.location}
+                          onChange={() => toggleChecklist("location")}
+                          className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
+                        />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                      </div>
+                      <div>
+                        <p
+                          className={`font-semibold transition-colors ${checklist.location ? "text-slate-400 line-through" : "text-slate-700"}`}
+                        >
+                          Current location & relocation?
+                        </p>
+                        <p className="text-slate-400 text-xs mt-0.5">
+                          Open to Bengaluru onsite?
+                        </p>
+                      </div>
+                    </label>
+                  </div>
                 </div>
-              </div> */}
+              </div>
 
-              {/* Call Attention Questions */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">
-                <h3 className="text-xs font-bold text-teal-500 mb-6 font-semibold uppercase tracking-widest">
-                  Questions to Ask
-                </h3>
-                <div className="flex flex-col gap-4 text-sm font-medium text-slate-700">
-                  {candidate.callAttention &&
-                  candidate.callAttention.length > 0 ? (
-                    <ul className="list-disc pl-5 space-y-3 marker:text-teal-500">
-                      {candidate.callAttention.map((question, index) => (
-                        <li key={index} className="pl-1 leading-relaxed">
-                          {question}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="italic text-slate-500 text-sm">
-                      No specific questions prepared for this candidate.
-                    </p>
-                  )}
+              {/* Candidate Info Sidebar */}
+              {/* Candidate Resume Summary */}
+              <div className="flex-[2] sticky top-0">
+                <div className="border border-blue-200 bg-blue-50/20 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-blue-700 font-bold text-lg">
+                      {candidate.name}
+                    </h4>
+                    <div className="w-10 h-10 rounded-full border-[3px] border-[#00C8B3] flex items-center justify-center relative">
+                      <span className="text-[#00C8B3] font-black text-[10px]">
+                        84%
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-slate-400 text-xs font-semibold mb-6">
+                    {candidate.headline}
+                  </p>
+                  <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest mb-4">
+                    Info
+                  </h5>
+                  <div className="flex flex-col gap-4 text-xs font-medium">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Current CTC</span>
+                      <span className="text-slate-700 font-bold">
+                        {candidate.currentCtc}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Expected CTC</span>
+                      <span className="text-slate-700 font-bold">
+                        {candidate.expectedCtc}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Notice Period</span>
+                      <span className="text-slate-700 font-bold">
+                        {candidate.noticePeriod}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Location</span>
+                      <span className="text-slate-700 font-bold">
+                        {candidate.location}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Experience</span>
+                      <span className="text-slate-700 font-bold">
+                        {candidate.experience}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-8 border-t border-slate-200 pt-4">
+                    <button className="text-blue-600 font-semibold text-xs py-1 flex items-center gap-2 hover:underline">
+                      View Profile <Eye className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Candidate Resume Summary */}
-            <div className="flex-[2] sticky top-0">
-              <div className="border border-blue-200 bg-blue-50/20 rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-blue-700 font-bold text-lg">
-                    {candidate.name}
-                  </h4>
-                  <div className="w-10 h-10 rounded-full border-[3px] border-[#00C8B3] flex items-center justify-center relative">
-                    <span className="text-[#00C8B3] font-black text-[10px]">
-                      84%
-                    </span>
-                  </div>
-                </div>
-                <p className="text-slate-400 text-xs font-semibold mb-6">
-                  {candidate.headline}
-                </p>
-                <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest mb-4">
-                  Info
-                </h5>
-                <div className="flex flex-col gap-4 text-xs font-medium">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Current CTC</span>
-                    <span className="text-slate-700 font-bold">
-                      {candidate.currentCtc}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Expected CTC</span>
-                    <span className="text-slate-700 font-bold">
-                      {candidate.expectedCtc}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Notice Period</span>
-                    <span className="text-slate-700 font-bold">
-                      {candidate.noticePeriod}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Location</span>
-                    <span className="text-slate-700 font-bold">
-                      {candidate.location}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Experience</span>
-                    <span className="text-slate-700 font-bold">
-                      {candidate.experience}
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-8 border-t border-slate-200 pt-4">
-                  <button className="text-blue-600 font-semibold text-xs py-1 flex items-center gap-2 hover:underline">
-                    View Profile <Eye className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
-
         {/* Fixed Footer for Save */}
-        <div className="w-full shrink-0 border-t border-slate-100 p-6 bg-white flex justify-start">
+        <div className="w-full shrink-0 border-t border-slate-100 p-6 bg-white flex justify-start z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
           <button
             onClick={handleSaveNotes}
             disabled={isSaving}
-            className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-semibold py-3.5 rounded-xl text-sm disabled:opacity-50"
+            className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50"
           >
-            {isSaving ? "Saving..." : "Save Notes and Checklist"}
+            {isSaving ? "Saving..." : "Save Call Wrap-up Data"}
           </button>
         </div>
       </div>
     </div>
+    // {/* Call Attention Questions */}
+    // <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">
+    //   <h3 className="text-xs font-bold text-teal-500 mb-6 font-semibold uppercase tracking-widest">
+    //     Questions to Ask
+    //   </h3>
+    //   <div className="flex flex-col gap-4 text-sm font-medium text-slate-700">
+    //     {candidate.callAttention &&
+    //     candidate.callAttention.length > 0 ? (
+    //       <ul className="list-disc pl-5 space-y-3 marker:text-teal-500">
+    //         {candidate.callAttention.map((question, index) => (
+    //           <li key={index} className="pl-1 leading-relaxed">
+    //             {question}
+    //           </li>
+    //         ))}
+    //       </ul>
+    //     ) : (
+    //       <p className="italic text-slate-500 text-sm">
+    //         No specific questions prepared for this candidate.
+    //       </p>
+    //     )}
+    //   </div>
+    // </div>
   );
 }

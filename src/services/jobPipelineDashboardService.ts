@@ -12,18 +12,6 @@ function getAuthHeaders(): HeadersInit {
   };
 }
 
-async function handleResponse<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const errorBody = await res
-      .json()
-      .catch(() => ({ detail: res.statusText }));
-    throw new Error(
-      errorBody.detail || errorBody.error || `Request failed: ${res.status}`,
-    );
-  }
-  return res.json();
-}
-
 // ─── Interactive Calling ─────────────────────────────
 
 export interface InitiateCallPayload {
@@ -42,17 +30,6 @@ export interface InitiateCallResponse {
     timestamp: number;
     extra: Record<string, any>;
   };
-}
-
-export async function initiateCall(
-  payload: InitiateCallPayload,
-): Promise<InitiateCallResponse> {
-  const res = await fetch(`${PLIVO_BASE}/interactive/call/`, {
-    method: "POST",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(payload),
-  });
-  return handleResponse<InitiateCallResponse>(res);
 }
 
 // ─── Call Status ─────────────────────────────────────
@@ -89,13 +66,13 @@ export interface CallHistoryEntry {
   caller_uid: string | null;
   phone_number: string | null;
   call_status:
-  | "initiated"
-  | "ringing"
-  | "answered"
-  | "not_answered"
-  | "busy"
-  | "failed"
-  | "completed";
+    | "initiated"
+    | "ringing"
+    | "answered"
+    | "not_answered"
+    | "busy"
+    | "failed"
+    | "completed";
   call_type: "outgoing" | "incoming";
   reason: string | null;
   note: string | null;
@@ -106,6 +83,94 @@ export interface CallHistoryEntry {
   created_at: string;
   recording: CallRecording | null;
   follow_ups: CallFollowUp[];
+}
+
+// ─── Schedule Follow-Up ─────────────────────────────
+
+export interface ScheduleFollowUpPayload {
+  candidate_id: string;
+  reason?: string;
+  note?: string;
+  scheduled_date: string; // "YYYY-MM-DD"
+  scheduled_time: string; // "HH:MM:SS" or "HH:MM"
+  duration_seconds?: number;
+  tags?: string[];
+  call_log_id?: number;
+}
+
+export interface ScheduleFollowUpResponse {
+  call_log: CallLogResponse;
+  follow_up: {
+    id: number;
+    call_log: number;
+    scheduled_date: string;
+    scheduled_time: string;
+    created_at: string;
+  };
+}
+
+export interface CallLogPayload {
+  call_uuid?: string;
+  candidate_id: string;
+  reason?: string;
+  note?: string;
+  duration_seconds?: number;
+  tags?: string[];
+  checklist_data?: Record<string, boolean>;
+  skills_data?: Record<string, boolean>;
+}
+
+export interface CallLogResponse {
+  id: number;
+  call_uuid: string;
+  candidate_id: string;
+  caller_uid: string;
+  reason: string;
+  note: string;
+  duration_seconds: number;
+  tags: string[];
+  checklist_data: Record<string, boolean> | null;
+  skills_data: Record<string, boolean> | null;
+  created_at: string;
+}
+
+export interface RoleQuestion {
+  id: number;
+  question_text: string;
+  ideal_answer_concept: string;
+  ai_score_percentage: number | null;
+  status: "pending" | "convinced" | "not_convinced" | "skipped";
+}
+export interface LiveTranscript {
+  id: number;
+  speaker: "recruiter" | "candidate" | "system";
+  text: string;
+  ai_evaluation_pill: string | null;
+  ai_suggested_followup: string | null;
+  timestamp: string;
+}
+
+async function handleResponse<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const errorBody = await res
+      .json()
+      .catch(() => ({ detail: res.statusText }));
+    throw new Error(
+      errorBody.detail || errorBody.error || `Request failed: ${res.status}`,
+    );
+  }
+  return res.json();
+}
+
+export async function initiateCall(
+  payload: InitiateCallPayload,
+): Promise<InitiateCallResponse> {
+  const res = await fetch(`${PLIVO_BASE}/interactive/call/`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<InitiateCallResponse>(res);
 }
 
 export async function getCallStatus(): Promise<CallStatus> {
@@ -155,31 +220,6 @@ export async function stopRecording(callUuid: string): Promise<any> {
 
 // ─── Call Logs ───────────────────────────────────────
 
-export interface CallLogPayload {
-  call_uuid?: string;
-  candidate_id: string;
-  reason?: string;
-  note?: string;
-  duration_seconds?: number;
-  tags?: string[];
-  checklist_data?: Record<string, boolean>;
-  skills_data?: Record<string, boolean>;
-}
-
-export interface CallLogResponse {
-  id: number;
-  call_uuid: string;
-  candidate_id: string;
-  caller_uid: string;
-  reason: string;
-  note: string;
-  duration_seconds: number;
-  tags: string[];
-  checklist_data: Record<string, boolean> | null;
-  skills_data: Record<string, boolean> | null;
-  created_at: string;
-}
-
 export async function saveCallLog(
   payload: CallLogPayload,
 ): Promise<CallLogResponse> {
@@ -203,30 +243,6 @@ export async function getCallLogs(
     },
   );
   return handleResponse<CallLogResponse[]>(res);
-}
-
-// ─── Schedule Follow-Up ─────────────────────────────
-
-export interface ScheduleFollowUpPayload {
-  candidate_id: string;
-  reason?: string;
-  note?: string;
-  scheduled_date: string; // "YYYY-MM-DD"
-  scheduled_time: string; // "HH:MM:SS" or "HH:MM"
-  duration_seconds?: number;
-  tags?: string[];
-  call_log_id?: number;
-}
-
-export interface ScheduleFollowUpResponse {
-  call_log: CallLogResponse;
-  follow_up: {
-    id: number;
-    call_log: number;
-    scheduled_date: string;
-    scheduled_time: string;
-    created_at: string;
-  };
 }
 
 export async function scheduleFollowUp(
@@ -279,4 +295,53 @@ export async function processCallRecording(
   });
   if (!response.ok) throw new Error("Failed to process recording");
   return response.json();
+}
+
+/**
+ * Fetches the AI-generated role questions (10 questions) for the candidate.
+ */
+export async function getRoleQuestions(
+  jobId: string,
+  candidateId: string,
+): Promise<RoleQuestion[]> {
+  const res = await fetch(
+    `${PLIVO_BASE}/copilot/questions/${encodeURIComponent(jobId)}/${encodeURIComponent(candidateId)}/`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    },
+  );
+  return handleResponse<RoleQuestion[]>(res);
+}
+/**
+ * Updates a question's manual evaluation status (Convinced / Not convinced / Skip).
+ */
+export async function evaluateRoleQuestion(
+  questionId: number,
+  status: RoleQuestion["status"],
+): Promise<RoleQuestion> {
+  const res = await fetch(
+    `${PLIVO_BASE}/copilot/questions/${questionId}/evaluate/`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ status }),
+    },
+  );
+  return handleResponse<RoleQuestion>(res);
+}
+/**
+ * Polls for the realtime Live Transcript data for a given Call UUID.
+ */
+export async function getLiveTranscript(
+  callUuid: string,
+): Promise<LiveTranscript[]> {
+  const res = await fetch(
+    `${PLIVO_BASE}/copilot/transcript/${encodeURIComponent(callUuid)}/`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    },
+  );
+  return handleResponse<LiveTranscript[]>(res);
 }
