@@ -30,6 +30,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  MessageSquare,
 } from "lucide-react";
 import apiClient from "../../../services/api";
 import { jobPostService, Job } from "../../../services/jobPostService";
@@ -306,6 +307,17 @@ export default function JobPipelineDashboard({
   const [selectionType, setSelectionType] = useState<
     "ACTIVE" | "ARCHIVED" | null
   >(null);
+
+  // ── Feedback Modal State ──
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [pendingAction, setPendingAction] = useState<{
+    type: "archive" | "unarchive" | "move";
+    applicationIds: number[];
+    targetStageId?: number;
+    targetStageName?: string;
+    candidateNames?: string[];
+  } | null>(null);
 
   // ── Sorting
   type CandidateSortKey =
@@ -1092,120 +1104,128 @@ export default function JobPipelineDashboard({
 
   // ── Actions ──────────────────────────────────────────────────
 
-  const archiveCandidate = async (applicationId: number) => {
-    const archiveStage = stages.find((stage) => stage.slug === "archives");
-    if (!archiveStage) return;
-    try {
-      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
-        current_stage: archiveStage.id,
-        status: "ARCHIVED",
-        archive_reason: "Candidate archived from UI",
-      });
-      if (jobId != null) {
-        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
-        fetchStages(jobId);
-      }
-      showToast.success("Candidate archived successfully");
-    } catch (error) {
-      console.error("Error archiving candidate:", error);
-      showToast.error("Failed to archive candidate");
-    }
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+    setSelectAll(false);
+    setSelectionStage(null);
+    setSelectionType(null);
   };
 
-  const shortlistCandidate = async (applicationId: number) => {
-    try {
-      const shortlistedStage = stages.find(
-        (s) =>
-          s.slug === "shortlisted" ||
-          s.name.toLowerCase().includes("shortlist"),
-      );
-
-      if (!shortlistedStage) {
-        showToast.error("Shortlisted stage not found");
-        return;
-      }
-
-      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
-        current_stage: shortlistedStage.id,
-      });
-
-      showToast.success("Candidate shortlisted successfully");
-
-      if (jobId != null) {
-        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
-        fetchStages(jobId);
-      }
-    } catch (error) {
-      console.error("Error shortlisting candidate:", error);
-      showToast.error("Failed to shortlist candidate");
-    }
+  const openFeedbackModal = (action: {
+    type: "archive" | "unarchive" | "move";
+    applicationIds: number[];
+    targetStageId?: number;
+    targetStageName?: string;
+  }) => {
+    // Gather candidate names for display
+    const names = action.applicationIds.map((id) => {
+      const cand = candidates.find((c) => c.id === id) || archivedCandidates.find((c: any) => c.id === id);
+      return cand?.candidate?.full_name || "Unknown";
+    });
+    setPendingAction({ ...action, candidateNames: names });
+    setFeedbackComment("");
+    setShowFeedbackModal(true);
   };
 
-  const bulkArchive = async (applicationIds: number[]) => {
-    if (applicationIds.length === 0) return;
-    try {
-      const archiveStage = stages.find((s) => s.slug === "archives");
-      if (!archiveStage) {
-        showToast.error("Archives stage not found");
-        return;
-      }
-      await apiClient.post("/jobs/bulk-move-stage/", {
-        application_ids: applicationIds,
-        current_stage: archiveStage.id,
-      });
-      showToast.success(
-        `Successfully archived ${applicationIds.length} candidate(s)`,
-      );
-      setSelectedIds(new Set());
-      setSelectAll(false);
-      if (jobId != null) {
-        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
-        fetchStages(jobId);
-      }
-    } catch (error) {
-      console.error("Error bulk archiving:", error);
-      showToast.error("Failed to archive candidates");
+  const handleFeedbackSubmit = async () => {
+    if (!pendingAction || !feedbackComment.trim()) {
+      showToast.error("Please enter a comment");
+      return;
     }
-  };
 
-  const bulkMoveCandidates = async (
-    applicationIds: number[],
-    stageId: number,
-  ) => {
-    if (applicationIds.length === 0) return;
+    const { type, applicationIds, targetStageId, targetStageName } = pendingAction;
+
     try {
-      await apiClient.post("/jobs/bulk-move-stage/", {
-        application_ids: applicationIds,
-        current_stage: stageId,
-      });
-
-      const targetStage = stages.find((stage) => stage.id === stageId);
-      if (targetStage?.slug === "applied") {
+      if (type === "archive") {
+        const archiveStage = stages.find((s) => s.slug === "archives");
+        if (!archiveStage) {
+          showToast.error("Archives stage not found");
+          return;
+        }
         await Promise.all(
-          applicationIds.map(async (appId) => {
-            const cand = candidates.find((c) => c.id === appId);
-            if (cand && jobId !== null) {
-              await candidateService.scheduleCodingAssessmentEmail(
-                cand.candidate.id,
-                jobId,
-              );
-            }
-          }),
+          applicationIds.map((id) =>
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: archiveStage.id,
+              status: "ARCHIVED",
+              archive_reason: feedbackComment.trim(),
+              feedback: {
+                subject: "Moved to Archive",
+                comment: feedbackComment.trim(),
+              },
+            })
+          )
         );
+        showToast.success(`${applicationIds.length} candidate(s) archived`);
+      } else if (type === "unarchive") {
+        await Promise.all(
+          applicationIds.map((id) => {
+            const archivedItem = archivedCandidates.find((c: any) => c.id === id);
+            const targetStage = archivedItem
+              ? stages.find((s) => s.slug === archivedItem.stage_slug) ||
+                stages.find((s) => s.slug === "shortlisted") ||
+                stages[0]
+              : stages.find((s) => s.slug === "shortlisted") || stages[0];
+
+            if (!targetStage) return Promise.resolve();
+
+            return apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: targetStage.id,
+              status: "ACTIVE",
+              feedback: {
+                subject: "Unarchived",
+                comment: feedbackComment.trim(),
+              },
+            });
+          })
+        );
+        showToast.success(`${applicationIds.length} candidate(s) unarchived`);
+      } else if (type === "move" && targetStageId) {
+        await Promise.all(
+          applicationIds.map((id) =>
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: targetStageId,
+              feedback: {
+                subject: `Moving to ${targetStageName || "next stage"}`,
+                comment: feedbackComment.trim(),
+              },
+            })
+          )
+        );
+
+        // Check if coding assessment email needed
+        const targetStage = stages.find((s) => s.id === targetStageId);
+        if (targetStage?.slug === "applied") {
+          await Promise.all(
+            applicationIds.map(async (appId) => {
+              const cand = candidates.find((c) => c.id === appId);
+              if (cand && jobId !== null) {
+                await candidateService.scheduleCodingAssessmentEmail(cand.candidate.id, jobId);
+              }
+            })
+          );
+        }
+
+        showToast.success(`${applicationIds.length} candidate(s) moved to ${targetStageName || "next stage"}`);
       }
 
-      showToast.success(
-        `Moved ${applicationIds.length} candidate(s) to ${targetStage?.name || "selected stage"}`,
-      );
-      setSelectedIds(new Set());
-      setSelectAll(false);
-      if (jobId !== null) {
+      // Clear selection and refresh
+      clearSelection();
+      setShowFeedbackModal(false);
+      setFeedbackComment("");
+      setPendingAction(null);
+
+      if (jobId != null) {
         fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
         fetchStages(jobId);
+        fetchArchivedCandidates(jobId);
       }
-    } catch (error) {
-      console.error("Error bulk moving candidates:", error);
-      showToast.error("Failed to move candidates");
+    } catch (error: any) {
+      console.error("Action error:", error);
+      if (error.response?.status === 403) {
+        showToast.error("You don't have permission to perform this action.");
+      } else {
+        showToast.error(`Failed to ${type} candidate(s)`);
+      }
     }
   };
 
@@ -1672,52 +1692,78 @@ export default function JobPipelineDashboard({
                 Selected
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <button
-                  onClick={() => {
-                    let nextStageId: number | undefined;
-                    if (activeStageSlug) {
-                      const currentIdx = stages.findIndex(
-                        (s) => s.slug === activeStageSlug,
-                      );
-                      if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
-                        // Check if next stage is 'archives', if so skip or just use it. Typically archives is not a 'next' stage
-                        const nextStage = stages[currentIdx + 1];
-                        if (nextStage.slug !== "archives") {
-                          nextStageId = nextStage.id;
-                        } else if (currentIdx + 2 < stages.length) {
-                          nextStageId = stages[currentIdx + 2].id;
+                {/* Hide Move/Archive in kanban – those are in the stage footer */}
+                {!isKanbanView && (
+                  <>
+                    <button
+                      onClick={() => {
+                        let nextStageId: number | undefined;
+                        let nextStageName: string | undefined;
+                        if (activeStageSlug) {
+                          const currentIdx = stages.findIndex(
+                            (s) => s.slug === activeStageSlug,
+                          );
+                          if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
+                            const nextStage = stages[currentIdx + 1];
+                            if (nextStage.slug !== "archives") {
+                              nextStageId = nextStage.id;
+                              nextStageName = nextStage.name;
+                            } else if (currentIdx + 2 < stages.length) {
+                              nextStageId = stages[currentIdx + 2].id;
+                              nextStageName = stages[currentIdx + 2].name;
+                            }
+                          }
+                        } else {
+                          const firstCandId = Array.from(selectedIds)[0];
+                          const firstCand = candidates.find(
+                            (c) => c.id === firstCandId,
+                          );
+                          const currentSlug =
+                            firstCand?.current_stage?.slug || firstCand?.stage_slug;
+                          const currentIdx = stages.findIndex(
+                            (s) => s.slug === currentSlug,
+                          );
+                          if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
+                            const nextStage = stages[currentIdx + 1];
+                            if (nextStage.slug !== "archives") {
+                              nextStageId = nextStage.id;
+                              nextStageName = nextStage.name;
+                            } else if (currentIdx + 2 < stages.length) {
+                              nextStageId = stages[currentIdx + 2].id;
+                              nextStageName = stages[currentIdx + 2].name;
+                            }
+                          }
                         }
-                      }
-                    } else {
-                      const firstCandId = Array.from(selectedIds)[0];
-                      const firstCand = candidates.find(
-                        (c) => c.id === firstCandId,
-                      );
-                      const currentSlug =
-                        firstCand?.current_stage?.slug || firstCand?.stage_slug;
-                      const currentIdx = stages.findIndex(
-                        (s) => s.slug === currentSlug,
-                      );
-                      if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
-                        const nextStage = stages[currentIdx + 1];
-                        if (nextStage.slug !== "archives") {
-                          nextStageId = nextStage.id;
-                        } else if (currentIdx + 2 < stages.length) {
-                          nextStageId = stages[currentIdx + 2].id;
-                        }
-                      }
-                    }
 
-                    if (nextStageId) {
-                      bulkMoveCandidates(Array.from(selectedIds), nextStageId);
-                    } else {
-                      showToast.error("No next stage available");
-                    }
-                  }}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Move to Next Stage
-                </button>
+                        if (nextStageId) {
+                          openFeedbackModal({
+                            type: "move",
+                            applicationIds: Array.from(selectedIds),
+                            targetStageId: nextStageId,
+                            targetStageName: nextStageName,
+                          });
+                        } else {
+                          showToast.error("No next stage available");
+                        }
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
+                    >
+                      Move to Next Stage
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        openFeedbackModal({
+                          type: "archive",
+                          applicationIds: Array.from(selectedIds),
+                        })
+                      }
+                      className="flex items-center gap-2 px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors font-medium"
+                    >
+                      <Archive className="w-4 h-4" /> Archive Candidates
+                    </button>
+                  </>
+                )}
 
                 <button
                   onClick={() => setShowExportDialog(true)}
@@ -1727,10 +1773,10 @@ export default function JobPipelineDashboard({
                 </button>
 
                 <button
-                  onClick={() => bulkArchive(Array.from(selectedIds))}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors font-medium"
+                  onClick={clearSelection}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
                 >
-                  <Archive className="w-4 h-4" /> Archive Candidates
+                  <X className="w-4 h-4" /> Cancel
                 </button>
               </div>
             </div>
@@ -1978,10 +2024,12 @@ export default function JobPipelineDashboard({
                                     currentIdx + 1 < stages.length
                                   ) {
                                     const nextStage = stages[currentIdx + 1];
-                                    bulkMoveCandidates(
-                                      Array.from(selectedIds),
-                                      nextStage.id,
-                                    );
+                                    openFeedbackModal({
+                                      type: "move",
+                                      applicationIds: Array.from(selectedIds),
+                                      targetStageId: nextStage.id,
+                                      targetStageName: nextStage.name,
+                                    });
                                   } else {
                                     showToast.error("No next stage available");
                                   }
@@ -1992,7 +2040,10 @@ export default function JobPipelineDashboard({
                               </button>
                               <button
                                 onClick={() =>
-                                  bulkArchive(Array.from(selectedIds))
+                                  openFeedbackModal({
+                                    type: "archive",
+                                    applicationIds: Array.from(selectedIds),
+                                  })
                                 }
                                 className="w-full py-2 bg-white text-red-600 border border-red-100 text-xs font-bold rounded-lg hover:bg-red-50 transition-colors"
                               >
@@ -2001,48 +2052,19 @@ export default function JobPipelineDashboard({
                             </>
                           ) : (
                             <button
-                              onClick={async () => {
-                                try {
-                                  // Simplified unarchive: move back to first stage or 'shortlisted'
-                                  const targetStage =
-                                    stages.find(
-                                      (s) => s.slug === "shortlisted",
-                                    ) || stages[0];
-                                  await apiClient.post(
-                                    "/jobs/bulk-move-stage/",
-                                    {
-                                      application_ids: Array.from(selectedIds),
-                                      current_stage: targetStage.id,
-                                    },
-                                  );
-                                  showToast.success(
-                                    `Unarchived ${selectedIds.size} candidate(s)`,
-                                  );
-                                  setSelectedIds(new Set());
-                                  setSelectionStage(null);
-                                  setSelectionType(null);
-                                  fetchCandidates(
-                                    jobId,
-                                    activeStageSlug,
-                                    currentPage,
-                                    searchQuery,
-                                  );
-                                  fetchArchivedCandidates(jobId);
-                                } catch (error) {
-                                  showToast.error("Failed to unarchive");
-                                }
-                              }}
+                              onClick={() =>
+                                openFeedbackModal({
+                                  type: "unarchive",
+                                  applicationIds: Array.from(selectedIds),
+                                })
+                              }
                               className="w-full py-2 bg-[#E7E5FF] text-[#6155F5] text-xs font-bold rounded-lg hover:bg-[#D5D2FF] transition-colors"
                             >
                               Unarchive Candidates
                             </button>
                           )}
                           <button
-                            onClick={() => {
-                              setSelectedIds(new Set());
-                              setSelectionStage(null);
-                              setSelectionType(null);
-                            }}
+                            onClick={clearSelection}
                             className="w-full py-1.5 text-[#AEAEB2] text-[10px] font-medium hover:text-[#4B5563]"
                           >
                             Cancel Selection
@@ -2361,20 +2383,6 @@ export default function JobPipelineDashboard({
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex justify-end gap-2">
-                                <button
-                                  onClick={() => shortlistCandidate(item.id)}
-                                  className="w-8 h-8 flex items-center justify-center bg-[#E7E5FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
-                                  title="Shortlist Candidate"
-                                >
-                                  <Check className="w-4 h-4 text-[#6155F5]" />
-                                </button>
-                                <button
-                                  onClick={() => archiveCandidate(item.id)}
-                                  className="w-8 h-8 flex items-center justify-center bg-[#FEE9E7] rounded-full hover:bg-[#FDD2D0] transition-colors"
-                                  title="Archive Candidate"
-                                >
-                                  <Archive className="w-4 h-4 text-[#FF383C]" />
-                                </button>
                                 <button
                                   onClick={() => {
                                     setCallModalCandidate({
@@ -3667,6 +3675,95 @@ export default function JobPipelineDashboard({
                 onClick={handleCandidateEditSave}
               >
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FEEDBACK MODAL (Archive / Move / Unarchive) */}
+      {showFeedbackModal && pendingAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-blue-600" />
+                {pendingAction.type === "archive" && "Archive Candidates"}
+                {pendingAction.type === "unarchive" && "Unarchive Candidates"}
+                {pendingAction.type === "move" &&
+                  `Move to ${pendingAction.targetStageName || "Next Stage"}`}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(false);
+                  setPendingAction(null);
+                  setFeedbackComment("");
+                }}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-lg text-sm font-medium border border-blue-100">
+                You are about to {pendingAction.type}{" "}
+                {pendingAction.applicationIds.length} candidate(s):
+                <div className="mt-2 text-blue-600 font-normal text-xs bg-white/60 p-2 rounded border border-blue-100/50">
+                  {pendingAction.candidateNames?.slice(0, 3).join(", ")}
+                  {pendingAction.candidateNames &&
+                    pendingAction.candidateNames.length > 3 &&
+                    ` and ${pendingAction.candidateNames.length - 3} more`}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Feedback / Reason <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-sm bg-gray-50/50 focus:bg-white"
+                  rows={4}
+                  placeholder="Please provide a reason or feedback for this action..."
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  autoFocus
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  This comment will be added to the candidate's history.
+                </p>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(false);
+                  setPendingAction(null);
+                  setFeedbackComment("");
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFeedbackSubmit}
+                disabled={!feedbackComment.trim()}
+                className={`flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm
+                  ${
+                    !feedbackComment.trim()
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : pendingAction.type === "archive"
+                        ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
+                        : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
+                  }`}
+              >
+                {pendingAction.type === "archive" ? (
+                  <Archive className="w-4 h-4" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
+                Confirm {pendingAction.type === "archive" ? "Archive" : "Action"}
               </button>
             </div>
           </div>
