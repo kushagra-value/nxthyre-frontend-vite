@@ -688,28 +688,13 @@ export default function CandidateCallPage() {
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() =>
-                          handleEvaluateQuestion(q.id, "convinced")
-                        }
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-200 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
-                      >
-                        <Check className="w-3.5 h-3.5" /> Convinced
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleEvaluateQuestion(q.id, "not_convinced")
-                        }
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-200 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
-                      >
-                        <X className="w-3.5 h-3.5" /> Not convinced
-                      </button>
-                      <button
                         onClick={() => handleEvaluateQuestion(q.id, "skipped")}
                         className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
                       >
                         <FastForward className="w-3.5 h-3.5" /> Skip
                       </button>
                     </div>
+
                     {/* AI Score */}
                     {q.ai_score_percentage !== null && (
                       <div className="flex items-center gap-3">
