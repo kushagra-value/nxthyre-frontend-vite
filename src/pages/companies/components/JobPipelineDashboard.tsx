@@ -1568,7 +1568,7 @@ export default function JobPipelineDashboard({
                           className="w-28 h-8 bg-gray-200 rounded-full animate-pulse"
                         />
                       ))
-                    : stages.map((stage) => (
+                    : stages.filter(s => s.slug !== 'archives').map((stage) => (
                         <button
                           key={stage.id}
                           onClick={() => setActiveStageSlug(stage.slug)}
@@ -1787,7 +1787,7 @@ export default function JobPipelineDashboard({
          ═══════════════════════════════════════════════════════ */}
           {isKanbanView ? (
             <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch">
-              {stages.map((stage) => {
+              {stages.filter(s => s.slug !== 'archives').map((stage) => {
                 const activeColumnCandidates = candidates.filter((item) => {
                   const itemStageSlug =
                     item.current_stage?.slug || item.stage_slug;
