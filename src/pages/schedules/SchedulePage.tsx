@@ -366,19 +366,12 @@ export default function SchedulePage() {
         />
       </div>
 
-      {/* ─── Event Form Slide-over ─── */}
-      {isEventFormOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/20" onClick={() => setIsEventFormOpen(false)} />
-          <div className="relative z-10">
-            <EventForm
-              isOpen={isEventFormOpen}
-              onClose={() => setIsEventFormOpen(false)}
-              onSubmit={handleEventSubmit}
-            />
-          </div>
-        </div>
-      )}
+      {/* ─── Schedule Interview Modal ─── */}
+      <EventForm
+        isOpen={isEventFormOpen}
+        onClose={() => setIsEventFormOpen(false)}
+        onSubmit={handleEventSubmit}
+      />
 
       {/* ─── Event Detail Modal ─── */}
       {eventModalData && (

@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { X, Calendar, Clock, MapPin, Briefcase, User } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, ChevronDown, Search } from 'lucide-react';
 import { CalendarEvent } from '../../../data/mockEvents';
 import apiClient from '../../../services/api';
+import { organizationService, MyWorkspace } from '../../../services/organizationService';
+import { jobPostService, Job } from '../../../services/jobPostService';
 
 interface EventFormProps {
   isOpen: boolean;
@@ -14,6 +16,111 @@ interface EventFormProps {
   candidates?: { id: string; name: string }[];
 }
 
+// Time options for the Start Time dropdown
+const TIME_OPTIONS = [
+  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+  '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
+  '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+  '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM',
+];
+
+const DURATION_OPTIONS = ['15 min', '30 min', '45 min', '60 min', '90 min', '120 min'];
+
+const INTERVIEW_MODES = [
+  { id: 'face-to-face', label: 'Face to Face', icon: '🤝' },
+  { id: 'external', label: 'External Platform', icon: '🔗' },
+  { id: 'virtual', label: 'Virtual Interview', icon: '💻' },
+  { id: 'mock-call', label: 'Mock Call', icon: '📱' },
+];
+
+// Custom dropdown component
+const CustomSelect = ({
+  label,
+  required,
+  value,
+  placeholder,
+  options,
+  onChange,
+  loading,
+  disabled,
+  id,
+}: {
+  label: string;
+  required?: boolean;
+  value: string;
+  placeholder: string;
+  options: { value: string; label: string }[];
+  onChange: (val: string) => void;
+  loading?: boolean;
+  disabled?: boolean;
+  id: string;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedLabel = options.find((o) => o.value === value)?.label;
+
+  return (
+    <div className="flex flex-col gap-1.5" ref={ref}>
+      <label className="text-sm font-medium text-[#1F2937]">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <div className="relative">
+        <button
+          id={id}
+          type="button"
+          disabled={disabled || loading}
+          onClick={() => setIsOpen(!isOpen)}
+          className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-white border rounded-xl text-sm transition-all duration-200 ${
+            isOpen ? 'border-[#0F47F2] ring-2 ring-[#0F47F2]/10' : 'border-[#E5E7EB] hover:border-[#D1D5DB]'
+          } ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'cursor-pointer'}`}
+        >
+          <span className={selectedLabel ? 'text-[#1F2937]' : 'text-[#9CA3AF]'}>
+            {loading ? 'Loading...' : selectedLabel || placeholder}
+          </span>
+          <ChevronDown className={`w-4 h-4 text-[#9CA3AF] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {isOpen && !disabled && (
+          <div className="absolute z-50 w-full mt-1.5 bg-white border border-[#E5E7EB] rounded-xl shadow-lg max-h-52 overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150">
+            {options.length === 0 ? (
+              <div className="px-3.5 py-2.5 text-sm text-[#9CA3AF]">No options available</div>
+            ) : (
+              options.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full text-left px-3.5 py-2.5 text-sm transition-colors ${
+                    value === opt.value
+                      ? 'bg-[#EEF2FF] text-[#0F47F2] font-medium'
+                      : 'text-[#374151] hover:bg-[#F9FAFB]'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const EventForm = ({
   isOpen,
   onClose,
@@ -24,7 +131,16 @@ export const EventForm = ({
   stagesLoading,
   candidates = [],
 }: EventFormProps) => {
+  // ── Company & Job state ──
+  const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
+  const [workspacesLoading, setWorkspacesLoading] = useState(false);
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [jobsLoading, setJobsLoading] = useState(false);
 
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [selectedJobId, setSelectedJobId] = useState('');
+
+  // ── Form state ──
   const [formData, setFormData] = useState({
     title: '',
     attendee: '',
@@ -35,66 +151,137 @@ export const EventForm = ({
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     })(),
-    startTime: initialTime || '09:00',
-    endTime: '10:00',
+    startTime: initialTime || '11:00 AM',
+    duration: '60 min',
+    interviewMode: 'virtual',
+    meetingLink: '',
     applicationId: '',
     description: '',
+    note: '',
+    candidateSearch: '',
   });
+
+  // ── Fetch workspaces (companies) ──
+  useEffect(() => {
+    if (!isOpen) return;
+    const fetchWorkspaces = async () => {
+      setWorkspacesLoading(true);
+      try {
+        const data = await organizationService.getMyWorkspacesData();
+        setWorkspaces(data.workspaces || []);
+      } catch (error) {
+        console.error('Failed to fetch workspaces', error);
+      } finally {
+        setWorkspacesLoading(false);
+      }
+    };
+    fetchWorkspaces();
+  }, [isOpen]);
+
+  // ── Fetch jobs (categories) ──
+  useEffect(() => {
+    if (!isOpen) return;
+    const fetchCategories = async () => {
+      setJobsLoading(true);
+      try {
+        const jobs = await jobPostService.getJobs();
+        setAllJobs(jobs);
+      } catch (error) {
+        console.error('Failed to fetch jobs', error);
+      } finally {
+        setJobsLoading(false);
+      }
+    };
+    fetchCategories();
+  }, [isOpen]);
+
+  // ── Filtered jobs based on selected company ──
+  const filteredJobs = selectedCompanyId
+    ? allJobs.filter((j) => j.workspace_details?.id === Number(selectedCompanyId))
+    : allJobs;
+
+  // Reset job selection when company changes
+  useEffect(() => {
+    setSelectedJobId('');
+  }, [selectedCompanyId]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!selectedCompanyId) {
+      alert('Please select a company');
+      return;
+    }
+    if (!selectedJobId) {
+      alert('Please select a job role');
+      return;
+    }
     if (!formData.applicationId?.trim()) {
-      alert("Application ID is required");
+      alert('Application ID is required');
       return;
     }
     if (!formData.stageId) {
-      alert("Please select an interview round");
+      alert('Please select an interview stage');
       return;
     }
 
-    const startDateTime = `${formData.date}T${formData.startTime}:00Z`;
-    const endDateTime = `${formData.date}T${formData.endTime}:00Z`;
+    // Convert 12h time to 24h for API
+    const convert12to24 = (time12: string) => {
+      const [time, modifier] = time12.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+      if (modifier === 'PM' && hours !== 12) hours += 12;
+      if (modifier === 'AM' && hours === 12) hours = 0;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    };
+
+    const startTime24 = convert12to24(formData.startTime);
+    const durationMin = parseInt(formData.duration);
+    const [sh, sm] = startTime24.split(':').map(Number);
+    const endMinutes = sh * 60 + sm + durationMin;
+    const endH = Math.floor(endMinutes / 60) % 24;
+    const endM = endMinutes % 60;
+    const endTime24 = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+
+    const startDateTime = `${formData.date}T${startTime24}:00Z`;
+    const endDateTime = `${formData.date}T${endTime24}:00Z`;
 
     const payload = {
       application: Number(formData.applicationId),
       title: formData.title || `${formData.attendee} - Interview`,
-      description: formData.description,
+      description: formData.description || formData.note,
       stage: Number(formData.stageId),
       start_at: startDateTime,
       end_at: endDateTime,
-      location_type: "VIRTUAL", // You can make this dynamic later
-      virtual_conference_url: "https://meet.google.com/placeholder", // Replace later
-      status: "SCHEDULED",
+      location_type: formData.interviewMode === 'virtual' ? 'VIRTUAL' : formData.interviewMode === 'face-to-face' ? 'IN_PERSON' : 'VIRTUAL',
+      virtual_conference_url: formData.meetingLink || 'https://meet.google.com/placeholder',
+      status: 'SCHEDULED',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       participants: [],
       reminder_preferences: {
-        candidate: [24], // 24 hours before
-        interviewers: [2] // 2 hours before
-      }
+        candidate: [24],
+        interviewers: [2],
+      },
     };
 
     try {
       await apiClient.post('/jobs/interview-events/', payload);
 
-      // Trigger parent refresh or toast
       onSubmit({
         title: formData.title || formData.attendee,
         attendee: formData.attendee,
         type: formData.type,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
+        startTime: startTime24,
+        endTime: endTime24,
         date: formData.date,
         confirmed: true,
         applicationId: formData.applicationId,
-        description: formData.description,
+        description: formData.description || formData.note,
       });
-
     } catch (err: any) {
-      console.error("Failed to create interview event:", err);
-      const msg = err.response?.data?.detail || "Failed to schedule interview";
+      console.error('Failed to create interview event:', err);
+      const msg = err.response?.data?.detail || 'Failed to schedule interview';
       alert(msg);
     } finally {
       handleClose();
@@ -112,222 +299,285 @@ export const EventForm = ({
         const d = new Date();
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       })(),
-      startTime: initialTime || '09:00',
-      endTime: '10:00',
+      startTime: initialTime || '11:00 AM',
+      duration: '60 min',
+      interviewMode: 'virtual',
+      meetingLink: '',
       applicationId: '',
-      description: ''
+      description: '',
+      note: '',
+      candidateSearch: '',
     });
+    setSelectedCompanyId('');
+    setSelectedJobId('');
     onClose();
   };
 
-  const formatDateDisplay = (dateStr: string) => {
-    const date = new Date(dateStr + 'T00:00:00');
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      weekday: 'long',
-    });
-  };
+  const companyOptions = workspaces.map((ws) => ({
+    value: String(ws.id),
+    label: ws.name,
+  }));
+
+  const jobOptions = filteredJobs.map((job) => ({
+    value: String(job.id),
+    label: job.title,
+  }));
+
+  const stageOptions = (pipelineStages || []).map((stage) => ({
+    value: stage.slug,
+    label: stage.name,
+  }));
+
+
+  const timeOptions = TIME_OPTIONS.map((t) => ({ value: t, label: t }));
+  const durationOptions = DURATION_OPTIONS.map((d) => ({ value: d, label: d }));
 
   return (
-    <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto  font-['Gellix',_sans-serif]">
-      <div className="p-8 pt-10 pb-32 relative min-h-full">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-semibold text-gray-600">Add Event</h2>
-          <button
-            onClick={handleClose}
-            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" onClick={handleClose} />
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="pb-6 border-b border-gray-300">
-            <div className="flex items-start gap-4">
-              <Calendar className="w-6 h-6 text-gray-600 mt-1 flex-shrink-0" />
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Event Title"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  className="w-full bg-transparent text-xl text-gray-600 placeholder-gray-300 outline-none"
-                />
-                <input
-                  type="text"
-                  placeholder="Add Description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="w-full bg-transparent text-base text-gray-400 placeholder-gray-300 outline-none mt-2"
-                />
-              </div>
+      {/* Modal */}
+      <div
+        className="relative w-full max-w-[780px] max-h-[90vh] bg-white rounded-2xl shadow-xl overflow-y-auto"
+        style={{ fontFamily: "'Inter', 'Gellix', sans-serif" }}
+      >
+        <div className="p-8">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">📅</span>
+              <h2 className="text-xl font-semibold text-[#1F2937]">Schedule Interview</h2>
             </div>
+            <button
+              onClick={handleClose}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] transition-colors"
+              id="close-event-form"
+            >
+              <X className="w-4 h-4 text-[#6B7280]" />
+            </button>
           </div>
+          <p className="text-sm text-[#9CA3AF] mb-8 ml-[2.6rem]">
+            Fill in the details to schedule and send the invite
+          </p>
 
-          <div className="pb-6 border-b border-gray-300">
-            <div className="flex items-center gap-4">
-              <User className="w-6 h-6 text-gray-600 flex-shrink-0" />
-              <div className="flex-1">
-
-                <select
-                  required
-                  value={formData.applicationId || ''}
-                  onChange={(e) => setFormData({ ...formData, applicationId: e.target.value })}
-                  className="w-full bg-transparent text-gray-600 outline-none pb-1 appearance-none"
-                >
-                  <option value="" disabled>Select Candidate</option>
-                  {candidates.map((candidate) => (
-                    <option key={candidate.id} value={candidate.id}>
-                      {candidate.name}
-                    </option>
-                  ))}
-                </select>
-
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Company & Job Role Row */}
+            <div className="grid grid-cols-2 gap-5">
+              <CustomSelect
+                id="company-select"
+                label="Company"
+                required
+                value={selectedCompanyId}
+                placeholder="Select company..."
+                options={companyOptions}
+                onChange={setSelectedCompanyId}
+                loading={workspacesLoading}
+              />
+              <CustomSelect
+                id="job-role-select"
+                label="Job Role"
+                required
+                value={selectedJobId}
+                placeholder="Select role..."
+                options={jobOptions}
+                onChange={setSelectedJobId}
+                loading={jobsLoading}
+                disabled={!selectedCompanyId}
+              />
             </div>
-          </div>
 
-          <div className="pb-6 border-b border-gray-300">
-            <div className="flex items-center gap-4">
-              <MapPin className="w-6 h-6 text-gray-600 flex-shrink-0" />
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Add Location"
-                  value={formData.location}
-                  onChange={(e) =>
-                    setFormData({ ...formData, location: e.target.value })
-                  }
-                  className="w-full bg-transparent text-gray-600 placeholder-gray-400 outline-none"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="pb-6 border-b border-gray-300">
-            <div className="flex items-center gap-4">
-              <Briefcase className="w-6 h-6 text-gray-600 flex-shrink-0" />
-              <div className="flex-1">
-
-                {stagesLoading ? (
-                  <p className="text-gray-500">Loading rounds...</p>
-                ) : pipelineStages?.length === 0 ? (
-                  <p className="text-gray-500">No rounds available</p>
-                ) : (
+            {/* Candidate */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-[#1F2937]">
+                Candidate <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                {candidates.length > 0 ? (
                   <select
+                    id="candidate-select"
                     required
-                    value={formData.type}
-                    onChange={(e) => {
-                      const selectedSlug = e.target.value;
-                      const selectedStage = pipelineStages?.find(stage => stage.slug === selectedSlug);
-                      setFormData({
-                        ...formData,
-                        type: e.target.value as CalendarEvent['type'],
-                        stageId: selectedStage ? selectedStage.id : '',
-                      })
-                    }}
-                    className="w-full  bg-transparent text-gray-600 outline-none appearance-none text-lg"
+                    value={formData.applicationId}
+                    onChange={(e) => setFormData({ ...formData, applicationId: e.target.value })}
+                    className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all appearance-none"
                   >
-                    <option value="">Select Round</option>
-                    {pipelineStages?.map((stage) => (
-                      <option key={stage.id} value={stage.slug}>
-                        {stage.name}
-                      </option>
+                    <option value="" disabled>Search by name, role or ID...</option>
+                    {candidates.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
+                ) : (
+                  <input
+                    id="candidate-search-input"
+                    type="text"
+                    placeholder="Search by name, role or ID..."
+                    value={formData.candidateSearch}
+                    onChange={(e) => setFormData({ ...formData, candidateSearch: e.target.value, applicationId: e.target.value })}
+                    className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] placeholder:text-[#9CA3AF] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all"
+                  />
                 )}
               </div>
             </div>
-          </div>
 
-          <div className="pb-6 border-b border-gray-300">
-            <div className="flex items-center gap-4">
-              <Calendar className="w-6 h-6 text-gray-600 flex-shrink-0" />
-              <div className="flex items-center gap-2">
+            {/* Interview Stage */}
+            <CustomSelect
+              id="interview-stage-select"
+              label="Interview Stage"
+              required
+              value={formData.type}
+              placeholder="Select stage..."
+              options={stageOptions}
+              onChange={(val) => {
+                const selectedStage = pipelineStages?.find((s) => s.slug === val);
+                setFormData({
+                  ...formData,
+                  type: val as CalendarEvent['type'],
+                  stageId: selectedStage ? selectedStage.id : '',
+                });
+              }}
+              loading={stagesLoading}
+            />
 
+            {/* Date, Start Time, Duration Row */}
+            <div className="grid grid-cols-3 gap-5">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-[#1F2937]">
+                  Date <span className="text-red-500">*</span>
+                </label>
                 <input
+                  id="date-input"
                   type="date"
                   value={formData.date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, date: e.target.value })
-                  }
-                  className="w-full bg-transparent text-gray-600 outline-none"
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all"
                 />
-                <p className="text-gray-500 mt-2">
-                  ({formatDateDisplay(formData.date)})
-                </p>
+              </div>
+              <CustomSelect
+                id="start-time-select"
+                label="Start Time"
+                required
+                value={formData.startTime}
+                placeholder="Select time..."
+                options={timeOptions}
+                onChange={(val) => setFormData({ ...formData, startTime: val })}
+              />
+              <CustomSelect
+                id="duration-select"
+                label="Duration"
+                value={formData.duration}
+                placeholder="Select duration..."
+                options={durationOptions}
+                onChange={(val) => setFormData({ ...formData, duration: val })}
+              />
+            </div>
+
+            {/* Interview Mode */}
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-medium text-[#1F2937]">
+                Interview Mode <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-4 gap-3">
+                {INTERVIEW_MODES.map((mode) => (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    id={`mode-${mode.id}`}
+                    onClick={() => setFormData({ ...formData, interviewMode: mode.id })}
+                    className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 ${
+                      formData.interviewMode === mode.id
+                        ? 'border-[#0F47F2] bg-[#EEF2FF] shadow-sm'
+                        : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
+                    }`}
+                  >
+                    <span
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
+                        formData.interviewMode === mode.id
+                          ? 'bg-[#0F47F2] text-white shadow-md'
+                          : 'bg-[#F3F4F6] text-[#6B7280]'
+                      }`}
+                    >
+                      {mode.icon}
+                    </span>
+                    <span
+                      className={`text-xs font-medium text-center ${
+                        formData.interviewMode === mode.id ? 'text-[#0F47F2]' : 'text-[#4B5563]'
+                      }`}
+                    >
+                      {mode.label}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
 
-          <div className="pb-6 border-b border-gray-300">
-            <div className="flex items-center gap-4">
-              <Clock className="w-6 h-6 text-gray-600 flex-shrink-0" />
-              <div className="flex-1">
-                <label className="block text-lg text-gray-400 mb-2">
-                  Time
-                </label>
-                <div className="flex items-center gap-2">
+            {/* Virtual Interview Link - shown when virtual mode is selected */}
+            {formData.interviewMode === 'virtual' && (
+              <div className="bg-[#F9FAFB] rounded-xl p-5 border border-[#F3F4F6]">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-md bg-[#1F2937] flex items-center justify-center text-white text-xs">💻</span>
+                  <span className="text-sm font-medium text-[#1F2937]">Virtual Interview Link</span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-[#1F2937]">
+                    Meeting Link <span className="text-red-500">*</span>
+                  </label>
                   <input
-                    type="time"
-                    value={formData.startTime}
-                    onChange={(e) =>
-                      setFormData({ ...formData, startTime: e.target.value })
-                    }
-                    className="w-1/2 flex-1 bg-[#ECF1FF] text-gray-600 outline-none"
-                  />
-                  <span className="text-gray-600">→</span>
-                  <input
-                    type="time"
-                    value={formData.endTime}
-                    onChange={(e) =>
-                      setFormData({ ...formData, endTime: e.target.value })
-                    }
-                    className="w-1/2 flex-1 bg-[#ECF1FF] text-gray-600 outline-none"
+                    id="meeting-link-input"
+                    type="url"
+                    placeholder="https://meet.google.com/..."
+                    value={formData.meetingLink}
+                    onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] placeholder:text-[#9CA3AF] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all"
                   />
                 </div>
               </div>
-            </div>
-          </div>
+            )}
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                type="submit"
-                className="px-6 py-3 bg-[#0F47F2] text-white font-medium rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Send Event
-              </button>
+            {/* Note */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-[#1F2937]">
+                <span className="mr-1.5">📝</span> Note <span className="text-xs font-normal text-[#9CA3AF]">(optional)</span>
+              </label>
+              <div className="relative">
+                <textarea
+                  id="note-textarea"
+                  placeholder="Add any notes for the interview..."
+                  value={formData.note}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 300) {
+                      setFormData({ ...formData, note: e.target.value });
+                    }
+                  }}
+                  rows={3}
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] placeholder:text-[#9CA3AF] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all resize-none"
+                />
+                <span className="absolute bottom-2.5 right-3.5 text-xs text-[#9CA3AF]">
+                  {formData.note.length} / 300
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F3F4F6]">
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-6 py-3 border-2 border-[#0F47F2] text-[#0F47F2] font-medium rounded-lg hover:bg-blue-50 transition-colors"
+                id="cancel-event-btn"
+                className="px-6 py-2.5 text-sm font-medium text-[#4B5563] bg-white border border-[#E5E7EB] rounded-xl hover:bg-[#F9FAFB] transition-colors"
               >
                 Cancel
               </button>
-            </div>
-            <div className="flex items-center gap-3">
               <button
-                type="button"
-                className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
+                type="submit"
+                id="schedule-interview-btn"
+                className="px-6 py-2.5 text-sm font-medium text-white bg-[#0F47F2] rounded-xl hover:bg-[#0D3DD4] transition-colors shadow-sm"
               >
-                <Calendar className="w-5 h-5 text-gray-600" />
-              </button>
-              <button
-                type="button"
-                className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
-              >
-                <Clock className="w-5 h-5 text-gray-600" />
+                Schedule Interview
               </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
