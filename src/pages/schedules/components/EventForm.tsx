@@ -5,12 +5,23 @@ import apiClient from '../../../services/api';
 import { organizationService, MyWorkspace } from '../../../services/organizationService';
 import { jobPostService, Job } from '../../../services/jobPostService';
 
+interface PipelineCandidate {
+  id: number;
+  candidate: {
+    id: string;
+    full_name: string;
+  };
+  stage_slug: string;
+}
+
 interface EventFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (event: Omit<CalendarEvent, 'id'> & { applicationId: string }) => void;
   initialDate?: string;
   initialTime?: string;
+  initialCompanyId?: string;
+  initialJobId?: string;
   pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[];
   stagesLoading?: boolean;
   candidates?: { id: string; name: string }[];
@@ -127,9 +138,10 @@ export const EventForm = ({
   onSubmit,
   initialDate,
   initialTime,
+  initialCompanyId,
+  initialJobId,
   pipelineStages,
   stagesLoading,
-  candidates = [],
 }: EventFormProps) => {
   // ── Company & Job state ──
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
@@ -139,6 +151,10 @@ export const EventForm = ({
 
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [selectedJobId, setSelectedJobId] = useState('');
+
+  // ── Pipeline candidates fetched when job is selected ──
+  const [pipelineCandidates, setPipelineCandidates] = useState<PipelineCandidate[]>([]);
+  const [candidatesLoading, setCandidatesLoading] = useState(false);
 
   // ── Form state ──
   const [formData, setFormData] = useState({
@@ -160,6 +176,19 @@ export const EventForm = ({
     note: '',
     candidateSearch: '',
   });
+
+  // ── Sync initial company/job props ──
+  useEffect(() => {
+    if (isOpen && initialCompanyId) {
+      setSelectedCompanyId(initialCompanyId);
+    }
+  }, [isOpen, initialCompanyId]);
+
+  useEffect(() => {
+    if (isOpen && initialJobId && selectedCompanyId) {
+      setSelectedJobId(initialJobId);
+    }
+  }, [isOpen, initialJobId, selectedCompanyId]);
 
   // ── Fetch workspaces (companies) ──
   useEffect(() => {
@@ -200,10 +229,56 @@ export const EventForm = ({
     ? allJobs.filter((j) => j.workspace_details?.id === Number(selectedCompanyId))
     : allJobs;
 
-  // Reset job selection when company changes
+  // Reset job selection when company changes (but not on initial mount with initialCompanyId)
+  const isInitialMount = useRef(true);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     setSelectedJobId('');
+    setPipelineCandidates([]);
+    setFormData((prev) => ({ ...prev, applicationId: '' }));
   }, [selectedCompanyId]);
+
+  // ── Fetch pipeline candidates when job is selected ──
+  useEffect(() => {
+    if (!selectedJobId) {
+      setPipelineCandidates([]);
+      return;
+    }
+
+    const fetchCandidates = async () => {
+      setCandidatesLoading(true);
+      try {
+        const response = await apiClient.get(
+          `/jobs/applications/?job_id=${selectedJobId}`
+        );
+        const data = response.data;
+        let candidateData: PipelineCandidate[] = [];
+
+        if (Array.isArray(data)) {
+          candidateData = data;
+        } else if (data && Array.isArray(data.results)) {
+          candidateData = data.results;
+        }
+
+        setPipelineCandidates(candidateData);
+      } catch (error) {
+        console.error('Failed to fetch pipeline candidates', error);
+        setPipelineCandidates([]);
+      } finally {
+        setCandidatesLoading(false);
+      }
+    };
+
+    fetchCandidates();
+  }, [selectedJobId]);
+
+  // Reset applicationId when job changes
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, applicationId: '' }));
+  }, [selectedJobId]);
 
   if (!isOpen) return null;
 
@@ -219,7 +294,7 @@ export const EventForm = ({
       return;
     }
     if (!formData.applicationId?.trim()) {
-      alert('Application ID is required');
+      alert('Please select a candidate');
       return;
     }
     if (!formData.stageId) {
@@ -310,6 +385,8 @@ export const EventForm = ({
     });
     setSelectedCompanyId('');
     setSelectedJobId('');
+    setPipelineCandidates([]);
+    isInitialMount.current = true;
     onClose();
   };
 
@@ -328,6 +405,11 @@ export const EventForm = ({
     label: stage.name,
   }));
 
+  // Build candidate options from pipeline candidates
+  const candidateOptions = pipelineCandidates.map((pc) => ({
+    value: String(pc.id),
+    label: pc.candidate.full_name,
+  }));
 
   const timeOptions = TIME_OPTIONS.map((t) => ({ value: t, label: t }));
   const durationOptions = DURATION_OPTIONS.map((d) => ({ value: d, label: d }));
@@ -394,7 +476,11 @@ export const EventForm = ({
               </label>
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                {candidates.length > 0 ? (
+                {candidatesLoading ? (
+                  <div className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#9CA3AF]">
+                    Loading candidates...
+                  </div>
+                ) : candidateOptions.length > 0 ? (
                   <select
                     id="candidate-select"
                     required
@@ -403,18 +489,19 @@ export const EventForm = ({
                     className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all appearance-none"
                   >
                     <option value="" disabled>Search by name, role or ID...</option>
-                    {candidates.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                    {candidateOptions.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
                     ))}
                   </select>
                 ) : (
                   <input
                     id="candidate-search-input"
                     type="text"
-                    placeholder="Search by name, role or ID..."
+                    placeholder={selectedJobId ? 'No candidates in this pipeline' : 'Select a job role first...'}
                     value={formData.candidateSearch}
                     onChange={(e) => setFormData({ ...formData, candidateSearch: e.target.value, applicationId: e.target.value })}
-                    className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] placeholder:text-[#9CA3AF] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all"
+                    disabled={!selectedJobId}
+                    className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] placeholder:text-[#9CA3AF] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all disabled:opacity-50 disabled:bg-gray-50"
                   />
                 )}
               </div>

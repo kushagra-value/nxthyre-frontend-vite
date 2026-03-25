@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import ScheduleCalendarWidget from './components/ScheduleCalendarWidget';
 import InterviewModeLegend from './components/InterviewModeLegend';
@@ -7,6 +7,8 @@ import ScheduleWeekGrid from './components/ScheduleWeekGrid';
 import TodaysSidebar from './components/TodaysSidebar';
 import { EventForm } from './components/EventForm';
 import ScheduleEventModal from '../dashboard/components/ScheduleEventModal';
+import { organizationService, MyWorkspace } from '../../services/organizationService';
+import { jobPostService, Job } from '../../services/jobPostService';
 import type { ScheduleEventData } from '../dashboard/dashboardData';
 import type { ScheduleEvent } from './components/ScheduleWeekGrid';
 import type { CalendarDayActivity } from './components/ScheduleCalendarWidget';
@@ -216,6 +218,56 @@ export default function SchedulePage() {
   const [events] = useState<ScheduleEvent[]>(MOCK_EVENTS);
   const [eventModalData, setEventModalData] = useState<{ events: ScheduleEventData[]; index: number } | null>(null);
 
+  // ── API data for company/job filters ──
+  const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
+
+  // ── Fetch workspaces (companies) ──
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      try {
+        const data = await organizationService.getMyWorkspacesData();
+        setWorkspaces(data.workspaces || []);
+      } catch (error) {
+        console.error('Failed to fetch workspaces', error);
+      }
+    };
+    fetchWorkspaces();
+  }, []);
+
+  // ── Fetch jobs ──
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const jobs = await jobPostService.getJobs();
+        setAllJobs(jobs);
+      } catch (error) {
+        console.error('Failed to fetch jobs', error);
+      }
+    };
+    fetchJobs();
+  }, []);
+
+  // ── Build company options for FilterDropdowns ──
+  const companyOptions = useMemo(() =>
+    workspaces.map((ws) => ({ id: String(ws.id), name: ws.name })),
+    [workspaces]
+  );
+
+  // ── Filter jobs based on selected company, build job options ──
+  const jobOptions = useMemo(() => {
+    const filtered = selectedCompany !== 'all'
+      ? allJobs.filter((j) => j.workspace_details?.id === Number(selectedCompany))
+      : allJobs;
+    return filtered.map((job) => ({ id: String(job.id), name: job.title }));
+  }, [allJobs, selectedCompany]);
+
+  // ── Reset job role when company changes ──
+  const handleCompanyChange = useCallback((val: string) => {
+    setSelectedCompany(val);
+    setSelectedJobRole('all');
+  }, []);
+
   const activities = buildActivityMap(events);
 
   /** Left calendar date click — update both week view AND selected date */
@@ -322,8 +374,10 @@ export default function SchedulePage() {
           <FilterDropdowns
             selectedCompany={selectedCompany}
             selectedJobRole={selectedJobRole}
-            onCompanyChange={setSelectedCompany}
+            onCompanyChange={handleCompanyChange}
             onJobRoleChange={setSelectedJobRole}
+            companies={companyOptions}
+            jobRoles={jobOptions}
           />
           <button
             onClick={() => setIsEventFormOpen(true)}
@@ -371,6 +425,8 @@ export default function SchedulePage() {
         isOpen={isEventFormOpen}
         onClose={() => setIsEventFormOpen(false)}
         onSubmit={handleEventSubmit}
+        initialCompanyId={selectedCompany !== 'all' ? selectedCompany : undefined}
+        initialJobId={selectedJobRole !== 'all' ? selectedJobRole : undefined}
       />
 
       {/* ─── Event Detail Modal ─── */}
