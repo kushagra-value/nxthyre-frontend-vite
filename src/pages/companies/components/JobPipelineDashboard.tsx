@@ -489,38 +489,16 @@ export default function JobPipelineDashboard({
     const toStage = stages.find((s) => s.slug === toStageSlug);
     if (!toStage) return;
 
-    // Optimistically update local state for fast UI feedback
-    setCandidates((prev) =>
-      prev.map((c) => {
-        if (c.id === draggedCandidateId) {
-          return {
-            ...c,
-            stage_slug: toStageSlug,
-            current_stage: toStage,
-          };
-        }
-        return c;
-      }),
-    );
+    const actionType = toStageSlug === "archives" ? "archive" : "move";
+    
+    openFeedbackModal({
+      type: actionType,
+      applicationIds: [draggedCandidateId],
+      targetStageId: toStage.id,
+      targetStageName: toStage.name,
+    });
+    
     setDraggedCandidateId(null);
-
-    try {
-      if (toStageSlug === "archives") {
-        await apiClient.patch(`/jobs/applications/${draggedCandidateId}/`, {
-          current_stage: toStage.id,
-          status: "ARCHIVED",
-          archive_reason: "Candidate archived from Kanban",
-        });
-      } else {
-        await apiClient.patch(`/jobs/applications/${draggedCandidateId}/`, {
-          current_stage: toStage.id,
-        });
-      }
-      showToast.success(`Candidate moved to ${toStage.name}`);
-    } catch (error) {
-      console.error("Error moving candidate:", error);
-      showToast.error("Failed to move candidate");
-    }
   };
 
   // ── Requisition Info Modal
