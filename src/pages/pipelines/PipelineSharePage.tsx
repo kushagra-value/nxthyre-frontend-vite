@@ -3971,6 +3971,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
             <div className="ml-auto">
               <AddNewStageForm
+                pipelineId={pipelineId}
                 onClose={() => setShowAddStageForm(false)}
                 onStageCreated={() => setStagesRefreshKey((prev) => prev + 1)}
               />

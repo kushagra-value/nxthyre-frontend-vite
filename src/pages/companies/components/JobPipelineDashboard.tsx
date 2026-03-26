@@ -3344,6 +3344,7 @@ export default function JobPipelineDashboard({
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
           <div className="ml-auto min-w-[400px]">
             <AddNewStageForm
+              pipelineId={jobId ?? undefined}
               onClose={() => setShowAddStageForm(false)}
               onStageCreated={() => {
                 if (jobId != null) {
