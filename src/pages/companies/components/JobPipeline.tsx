@@ -67,6 +67,12 @@ export default function JobPipeline({ jobId, workspaceId, workspaces, onJobUpdat
         try {
             const response = await apiClient.get(`/jobs/applications/${applicationId}/`);
             setSelectedCandidate(response.data);
+            
+            // Log the candidate response from /candidates/Uuid API endpoint
+            if (response.data?.candidate?.id) {
+                const canRes = await apiClient.get(`/candidates/${response.data.candidate.id}/`);
+                console.log("Candidate Uuid API response:", canRes.data);
+            }
         } catch (error) {
             console.error("Error fetching candidate details:", error);
             setSelectedCandidate(null);

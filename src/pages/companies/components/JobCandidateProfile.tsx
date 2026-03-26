@@ -21,8 +21,13 @@ import {
   Sparkles,
   PhoneOff,
   ChevronDown,
+  MessageSquare,
+  X,
+  Archive,
 } from "lucide-react";
 import candidateService from "../../../services/candidateService";
+import { showToast } from "../../../utils/toast";
+import apiClient from "../../../services/api";
 
 import {
   getCandidateCallHistory,
@@ -56,6 +61,7 @@ interface JobCandidateProfileProps {
 
 export default function JobCandidateProfile({
   candidate,
+  jobId,
   stages,
   goBack,
   loading,
@@ -118,6 +124,90 @@ export default function JobCandidateProfile({
   const [loadingCalls, setLoadingCalls] = useState(false);
   const [expandedCallId, setExpandedCallId] = useState<number | null>(null);
   const [showTranscript, setShowTranscript] = useState<number | null>(null);
+
+  // ── Feedback Modal State ──
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [pendingAction, setPendingAction] = useState<{
+    type: "archive" | "unarchive" | "move";
+    applicationIds: number[];
+    targetStageId?: number;
+    targetStageName?: string;
+    candidateNames?: string[];
+  } | null>(null);
+  const [showStageMenu, setShowStageMenu] = useState(false);
+
+  const openFeedbackModal = (action: {
+    type: "archive" | "unarchive" | "move";
+    applicationIds: number[];
+    targetStageId?: number;
+    targetStageName?: string;
+  }) => {
+    const names = [fullName];
+    setPendingAction({ ...action, candidateNames: names });
+    setFeedbackComment("");
+    setShowFeedbackModal(true);
+  };
+
+  const handleFeedbackSubmit = async () => {
+    if (!pendingAction || !feedbackComment.trim()) {
+      showToast.error("Please enter a comment");
+      return;
+    }
+
+    const { type, applicationIds, targetStageId, targetStageName } = pendingAction;
+
+    try {
+      if (type === "archive") {
+        const archiveStage = stages.find((s) => s.slug === "archives");
+        if (!archiveStage) {
+          showToast.error("Archives stage not found");
+          return;
+        }
+        await Promise.all(
+          applicationIds.map((id) =>
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: archiveStage.id,
+              status: "ARCHIVED",
+              archive_reason: feedbackComment.trim(),
+              feedback: {
+                subject: "Moved to Archive",
+                comment: feedbackComment.trim(),
+              },
+            })
+          )
+        );
+        showToast.success("Candidate archived");
+      } else if (type === "move" && targetStageId) {
+        await Promise.all(
+          applicationIds.map((id) =>
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: targetStageId,
+              feedback: {
+                subject: `Moving to ${targetStageName || "next stage"}`,
+                comment: feedbackComment.trim(),
+              },
+            })
+          )
+        );
+
+        const targetStage = stages.find((s) => s.id === targetStageId);
+        if (targetStage?.slug === "applied" && jobId != null) {
+          await candidateService.scheduleCodingAssessmentEmail(cand.id, jobId);
+        }
+
+        showToast.success(`Candidate moved to ${targetStageName || "next stage"}`);
+      }
+
+      setShowFeedbackModal(false);
+      setFeedbackComment("");
+      setPendingAction(null);
+      goBack(); // Return to pipeline view to reflect changes
+    } catch (error: any) {
+      console.error("Action error:", error);
+      showToast.error(`Failed to ${type} candidate`);
+    }
+  };
 
   // ── Fetch Activity ───────────────────────────────────────
 
@@ -598,11 +688,39 @@ export default function JobCandidateProfile({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md">
+          <div className="flex items-center gap-3 relative">
+            <button 
+              onClick={() => setShowStageMenu(!showStageMenu)}
+              className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md">
               Move to Stage
+              <ChevronDown className="w-4 h-4 ml-1" />
             </button>
-            <button className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#FEE9E7] transition">
+            
+            {showStageMenu && (
+              <div className="absolute top-14 left-0 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-2">
+                {stages.filter(s => s.slug !== "archives").map(s => (
+                  <button
+                    key={s.id}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700 block"
+                    onClick={() => {
+                        setShowStageMenu(false);
+                        openFeedbackModal({
+                           type: "move",
+                           applicationIds: [applicationId],
+                           targetStageId: s.id,
+                           targetStageName: s.name
+                        });
+                    }}
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button 
+              onClick={() => openFeedbackModal({ type: "archive", applicationIds: [applicationId] })}
+              className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#FEE9E7] transition">
               Move to Archive
             </button>
           </div>
@@ -1240,6 +1358,92 @@ export default function JobCandidateProfile({
             </div>
           </div>
         )}
+      {/* FEEDBACK MODAL (Archive / Move) */}
+      {showFeedbackModal && pendingAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-blue-600" />
+                {pendingAction.type === "archive" && "Archive Candidate"}
+                {pendingAction.type === "unarchive" && "Unarchive Candidate"}
+                {pendingAction.type === "move" &&
+                  `Move to ${pendingAction.targetStageName || "Next Stage"}`}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(false);
+                  setPendingAction(null);
+                  setFeedbackComment("");
+                }}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-lg text-sm font-medium border border-blue-100">
+                You are about to {pendingAction.type}{" "}
+                {pendingAction.applicationIds.length} candidate(s):
+                <div className="mt-2 text-blue-600 font-normal text-xs bg-white/60 p-2 rounded border border-blue-100/50">
+                  {pendingAction.candidateNames?.join(", ")}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Feedback / Reason <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-sm bg-gray-50/50 focus:bg-white"
+                  rows={4}
+                  placeholder="Please provide a reason or feedback for this action..."
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  autoFocus
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  This comment will be added to the candidate's history.
+                </p>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(false);
+                  setPendingAction(null);
+                  setFeedbackComment("");
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFeedbackSubmit}
+                disabled={!feedbackComment.trim()}
+                className={`flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm
+                  ${
+                    !feedbackComment.trim()
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : pendingAction.type === "archive"
+                        ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
+                        : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
+                  }`}
+              >
+                {pendingAction.type === "archive" ? (
+                  <Archive className="w-4 h-4" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
+                Confirm {pendingAction.type === "archive" ? "Archive" : "Action"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
   );
