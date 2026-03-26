@@ -92,7 +92,7 @@ export default function ScheduleCalendarWidget({ onDateClick, activities = [], s
   const years = Array.from({ length: yearEnd - yearStart + 1 }, (_, i) => yearStart + i);
 
   return (
-    <div className="bg-white rounded-[10px] p-4">
+    <div className="bg-white  border-b border-gray-200 p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="relative" ref={pickerRef}>

@@ -17,7 +17,7 @@ const DEFAULT_MODES: InterviewMode[] = [
 
 export default function InterviewModeLegend({ modes = DEFAULT_MODES }: InterviewModeLegendProps) {
   return (
-    <div className="bg-white rounded-[10px] p-4">
+    <div className="bg-white p-4">
       <h4 className="text-[11px] font-medium text-[#8E8E93] uppercase tracking-wider mb-3">
         Interview Mode
       </h4>

@@ -152,7 +152,7 @@ export default function ScheduleWeekGrid({
   };
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden flex-1 flex flex-col" style={{ minWidth: 0 }}>
+    <div className="bg-white overflow-hidden flex-1 flex flex-col" style={{ minWidth: 0 }}>
 
       {/* ─── Week Navigation Bar ─── */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">

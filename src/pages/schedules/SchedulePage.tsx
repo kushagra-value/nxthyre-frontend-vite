@@ -359,14 +359,8 @@ export default function SchedulePage() {
   return (
     <div className="flex-1 overflow-hidden bg-[#F3F5F7] flex flex-col">
       {/* ─── Top Bar: Title + Tabs + Filters + CTA ─── */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 flex-shrink-0">
-        <div className="flex items-center gap-6">
-          <div>
-            <h1 className="text-xl font-semibold text-[#1F2937]" style={{ fontFamily: "'Gellix', sans-serif" }}>
-              Schedule Interviews
-            </h1>
-            <p className="text-xs text-[#8E8E93] mt-0.5">Schedule</p>
-          </div>
+      <div className="flex items-center justify-between px-6 py-4 bg-white border-y border-gray-200 flex-shrink-0">
+        <div className="flex items-center">
           <StatusTabs activeTab={activeTab} onTabChange={setActiveTab} counts={counts} />
         </div>
 
@@ -390,9 +384,9 @@ export default function SchedulePage() {
       </div>
 
       {/* ─── Main Content Area ─── */}
-      <div className="flex-1 flex overflow-hidden px-4 py-4 gap-4">
+      <div className="flex-1 flex overflow-hidden pb-4">
         {/* Left Panel: Calendar + Legend */}
-        <div className="flex-shrink-0 flex flex-col gap-3" style={{ width: 220 }}>
+        <div className="flex-shrink-0 flex flex-col gap-3  border-r border-gray-200" style={{ width: 220 }}>
           <ScheduleCalendarWidget
             onDateClick={handleDateClick}
             activities={activities}
