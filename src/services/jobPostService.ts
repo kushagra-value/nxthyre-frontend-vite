@@ -19,7 +19,9 @@ export interface Job {
   has_coding_contest_stage: boolean;
   description: string;
   skills: string[];
-  status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "PAUSED" | "CLOSED";
+  status: "ACTIVE" | "PAUSED" | "INACTIVE" | "DRAFT" | "PUBLISHED" | "CLOSED";
+  pyjamahr_status?: "DRAFT" | "PUBLISHED" | "CLOSED";
+  job_role_status?: "ACTIVE" | "PAUSED" | "INACTIVE";
   posted_by: string;
   organization_details: {
     id: number;
@@ -432,6 +434,19 @@ class JobPostService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.error || "Failed to fetch cutoff score",
+      );
+    }
+  }
+
+  async updateJobRoleStatus(jobId: number, status: string): Promise<void> {
+    try {
+      const response = await apiClient.patch(`/jobs/roles/${jobId}/status/`, {
+        status,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.error || "Failed to update job status",
       );
     }
   }

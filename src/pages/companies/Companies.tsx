@@ -196,7 +196,7 @@ export default function Companies() {
     const [activeFilter, setActiveFilter] = useState<
         "All" | "Active" | "Paused" | "Inactive" | "Needs Attention"
     >("All");
-    const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Closed" | "Draft">("All");
+    const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Inactive" | "Draft">("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [jobSearchQuery, setJobSearchQuery] = useState("");
 
@@ -467,13 +467,13 @@ export default function Companies() {
         const matchesSearch = j.title.toLowerCase().includes(jobSearchQuery.toLowerCase());
         let matchesStatus = true;
         if (activeJobFilter === "Active") {
-            matchesStatus = j.status === "PUBLISHED" || j.status === "ACTIVE";
+            matchesStatus = j.status === "ACTIVE";
         } else if (activeJobFilter === "Paused") {
             matchesStatus = j.status === "PAUSED";
-        } else if (activeJobFilter === "Closed") {
-            matchesStatus = j.status === "CLOSED";
+        } else if (activeJobFilter === "Inactive") {
+            matchesStatus = j.status === "INACTIVE";
         } else if (activeJobFilter === "Draft") {
-            matchesStatus = j.status === "DRAFT";
+            matchesStatus = j.pyjamahr_status === "DRAFT";
         }
         return matchesSearch && matchesStatus;
     });

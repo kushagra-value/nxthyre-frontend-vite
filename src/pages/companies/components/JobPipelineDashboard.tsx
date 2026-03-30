@@ -490,14 +490,14 @@ export default function JobPipelineDashboard({
     if (!toStage) return;
 
     const actionType = toStageSlug === "archives" ? "archive" : "move";
-    
+
     openFeedbackModal({
       type: actionType,
       applicationIds: [draggedCandidateId],
       targetStageId: toStage.id,
       targetStageName: toStage.name,
     });
-    
+
     setDraggedCandidateId(null);
   };
 
@@ -531,11 +531,11 @@ export default function JobPipelineDashboard({
     const blob =
       typeof data === "string"
         ? new Blob([data], {
-            type:
-              type === "csv"
-                ? "text/csv"
-                : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          })
+          type:
+            type === "csv"
+              ? "text/csv"
+              : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        })
         : data;
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -1140,8 +1140,8 @@ export default function JobPipelineDashboard({
             const archivedItem = archivedCandidates.find((c: any) => c.id === id);
             const targetStage = archivedItem
               ? stages.find((s) => s.slug === archivedItem.stage_slug) ||
-                stages.find((s) => s.slug === "shortlisted") ||
-                stages[0]
+              stages.find((s) => s.slug === "shortlisted") ||
+              stages[0]
               : stages.find((s) => s.slug === "shortlisted") || stages[0];
 
             if (!targetStage) return Promise.resolve();
@@ -1502,11 +1502,10 @@ export default function JobPipelineDashboard({
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`pb-3 text-sm font-medium transition-colors relative ${
-                activeTab === tab.key
+              className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === tab.key
                   ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
                   : "text-[#8E8E93] hover:text-[#4B5563]"
-              }`}
+                }`}
             >
               {tab.label}{" "}
               <span
@@ -1530,35 +1529,33 @@ export default function JobPipelineDashboard({
                 <>
                   <button
                     onClick={() => setActiveStageSlug(null)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                      activeStageSlug === null
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
                         ? "bg-[#0F47F2] text-white"
                         : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
-                    }`}
+                      }`}
                   >
                     All ({totalPipelineCandidates})
                   </button>
 
                   {loadingStages
                     ? Array.from({ length: 5 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="w-28 h-8 bg-gray-200 rounded-full animate-pulse"
-                        />
-                      ))
+                      <div
+                        key={i}
+                        className="w-28 h-8 bg-gray-200 rounded-full animate-pulse"
+                      />
+                    ))
                     : stages.filter(s => s.slug !== 'archives').map((stage) => (
-                        <button
-                          key={stage.id}
-                          onClick={() => setActiveStageSlug(stage.slug)}
-                          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                            activeStageSlug === stage.slug
-                              ? "bg-[#0F47F2] text-white"
-                              : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                      <button
+                        key={stage.id}
+                        onClick={() => setActiveStageSlug(stage.slug)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
+                            ? "bg-[#0F47F2] text-white"
+                            : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
                           }`}
-                        >
-                          {stage.name} ({stage.candidate_count})
-                        </button>
-                      ))}
+                      >
+                        {stage.name} ({stage.candidate_count})
+                      </button>
+                    ))}
                 </>
               )}
             </div>
@@ -1866,16 +1863,16 @@ export default function JobPipelineDashboard({
                               )}
                               {(cand.total_experience ||
                                 cand.experience_years) && (
-                                <span className="flex items-center gap-1.5">
-                                  <Briefcase className="w-3.5 h-3.5" />{" "}
-                                  {cand.total_experience != null
-                                    ? `${cand.total_experience} Yrs`
-                                    : cand.experience_years.replace(
+                                  <span className="flex items-center gap-1.5">
+                                    <Briefcase className="w-3.5 h-3.5" />{" "}
+                                    {cand.total_experience != null
+                                      ? `${cand.total_experience} Yrs`
+                                      : cand.experience_years.replace(
                                         /\s*exp$/i,
                                         "",
                                       )}
-                                </span>
-                              )}
+                                  </span>
+                                )}
                               {cand.current_salary_lpa && (
                                 <span className="flex items-center gap-1.5">
                                   <Target className="w-3.5 h-3.5" />{" "}
@@ -1956,15 +1953,15 @@ export default function JobPipelineDashboard({
                                     )}
                                     {(cand.total_experience ||
                                       cand.experience_years) && (
-                                      <span>
-                                        {cand.total_experience != null
-                                          ? `${cand.total_experience} Yrs`
-                                          : cand.experience_years.replace(
+                                        <span>
+                                          {cand.total_experience != null
+                                            ? `${cand.total_experience} Yrs`
+                                            : cand.experience_years.replace(
                                               /\s*exp$/i,
                                               "",
                                             )}
-                                      </span>
-                                    )}
+                                        </span>
+                                      )}
                                   </div>
                                 </div>
                               );
@@ -2277,7 +2274,7 @@ export default function JobPipelineDashboard({
                                 <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition">
                                   {cand.full_name || "--"}
                                 </div>
-                                <div className="text-xs text-[#727272]">
+                                <div className="text-xs text-[#727272] truncate max-w-[32ch]">
                                   {cand.headline || "--"}
                                 </div>
                               </div>
@@ -2368,8 +2365,8 @@ export default function JobPipelineDashboard({
                                       name: cand.full_name || "Unknown",
                                       avatarInitials: cand.full_name
                                         ? cand.full_name
-                                            .substring(0, 2)
-                                            .toUpperCase()
+                                          .substring(0, 2)
+                                          .toUpperCase()
                                         : "UN",
                                       headline: cand.headline || "--",
                                       phone:
@@ -2469,9 +2466,9 @@ export default function JobPipelineDashboard({
                                     ? `${cand.total_experience} Yrs`
                                     : cand.experience_years
                                       ? cand.experience_years.replace(
-                                          /\s*exp$/i,
-                                          "",
-                                        )
+                                        /\s*exp$/i,
+                                        "",
+                                      )
                                       : "--"}
                                 </td>
                                 <td className="px-4 py-5 text-sm text-[#AEAEB2]">
@@ -2883,21 +2880,19 @@ export default function JobPipelineDashboard({
                 >
                   <div className="flex gap-[20px]">
                     <button
-                      className={`pb-[12px] text-[14px] font-medium transition-colors ${
-                        requisitionModalTab === "info"
+                      className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === "info"
                           ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
                           : "text-[#8E8E93] hover:text-[#4B5563]"
-                      }`}
+                        }`}
                       onClick={() => setRequisitionModalTab("info")}
                     >
                       Requisition Info
                     </button>
                     <button
-                      className={`pb-[12px] text-[14px] font-medium transition-colors ${
-                        requisitionModalTab === "company"
+                      className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === "company"
                           ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
                           : "text-[#8E8E93] hover:text-[#4B5563]"
-                      }`}
+                        }`}
                       onClick={async () => {
                         setRequisitionModalTab("company");
                         if (
@@ -3128,59 +3123,59 @@ export default function JobPipelineDashboard({
                       {/* Leadership responsibilities */}
                       {competenciesData.key_responsibilities_explained
                         .leadership?.length > 0 && (
-                        <>
-                          <div
-                            style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                            className="my-[20px]"
-                          ></div>
-                          <h4 className="flex items-center gap-[5px] mb-[14px]">
-                            <Zap className="w-4 h-4 text-[#4B5563]" />
-                            <span
-                              style={{
-                                fontSize: "16px",
-                                lineHeight: "20px",
-                                fontWeight: 500,
-                              }}
-                              className="text-[#4B5563]"
-                            >
-                              Leadership
-                            </span>
-                          </h4>
-                          <div className="flex flex-col gap-[10px]">
-                            {competenciesData.key_responsibilities_explained.leadership.map(
-                              (item: any, i: number) => (
-                                <div
-                                  key={i}
-                                  className="flex items-start gap-[10px] p-[20px] bg-[#EBFFEE] rounded-[10px]"
-                                >
-                                  <div className="flex flex-col gap-[4px]">
-                                    <span
-                                      style={{
-                                        fontSize: "14px",
-                                        lineHeight: "17px",
-                                        fontWeight: 500,
-                                      }}
-                                      className="text-black"
-                                    >
-                                      {item.responsibility}
-                                    </span>
-                                    <span
-                                      style={{
-                                        fontSize: "12px",
-                                        lineHeight: "20px",
-                                        fontWeight: 400,
-                                      }}
-                                      className="text-[#727272]"
-                                    >
-                                      {item.context}
-                                    </span>
+                          <>
+                            <div
+                              style={{ borderBottom: "0.5px solid #C7C7CC" }}
+                              className="my-[20px]"
+                            ></div>
+                            <h4 className="flex items-center gap-[5px] mb-[14px]">
+                              <Zap className="w-4 h-4 text-[#4B5563]" />
+                              <span
+                                style={{
+                                  fontSize: "16px",
+                                  lineHeight: "20px",
+                                  fontWeight: 500,
+                                }}
+                                className="text-[#4B5563]"
+                              >
+                                Leadership
+                              </span>
+                            </h4>
+                            <div className="flex flex-col gap-[10px]">
+                              {competenciesData.key_responsibilities_explained.leadership.map(
+                                (item: any, i: number) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-start gap-[10px] p-[20px] bg-[#EBFFEE] rounded-[10px]"
+                                  >
+                                    <div className="flex flex-col gap-[4px]">
+                                      <span
+                                        style={{
+                                          fontSize: "14px",
+                                          lineHeight: "17px",
+                                          fontWeight: 500,
+                                        }}
+                                        className="text-black"
+                                      >
+                                        {item.responsibility}
+                                      </span>
+                                      <span
+                                        style={{
+                                          fontSize: "12px",
+                                          lineHeight: "20px",
+                                          fontWeight: 400,
+                                        }}
+                                        className="text-[#727272]"
+                                      >
+                                        {item.context}
+                                      </span>
+                                    </div>
                                   </div>
-                                </div>
-                              ),
-                            )}
-                          </div>
-                        </>
-                      )}
+                                ),
+                              )}
+                            </div>
+                          </>
+                        )}
                     </div>
 
                     {/* Divider */}
@@ -3494,8 +3489,8 @@ export default function JobPipelineDashboard({
                   >
                     {candidateEditing.candidate.full_name
                       ? candidateEditing.candidate.full_name
-                          .substring(0, 2)
-                          .toUpperCase()
+                        .substring(0, 2)
+                        .toUpperCase()
                       : "CA"}
                   </div>
                 </div>
@@ -3729,12 +3724,11 @@ export default function JobPipelineDashboard({
                 onClick={handleFeedbackSubmit}
                 disabled={!feedbackComment.trim()}
                 className={`flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm
-                  ${
-                    !feedbackComment.trim()
-                      ? "bg-gray-300 cursor-not-allowed"
-                      : pendingAction.type === "archive"
-                        ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
-                        : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
+                  ${!feedbackComment.trim()
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : pendingAction.type === "archive"
+                      ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
+                      : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
                   }`}
               >
                 {pendingAction.type === "archive" ? (
