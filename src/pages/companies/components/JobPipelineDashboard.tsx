@@ -1576,7 +1576,12 @@ export default function JobPipelineDashboard({
                 </button>
               )}
               <button
-                onClick={() => setIsKanbanView(!isKanbanView)}
+                onClick={() => {
+                  if (!isKanbanView) {
+                    setActiveStageSlug(null);
+                  }
+                  setIsKanbanView(!isKanbanView);
+                }}
                 className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
               >
                 {isKanbanView ? (
