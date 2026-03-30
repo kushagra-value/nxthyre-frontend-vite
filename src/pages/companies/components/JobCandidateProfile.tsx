@@ -581,6 +581,17 @@ export default function JobCandidateProfile({
               ))}
             </div>
           )}
+
+          {/* Archived Reason */}
+          {candidate.archive_reason && (candidate.status === "ARCHIVED" || currentStageSlug === "archives") && (
+            <div className="bg-[#FEF2F2] px-6 py-4 text-sm font-medium border-t border-[#FECACA] flex items-start gap-3 rounded-b-xl">
+              <Archive className="w-5 h-5 text-[#DC2626] shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-[#DC2626] mr-2">Archived Reason:</span>
+                <span className="text-[#991B1B] leading-relaxed">{candidate.archive_reason}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Current Stage Pipeline Section (FIXED) ── */}

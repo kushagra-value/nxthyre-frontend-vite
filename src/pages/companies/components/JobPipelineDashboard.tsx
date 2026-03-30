@@ -1947,6 +1947,14 @@ export default function JobPipelineDashboard({
                                   <p className="text-[10px] text-[#AEAEB2] line-clamp-1">
                                     {cand.headline || "--"}
                                   </p>
+                                  {(item as any).archive_reason && (
+                                    <div className="bg-[#FEF2F2] px-2 py-1.5 rounded text-[10px] text-[#DC2626] font-medium mt-1 inline-flex items-center gap-1.5 w-fit max-w-full">
+                                      <Archive className="w-3 h-3 shrink-0" />
+                                      <span className="truncate" title={(item as any).archive_reason}>
+                                        {(item as any).archive_reason}
+                                      </span>
+                                    </div>
+                                  )}
                                   <div className="flex flex-wrap items-center mt-2 gap-y-1 gap-x-3 text-[10px] text-[#AEAEB2]">
                                     {cand.location && (
                                       <span>{cand.location.split(",")[0]}</span>
@@ -2451,6 +2459,14 @@ export default function JobPipelineDashboard({
                                     <div className="text-xs text-[#AEAEB2]">
                                       {cand.headline || "--"}
                                     </div>
+                                    {(item as any).archive_reason && (
+                                      <div className="bg-[#FEF2F2] px-2 py-1 rounded text-[10px] text-[#DC2626] font-medium mt-1.5 inline-flex items-center gap-1.5 w-fit max-w-[200px]">
+                                        <Archive className="w-3 h-3 shrink-0" />
+                                        <span className="truncate" title={(item as any).archive_reason}>
+                                          {(item as any).archive_reason}
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
                                 </td>
                                 <td className="px-4 py-5">
