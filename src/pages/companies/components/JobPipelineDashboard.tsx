@@ -818,12 +818,13 @@ export default function JobPipelineDashboard({
       stageSlug: string | null,
       page: number,
       search: string,
+      limit: number = pageSize
     ) => {
       setLoadingCandidates(true);
       try {
         let url = `/jobs/applications/?job_id=${jId}`;
         if (stageSlug) url += `&stage_slug=${stageSlug}`;
-        url += `&page=${page}&page_size=${pageSize}`;
+        url += `&page=${page}&page_size=${limit}`;
         if (search.trim())
           url += `&search=${encodeURIComponent(search.trim())}`;
 
@@ -855,13 +856,16 @@ export default function JobPipelineDashboard({
 
   useEffect(() => {
     if (jobId != null && searchQuery === "") {
-      fetchCandidates(jobId, activeStageSlug, currentPage, "");
+      const currentLimit = isKanbanView ? 1000 : pageSize;
+      const currentStage = isKanbanView ? null : activeStageSlug;
+      fetchCandidates(jobId, currentStage, currentPage, "", currentLimit);
       fetchArchivedCandidates(jobId);
     }
   }, [
     jobId,
     activeStageSlug,
     currentPage,
+    isKanbanView,
     searchQuery,
     fetchCandidates,
     fetchArchivedCandidates,
@@ -1193,7 +1197,9 @@ export default function JobPipelineDashboard({
       setPendingAction(null);
 
       if (jobId != null) {
-        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
+        const currentLimit = isKanbanView ? 1000 : pageSize;
+        const currentStage = isKanbanView ? null : activeStageSlug;
+        fetchCandidates(jobId, currentStage, currentPage, searchQuery, currentLimit);
         fetchStages(jobId);
         fetchArchivedCandidates(jobId);
       }
@@ -2524,9 +2530,10 @@ export default function JobPipelineDashboard({
                                           );
                                           fetchCandidates(
                                             jobId,
-                                            activeStageSlug,
+                                            isKanbanView ? null : activeStageSlug,
                                             currentPage,
                                             searchQuery,
+                                            isKanbanView ? 1000 : pageSize
                                           );
                                           fetchArchivedCandidates(jobId);
                                         } catch {
