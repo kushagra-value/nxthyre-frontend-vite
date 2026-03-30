@@ -125,7 +125,7 @@ export interface CreateJobData {
   description_text?: string; // Optional: for pasted text
   description_file?: File;
   skills: string[];
-  status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "PAUSED" | "CLOSED";
+  status: "ACTIVE" | "PAUSED" | "INACTIVE";
   workspace: number;
   ai_jd_object?: any;
   ai_jd?: any;

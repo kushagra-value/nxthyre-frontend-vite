@@ -608,7 +608,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         has_coding_contest_stage: formData.codingRound,
         has_ai_interview_stage: formData.aiInterviews,
         skills: formData.skills,
-        status: formData.keepPrivate ? "DRAFT" : "PUBLISHED",
+        status: "ACTIVE",
         workspace: parseInt(formData.workspace),
         ai_jd_object: aiJdResponse,
         ...(formData.uploadType === "paste"
@@ -682,7 +682,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         has_coding_contest_stage: formData.codingRound,
         has_ai_interview_stage: formData.aiInterviews,
         skills: formData.skills,
-        status: formData.keepPrivate ? "DRAFT" : "PUBLISHED",
+        status: "ACTIVE",
         workspace: parseInt(formData.workspace),
         ai_jd_object: aiJdResponse,
         ...(formData.uploadType === "paste"
