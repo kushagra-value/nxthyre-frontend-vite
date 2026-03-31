@@ -403,7 +403,13 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                             style={{ height: 37, border: '0.5px solid #9CA3AF', borderRadius: 5, padding: 10, gap: 5, color: '#9CA3AF' }}
                             onClick={() => {
                                 const candId = candidate?.id || currentItem?.id;
-                                if (candId) window.open(`/candidate-profiles/${candId}`, '_blank');
+                                const jobIdParam = currentItem?.jobId;
+                                if (candId) {
+                                    const url = jobIdParam
+                                        ? `/candidate-profiles/${candId}?job_id=${jobIdParam}`
+                                        : `/candidate-profiles/${candId}`;
+                                    window.open(url, '_blank');
+                                }
                             }}
                         >
                             View Profile

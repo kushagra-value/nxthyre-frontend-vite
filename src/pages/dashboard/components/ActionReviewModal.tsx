@@ -534,7 +534,11 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                                 style={{ padding: 10, gap: 5, border: '0.5px solid #9CA3AF', borderRadius: 5 }}
                                 onClick={() => {
                                     if (currentItem?.candidate_id) {
-                                        window.open(`/candidate-profiles/${currentItem.candidate_id}`, '_blank');
+                                        const jobIdParam = currentItem?.job_role_id;
+                                        const url = jobIdParam
+                                            ? `/candidate-profiles/${currentItem.candidate_id}?job_id=${jobIdParam}`
+                                            : `/candidate-profiles/${currentItem.candidate_id}`;
+                                        window.open(url, '_blank');
                                     }
                                 }}
                             >
