@@ -259,7 +259,7 @@ class JobPostService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to create job");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to create job");
     }
   }
 
@@ -340,7 +340,7 @@ class JobPostService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to update job");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to update job");
     }
   }
 
