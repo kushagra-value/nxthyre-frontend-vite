@@ -14,7 +14,7 @@ class CreditService {
         credit_balance: response.data.credit_balance || 0,
       };
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch credit balance");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch credit balance");
     }
   }
 }

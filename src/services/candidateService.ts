@@ -669,7 +669,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidates",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidates",
       );
     }
   }
@@ -690,7 +690,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to send test email",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to send test email",
       );
     }
   }
@@ -705,7 +705,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to search candidates",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to search candidates",
       );
     }
   }
@@ -742,7 +742,7 @@ class CandidateService {
         return { count: 0, next: null, previous: null, results: [] };
       }
       throw new Error(
-        error.response?.data?.error || "Failed to search candidates",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to search candidates",
       );
     }
   }
@@ -755,7 +755,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate references",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidate references",
       );
     }
   }
@@ -766,7 +766,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate details",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidate details",
       );
     }
   }
@@ -782,7 +782,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate details",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidate details",
       );
     }
   }
@@ -798,7 +798,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch shareable profile",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch shareable profile",
       );
     }
   }
@@ -872,7 +872,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to update template",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to update template",
       );
     }
   }
@@ -898,7 +898,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to save candidate to pipeline",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to save candidate to pipeline",
       );
     }
   }
@@ -919,7 +919,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to update candidate fields",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to update candidate fields",
       );
     }
   }
@@ -936,7 +936,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to add candidates to pipeline",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to add candidates to pipeline",
       );
     }
   }
@@ -949,27 +949,11 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch pipeline stages",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch pipeline stages",
       );
     }
   }
 
-  async scheduleCodingAssessmentEmail(
-    candidateId: string,
-    jobId: number,
-  ): Promise<any> {
-    try {
-      const response = await apiClient.post(`/assessment/create-and-send/`, {
-        candidate_id: candidateId,
-        job_id: jobId,
-      });
-      return response.data;
-    } catch (error: any) {
-      throw new Error(
-        error.response?.data?.error || "Failed to send assessment email",
-      );
-    }
-  }
 
   async getKeywordSuggestions(query: string): Promise<string[]> {
     try {
@@ -979,7 +963,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch keyword suggestions",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch keyword suggestions",
       );
     }
   }
@@ -992,7 +976,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch recent searches",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch recent searches",
       );
     }
   }
@@ -1012,7 +996,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate notes",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidate notes",
       );
     }
   }
@@ -1028,7 +1012,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch assessment results",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch assessment results",
       );
     }
   }
@@ -1050,7 +1034,7 @@ class CandidateService {
     } catch (error: any) {
       console.error("Server error response:", error.response?.data);
       throw new Error(
-        error.response?.data?.error || "Failed to post candidate note",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to post candidate note",
       );
     }
   }
@@ -1067,7 +1051,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to export candidates",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to export candidates",
       );
     }
   }
@@ -1084,7 +1068,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate activity",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidate activity",
       );
     }
   }
@@ -1097,7 +1081,7 @@ class CandidateService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error ||
+        error.response?.data?.detail || error.response?.data?.error ||
           "Failed to fetch background verifications",
       );
     }
@@ -1121,7 +1105,7 @@ class CandidateService {
       }
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch boolean search",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch boolean search",
       );
     }
   }
@@ -1165,7 +1149,7 @@ class CandidateService {
   //     return response.data.bool_q || "";
   //   } catch (error: any) {
   //     throw new Error(
-  //       error.response?.data?.error || "Failed to fetch default boolean query"
+  //       error.response?.data?.detail || error.response?.data?.error || "Failed to fetch default boolean query"
   //     );
   //   }
   // }

@@ -656,17 +656,7 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
           : undefined,
       );
 
-      if (stageId) {
-        const targetStage = pipelineStages.find(
-          (stage) => stage.id === stageId,
-        );
-        if (targetStage?.slug === "coding-contest") {
-          await candidateService.scheduleCodingAssessmentEmail(
-            candidateId,
-            parseInt(jobId),
-          );
-        }
-      }
+
 
       const stageName = stageId
         ? pipelineStages.find((stage) => stage.id === stageId)?.name
