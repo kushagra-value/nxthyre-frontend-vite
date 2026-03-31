@@ -150,7 +150,7 @@ class JobPostService {
       }
       return response.data.jobs || response.data.roles || response.data.results || response.data.data || [];
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch jobs");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch jobs");
     }
   }
 
@@ -159,7 +159,7 @@ class JobPostService {
       const response = await apiClient.get(`/jobs/roles/${id}/`);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch job");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch job");
     }
   }
 
@@ -171,7 +171,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch location suggestions",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch location suggestions",
       );
     }
   }
@@ -191,7 +191,7 @@ class JobPostService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to create AI JD");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to create AI JD");
     }
   }
 
@@ -366,7 +366,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to upload resumes",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to upload resumes",
       );
     }
   }
@@ -378,7 +378,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch upload status",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch upload status",
       );
     }
   }
@@ -398,7 +398,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch upload history",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch upload history",
       );
     }
   }
@@ -417,7 +417,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to update cutoff score",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to update cutoff score",
       );
     }
   }
@@ -433,7 +433,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch cutoff score",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch cutoff score",
       );
     }
   }
@@ -446,7 +446,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to update job status",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to update job status",
       );
     }
   }
@@ -458,7 +458,7 @@ class JobPostService {
       );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to unpublish job");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to unpublish job");
     }
   }
 
@@ -466,7 +466,7 @@ class JobPostService {
     try {
       await apiClient.delete(`/jobs/roles/${id}/`);
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to delete job");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to delete job");
     }
   }
 
@@ -481,7 +481,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch autosuggest",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch autosuggest",
       );
     }
   }
@@ -497,7 +497,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch searched candidate",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch searched candidate",
       );
     }
   }
@@ -508,7 +508,7 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch job competencies",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch job competencies",
       );
     }
   }
@@ -544,7 +544,7 @@ class JobPostService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to apply to job");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to apply to job");
     }
   }
 
@@ -563,7 +563,7 @@ class JobPostService {
       const response = await apiClient.get(`/jobs/ai-jd/${jobId}/`);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch AI JD");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch AI JD");
     }
   }
 }

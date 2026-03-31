@@ -222,7 +222,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to get onboarding status"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to get onboarding status"
       );
     }
   }
@@ -239,7 +239,7 @@ class OrganizationService {
       }));
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch organizations"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch organizations"
       );
     }
   }
@@ -259,7 +259,7 @@ class OrganizationService {
   //     }));
   //   } catch (error: any) {
   //     throw new Error(
-  //       error.response?.data?.error || "Failed to fetch workspaces"
+  //       error.response?.data?.detail || error.response?.data?.error || "Failed to fetch workspaces"
   //     );
   //   }
   // }
@@ -273,7 +273,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to create organization"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to create organization"
       );
     }
   }
@@ -293,7 +293,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to create workspace"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to create workspace"
       );
     }
   }
@@ -310,7 +310,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to send workspace invites"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to send workspace invites"
       );
     }
   }
@@ -320,7 +320,7 @@ class OrganizationService {
       const response = await apiClient.post("/organization/workspaces/invites/claim/", { token });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || error.response?.data?.detail || "Failed to claim workspace invite");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || error.response?.data?.detail || "Failed to claim workspace invite");
     }
   }
 
@@ -330,7 +330,7 @@ class OrganizationService {
       return response.data.invitations || [];
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch invitations"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch invitations"
       );
     }
   }
@@ -344,7 +344,7 @@ class OrganizationService {
       return response.data.workspaces || response.data.results || response.data.data || [];
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch my workspaces"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch my workspaces"
       );
     }
   }
@@ -358,7 +358,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch my workspaces data"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch my workspaces data"
       );
     }
   }
@@ -371,7 +371,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch discover workspaces"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch discover workspaces"
       );
     }
   }
@@ -390,7 +390,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to request workspace join"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to request workspace join"
       );
     }
   }
@@ -401,7 +401,7 @@ class OrganizationService {
       await apiClient.delete(`/workspaces/${workspaceId}/join/`);
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to withdraw join request"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to withdraw join request"
       );
     }
   }
@@ -421,7 +421,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to manage join request"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to manage join request"
       );
     }
   }
@@ -432,7 +432,7 @@ class OrganizationService {
       return response.data.filter((req: any) => req.status === "PENDING");
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch pending join requests"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch pending join requests"
       );
     }
   }
@@ -444,7 +444,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch company research data"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch company research data"
       );
     }
   }
@@ -458,7 +458,7 @@ class OrganizationService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to update workspace"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to update workspace"
       );
     }
   }
@@ -494,7 +494,7 @@ class OrganizationService {
       document.body.removeChild(link);
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to export workspaces as CSV"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to export workspaces as CSV"
       );
     }
   }

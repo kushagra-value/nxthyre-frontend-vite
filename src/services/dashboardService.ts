@@ -239,7 +239,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch dashboard data",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch dashboard data",
       );
     }
   }
@@ -250,7 +250,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch sidebar data",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch sidebar data",
       );
     }
   }
@@ -296,7 +296,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch priority actions",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch priority actions",
       );
     }
   }
@@ -307,7 +307,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to complete priority action",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to complete priority action",
       );
     }
   }
@@ -322,7 +322,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate details",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidate details",
       );
     }
   }
@@ -340,7 +340,7 @@ class DashboardService {
       const response = await apiClient.get(`/candidates/talent-matches/?${queryParams.toString()}`);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch talent matches");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch talent matches");
     }
   }
 }

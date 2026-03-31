@@ -75,7 +75,7 @@ class AuthService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Sign up failed");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Sign up failed");
     }
   }
 
@@ -95,7 +95,7 @@ class AuthService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "OTP verification failed");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "OTP verification failed");
     }
   }
 
@@ -112,7 +112,7 @@ class AuthService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "LinkedIn authentication failed"
+        error.response?.data?.detail || error.response?.data?.error || "LinkedIn authentication failed"
       );
     }
   }
@@ -125,7 +125,7 @@ class AuthService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Email update failed");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Email update failed");
     }
   }
 
@@ -137,7 +137,7 @@ class AuthService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to resend OTP");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to resend OTP");
     }
   }
 
@@ -150,7 +150,7 @@ class AuthService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to send password reset OTP"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to send password reset OTP"
       );
     }
   }
@@ -169,7 +169,7 @@ class AuthService {
       );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "OTP verification failed");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "OTP verification failed");
     }
   }
 
@@ -186,7 +186,7 @@ class AuthService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Password reset failed");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Password reset failed");
     }
   }
 
@@ -197,7 +197,7 @@ class AuthService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to get user status"
+        error.response?.data?.detail || error.response?.data?.error || "Failed to get user status"
       );
     }
   }
