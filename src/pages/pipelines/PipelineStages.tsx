@@ -1099,16 +1099,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         current_stage: stageId,
       });
 
-      const targetStage = stages.find((stage) => stage.id === stageId);
-      if (targetStage?.slug === "coding-contest") {
-        const cand = candidates.find((c) => c.id === applicationId);
-        if (cand && activeJobId !== null) {
-          await candidateService.scheduleCodingAssessmentEmail(
-            cand.candidate.id,
-            activeJobId,
-          );
-        }
-      }
+
 
       if (activeJobId !== null) {
         fetchCandidates(
@@ -1153,20 +1144,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         current_stage: stageId,
       });
 
-      const targetStage = stages.find((stage) => stage.id === stageId);
-      if (targetStage?.slug === "applied") {
-        await Promise.all(
-          applicationIds.map(async (appId) => {
-            const cand = candidates.find((c) => c.id === appId);
-            if (cand && activeJobId !== null) {
-              await candidateService.scheduleCodingAssessmentEmail(
-                cand.candidate.id,
-                activeJobId,
-              );
-            }
-          }),
-        );
-      }
+
 
       if (activeJobId !== null) {
         fetchCandidates(

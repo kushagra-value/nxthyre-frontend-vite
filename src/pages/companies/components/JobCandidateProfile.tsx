@@ -194,10 +194,6 @@ export default function JobCandidateProfile({
           )
         );
 
-        const targetStage = stages.find((s) => s.id === targetStageId);
-        if (targetStage?.slug === "applied" && jobId != null) {
-          await candidateService.scheduleCodingAssessmentEmail(cand.id, jobId);
-        }
 
         showToast.success(`Candidate moved to ${targetStageName || "next stage"}`);
       }
