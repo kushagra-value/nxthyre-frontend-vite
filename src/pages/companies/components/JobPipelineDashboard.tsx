@@ -2339,17 +2339,9 @@ export default function JobPipelineDashboard({
                                   className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
                                   style={{
                                     backgroundColor:
-                                      attentionTag.color === "red"
-                                        ? "#FEE9E7"
-                                        : attentionTag.color === "yellow"
-                                          ? "#FFF7D6"
-                                          : "#FEE9E7",
+                                      attentionTag.color,
                                     color:
-                                      attentionTag.color === "red"
-                                        ? "#FF383C"
-                                        : attentionTag.color === "yellow"
-                                          ? "#92400E"
-                                          : "#FF383C",
+                                      "#fff"
                                   }}
                                 >
                                   {attentionTag.text}
