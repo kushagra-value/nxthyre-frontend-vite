@@ -194,7 +194,7 @@ export default function Companies() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
-        "All" | "Active" | "Paused" | "Inactive" | "Needs Attention"
+        "All" | "Active" | "Paused" | "Inactive"
     >("All");
     const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Inactive" | "Draft">("All");
     const [searchQuery, setSearchQuery] = useState("");
@@ -639,7 +639,7 @@ export default function Companies() {
                             <div className="flex items-center justify-between p-4 flex-wrap">
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {(
-                                        ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
+                                        ["All", "Active", "Paused", "Inactive"] as const
                                     ).map((f) => (
                                         <button
                                             key={f}
