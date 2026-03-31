@@ -194,7 +194,7 @@ export default function Companies() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
-        "All" | "Active" | "Paused" | "Inactive" | "Needs Attention"
+        "All" | "Active" | "Paused" | "Inactive"
     >("All");
     const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Inactive" | "Draft">("All");
     const [searchQuery, setSearchQuery] = useState("");
@@ -317,6 +317,7 @@ export default function Companies() {
                     ? new Date(ws.last_active_date).toLocaleDateString('en-GB')
                     : "--",
                 status: normalizedStatus as any,
+                createdBy: ws.created_by || undefined,
             };
         });
     }, [workspaces]);
@@ -638,7 +639,7 @@ export default function Companies() {
                             <div className="flex items-center justify-between p-4 flex-wrap">
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {(
-                                        ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
+                                        ["All", "Active", "Paused", "Inactive"] as const
                                     ).map((f) => (
                                         <button
                                             key={f}
@@ -869,9 +870,16 @@ export default function Companies() {
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <p className="text-sm font-normal text-[#0F47F2] hover:underline hover:text-blue-700 transition-colors truncate max-w-[200px]">
-                                                                        {row.name}
-                                                                    </p>
+                                                                    <div className="flex flex-col">
+                                                                        <p className="text-sm font-normal text-[#0F47F2] hover:underline hover:text-blue-700 transition-colors truncate max-w-[200px]">
+                                                                            {row.name}
+                                                                        </p>
+                                                                        {row.createdBy && (
+                                                                            <p className="text-[11px] text-[#AEAEB2] font-normal truncate max-w-[200px]">
+                                                                                Created by: {row.createdBy}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </td>
 

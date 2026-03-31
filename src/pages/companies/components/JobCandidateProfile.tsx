@@ -1045,14 +1045,7 @@ export default function JobCandidateProfile({
                       <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-[#8E8E93]" />
                         <span className="font-bold text-xs text-black line-clamp-1 truncate w-40">
-                          {(() => {
-                            const url = cand.resume_url || premiumData.resume_url || "";
-                            try {
-                              const filename = decodeURIComponent(url.split("/").pop() || "");
-                              if (filename && filename.includes(".")) return filename;
-                            } catch {}
-                            return `${fullName.replace(/\s+/g, "_")}_resume.pdf`;
-                          })()}
+                          {fullName.replace(/\s+/g, "_")}_resume.pdf
                         </span>
                       </div>
                       <Download className="w-4 h-4 text-[#0F47F2]" />
