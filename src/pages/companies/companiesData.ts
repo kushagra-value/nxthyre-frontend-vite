@@ -24,6 +24,7 @@ export interface CompanyTableRow {
     hiredTrend?: string;
     lastActiveDate: string;
     status: 'Active' | 'Paused' | 'Inactive';
+    createdBy?: string;
 }
 
 export interface CompanyAIAutopilotItem {
