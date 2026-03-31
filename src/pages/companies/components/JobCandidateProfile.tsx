@@ -28,6 +28,7 @@ import {
 import candidateService from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
 import apiClient from "../../../services/api";
+import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 
 import {
   getCandidateCallHistory,
@@ -136,6 +137,8 @@ export default function JobCandidateProfile({
     candidateNames?: string[];
   } | null>(null);
   const [showStageMenu, setShowStageMenu] = useState(false);
+  const [callModalCandidate, setCallModalCandidate] =
+    useState<CallCandidateData | null>(null);
 
   const openFeedbackModal = (action: {
     type: "archive" | "unarchive" | "move";
@@ -475,7 +478,31 @@ export default function JobCandidateProfile({
                         <Mail className="w-4 h-4" /> Send Mail
                       </button>
                     )}
-                    <button className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition">
+                    <button
+                      onClick={() => {
+                        setCallModalCandidate({
+                          id: cand.id,
+                          name: fullName,
+                          avatarInitials: fullName
+                            ? fullName.substring(0, 2).toUpperCase()
+                            : "UN",
+                          headline: headline || "--",
+                          phone:
+                            premiumData.phone ||
+                            premiumData.all_phone_numbers?.[0] ||
+                            "--",
+                          experience: totalExp,
+                          expectedCtc: cand.expected_ctc
+                            ? `${cand.expected_ctc} LPA`
+                            : "--",
+                          location: location || "--",
+                          noticePeriod: noticePeriod,
+                          callAttention:
+                            jobScoreObj?.call_attention || [],
+                        });
+                      }}
+                      className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition"
+                    >
                       <Phone className="w-4 h-4" /> Call
                     </button>
                     {cand.resume_url && (
@@ -1454,6 +1481,13 @@ export default function JobCandidateProfile({
           </div>
         </div>
       )}
+
+      {/* Call Candidate Modal */}
+      <CallCandidateModal
+        isOpen={!!callModalCandidate}
+        onClose={() => setCallModalCandidate(null)}
+        candidate={callModalCandidate}
+      />
 
       </div>
     </div>
