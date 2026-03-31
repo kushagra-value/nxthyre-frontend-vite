@@ -971,19 +971,62 @@ export default function JobCandidateProfile({
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">Phone</span>
-                      <span className="text-[#0F47F2] font-medium cursor-pointer">
-                        {premiumData.phone || "--"}
+                      <span
+                        className="text-[#0F47F2] font-medium cursor-pointer"
+                        onClick={() =>
+                          (premiumData.phone || cand.phone) &&
+                          window.open(`tel:${premiumData.phone || cand.phone}`)
+                        }
+                      >
+                        {premiumData.phone || cand.phone || "--"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">Links</span>
                       <div className="flex gap-2">
-                        {cand.linkedin_url && (
-                          <Linkedin className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
+                        {(premiumData.linkedin_url || cand.linkedin_url) && (
+                          <a
+                            href={premiumData.linkedin_url || cand.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="LinkedIn"
+                          >
+                            <Linkedin className="w-4 h-4 text-black hover:text-[#0A66C2] cursor-pointer transition-colors" />
+                          </a>
                         )}
-                        <Github className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
-                        <Palette className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
-                        <Globe className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
+                        {premiumData.github_url && (
+                          <a
+                            href={premiumData.github_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="GitHub"
+                          >
+                            <Github className="w-4 h-4 text-black hover:text-[#333] cursor-pointer transition-colors" />
+                          </a>
+                        )}
+                        {premiumData.portfolio_url && (
+                          <a
+                            href={premiumData.portfolio_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Portfolio"
+                          >
+                            <Palette className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer transition-colors" />
+                          </a>
+                        )}
+                        {premiumData.twitter_url && (
+                          <a
+                            href={premiumData.twitter_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Twitter"
+                          >
+                            <Globe className="w-4 h-4 text-black hover:text-[#1DA1F2] cursor-pointer transition-colors" />
+                          </a>
+                        )}
+                        {!premiumData.linkedin_url && !cand.linkedin_url && !premiumData.github_url && !premiumData.portfolio_url && !premiumData.twitter_url && (
+                          <span className="text-[#AEAEB2] text-xs">--</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -992,13 +1035,13 @@ export default function JobCandidateProfile({
                 <div className="h-[1px] bg-[#E5E7EB] w-full" />
 
                 {/* ── Résumé ── */}
-                {cand.resume_url && (
+                {(cand.resume_url || premiumData.resume_url) && (
                   <div>
-                    <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider uppercase">
+                    <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
                       RESUME
                     </h4>
                     <a
-                      href={cand.resume_url}
+                      href={cand.resume_url || premiumData.resume_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="border border-[#E5E7EB] rounded-lg p-3 bg-white flex items-center justify-between group cursor-pointer hover:border-[#0F47F2] transition"
@@ -1006,8 +1049,14 @@ export default function JobCandidateProfile({
                       <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-[#8E8E93]" />
                         <span className="font-bold text-xs text-black line-clamp-1 truncate w-40">
-                          {fullName.replace(/\s+/g, "_").toLowerCase()}
-                          _resume.pdf
+                          {(() => {
+                            const url = cand.resume_url || premiumData.resume_url || "";
+                            try {
+                              const filename = decodeURIComponent(url.split("/").pop() || "");
+                              if (filename && filename.includes(".")) return filename;
+                            } catch {}
+                            return `${fullName.replace(/\s+/g, "_")}_resume.pdf`;
+                          })()}
                         </span>
                       </div>
                       <Download className="w-4 h-4 text-[#0F47F2]" />
