@@ -62,6 +62,7 @@ export default function SchedulePage() {
   const [selectedJobRole, setSelectedJobRole] = useState<string>('all');
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
   const [eventModalData, setEventModalData] = useState<{ events: ScheduleEventAPI[]; index: number } | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // ── API Data States ──
   const [gridEvents, setGridEvents] = useState<ScheduleEvent[]>([]);
@@ -106,7 +107,7 @@ export default function SchedulePage() {
       }
     };
     loadWeekEvents();
-  }, [currentDate, activeTab, selectedCompany, selectedJobRole]);
+  }, [currentDate, activeTab, selectedCompany, selectedJobRole, refreshTrigger]);
 
   // ── 3. Fetch Right Sidebar Events (Daily View) ──
   useEffect(() => {
@@ -124,7 +125,7 @@ export default function SchedulePage() {
       }
     };
     loadSidebar();
-  }, [selectedDate, activeTab, selectedCompany, selectedJobRole]);
+  }, [selectedDate, activeTab, selectedCompany, selectedJobRole, refreshTrigger]);
 
   // ── 4. Fetch Left Calendar Summary (Month Heatmap) ──
   useEffect(() => {
@@ -147,14 +148,14 @@ export default function SchedulePage() {
       }
     };
     loadCalendarEvents();
-  }, [calendarHoverMonth, selectedCompany, selectedJobRole]);
+  }, [calendarHoverMonth, selectedCompany, selectedJobRole, refreshTrigger]);
 
   // ── 5. Fetch Status Totals ──
   useEffect(() => {
     scheduleService.getStatusCounts()
       .then(stats => setCounts(stats))
       .catch(console.error);
-  }, [currentDate, selectedCompany, selectedJobRole]); 
+  }, [currentDate, selectedCompany, selectedJobRole, refreshTrigger]); 
 
   // ── Navigation & Interactions ──
   const handleDateClick = useCallback((date: Date) => {
@@ -287,6 +288,7 @@ export default function SchedulePage() {
         isOpen={isEventFormOpen}
         onClose={() => setIsEventFormOpen(false)}
         onSubmit={handleEventSubmit}
+        onSuccess={() => setRefreshTrigger(prev => prev + 1)}
         initialCompanyId={selectedCompany !== 'all' ? selectedCompany : undefined}
         initialJobId={selectedJobRole !== 'all' ? selectedJobRole : undefined}
       />

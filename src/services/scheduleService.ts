@@ -167,6 +167,35 @@ class ScheduleService {
     const response = await apiClient.get('/v1/schedule/interview-events/mode-stats/');
     return response.data;
   }
+
+  async createEvent(payload: {
+    application: string;
+    title: string;
+    description?: string;
+    stage?: number;
+    start_at: string;
+    end_at: string;
+    location_type: string;
+    virtual_conference_url?: string;
+    physical_location?: string;
+    status?: string;
+    timezone?: string;
+    organizer?: string;
+    participants?: any[];
+    reminder_preferences?: any;
+  }): Promise<InterviewEvent> {
+    const response = await apiClient.post('/v1/schedule/interview-events/', payload);
+    return response.data;
+  }
+
+  async updateEvent(eventId: string, payload: Record<string, any>): Promise<InterviewEvent> {
+    const response = await apiClient.patch(`/v1/schedule/interview-events/${eventId}/`, payload);
+    return response.data;
+  }
+
+  async deleteEvent(eventId: string): Promise<void> {
+    await apiClient.delete(`/v1/schedule/interview-events/${eventId}/`);
+  }
 }
 
 export const scheduleService = new ScheduleService();

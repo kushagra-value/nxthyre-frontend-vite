@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, ChevronDown, Search } from 'lucide-react';
-import { CalendarEvent } from '../../../data/mockEvents';
 import apiClient from '../../../services/api';
 import { organizationService, MyWorkspace } from '../../../services/organizationService';
 import { jobPostService, Job } from '../../../services/jobPostService';
+import { scheduleService } from '../../../services/scheduleService';
+import { candidateService, PipelineStage } from '../../../services/candidateService';
 
 interface PipelineCandidate {
   id: number;
@@ -17,14 +18,12 @@ interface PipelineCandidate {
 interface EventFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (event: Omit<CalendarEvent, 'id'> & { applicationId: string }) => void;
+  onSubmit?: (data: any) => void;
+  onSuccess?: () => void;
   initialDate?: string;
   initialTime?: string;
   initialCompanyId?: string;
   initialJobId?: string;
-  pipelineStages?: { id: number; name: string; slug: string; sort_order: number }[];
-  stagesLoading?: boolean;
-  candidates?: { id: string; name: string }[];
 }
 
 // Time options for the Start Time dropdown
@@ -136,12 +135,11 @@ export const EventForm = ({
   isOpen,
   onClose,
   onSubmit,
+  onSuccess,
   initialDate,
   initialTime,
   initialCompanyId,
   initialJobId,
-  pipelineStages,
-  stagesLoading,
 }: EventFormProps) => {
   // ── Company & Job state ──
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
@@ -156,13 +154,18 @@ export const EventForm = ({
   const [pipelineCandidates, setPipelineCandidates] = useState<PipelineCandidate[]>([]);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
 
+  // ── Pipeline stages fetched when job is selected ──
+  const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>([]);
+  const [stagesLoading, setStagesLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   // ── Form state ──
   const [formData, setFormData] = useState({
     title: '',
     attendee: '',
     location: '',
     stageId: '' as string | number,
-    type: 'first-round' as CalendarEvent['type'],
+    type: 'first-round' as string,
     date: initialDate || (() => {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -245,6 +248,7 @@ export const EventForm = ({
   useEffect(() => {
     if (!selectedJobId) {
       setPipelineCandidates([]);
+      setPipelineStages([]);
       return;
     }
 
@@ -272,12 +276,26 @@ export const EventForm = ({
       }
     };
 
+    const fetchStages = async () => {
+      setStagesLoading(true);
+      try {
+        const stages = await candidateService.getPipelineStages(Number(selectedJobId));
+        setPipelineStages(stages);
+      } catch (error) {
+        console.error('Failed to fetch pipeline stages', error);
+        setPipelineStages([]);
+      } finally {
+        setStagesLoading(false);
+      }
+    };
+
     fetchCandidates();
+    fetchStages();
   }, [selectedJobId]);
 
   // Reset applicationId when job changes
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, applicationId: '' }));
+    setFormData((prev) => ({ ...prev, applicationId: '', stageId: '', type: '' }));
   }, [selectedJobId]);
 
   if (!isOpen) return null;
@@ -322,15 +340,20 @@ export const EventForm = ({
     const startDateTime = `${formData.date}T${startTime24}:00Z`;
     const endDateTime = `${formData.date}T${endTime24}:00Z`;
 
+    // Map interview mode to API location_type
+    let locationType = 'VIRTUAL';
+    if (formData.interviewMode === 'face-to-face') locationType = 'ONSITE';
+    else if (formData.interviewMode === 'external') locationType = 'HYBRID';
+
     const payload = {
-      application: Number(formData.applicationId),
-      title: formData.title || `${formData.attendee} - Interview`,
-      description: formData.description || formData.note,
+      application: String(formData.applicationId),
+      title: formData.title || 'Interview',
+      description: formData.description || formData.note || '',
       stage: Number(formData.stageId),
       start_at: startDateTime,
       end_at: endDateTime,
-      location_type: formData.interviewMode === 'virtual' ? 'VIRTUAL' : formData.interviewMode === 'face-to-face' ? 'IN_PERSON' : 'VIRTUAL',
-      virtual_conference_url: formData.meetingLink || 'https://meet.google.com/placeholder',
+      location_type: locationType,
+      virtual_conference_url: formData.meetingLink || undefined,
       status: 'SCHEDULED',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       participants: [],
@@ -340,26 +363,19 @@ export const EventForm = ({
       },
     };
 
+    setSubmitting(true);
     try {
-      await apiClient.post('/jobs/interview-events/', payload);
-
-      onSubmit({
-        title: formData.title || formData.attendee,
-        attendee: formData.attendee,
-        type: formData.type,
-        startTime: startTime24,
-        endTime: endTime24,
-        date: formData.date,
-        confirmed: true,
-        applicationId: formData.applicationId,
-        description: formData.description || formData.note,
-      });
+      await scheduleService.createEvent(payload);
+      onSubmit?.(payload);
+      onSuccess?.();
+      handleClose();
     } catch (err: any) {
       console.error('Failed to create interview event:', err);
-      const msg = err.response?.data?.detail || 'Failed to schedule interview';
+      const detail = err.response?.data;
+      const msg = typeof detail === 'string' ? detail : detail?.detail || detail?.message || JSON.stringify(detail) || 'Failed to schedule interview';
       alert(msg);
     } finally {
-      handleClose();
+      setSubmitting(false);
     }
   };
 
@@ -369,7 +385,7 @@ export const EventForm = ({
       attendee: '',
       location: '',
       stageId: '',
-      type: 'first-round',
+      type: '',
       date: initialDate || (() => {
         const d = new Date();
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -386,6 +402,7 @@ export const EventForm = ({
     setSelectedCompanyId('');
     setSelectedJobId('');
     setPipelineCandidates([]);
+    setPipelineStages([]);
     isInitialMount.current = true;
     onClose();
   };
@@ -400,8 +417,8 @@ export const EventForm = ({
     label: job.title,
   }));
 
-  const stageOptions = (pipelineStages || []).map((stage) => ({
-    value: stage.slug,
+  const stageOptions = pipelineStages.map((stage) => ({
+    value: String(stage.id),
     label: stage.name,
   }));
 
@@ -512,18 +529,19 @@ export const EventForm = ({
               id="interview-stage-select"
               label="Interview Stage"
               required
-              value={formData.type}
+              value={String(formData.stageId)}
               placeholder="Select stage..."
               options={stageOptions}
               onChange={(val) => {
-                const selectedStage = pipelineStages?.find((s) => s.slug === val);
+                const selectedStage = pipelineStages.find((s) => String(s.id) === val);
                 setFormData({
                   ...formData,
-                  type: val as CalendarEvent['type'],
-                  stageId: selectedStage ? selectedStage.id : '',
+                  type: selectedStage?.slug || val,
+                  stageId: selectedStage ? selectedStage.id : val,
                 });
               }}
               loading={stagesLoading}
+              disabled={!selectedJobId}
             />
 
             {/* Date, Start Time, Duration Row */}
@@ -658,9 +676,10 @@ export const EventForm = ({
               <button
                 type="submit"
                 id="schedule-interview-btn"
-                className="px-6 py-2.5 text-sm font-medium text-white bg-[#0F47F2] rounded-xl hover:bg-[#0D3DD4] transition-colors shadow-sm"
+                disabled={submitting}
+                className={`px-6 py-2.5 text-sm font-medium text-white bg-[#0F47F2] rounded-xl hover:bg-[#0D3DD4] transition-colors shadow-sm ${submitting ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                Schedule Interview
+                {submitting ? 'Scheduling...' : 'Schedule Interview'}
               </button>
             </div>
           </form>
