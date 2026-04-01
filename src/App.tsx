@@ -21,14 +21,11 @@ import CandidateCallPage from "./pages/companies/components/CandidateCallPage";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import ShareCandidateListPage from "./pages/pipelines/ShareCandidateListPage";
 import ProjectSkeletonCard from "./components/skeletons/ProjectSkeletonCard";
-import {
-  organizationService,
-} from "./services/organizationService";
+import { organizationService } from "./services/organizationService";
 import { User } from "./types/auth";
 import { showToast } from "./utils/toast";
 import Cookies from "js-cookie";
 import { Users, LogOut } from "lucide-react";
-
 
 // Layout
 import Sidebar from "./components/layout/Sidebar";
@@ -50,10 +47,10 @@ function MainApp() {
     signOut,
     loading: authLoading,
   } = useAuth();
-  const { } = useAuthContext();
+  const {} = useAuthContext();
 
   const [currentPage, setCurrentPage] = useState(() => {
-    return sessionStorage.getItem('nxthyre_activeTab') || 'dashboard';
+    return sessionStorage.getItem("nxthyre_activeTab") || "dashboard";
   });
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -88,7 +85,7 @@ function MainApp() {
 
   // Persist active tab to sessionStorage
   useEffect(() => {
-    sessionStorage.setItem('nxthyre_activeTab', currentPage);
+    sessionStorage.setItem("nxthyre_activeTab", currentPage);
   }, [currentPage]);
 
   const handleAuthSuccess = (user: any) => {
@@ -125,11 +122,15 @@ function MainApp() {
     }
   };
 
-
-
-  const [headerWorkspaceName, setHeaderWorkspaceName] = useState<string | undefined>(undefined);
-  const [headerJobName, setHeaderJobName] = useState<string | undefined>(undefined);
-  const [headerCandidateName, setHeaderCandidateName] = useState<string | undefined>(undefined);
+  const [headerWorkspaceName, setHeaderWorkspaceName] = useState<
+    string | undefined
+  >(undefined);
+  const [headerJobName, setHeaderJobName] = useState<string | undefined>(
+    undefined,
+  );
+  const [headerCandidateName, setHeaderCandidateName] = useState<
+    string | undefined
+  >(undefined);
 
   useEffect(() => {
     const handleHeaderUpdate = () => {
@@ -137,10 +138,11 @@ function MainApp() {
       setHeaderJobName((window as any).__selectedJobName);
       setHeaderCandidateName((window as any).__selectedCandidateName);
     };
-    window.addEventListener('header-update', handleHeaderUpdate);
+    window.addEventListener("header-update", handleHeaderUpdate);
     // Initial check
     handleHeaderUpdate();
-    return () => window.removeEventListener('header-update', handleHeaderUpdate);
+    return () =>
+      window.removeEventListener("header-update", handleHeaderUpdate);
   }, []);
 
   const getCurrentDateTime = () => {
@@ -178,7 +180,7 @@ function MainApp() {
   };
 
   const getPageSubtitle = () => {
-    if (currentPage === 'companies') {
+    if (currentPage === "companies") {
       if (headerJobName && headerWorkspaceName && headerCandidateName) {
         return `Companies • ${headerWorkspaceName} • ${headerJobName} • Profile`;
       }
@@ -193,7 +195,7 @@ function MainApp() {
   };
 
   const handleBreadcrumbNavigate = (index: number) => {
-    if (currentPage !== 'companies') return;
+    if (currentPage !== "companies") return;
     // index 0 = "Companies" (go back to company list)
     // index 1 = workspace name (go back to job listing)
     // index 2 = job name (go back to job pipeline if candidate profile is active)
@@ -202,16 +204,26 @@ function MainApp() {
       delete (window as any).__selectedWorkspaceName;
       delete (window as any).__selectedJobName;
       delete (window as any).__selectedCandidateName;
-      window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'companies' } }));
+      window.dispatchEvent(
+        new CustomEvent("breadcrumb-navigate", {
+          detail: { level: "companies" },
+        }),
+      );
     } else if (index === 1) {
       // Navigate back to job listing
       delete (window as any).__selectedJobName;
       delete (window as any).__selectedCandidateName;
-      window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'workspace' } }));
+      window.dispatchEvent(
+        new CustomEvent("breadcrumb-navigate", {
+          detail: { level: "workspace" },
+        }),
+      );
     } else if (index === 2 && headerCandidateName) {
       // Navigate back to job pipeline from candidate profile
       delete (window as any).__selectedCandidateName;
-      window.dispatchEvent(new CustomEvent('breadcrumb-navigate', { detail: { level: 'job' } }));
+      window.dispatchEvent(
+        new CustomEvent("breadcrumb-navigate", { detail: { level: "job" } }),
+      );
     }
   };
 
@@ -414,7 +426,7 @@ function MainApp() {
           element={<ShareableProfile />}
         />
         <Route
-          path="/call/:candidateId"
+          path="/call/:candidateId/:jobId"
           element={<CandidateCallPage />}
         />
         <Route
@@ -449,10 +461,7 @@ function MainApp() {
           element={<CandidateBackGroundCheck />}
         />
         <Route path="/invite" element={<InvitePage />} />
-        <Route
-          path="/terms-and-policies"
-          element={<TermsAndConditions />}
-        />
+        <Route path="/terms-and-policies" element={<TermsAndConditions />} />
         <Route
           path="/settings"
           element={
@@ -487,7 +496,7 @@ function MainApp() {
                 <Sidebar
                   currentPage={currentPage}
                   onNavigate={(page) => {
-                    if (page === 'companies') {
+                    if (page === "companies") {
                       delete (window as any).__selectedWorkspaceName;
                       delete (window as any).__selectedJobName;
                       delete (window as any).__selectedCandidateName;

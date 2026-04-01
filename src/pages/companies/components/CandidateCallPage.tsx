@@ -86,8 +86,8 @@ export default function CandidateCallPage() {
   const [roleQuestions, setRoleQuestions] = useState<RoleQuestion[]>([]);
   const [transcripts, setTranscripts] = useState<LiveTranscript[]>([]);
 
-  // Dummy job ID for MVP (ideally pass this in via location.state or fetch dynamically)
-  const jobId = "job_default_123";
+  // Job ID ::
+  const jobId = location.state?.jobId || "";
 
   // Notes & Checklist States
   const [notes, setNotes] = useState("");
