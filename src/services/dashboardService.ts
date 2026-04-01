@@ -276,6 +276,8 @@ export interface AgendaAlert {
 export interface AgendaItemAPI {
   id: string;
   candidate_name: string;
+  candidate_id?: string;
+  job_role_id?: number;
   candidate_role: string;
   time: string;
   status: 'completed' | 'in-progress' | 'upcoming';
@@ -547,13 +549,88 @@ class DashboardService {
   async getScheduleEvents(params?: { filter?: ScheduleFilterType; date?: string }): Promise<ScheduleResponse> {
     try {
       const queryParams = new URLSearchParams();
+      let startDateStr = '';
+      let endDateStr = '';
+
+      const today = new Date();
+      const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
       if (params?.date) {
-        queryParams.append('date', params.date);
-      } else if (params?.filter) {
-        queryParams.append('filter', params.filter);
+        startDateStr = params.date;
+        endDateStr = params.date;
+      } else if (params?.filter === 'today') {
+        startDateStr = formatDate(today);
+        endDateStr = formatDate(today);
+      } else if (params?.filter === 'upcoming') {
+        // Today to next 30 days
+        startDateStr = formatDate(today);
+        const upcomingEnd = new Date(today);
+        upcomingEnd.setDate(today.getDate() + 30);
+        endDateStr = formatDate(upcomingEnd);
+      } else {
+        // Default to today if no filter or unrecognized
+        startDateStr = formatDate(today);
+        endDateStr = formatDate(today);
       }
-      const response = await apiClient.get(`/jobs/dashboard/schedule/?${queryParams.toString()}`);
-      return response.data;
+
+      queryParams.append('start_date', startDateStr);
+      queryParams.append('end_date', endDateStr);
+      queryParams.append('page_size', '1000');
+
+      const response = await apiClient.get(`/v1/schedule/interview-events/?${queryParams.toString()}`);
+      
+      // Transform InterviewEvent[] to ScheduleEventAPI[]
+      const events: ScheduleEventAPI[] = (response.data.results || response.data || []).map((ev: any) => {
+        const start = new Date(ev.start_at);
+        const end = new Date(ev.end_at);
+        const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        return {
+          id: ev.id,
+          status: ev.status === 'COMPLETED' ? 'completed' : (ev.status === 'IN_PROGRESS' ? 'in-progress' : 'upcoming'),
+          is_done: ev.status === 'COMPLETED',
+          widget_summary: {
+            time: `${formatTime(start)} – ${formatTime(end)}`,
+            type: ev.title || 'Interview',
+            name: ev.candidate_name,
+            details: ev.candidate_position || '',
+            location: ev.location_type || 'virtual',
+            color_theme: 'cyan'
+          },
+          modal_details: {
+            title: ev.title || 'Interview',
+            candidate_name: ev.candidate_name,
+            candidate_id: ev.candidate_id,
+            job_id: ev.job_role?.id,
+            interview_type: ev.title || 'Interview',
+            date: start.toLocaleDateString(),
+            time_range: `${formatTime(start)} – ${formatTime(end)}`,
+            timezone: ev.timezone || 'IST',
+            description: ev.description || ev.title || 'Scheduled Interview',
+            meeting_platform: ev.location_type === 'VIRTUAL' ? 'Virtual' : (ev.location_type || 'Virtual'),
+            meeting_url: ev.virtual_conference_url || '',
+            status_label: ev.status || 'scheduled',
+            duration: '60 min',
+            recruiter: { name: 'Recruiter', role: 'Team', avatar: '' },
+            candidate_contact: { email: '', phone: '' },
+            candidate_info: { 
+              company: ev.candidate_company || ev.company?.name || '', 
+              position: ev.candidate_position || ev.job_role?.name || '', 
+              experience: ev.candidate_experience || '' 
+            },
+            interviewer_info: {
+              interviewer_name: ev.interviewer?.name || 'Interviewer',
+              job_role: ev.candidate_position || ''
+            }
+          }
+        };
+      });
+
+      return {
+        total_events: events.length,
+        filter_applied: params?.filter || 'all',
+        events: events
+      };
     } catch (error: any) {
       throw new Error(
         error.response?.data?.detail || error.response?.data?.error || "Failed to fetch schedule events",

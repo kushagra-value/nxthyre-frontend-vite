@@ -271,8 +271,33 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                                                         <div className="flex items-center justify-between mt-0.5">
                                                             <p className="text-[10px] text-slate-500 truncate">{item.candidate_role}</p>
                                                             <div className="flex items-center gap-2 shrink-0">
-                                                                <span className="text-[10px] font-bold text-slate-500">{item.time}</span>
-                                                                <button className="border border-slate-200 hover:bg-blue-50 text-slate-600 text-[10px] font-bold px-2.5 py-0.5 rounded-md transition-all">Profile</button>
+                                                                <span className="text-[10px] font-bold text-slate-500 mr-2">{item.time}</span>
+                                                                {item.meeting_link && (
+                                                                    <button
+                                                                        className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-3 py-1 rounded-md transition-all shadow-sm shadow-blue-200 flex items-center gap-1 active:scale-95"
+                                                                        onClick={() => window.open(item.meeting_link!, '_blank')}
+                                                                    >
+                                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                            <polygon points="23 7 16 12 23 17 23 7" />
+                                                                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                                                                        </svg>
+                                                                        Join
+                                                                    </button>
+                                                                )}
+                                                                <button
+                                                                    className="border border-slate-200 hover:bg-blue-50 text-slate-600 text-[10px] font-bold px-2.5 py-0.5 rounded-md transition-all"
+                                                                    onClick={() => {
+                                                                        const candId = item.candidate_id || (item.id.startsWith('item-') ? item.id.replace('item-', '') : item.id);
+                                                                        if (candId) {
+                                                                            const url = item.job_role_id
+                                                                                ? `/candidate-profiles/${candId}?job_id=${item.job_role_id}`
+                                                                                : `/candidate-profiles/${candId}`;
+                                                                            window.open(url, '_blank');
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    Profile
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>
