@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     ChevronLeft,
     Globe,
@@ -94,6 +94,11 @@ const JobListing: React.FC<JobListingProps> = ({
     const ITEMS_PER_PAGE = 10;
     const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+    // Reset pagination when filter or search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeJobFilter, jobSearchQuery]);
 
     const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
@@ -342,7 +347,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             return (
                                 <button
                                     key={filter}
-                                    onClick={() => setActiveJobFilter(filter)}
+                                    onClick={() => { setActiveJobFilter(filter); setCurrentPage(1); }}
                                     className={`h-[30px] px-4 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center justify-center
                         ${activeJobFilter === filter
                                             ? 'bg-[#0F47F2] text-white'

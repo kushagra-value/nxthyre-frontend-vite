@@ -346,18 +346,19 @@ export default function Companies() {
         });
     }, [allRows]);
 
-    const searchedRows = searchQuery.trim()
+    const searchedRows = useMemo(() => searchQuery.trim()
         ? allRows.filter(
             (r) =>
                 r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 r.domain.toLowerCase().includes(searchQuery.toLowerCase())
         )
-        : allRows;
+        : allRows, [allRows, searchQuery]);
 
-    const filteredRows =
+    const filteredRows = useMemo(() =>
         activeFilter === "All"
             ? searchedRows
-            : searchedRows.filter((r) => r.status === activeFilter);
+            : searchedRows.filter((r) => r.status === activeFilter),
+        [searchedRows, activeFilter]);
 
     const handleStatusToggle = async (workspaceId: number, currentStatus: string) => {
         if (statusUpdating) return;
@@ -387,12 +388,12 @@ export default function Companies() {
         }
     };
 
-    const filterCounts = {
+    const filterCounts = useMemo(() => ({
         All: searchedRows.length,
         Active: searchedRows.filter((r) => r.status === "Active").length,
         Paused: searchedRows.filter((r) => r.status === "Paused").length,
         Inactive: searchedRows.filter((r) => r.status === "Inactive").length,
-    };
+    }), [searchedRows]);
 
     const handleSort = (key: keyof CompanyTableRow) => {
         let direction: 'asc' | 'desc' = 'asc';
@@ -448,12 +449,20 @@ export default function Companies() {
         });
     };
 
-    const sortedRows = getSortedRows(filteredRows);
+    const sortedRows = useMemo(() => getSortedRows(filteredRows), [filteredRows, sortConfig]);
 
     const itemsPerPage = 10;
+    const totalPages = Math.max(1, Math.ceil(sortedRows.length / itemsPerPage));
+
+    // Clamp currentPage to valid range when data changes (e.g. filter reduces results)
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedRows = sortedRows.slice(startIndex, startIndex + itemsPerPage);
-    const totalPages = Math.max(1, Math.ceil(sortedRows.length / itemsPerPage));
 
     const getPageNumbers = (): (number | "...")[] => {
         if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -481,9 +490,12 @@ export default function Companies() {
         }
     };
 
-    const workspaceJobs = allJobs.filter(j => j.workspace_details?.id === selectedWorkspace?.id);
+    const workspaceJobs = useMemo(() => 
+        allJobs.filter(j => j.workspace_details?.id === selectedWorkspace?.id),
+        [allJobs, selectedWorkspace?.id]
+    );
 
-    const filteredWorkspaceJobs = workspaceJobs.filter(j => {
+    const filteredWorkspaceJobs = useMemo(() => workspaceJobs.filter(j => {
         const matchesSearch = j.title.toLowerCase().includes(jobSearchQuery.toLowerCase());
         let matchesStatus = true;
         if (activeJobFilter === "Active") {
@@ -496,7 +508,7 @@ export default function Companies() {
             matchesStatus = j.pyjamahr_status === "DRAFT";
         }
         return matchesSearch && matchesStatus;
-    });
+    }), [workspaceJobs, jobSearchQuery, activeJobFilter]);
 
     // ── Job Pipeline View ──
     if (selectedJob && selectedWorkspace) {
