@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import {
     organizationService,
@@ -87,6 +87,15 @@ const StopIcon = () => (
 
 export default function Companies() {
     const { isAuthenticated } = useAuth();
+
+    const isMounted = useRef(true);
+
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
     const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
     const [statsCount, setStatsCount] = useState<WorkspaceStatsCount | null>(null);
@@ -220,9 +229,13 @@ export default function Companies() {
             );
             const data = await response.json();
             const logoUrl = data.length > 0 ? data[0].logo_url : null;
-            setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+            if (isMounted.current) {
+                setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+            }
         } catch (error) {
-            setLogos((prev) => ({ ...prev, [query]: null }));
+            if (isMounted.current) {
+                setLogos((prev) => ({ ...prev, [query]: null }));
+            }
         }
     };
 
@@ -230,12 +243,14 @@ export default function Companies() {
         setLoading(true);
         try {
             const data = await organizationService.getMyWorkspacesData();
-            setWorkspaces(data.workspaces || []);
-            setStatsCount(data.stats_count || null);
+            if (isMounted.current) {
+                setWorkspaces(data.workspaces || []);
+                setStatsCount(data.stats_count || null);
+            }
         } catch (error) {
             console.error("Failed to fetch workspaces", error);
         } finally {
-            setLoading(false);
+            if (isMounted.current) setLoading(false);
         }
     };
 
@@ -243,11 +258,11 @@ export default function Companies() {
         setJobsLoading(true);
         try {
             const data = await jobPostService.getJobs();
-            setAllJobs(data);
+            if (isMounted.current) setAllJobs(data);
         } catch (error) {
             console.error("Failed to fetch jobs", error);
         } finally {
-            setJobsLoading(false);
+            if (isMounted.current) setJobsLoading(false);
         }
     };
 
@@ -263,11 +278,11 @@ export default function Companies() {
         setSidebarLoading(true);
         try {
             const data = await dashboardService.getSidebar();
-            setSidebarData(data);
+            if (isMounted.current) setSidebarData(data);
         } catch (error) {
             console.error('Failed to fetch sidebar data', error);
         } finally {
-            setSidebarLoading(false);
+            if (isMounted.current) setSidebarLoading(false);
         }
     };
 
@@ -292,7 +307,7 @@ export default function Companies() {
         }
     }, [allJobs, pendingJobId, selectedWorkspace]);
 
-    const buildTableRows = useCallback((): CompanyTableRow[] => {
+    const allRows = useMemo((): CompanyTableRow[] => {
         if (workspaces.length === 0) return companyTableRows;
 
         return workspaces.map((ws) => {
@@ -321,8 +336,6 @@ export default function Companies() {
             };
         });
     }, [workspaces]);
-
-    const allRows = buildTableRows();
 
     useEffect(() => {
         const uniqueCompanies = Array.from(new Set(allRows.map((r) => r.name)));
@@ -359,12 +372,18 @@ export default function Companies() {
         setStatusUpdating(workspaceId);
         try {
             await organizationService.updateWorkspace(workspaceId, { status: newStatus });
-            setWorkspaces(prev => prev.map(w => w.id === workspaceId ? { ...w, workspace_status: newStatus } : w));
-            showToast.success("Workspace status updated");
+            if (isMounted.current) {
+                setWorkspaces(prev => prev.map(w => w.id === workspaceId ? { ...w, workspace_status: newStatus } : w));
+                showToast.success("Workspace status updated");
+            }
         } catch (err: any) {
-            showToast.error(err.message || "Failed to update status");
+            if (isMounted.current) {
+                showToast.error(err.message || "Failed to update status");
+            }
         } finally {
-            setStatusUpdating(null);
+            if (isMounted.current) {
+                setStatusUpdating(null);
+            }
         }
     };
 
