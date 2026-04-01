@@ -139,10 +139,19 @@ function MainApp() {
       setHeaderJobName((window as any).__selectedJobName);
       setHeaderCandidateName((window as any).__selectedCandidateName);
     };
+    const handleTabSwitch = (e: any) => {
+      if (e.detail?.page) {
+        setCurrentPage(e.detail.page);
+      }
+    };
     window.addEventListener('header-update', handleHeaderUpdate);
+    window.addEventListener('tab-switch', handleTabSwitch);
     // Initial check
     handleHeaderUpdate();
-    return () => window.removeEventListener('header-update', handleHeaderUpdate);
+    return () => {
+      window.removeEventListener('header-update', handleHeaderUpdate);
+      window.removeEventListener('tab-switch', handleTabSwitch);
+    };
   }, []);
 
   const getCurrentDateTime = () => {

@@ -358,12 +358,15 @@ export interface ScheduleModalInterviewerInfo {
 export interface ScheduleModalDetails {
   title: string;
   candidate_name: string;
+  candidate_id?: string;
+  job_id?: number;
   interview_type: string;
   date: string;
   time_range: string;
   timezone: string;
   description: string;
   meeting_platform: string;
+  meeting_url?: string;
   status_label: string;
   duration: string;
   recruiter: ScheduleModalRecruiter;

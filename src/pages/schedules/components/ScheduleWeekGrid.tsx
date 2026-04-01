@@ -7,15 +7,20 @@ export interface ScheduleEvent {
   id: string;
   title: string;
   candidateName: string;
+  candidate_id?: string;
+  job_role_id?: number;
   date: string; // YYYY-MM-DD
   startTime: string; // HH:mm 24h
   endTime: string;
   mode: 'zoom' | 'virtual' | 'f2f' | 'overdue' | 'external' | 'bgv' | 'mock';
+  virtual_url?: string;
   company?: string;
   position?: string;
   experience?: string;
   status?: 'scheduled' | 'completed' | 'overdue' | 'cancelled';
   interviewCount?: number;
+  interviewer_name?: string;
+  interviewer_email?: string;
 }
 
 interface ScheduleWeekGridProps {

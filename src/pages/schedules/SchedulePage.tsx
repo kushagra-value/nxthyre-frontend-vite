@@ -37,14 +37,19 @@ function mapInterviewEvent(ev: InterviewEvent): ScheduleEvent {
     id: ev.id,
     title: ev.title || 'Interview',
     candidateName: ev.candidate_name,
+    candidate_id: ev.candidate_id,
+    job_role_id: ev.job_role?.id,
     date: ev.start_at.split('T')[0] || '',
     startTime: ev.start_at.length > 15 ? ev.start_at.substring(11, 16) : '00:00',
     endTime: ev.end_at.length > 15 ? ev.end_at.substring(11, 16) : '00:00',
     mode: (ev.mode || 'virtual').toLowerCase() as any,
+    virtual_url: ev.virtual_conference_url || undefined,
     company: ev.company?.name || '',
     position: ev.job_role?.name || ev.candidate_position || '',
     experience: ev.candidate_experience || '',
     status: (ev.status || 'scheduled').toLowerCase() as any,
+    interviewer_name: ev.interviewer?.name || 'Interviewer',
+    interviewer_email: ev.interviewer?.email || '',
   };
 }
 
@@ -195,19 +200,22 @@ export default function SchedulePage() {
       modal_details: {
         title: ev.title || 'Interview',
         candidate_name: ev.candidateName,
+        candidate_id: ev.candidate_id,
+        job_id: ev.job_role_id,
         interview_type: ev.title || 'Interview',
         date: ev.date,
         time_range: `${ev.startTime} – ${ev.endTime}`,
         timezone: 'IST',
         description: ev.title || 'Scheduled Interview',
-        meeting_platform: ev.mode || 'Virtual',
+        meeting_platform: ev.mode === 'virtual' ? 'Virtual' : (ev.mode || 'Virtual'),
+        meeting_url: ev.virtual_url || '',
         status_label: ev.status || 'scheduled',
         duration: '60 min',
         recruiter: { name: 'Recruiter', role: 'Team', avatar: '' },
         candidate_contact: { email: '', phone: '' },
         candidate_info: { company: ev.company || '', position: ev.position || '', experience: ev.experience || '' },
         interviewer_info: {
-          interviewer_name: 'Interviewer',
+          interviewer_name: ev.interviewer_name || 'Interviewer',
           job_role: ev.position || ''
         }
       }
