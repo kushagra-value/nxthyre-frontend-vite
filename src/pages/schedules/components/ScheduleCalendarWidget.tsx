@@ -10,6 +10,7 @@ export interface ScheduleCalendarWidgetProps {
   onDateClick?: (date: Date, isTodayOrFuture: boolean) => void;
   activities?: CalendarDayActivity[];
   selectedDate?: Date;
+  onMonthChange?: (month: number, year: number) => void;
 }
 
 const MONTHS = [
@@ -35,7 +36,7 @@ const PAST_ACTIVITY_COLORS: Record<number, { bg: string; text: string }> = {
   5: { bg: '#4B5563', text: '#FFFFFF' },
 };
 
-export default function ScheduleCalendarWidget({ onDateClick, activities = [], selectedDate }: ScheduleCalendarWidgetProps) {
+export default function ScheduleCalendarWidget({ onDateClick, activities = [], selectedDate, onMonthChange }: ScheduleCalendarWidgetProps) {
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
@@ -58,6 +59,10 @@ export default function ScheduleCalendarWidget({ onDateClick, activities = [], s
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  useEffect(() => {
+    onMonthChange?.(currentMonth + 1, currentYear);
+  }, [currentMonth, currentYear, onMonthChange]);
 
   const activityMap = new Map<string, number>();
   activities.forEach((a) => activityMap.set(a.date, a.activityLevel));

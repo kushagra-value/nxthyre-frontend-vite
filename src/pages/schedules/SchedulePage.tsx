@@ -9,279 +9,163 @@ import { EventForm } from './components/EventForm';
 import ScheduleEventModal from '../dashboard/components/ScheduleEventModal';
 import { organizationService, MyWorkspace } from '../../services/organizationService';
 import { jobPostService, Job } from '../../services/jobPostService';
-import type { ScheduleEventData } from '../dashboard/dashboardData';
+import type { ScheduleEventAPI } from '../../services/dashboardService';
 import type { ScheduleEvent } from './components/ScheduleWeekGrid';
 import type { CalendarDayActivity } from './components/ScheduleCalendarWidget';
 
-/* ─── Mock Data ─── */
+import { scheduleService, InterviewEvent } from '../../services/scheduleService';
 
-const MOCK_EVENTS: ScheduleEvent[] = [
-  {
-    id: 'se-1',
-    title: '1st Round Interview',
-    candidateName: 'Max Verstappen',
-    date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
-    startTime: '11:30',
-    endTime: '12:30',
-    mode: 'zoom',
-    company: 'Deloitte',
-    position: 'Full Stack Developer',
-    experience: '4 yrs',
-    status: 'scheduled',
-  },
-  {
-    id: 'se-2',
-    title: 'Technical Round',
-    candidateName: 'Brad Pitt',
-    date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
-    startTime: '12:30',
-    endTime: '13:30',
-    mode: 'virtual',
-    company: 'HGS',
-    position: 'Software Developer',
-    experience: '6 yrs',
-    status: 'scheduled',
-  },
-  {
-    id: 'se-3',
-    title: 'Technical Round',
-    candidateName: 'Robert Pattinson',
-    date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
-    startTime: '14:30',
-    endTime: '15:30',
-    mode: 'f2f',
-    company: 'Jupiter',
-    position: 'Marketing Manager',
-    experience: '2 yrs',
-    status: 'scheduled',
-  },
-  {
-    id: 'se-4',
-    title: 'Screening Call',
-    candidateName: 'Ananya Nair',
-    date: (() => {
-      const d = new Date();
-      d.setDate(d.getDate() + 1);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    })(),
-    startTime: '09:00',
-    endTime: '09:45',
-    mode: 'zoom',
-    company: 'Ola',
-    position: 'UX Designer',
-    experience: '5 yrs',
-    status: 'scheduled',
-  },
-  {
-    id: 'se-5',
-    title: 'Screening Call',
-    candidateName: 'Priya Sharma',
-    date: (() => {
-      const d = new Date();
-      d.setDate(d.getDate() - 1);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    })(),
-    startTime: '10:00',
-    endTime: '10:30',
-    mode: 'zoom',
-    company: 'Deloitte',
-    status: 'completed',
-  },
-  {
-    id: 'se-6',
-    title: 'F2F Round',
-    candidateName: 'Kavya Menon',
-    date: (() => {
-      const d = new Date();
-      d.setDate(d.getDate() - 1);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    })(),
-    startTime: '11:30',
-    endTime: '12:00',
-    mode: 'f2f',
-    company: 'RocketGrowth Bio',
-    status: 'completed',
-  },
-  {
-    id: 'se-7',
-    title: 'Virtual Interview',
-    candidateName: 'Rahul Verma',
-    date: (() => {
-      const d = new Date();
-      d.setDate(d.getDate() + 2);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    })(),
-    startTime: '13:00',
-    endTime: '13:45',
-    mode: 'virtual',
-    company: 'RocketGrowth Bio',
-    status: 'scheduled',
-  },
-  {
-    id: 'se-8',
-    title: 'Screening',
-    candidateName: 'Sneha Mehta',
-    date: (() => {
-      const d = new Date();
-      d.setDate(d.getDate() + 3);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    })(),
-    startTime: '10:00',
-    endTime: '10:45',
-    mode: 'overdue',
-    company: 'Deloitte',
-    status: 'overdue',
-  },
-  {
-    id: 'se-9',
-    title: 'Zoom Call',
-    candidateName: 'Ananya Nair',
-    date: (() => {
-      const d = new Date();
-      d.setDate(d.getDate() + 2);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    })(),
-    startTime: '09:00',
-    endTime: '09:45',
-    mode: 'zoom',
-    company: 'Ola',
-    status: 'scheduled',
-  },
-  {
-    id: 'se-10',
-    title: 'Zoom Call',
-    candidateName: 'Max Verstappen',
-    date: (() => {
-      const d = new Date();
-      d.setDate(d.getDate() + 2);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    })(),
-    startTime: '12:00',
-    endTime: '12:45',
-    mode: 'zoom',
-    company: 'Deloitte',
-    status: 'scheduled',
-  },
-  {
-    id: 'se-11',
-    title: 'F2F Interview',
-    candidateName: 'Vikram Rao',
-    date: (() => {
-      const d = new Date();
-      d.setDate(d.getDate() + 2);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    })(),
-    startTime: '14:30',
-    endTime: '15:00',
-    mode: 'f2f',
-    company: 'Jupiter',
-    status: 'scheduled',
-  },
-  {
-    id: 'se-12',
-    title: 'Overdue Follow-up',
-    candidateName: 'Aryan Das',
-    date: (() => {
-      const d = new Date();
-      d.setDate(d.getDate() + 2);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    })(),
-    startTime: '14:00',
-    endTime: '14:30',
-    mode: 'overdue',
-    company: 'McLaren',
-    status: 'overdue',
-  },
-];
+function toDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
-/* ─── Build calendar heatmap ─── */
-function buildActivityMap(events: ScheduleEvent[]): CalendarDayActivity[] {
-  const countMap: Record<string, number> = {};
-  events.forEach((ev) => {
-    countMap[ev.date] = (countMap[ev.date] || 0) + 1;
-  });
-  return Object.entries(countMap).map(([date, count]) => ({
-    date,
-    activityLevel: Math.min(count, 5) as 0 | 1 | 2 | 3 | 4 | 5,
-  }));
+function getWeekRange(date: Date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const start = new Date(d.setDate(diff));
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  return {
+    start: toDateStr(start),
+    end: toDateStr(end),
+  };
+}
+
+function mapInterviewEvent(ev: InterviewEvent): ScheduleEvent {
+  return {
+    id: ev.id,
+    title: ev.title || 'Interview',
+    candidateName: ev.candidate_name,
+    date: ev.start_at.split('T')[0] || '',
+    startTime: ev.start_at.length > 15 ? ev.start_at.substring(11, 16) : '00:00',
+    endTime: ev.end_at.length > 15 ? ev.end_at.substring(11, 16) : '00:00',
+    mode: (ev.mode || 'virtual').toLowerCase() as any,
+    company: ev.company?.name || '',
+    position: ev.job_role?.name || ev.candidate_position || '',
+    experience: ev.candidate_experience || '',
+    status: (ev.status || 'scheduled').toLowerCase() as any,
+  };
 }
 
 /* ─── Main Page ─── */
 
 export default function SchedulePage() {
-  const [currentDate, setCurrentDate] = useState(new Date()); // controls which week is shown in center
-  const [selectedDate, setSelectedDate] = useState(new Date()); // controls the right sidebar
-  const [activeTab, setActiveTab] = useState('all');
-  const [selectedCompany, setSelectedCompany] = useState('all');
-  const [selectedJobRole, setSelectedJobRole] = useState('all');
-  const [isEventFormOpen, setIsEventFormOpen] = useState(false);
-  const [events] = useState<ScheduleEvent[]>(MOCK_EVENTS);
-  const [eventModalData, setEventModalData] = useState<{ events: ScheduleEventData[]; index: number } | null>(null);
+  // ── Date states ──
+  const [currentDate, setCurrentDate] = useState(new Date()); // Week grid cursor
+  const [selectedDate, setSelectedDate] = useState(new Date()); // Sidebar details date
+  const [calendarHoverMonth, setCalendarHoverMonth] = useState({ month: new Date().getMonth() + 1, year: new Date().getFullYear() });
 
-  // ── API data for company/job filters ──
+  // ── Filters & Interactions ──
+  const [activeTab, setActiveTab] = useState('all');
+  const [selectedCompany, setSelectedCompany] = useState<string>('all');
+  const [selectedJobRole, setSelectedJobRole] = useState<string>('all');
+  const [isEventFormOpen, setIsEventFormOpen] = useState(false);
+  const [eventModalData, setEventModalData] = useState<{ events: ScheduleEventAPI[]; index: number } | null>(null);
+
+  // ── API Data States ──
+  const [gridEvents, setGridEvents] = useState<ScheduleEvent[]>([]);
+  const [sidebarEvents, setSidebarEvents] = useState<ScheduleEvent[]>([]);
+  const [calendarActivities, setCalendarActivities] = useState<CalendarDayActivity[]>([]);
+  const [counts, setCounts] = useState({ all: 0, scheduled: 0, completed: 0, overdue: 0, cancelled: 0 });
+
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
   const [allJobs, setAllJobs] = useState<Job[]>([]);
 
-  // ── Fetch workspaces (companies) ──
+  // ── 1. Fetch workspaces and jobs ──
   useEffect(() => {
-    const fetchWorkspaces = async () => {
-      try {
-        const data = await organizationService.getMyWorkspacesData();
-        setWorkspaces(data.workspaces || []);
-      } catch (error) {
-        console.error('Failed to fetch workspaces', error);
-      }
-    };
-    fetchWorkspaces();
+    organizationService.getMyWorkspacesData().then(data => setWorkspaces(data.workspaces || [])).catch(console.error);
+    jobPostService.getJobs().then(jobs => setAllJobs(jobs)).catch(console.error);
   }, []);
 
-  // ── Fetch jobs ──
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const jobs = await jobPostService.getJobs();
-        setAllJobs(jobs);
-      } catch (error) {
-        console.error('Failed to fetch jobs', error);
-      }
-    };
-    fetchJobs();
-  }, []);
-
-  // ── Build company options for FilterDropdowns ──
-  const companyOptions = useMemo(() =>
-    workspaces.map((ws) => ({ id: String(ws.id), name: ws.name })),
-    [workspaces]
-  );
-
-  // ── Filter jobs based on selected company, build job options ──
+  const companyOptions = useMemo(() => workspaces.map(ws => ({ id: String(ws.id), name: ws.name })), [workspaces]);
   const jobOptions = useMemo(() => {
-    const filtered = selectedCompany !== 'all'
-      ? allJobs.filter((j) => j.workspace_details?.id === Number(selectedCompany))
-      : allJobs;
-    return filtered.map((job) => ({ id: String(job.id), name: job.title }));
+    const filtered = selectedCompany !== 'all' ? allJobs.filter(j => j.workspace_details?.id === Number(selectedCompany)) : allJobs;
+    return filtered.map(job => ({ id: String(job.id), name: job.title }));
   }, [allJobs, selectedCompany]);
 
-  // ── Reset job role when company changes ──
   const handleCompanyChange = useCallback((val: string) => {
     setSelectedCompany(val);
     setSelectedJobRole('all');
   }, []);
 
-  const activities = buildActivityMap(events);
+  // ── 2. Fetch Center Grid Events (Week view) ──
+  useEffect(() => {
+    const loadWeekEvents = async () => {
+      try {
+        const { start, end } = getWeekRange(currentDate);
+        const params: any = { start_date: start, end_date: end, page_size: 1000 };
+        if (activeTab !== 'all') params.status = activeTab;
+        if (selectedCompany !== 'all') params.company_id = Number(selectedCompany);
+        if (selectedJobRole !== 'all') params.job_role_id = Number(selectedJobRole);
 
-  /** Left calendar date click — update both week view AND selected date */
+        const res = await scheduleService.getEvents(params);
+        setGridEvents(res.results.map(mapInterviewEvent));
+      } catch (err) {
+        console.error('Failed to load week events:', err);
+      }
+    };
+    loadWeekEvents();
+  }, [currentDate, activeTab, selectedCompany, selectedJobRole]);
+
+  // ── 3. Fetch Right Sidebar Events (Daily View) ──
+  useEffect(() => {
+    const loadSidebar = async () => {
+      try {
+        const cId = selectedCompany !== 'all' ? Number(selectedCompany) : undefined;
+        const jId = selectedJobRole !== 'all' ? Number(selectedJobRole) : undefined;
+        const res = await scheduleService.getDailyDetail(toDateStr(selectedDate), cId, jId);
+        
+        let allEvts = [...res.events, ...(res.tomorrow_events || [])].map(mapInterviewEvent);
+        if (activeTab !== 'all') allEvts = allEvts.filter(e => e.status === activeTab);
+        setSidebarEvents(allEvts);
+      } catch (err) {
+        console.error('Failed to load daily details:', err);
+      }
+    };
+    loadSidebar();
+  }, [selectedDate, activeTab, selectedCompany, selectedJobRole]);
+
+  // ── 4. Fetch Left Calendar Summary (Month Heatmap) ──
+  useEffect(() => {
+    const loadCalendarEvents = async () => {
+      try {
+         const start = new Date(calendarHoverMonth.year, calendarHoverMonth.month - 1, 1);
+         const end = new Date(calendarHoverMonth.year, calendarHoverMonth.month, 0);
+
+         const cId = selectedCompany !== 'all' ? Number(selectedCompany) : undefined;
+         const jId = selectedJobRole !== 'all' ? Number(selectedJobRole) : undefined;
+
+         const res = await scheduleService.getCalendarSummary(toDateStr(start), toDateStr(end), cId, jId);
+         const mapped: CalendarDayActivity[] = res.days.map(d => ({
+           date: d.date,
+           activityLevel: Math.min(d.total_events, 5) as any
+         }));
+         setCalendarActivities(mapped);
+      } catch (err) {
+        console.error('Failed to load calendar summary:', err);
+      }
+    };
+    loadCalendarEvents();
+  }, [calendarHoverMonth, selectedCompany, selectedJobRole]);
+
+  // ── 5. Fetch Status Totals ──
+  useEffect(() => {
+    scheduleService.getStatusCounts()
+      .then(stats => setCounts(stats))
+      .catch(console.error);
+  }, [currentDate, selectedCompany, selectedJobRole]); 
+
+  // ── Navigation & Interactions ──
   const handleDateClick = useCallback((date: Date) => {
     setCurrentDate(date);
     setSelectedDate(date);
   }, []);
 
-  /** Week navigation arrows in center grid */
   const handleWeekChange = useCallback((date: Date) => {
     setCurrentDate(date);
   }, []);
 
-  /** Day header click in center grid — updates right sidebar */
   const handleGridDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
   }, []);
@@ -290,7 +174,10 @@ export default function SchedulePage() {
     setIsEventFormOpen(true);
   }, []);
 
-  /** Convert ScheduleEvent to ScheduleEventAPI for the modal */
+  const handleMonthChange = useCallback((month: number, year: number) => {
+    setCalendarHoverMonth({ month, year });
+  }, []);
+
   const toModalEvent = (ev: ScheduleEvent): any => {
     return {
       id: ev.id,
@@ -298,7 +185,7 @@ export default function SchedulePage() {
       is_done: ev.status === 'completed',
       widget_summary: {
         time: `${ev.startTime} – ${ev.endTime}`,
-        type: ev.title || 'Technical Round',
+        type: ev.title || 'Interview',
         name: ev.candidateName,
         details: ev.position || '',
         location: ev.mode || 'virtual',
@@ -307,58 +194,34 @@ export default function SchedulePage() {
       modal_details: {
         id: ev.id,
         candidate_name: ev.candidateName,
-        round_type: ev.title || 'Technical Round',
+        round_type: ev.title || 'Interview',
         date: ev.date,
         time_range: `${ev.startTime} – ${ev.endTime}`,
         timezone: 'IST',
-        description: ev.title || 'Interview',
+        description: ev.title || 'Scheduled Interview',
         meeting_platform: ev.mode || 'Virtual',
         status_label: ev.status || 'scheduled',
-        recruiter: {
-          name: 'You',
-          role: 'Recruiter',
-          avatar: ''
-        },
-        candidate_contact: {
-          email: '',
-          phone: ''
-        },
-        candidate_info: {
-          company: ev.company || '',
-          position: ev.position || '',
-          experience: ev.experience || ''
-        },
-        interviewer_name: 'You',
+        recruiter: { name: 'Recruiter', role: 'Team', avatar: '' },
+        candidate_contact: { email: '', phone: '' },
+        candidate_info: { company: ev.company || '', position: ev.position || '', experience: ev.experience || '' },
+        interviewer_name: 'Interviewer',
         job_role: ev.position || ''
       }
     };
   };
 
   const handleEventClick = useCallback((event: ScheduleEvent) => {
-    const sameDayEvents = events.filter((e) => e.date === event.date);
-    const modalEvents = sameDayEvents.map(toModalEvent);
-    const clickedIndex = sameDayEvents.findIndex((e) => e.id === event.id);
+    const sameDayEvents = [...gridEvents, ...sidebarEvents].filter(e => e.date === event.date);
+    const uniqueEvents = Array.from(new Map(sameDayEvents.map(item => [item.id, item])).values());
+    const modalEvents = uniqueEvents.map(toModalEvent);
+    const clickedIndex = uniqueEvents.findIndex((e: any) => e.id === event.id);
     setEventModalData({ events: modalEvents, index: Math.max(clickedIndex, 0) });
-  }, [events]);
+  }, [gridEvents, sidebarEvents]);
 
   const handleEventSubmit = useCallback((data: any) => {
     console.log('Event submitted:', data);
     setIsEventFormOpen(false);
   }, []);
-
-  /* ─── Filter events by status tab ─── */
-  const filteredEvents = events.filter((ev) => {
-    if (activeTab === 'all') return true;
-    return ev.status === activeTab;
-  });
-
-  const counts = {
-    all: events.length,
-    scheduled: events.filter((e) => e.status === 'scheduled').length,
-    completed: events.filter((e) => e.status === 'completed').length,
-    overdue: events.filter((e) => e.status === 'overdue').length,
-    cancelled: events.filter((e) => e.status === 'cancelled').length,
-  };
 
   return (
     <div className="flex-1 overflow-hidden bg-[#F3F5F7] flex flex-col">
@@ -393,15 +256,16 @@ export default function SchedulePage() {
         <div className="flex-shrink-0 flex flex-col gap-3  border-r border-gray-200" style={{ width: 220 }}>
           <ScheduleCalendarWidget
             onDateClick={handleDateClick}
-            activities={activities}
+            activities={calendarActivities}
             selectedDate={selectedDate}
+            onMonthChange={handleMonthChange}
           />
           <InterviewModeLegend />
         </div>
 
         {/* Center: Week Grid */}
         <ScheduleWeekGrid
-          events={filteredEvents}
+          events={gridEvents}
           currentDate={currentDate}
           selectedDate={selectedDate}
           onEventClick={handleEventClick}
@@ -413,7 +277,7 @@ export default function SchedulePage() {
         {/* Right Panel: Selected Date Schedule */}
         <TodaysSidebar
           selectedDate={selectedDate}
-          events={events}
+          events={sidebarEvents}
           onEventClick={handleEventClick}
         />
       </div>
