@@ -204,14 +204,12 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                                 className="flex-1 flex items-center justify-center text-sm font-normal cursor-pointer bg-transparent hover:bg-gray-50 transition-colors"
                                 style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2', lineHeight: '17px' }}
                                 onClick={() => {
-                                    if (details.job_id) {
-                                        // Set deep-link information in sessionStorage
-                                        sessionStorage.setItem('nxthyre_companies_jobId', String(details.job_id));
-                                        sessionStorage.setItem('nxthyre_companies_appId', String(event.id));
-
-                                        // Switch to companies tab via global event
-                                        window.dispatchEvent(new CustomEvent('tab-switch', { detail: { page: 'companies' } }));
-                                        onClose();
+                                    if (details.candidate_id) {
+                                        const jobIdParam = details.job_id;
+                                        const url = jobIdParam
+                                            ? `/candidate-profiles/${details.candidate_id}?job_id=${jobIdParam}`
+                                            : `/candidate-profiles/${details.candidate_id}`;
+                                        window.open(url, '_blank');
                                     }
                                 }}
                             >
