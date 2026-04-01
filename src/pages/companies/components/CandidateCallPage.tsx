@@ -57,7 +57,8 @@ const DUMMY_FALLBACK: CandidateCallParams = {
 };
 
 export default function CandidateCallPage() {
-  const { candidateId } = useParams();
+  // const { candidateId } = useParams();
+  const { candidateId, jobId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -87,7 +88,7 @@ export default function CandidateCallPage() {
   const [transcripts, setTranscripts] = useState<LiveTranscript[]>([]);
 
   // Job ID ::
-  const jobId = location.state?.jobId || "";
+  // const jobId = location.state?.jobId || "";
 
   // Notes & Checklist States
   const [notes, setNotes] = useState("");
@@ -137,12 +138,12 @@ export default function CandidateCallPage() {
 
   // Fetch initial Role Questions on Mount
   useEffect(() => {
-    if (candidate?.id) {
+    if (candidate?.id && jobId) {
       getRoleQuestions(jobId, candidate.id)
         .then(setRoleQuestions)
         .catch(console.error);
     }
-  }, [candidate?.id]);
+  }, [candidate?.id, jobId]);
 
   // ─── Register Plivo Browser SDK (WebRTC) ─────────────
   useEffect(() => {
