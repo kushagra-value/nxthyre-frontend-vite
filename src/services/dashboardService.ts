@@ -229,6 +229,166 @@ export interface ActivitySection {
 }
 
 // ──────────────────────────────────────────────
+//  Calendar Activity API Types
+// ──────────────────────────────────────────────
+
+export interface CalendarDayActivityBreakdown {
+  interviews: number;
+  calls: number;
+  follow_ups: number;
+  shortlisted: number;
+  hired: number;
+}
+
+export interface CalendarDayActivityAPI {
+  date: string;
+  activity_level: number;
+  total_events: number;
+  breakdown: CalendarDayActivityBreakdown;
+}
+
+export interface CalendarActivityResponse {
+  month: number;
+  year: number;
+  days: CalendarDayActivityAPI[];
+}
+
+// ──────────────────────────────────────────────
+//  Agenda API Types (today/future dates)
+// ──────────────────────────────────────────────
+
+export interface AgendaLiveStatus {
+  interviewer_name: string;
+  interviewer_avatar: string | null;
+  candidate_name: string;
+  round_type: string;
+  elapsed: string;
+}
+
+export interface AgendaAlert {
+  id: string;
+  type: 'soon' | 'completed';
+  label: string;
+  candidate_name: string;
+  action_url: string;
+}
+
+export interface AgendaItemAPI {
+  id: string;
+  candidate_name: string;
+  candidate_role: string;
+  time: string;
+  status: 'completed' | 'in-progress' | 'upcoming';
+  meeting_link: string | null;
+}
+
+export interface AgendaResponse {
+  date: string;
+  live_status: AgendaLiveStatus | null;
+  alerts: AgendaAlert[];
+  items: AgendaItemAPI[];
+}
+
+// ──────────────────────────────────────────────
+//  Daily Activities API Types (past dates)
+// ──────────────────────────────────────────────
+
+export interface DailyActivitySummary {
+  calls_made: number;
+  follow_ups: number;
+  shortlisted: number;
+  hired: number;
+}
+
+export interface DailyActivityItemAPI {
+  id: string;
+  title: string;
+  time: string;
+  type: string;
+  category_color: string;
+  category_bg: string;
+  pill_text: string;
+  pill_color: string;
+  pill_bg: string;
+}
+
+export interface DailyActivitiesResponse {
+  date: string;
+  date_label: string;
+  total_activities: number;
+  summary: DailyActivitySummary;
+  activities: DailyActivityItemAPI[];
+}
+
+// ──────────────────────────────────────────────
+//  Schedule Widget & Event Modal API Types
+// ──────────────────────────────────────────────
+
+export interface ScheduleWidgetSummary {
+  time: string;
+  type: string;
+  name: string;
+  details: string;
+  location: string;
+  color_theme: 'grey' | 'cyan' | 'purple' | 'orange';
+}
+
+export interface ScheduleModalRecruiter {
+  name: string;
+  role: string;
+  avatar: string;
+}
+
+export interface ScheduleModalCandidateContact {
+  email: string;
+  phone: string;
+}
+
+export interface ScheduleModalCandidateInfo {
+  company: string;
+  position: string;
+  experience: string;
+}
+
+export interface ScheduleModalInterviewerInfo {
+  interviewer_name: string;
+  job_role: string;
+}
+
+export interface ScheduleModalDetails {
+  title: string;
+  candidate_name: string;
+  interview_type: string;
+  date: string;
+  time_range: string;
+  timezone: string;
+  description: string;
+  meeting_platform: string;
+  status_label: string;
+  duration: string;
+  recruiter: ScheduleModalRecruiter;
+  candidate_contact: ScheduleModalCandidateContact;
+  candidate_info: ScheduleModalCandidateInfo;
+  interviewer_info: ScheduleModalInterviewerInfo;
+}
+
+export interface ScheduleEventAPI {
+  id: string;
+  status: 'completed' | 'in-progress' | 'upcoming';
+  is_done: boolean;
+  widget_summary: ScheduleWidgetSummary;
+  modal_details: ScheduleModalDetails;
+}
+
+export type ScheduleFilterType = 'today' | 'upcoming' | 'past' | 'all';
+
+export interface ScheduleResponse {
+  total_events: number;
+  filter_applied: string;
+  events: ScheduleEventAPI[];
+}
+
+// ──────────────────────────────────────────────
 //  Service
 // ──────────────────────────────────────────────
 
@@ -341,6 +501,60 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch talent matches");
+    }
+  }
+
+  // ── Calendar Activity API ──
+  async getCalendarActivity(month: number, year: number): Promise<CalendarActivityResponse> {
+    try {
+      const response = await apiClient.get(`/jobs/dashboard/calendar-activity/?month=${month}&year=${year}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch calendar activity",
+      );
+    }
+  }
+
+  // ── Date-wise Agenda API (today/future dates) ──
+  async getAgenda(date: string): Promise<AgendaResponse> {
+    try {
+      const response = await apiClient.get(`/jobs/dashboard/agenda/?date=${date}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch agenda",
+      );
+    }
+  }
+
+  // ── Daily Activities API (past dates) ──
+  async getDailyActivities(date: string): Promise<DailyActivitiesResponse> {
+    try {
+      const response = await apiClient.get(`/jobs/dashboard/daily-activities/?date=${date}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch daily activities",
+      );
+    }
+  }
+
+  // ── Schedule Widget API ──
+  async getScheduleEvents(params?: { filter?: ScheduleFilterType; date?: string }): Promise<ScheduleResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.date) {
+        queryParams.append('date', params.date);
+      } else if (params?.filter) {
+        queryParams.append('filter', params.filter);
+      }
+      const response = await apiClient.get(`/jobs/dashboard/schedule/?${queryParams.toString()}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch schedule events",
+      );
     }
   }
 }

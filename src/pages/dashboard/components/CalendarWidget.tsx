@@ -15,6 +15,10 @@ export interface CalendarWidgetProps {
   onDateClick?: (date: Date, isTodayOrFuture: boolean) => void;
   /** Optional activity data for each day. If not provided, all days appear as plain. */
   activities?: CalendarDayActivity[];
+  /** Called when the displayed month changes — use this to fetch new calendar-activity data. */
+  onMonthChange?: (month: number, year: number) => void;
+  /** Whether activity data is currently loading */
+  isLoading?: boolean;
 }
 
 const MONTHS = [
@@ -42,7 +46,7 @@ const PAST_ACTIVITY_COLORS: Record<number, { bg: string; text: string }> = {
   5: { bg: '#4B5563', text: '#FFFFFF' },
 };
 
-export default function CalendarWidget({ onDateClick, activities = [] }: CalendarWidgetProps) {
+export default function CalendarWidget({ onDateClick, activities = [], onMonthChange, isLoading }: CalendarWidgetProps) {
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
@@ -75,21 +79,31 @@ export default function CalendarWidget({ onDateClick, activities = [] }: Calenda
   })();
 
   const prevMonth = () => {
+    let newMonth = currentMonth;
+    let newYear = currentYear;
     if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear((y) => y - 1);
+      newMonth = 11;
+      newYear = currentYear - 1;
     } else {
-      setCurrentMonth((m) => m - 1);
+      newMonth = currentMonth - 1;
     }
+    setCurrentMonth(newMonth);
+    setCurrentYear(newYear);
+    onMonthChange?.(newMonth + 1, newYear);
   };
 
   const nextMonth = () => {
+    let newMonth = currentMonth;
+    let newYear = currentYear;
     if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear((y) => y + 1);
+      newMonth = 0;
+      newYear = currentYear + 1;
     } else {
-      setCurrentMonth((m) => m + 1);
+      newMonth = currentMonth + 1;
     }
+    setCurrentMonth(newMonth);
+    setCurrentYear(newYear);
+    onMonthChange?.(newMonth + 1, newYear);
   };
 
   const handleDateSelect = (day: number) => {
@@ -157,6 +171,7 @@ export default function CalendarWidget({ onDateClick, activities = [] }: Calenda
                       onClick={() => {
                         setCurrentMonth(idx);
                         setShowMonthYearPicker(false);
+                        onMonthChange?.(idx + 1, currentYear);
                       }}
                       className={`px-2 py-2 rounded-lg text-xs font-normal transition-colors ${isCurrentMonth
                         ? 'bg-[#0F47F2] text-white'

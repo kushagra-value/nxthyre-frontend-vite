@@ -1,4 +1,6 @@
-import { ScheduleItemData } from '../dashboardData';
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
+import type { ScheduleEventAPI } from '../../../services/dashboardService';
 
 const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; badgeBg: string; badgeText: string }> = {
   grey: {
@@ -31,23 +33,66 @@ const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; 
   },
 };
 
+export type ScheduleFilterLabel = 'Today' | 'Tomorrow' | 'Upcoming' | 'Past';
+
 interface ScheduleWidgetProps {
-  items: ScheduleItemData[];
+  events: ScheduleEventAPI[];
   isLoading?: boolean;
-  onEventClick?: (item: ScheduleItemData) => void;
+  onEventClick?: (event: ScheduleEventAPI, index: number) => void;
+  activeFilter: ScheduleFilterLabel;
+  onFilterChange: (filter: ScheduleFilterLabel) => void;
 }
 
-export default function ScheduleWidget({ items, isLoading, onEventClick }: ScheduleWidgetProps) {
+const FILTER_OPTIONS: ScheduleFilterLabel[] = ['Today', 'Tomorrow', 'Upcoming', 'Past'];
+
+export default function ScheduleWidget({ events, isLoading, onEventClick, activeFilter, onFilterChange }: ScheduleWidgetProps) {
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowFilterDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   return (
     <div className="bg-white rounded-[10px] flex flex-col overflow-hidden" >
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <span className="text-sm font-normal text-black leading-[17px]">Schedule</span>
-        <span
-          className="px-3 py-1 text-sm font-normal text-[#4B5563] leading-[17px] rounded-md"
-          style={{ border: '0.5px solid #D1D1D6' }}
-        >
-          Today
-        </span>
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+            className="flex items-center gap-1.5 px-3 py-1 text-sm font-normal text-[#4B5563] leading-[17px] rounded-md cursor-pointer bg-white transition-colors hover:bg-gray-50"
+            style={{ border: '0.5px solid #D1D1D6' }}
+          >
+            {activeFilter}
+            <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
+          </button>
+          {showFilterDropdown && (
+            <div className="absolute top-full mt-1 right-0 min-w-[120px] bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 py-1">
+              {FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => {
+                    onFilterChange(opt);
+                    setShowFilterDropdown(false);
+                  }}
+                  className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                    opt === activeFilter
+                      ? 'bg-[#E7EDFF] text-[#0F47F2] font-medium'
+                      : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="overflow-y-auto max-h-[314px] hide-scrollbar px-5 pb-5">
@@ -72,14 +117,23 @@ export default function ScheduleWidget({ items, isLoading, onEventClick }: Sched
                 </div>
               </div>
             ))
+          ) : events.length === 0 ? (
+            <div className="flex items-center justify-center py-8 text-sm text-[#8E8E93]">
+              No scheduled events
+            </div>
           ) : (
-            items.map((item) => {
-              const config = colorConfig[item.color] || colorConfig.cyan;
+            events.map((event, index) => {
+              const ws = event.widget_summary;
+              const config = colorConfig[ws.color_theme] || colorConfig.cyan;
 
               return (
-                <div key={item.id} className={`flex items-center gap-2 relative ${!item.isDone ? 'cursor-pointer' : ''}`} onClick={!item.isDone ? () => onEventClick?.(item) : undefined}>
+                <div
+                  key={event.id}
+                  className={`flex items-center gap-2 relative ${!event.is_done ? 'cursor-pointer' : ''}`}
+                  onClick={!event.is_done ? () => onEventClick?.(event, index) : undefined}
+                >
                   <span className="w-[60px] shrink-0 text-sm font-normal text-[#4B5563] leading-5">
-                    {item.time}
+                    {ws.time}
                   </span>
 
                   <div
@@ -92,14 +146,14 @@ export default function ScheduleWidget({ items, isLoading, onEventClick }: Sched
                     style={{ backgroundColor: config.bg }}
                   >
                     <span className="text-[10px] font-normal text-[#4B5563] leading-3 block">
-                      {item.type}
+                      {ws.type}
                     </span>
                     <div className="flex items-center justify-between mt-1">
                       <span
                         className="text-sm font-medium leading-[17px]"
                         style={{ color: config.nameColor }}
                       >
-                        {item.name}
+                        {ws.name}
                       </span>
                       <span
                         className="px-2 py-1 text-[10px] font-normal leading-3 rounded-[5px]"
@@ -108,11 +162,11 @@ export default function ScheduleWidget({ items, isLoading, onEventClick }: Sched
                           color: config.badgeText,
                         }}
                       >
-                        {item.location}
+                        {ws.location}
                       </span>
                     </div>
                     <span className="text-[10px] font-normal text-[#4B5563] leading-3 block mt-1.5">
-                      {item.details}
+                      {ws.details}
                     </span>
                   </div>
                 </div>

@@ -290,47 +290,51 @@ export default function SchedulePage() {
     setIsEventFormOpen(true);
   }, []);
 
-  /** Convert ScheduleEvent to ScheduleEventData for the modal */
-  const toModalEvent = (ev: ScheduleEvent): ScheduleEventData => {
-    const MODE_LABELS: Record<string, string> = {
-      zoom: 'Zoom', virtual: 'Microsoft Teams', f2f: 'Face to Face',
-      overdue: 'Overdue', external: 'External Platform', bgv: 'BGV', mock: 'Mock Call',
-    };
-    const formatTime = (t: string) => {
-      const [h, m] = t.split(':').map(Number);
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      const h12 = h % 12 || 12;
-      return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
-    };
-    const dateObj = new Date(ev.date + 'T00:00:00');
-    const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-
+  /** Convert ScheduleEvent to ScheduleEventAPI for the modal */
+  const toModalEvent = (ev: ScheduleEvent): any => {
     return {
       id: ev.id,
-      title: ev.title || 'Interview',
-      candidateName: ev.candidateName,
-      interviewType: ev.title || 'Technical Round',
-      date: dateStr,
-      timeRange: `${formatTime(ev.startTime)} – ${formatTime(ev.endTime)}`,
-      timezone: 'IST',
-      description: `${ev.title || 'Interview'} with ${ev.candidateName}`,
-      meetingPlatform: MODE_LABELS[ev.mode] || 'Virtual',
-      statusLabel: ev.status || 'scheduled',
-      recruiterName: 'You',
-      recruiterRole: ev.position || 'Recruiter',
-      recruiterAvatar: '',
-      candidateEmail: '',
-      candidatePhone: '',
-      candidateCompany: ev.company,
-      candidatePosition: ev.position,
-      candidateExperience: ev.experience,
-      interviewer: 'You',
-      jobRole: ev.position,
+      status: ev.status,
+      is_done: ev.status === 'completed',
+      widget_summary: {
+        time: `${ev.startTime} – ${ev.endTime}`,
+        type: ev.title || 'Technical Round',
+        name: ev.candidateName,
+        details: ev.position || '',
+        location: ev.mode || 'virtual',
+        color_theme: 'cyan'
+      },
+      modal_details: {
+        id: ev.id,
+        candidate_name: ev.candidateName,
+        round_type: ev.title || 'Technical Round',
+        date: ev.date,
+        time_range: `${ev.startTime} – ${ev.endTime}`,
+        timezone: 'IST',
+        description: ev.title || 'Interview',
+        meeting_platform: ev.mode || 'Virtual',
+        status_label: ev.status || 'scheduled',
+        recruiter: {
+          name: 'You',
+          role: 'Recruiter',
+          avatar: ''
+        },
+        candidate_contact: {
+          email: '',
+          phone: ''
+        },
+        candidate_info: {
+          company: ev.company || '',
+          position: ev.position || '',
+          experience: ev.experience || ''
+        },
+        interviewer_name: 'You',
+        job_role: ev.position || ''
+      }
     };
   };
 
   const handleEventClick = useCallback((event: ScheduleEvent) => {
-    // Find all events on the same day for pagination in modal
     const sameDayEvents = events.filter((e) => e.date === event.date);
     const modalEvents = sameDayEvents.map(toModalEvent);
     const clickedIndex = sameDayEvents.findIndex((e) => e.id === event.id);

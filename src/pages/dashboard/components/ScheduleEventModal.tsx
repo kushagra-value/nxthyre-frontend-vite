@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { ScheduleEventData } from '../dashboardData';
+import type { ScheduleEventAPI } from '../../../services/dashboardService';
 
 interface ScheduleEventModalProps {
     isOpen?: boolean;
     onClose?: () => void;
-    events: ScheduleEventData[];
+    events: ScheduleEventAPI[];
     initialIndex?: number;
 }
 
@@ -25,6 +25,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
     if (!isOpen || events.length === 0) return null;
 
     const event = events[currentIndex];
+    const details = event.modal_details;
     const total = events.length;
 
     const goNext = () => setCurrentIndex((prev) => Math.min(prev + 1, total - 1));
@@ -38,7 +39,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
             {/* Modal Container */}
             <div
                 className="bg-white flex flex-col overflow-y-auto"
-                style={{ width: 459, maxHeight: 506, borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
+                style={{ width: 459, maxHeight: 600, borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* ─── Header ─── */}
@@ -49,7 +50,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                             className="inline-flex items-center text-sm font-normal"
                             style={{ padding: '4px 8px', background: '#E7EDFF', borderRadius: 4, color: '#0088FF', lineHeight: '17px' }}
                         >
-                            {event.interviewType}
+                            {details.interview_type}
                         </span>
 
                         {/* Right side: pagination + close */}
@@ -96,17 +97,17 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                 </div>
 
                 {/* ─── Candidate Info Section ─── */}
-                <div className="w-full shrink-0" style={{ borderBottom: '0.5px solid #AEAEB2', padding: '20px 24px' }}>
+                <div className="w-full grow overflow-y-auto" style={{ padding: '20px 24px' }}>
                     <div className="flex flex-col" style={{ gap: 18 }}>
                         {/* Candidate header with accent bar */}
                         <div className="flex items-start" style={{ gap: 5 }}>
                             <div className="shrink-0" style={{ width: 5, height: 48, background: '#00C8B3', borderRadius: 10 }}></div>
                             <div className="flex flex-col" style={{ gap: 10 }}>
                                 <h3 className="m-0 font-medium text-black" style={{ fontSize: 20, lineHeight: '24px' }}>
-                                    {event.candidateName}
+                                    {details.candidate_name}
                                 </h3>
                                 <p className="m-0 text-xs font-normal" style={{ color: '#0F47F2', lineHeight: '14px' }}>
-                                    {event.candidateCompany || 'Deloitte'} · {event.candidatePosition || 'Full Stack Developer'} · {event.candidateExperience || '4 years'}
+                                    {details.candidate_info.company} · {details.candidate_info.position} · {details.candidate_info.experience}
                                 </p>
                             </div>
                         </div>
@@ -117,47 +118,57 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                             <div className="flex items-start" style={{ gap: 70 }}>
                                 <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
                                     <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Date</span>
-                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.date}</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{details.date}</span>
                                 </div>
                                 <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
                                     <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Time</span>
-                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.timeRange}</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{details.time_range}</span>
                                 </div>
                             </div>
                             {/* Row 2: Mode & Duration */}
                             <div className="flex items-start" style={{ gap: 70 }}>
                                 <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
                                     <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Mode</span>
-                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.meetingPlatform}</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{details.meeting_platform}</span>
                                 </div>
                                 <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
                                     <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Duration</span>
-                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.duration || '45 min'}</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{details.duration}</span>
                                 </div>
                             </div>
                             {/* Row 3: Interviewer & Job Role */}
                             <div className="flex items-start" style={{ gap: 70 }}>
                                 <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
                                     <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Interviewer</span>
-                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.interviewer || 'You'}</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{details.interviewer_info.interviewer_name}</span>
                                 </div>
                                 <div className="flex flex-col" style={{ gap: 5, minWidth: 120 }}>
                                     <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Job Role</span>
-                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{event.jobRole || event.recruiterRole}</span>
+                                    <span className="font-medium text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>{details.interviewer_info.job_role}</span>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Description */}
+                        {details.description && (
+                            <div className="flex flex-col" style={{ gap: 8 }}>
+                                <span className="text-sm font-normal" style={{ color: '#8E8E93', lineHeight: '17px' }}>Description</span>
+                                <p className="m-0 text-sm font-normal text-gray-600 leading-relaxed">
+                                    {details.description}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* ─── Footer Actions ─── */}
-                <div className="flex flex-col justify-center items-start shrink-0" style={{ padding: '24px 27px', gap: 10 }}>
+                <div className="flex flex-col justify-center items-start shrink-0" style={{ padding: '24px 27px', gap: 10, borderTop: '0.5px solid #AEAEB2' }}>
                     {/* Primary CTA */}
                     <button
                         className="w-full flex items-center justify-center text-sm font-normal text-white cursor-pointer"
                         style={{ height: 37, background: '#0F47F2', border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, lineHeight: '17px' }}
                     >
-                        Join {event.meetingPlatform} Meeting
+                        Join {details.meeting_platform} Meeting
                     </button>
 
                     {/* Secondary buttons row */}

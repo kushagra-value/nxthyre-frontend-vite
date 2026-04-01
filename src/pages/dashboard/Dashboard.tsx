@@ -19,6 +19,11 @@ import dashboardService, {
   PriorityActionsResponse,
   PriorityTab,
   DateRangePreset,
+  CalendarDayActivityAPI,
+  ScheduleEventAPI,
+  ScheduleFilterType,
+  AgendaResponse,
+  DailyActivitiesResponse,
 } from '../../services/dashboardService';
 import { jobPostService, Job } from '../../services/jobPostService';
 import organizationService from '../../services/organizationService';
@@ -32,9 +37,9 @@ import {
   StatCardData,
   PriorityColumnData,
   TalentMatchData,
-
   CandidateSource,
 } from './dashboardData';
+import type { ScheduleFilterLabel } from './components/ScheduleWidget';
 
 const BriefcaseIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -227,11 +232,22 @@ export default function Dashboard() {
   const [newMatchLoading, setNewMatchLoading] = useState(false);
 
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [scheduleInitialIndex, setScheduleInitialIndex] = useState(0);
+  const [selectedScheduleEventIndex, setSelectedScheduleEventIndex] = useState(0);
 
   const [isAgendaModalOpen, setIsAgendaModalOpen] = useState(false);
   const [isDailyActivitiesModalOpen, setIsDailyActivitiesModalOpen] = useState(false);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
+
+  // New Dashboard Dynamic States for Calendar & Schedule
+  const [calendarActivities, setCalendarActivities] = useState<CalendarDayActivityAPI[]>([]);
+  const [calendarLoading, setCalendarLoading] = useState(false);
+  const [scheduleEvents, setScheduleEvents] = useState<ScheduleEventAPI[]>([]);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [activeScheduleFilter, setActiveScheduleFilter] = useState<ScheduleFilterLabel>('Today');
+  const [agendaData, setAgendaData] = useState<AgendaResponse | null>(null);
+  const [agendaLoading, setAgendaLoading] = useState(false);
+  const [dailyActivitiesData, setDailyActivitiesData] = useState<DailyActivitiesResponse | null>(null);
+  const [dailyActivitiesLoading, setDailyActivitiesLoading] = useState(false);
 
   // Close company dropdown on outside click
   useEffect(() => {
@@ -452,6 +468,47 @@ export default function Dashboard() {
   useEffect(() => {
     fetchPriorityActions();
   }, [fetchPriorityActions]);
+
+  const fetchCalendarActivity = async (month: number, year: number) => {
+    setCalendarLoading(true);
+    try {
+      const response = await dashboardService.getCalendarActivity(month, year);
+      setCalendarActivities(response.days);
+    } catch (err) {
+      console.error('Failed to fetch calendar activity:', err);
+    } finally {
+      setCalendarLoading(false);
+    }
+  };
+
+  const fetchScheduleEvents = useCallback(async (filterLabel: ScheduleFilterLabel) => {
+    setScheduleLoading(true);
+    try {
+      let filter: ScheduleFilterType = 'today';
+      let date: string | undefined = undefined;
+      const now = new Date();
+      if (filterLabel === 'Tomorrow') {
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        date = formatDateToYMD(tomorrow);
+      } else {
+        filter = filterLabel.toLowerCase() as ScheduleFilterType;
+      }
+      const response = await dashboardService.getScheduleEvents({ filter, date });
+      setScheduleEvents(response.events);
+    } catch (err) {
+      console.error('Failed to fetch schedule events:', err);
+    } finally {
+      setScheduleLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const now = new Date();
+    fetchCalendarActivity(now.getMonth() + 1, now.getFullYear());
+    fetchScheduleEvents('Today');
+  }, [isAuthenticated, fetchScheduleEvents]);
 
   // ── Derive display data from API or fall back to static data ──
 
@@ -676,18 +733,38 @@ export default function Dashboard() {
     }
   };
 
-  const handleScheduleEventClick = (item: ScheduleItemData) => {
-    const idx = scheduleEventsData.findIndex((e) => e.candidateName === item.name);
-    setScheduleInitialIndex(idx >= 0 ? idx : 0);
+  const handleScheduleEventClick = (event: ScheduleEventAPI, index: number) => {
+    setSelectedScheduleEventIndex(index);
     setIsScheduleModalOpen(true);
   };
 
-  const handleDateClick = (date: Date, isTodayOrFuture: boolean) => {
+  const handleDateClick = async (date: Date, isTodayOrFuture: boolean) => {
     setSelectedCalendarDate(date);
+    const dateStr = formatDateToYMD(date);
     if (isTodayOrFuture) {
       setIsAgendaModalOpen(true);
+      setAgendaLoading(true);
+      try {
+        const data = await dashboardService.getAgenda(dateStr);
+        setAgendaData(data);
+      } catch (err) {
+        console.error('Failed to fetch agenda:', err);
+        setAgendaData(null);
+      } finally {
+        setAgendaLoading(false);
+      }
     } else {
       setIsDailyActivitiesModalOpen(true);
+      setDailyActivitiesLoading(true);
+      try {
+        const data = await dashboardService.getDailyActivities(dateStr);
+        setDailyActivitiesData(data);
+      } catch (err) {
+        console.error('Failed to fetch daily activities:', err);
+        setDailyActivitiesData(null);
+      } finally {
+        setDailyActivitiesLoading(false);
+      }
     }
   };
 
@@ -1132,9 +1209,17 @@ export default function Dashboard() {
         <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget
             onDateClick={handleDateClick}
-            activities={[]} /* TODO: replace with API data — see suggested API structure */
+            activities={calendarActivities.map(day => ({ date: day.date, activityLevel: day.activity_level as any }))}
+            onMonthChange={fetchCalendarActivity}
+            isLoading={calendarLoading}
           />
-          <ScheduleWidget items={dynamicScheduleItems} isLoading={loading} onEventClick={handleScheduleEventClick} />
+          <ScheduleWidget
+            events={scheduleEvents}
+            isLoading={scheduleLoading}
+            activeFilter={activeScheduleFilter}
+            onFilterChange={(f) => { setActiveScheduleFilter(f); fetchScheduleEvents(f); }}
+            onEventClick={handleScheduleEventClick}
+          />
           <RecentActivities />
         </aside>
       </div>
@@ -1185,19 +1270,22 @@ export default function Dashboard() {
       <ScheduleEventModal
         isOpen={isScheduleModalOpen}
         onClose={() => setIsScheduleModalOpen(false)}
-        events={scheduleEventsData}
-        initialIndex={scheduleInitialIndex}
+        events={scheduleEvents}
+        initialIndex={selectedScheduleEventIndex}
       />
       {/* Date-Wise Agenda Modal */}
       <DateWiseAgendaModal
         isOpen={isAgendaModalOpen}
         onClose={() => setIsAgendaModalOpen(false)}
-        agenda={dailyAgendaData}
+        agenda={agendaData}
+        isLoading={agendaLoading}
       />
       {/* Daily Activities Modal — for past dates */}
       <DailyActivitiesModal
         isOpen={isDailyActivitiesModalOpen}
         onClose={() => setIsDailyActivitiesModalOpen(false)}
+        data={dailyActivitiesData}
+        isLoading={dailyActivitiesLoading}
       />
     </div>
   );
