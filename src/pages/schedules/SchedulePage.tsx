@@ -193,20 +193,23 @@ export default function SchedulePage() {
         color_theme: 'cyan'
       },
       modal_details: {
-        id: ev.id,
+        title: ev.title || 'Interview',
         candidate_name: ev.candidateName,
-        round_type: ev.title || 'Interview',
+        interview_type: ev.title || 'Interview',
         date: ev.date,
         time_range: `${ev.startTime} – ${ev.endTime}`,
         timezone: 'IST',
         description: ev.title || 'Scheduled Interview',
         meeting_platform: ev.mode || 'Virtual',
         status_label: ev.status || 'scheduled',
+        duration: '60 min',
         recruiter: { name: 'Recruiter', role: 'Team', avatar: '' },
         candidate_contact: { email: '', phone: '' },
         candidate_info: { company: ev.company || '', position: ev.position || '', experience: ev.experience || '' },
-        interviewer_name: 'Interviewer',
-        job_role: ev.position || ''
+        interviewer_info: {
+          interviewer_name: 'Interviewer',
+          job_role: ev.position || ''
+        }
       }
     };
   };
