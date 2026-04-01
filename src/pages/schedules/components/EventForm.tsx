@@ -254,7 +254,9 @@ export const EventForm = ({
 
     const fetchCandidates = async () => {
       setCandidatesLoading(true);
+      setPipelineCandidates([]); // Clear before fetch
       try {
+        console.log('Fetching candidates for job:', selectedJobId);
         const response = await apiClient.get(
           `/jobs/applications/?job_id=${selectedJobId}`
         );
@@ -265,12 +267,14 @@ export const EventForm = ({
           candidateData = data;
         } else if (data && Array.isArray(data.results)) {
           candidateData = data.results;
+        } else if (data && data.data && Array.isArray(data.data)) {
+          candidateData = data.data;
         }
 
+        console.log('Fetched candidates:', candidateData.length);
         setPipelineCandidates(candidateData);
       } catch (error) {
         console.error('Failed to fetch pipeline candidates', error);
-        setPipelineCandidates([]);
       } finally {
         setCandidatesLoading(false);
       }
@@ -278,12 +282,29 @@ export const EventForm = ({
 
     const fetchStages = async () => {
       setStagesLoading(true);
+      setPipelineStages([]); // Clear before fetch
       try {
-        const stages = await candidateService.getPipelineStages(Number(selectedJobId));
-        setPipelineStages(stages);
+        console.log('Fetching stages for job:', selectedJobId);
+        const stagesRes = await candidateService.getPipelineStages(Number(selectedJobId));
+        let stagesData: any[] = [];
+        
+        if (Array.isArray(stagesRes)) {
+          stagesData = stagesRes;
+        } else if (stagesRes && Array.isArray((stagesRes as any).results)) {
+          stagesData = (stagesRes as any).results;
+        } else if (stagesRes && (stagesRes as any).data && Array.isArray((stagesRes as any).data)) {
+          stagesData = (stagesRes as any).data;
+        }
+
+        // Sort by sort_order if available
+        if (stagesData.length > 0 && typeof stagesData[0].sort_order === 'number') {
+          stagesData.sort((a, b) => a.sort_order - b.sort_order);
+        }
+
+        console.log('Fetched stages:', stagesData.length);
+        setPipelineStages(stagesData);
       } catch (error) {
         console.error('Failed to fetch pipeline stages', error);
-        setPipelineStages([]);
       } finally {
         setStagesLoading(false);
       }
