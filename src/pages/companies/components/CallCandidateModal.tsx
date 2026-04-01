@@ -23,6 +23,7 @@ interface CallCandidateModalProps {
   isOpen: boolean;
   onClose: () => void;
   candidate: CallCandidateData | null;
+  jobId?: number | null;
 }
 
 const REASONS = [
@@ -46,6 +47,7 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   isOpen,
   onClose,
   candidate,
+  jobId,
 }) => {
   const [step, setStep] = useState<1 | 2>(1);
   const navigate = useNavigate();
@@ -58,7 +60,8 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   if (!isOpen || !candidate) return null;
 
   const handleCallNow = () => {
-    if (candidate) navigate(`/call/${candidate.id}`, { state: { candidate } });
+    if (candidate)
+      navigate(`/call/${candidate.id}/${jobId}`, { state: { candidate } });
   };
 
   const handleLogOnly = async () => {

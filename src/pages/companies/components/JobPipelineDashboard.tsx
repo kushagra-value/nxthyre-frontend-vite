@@ -3415,6 +3415,7 @@ export default function JobPipelineDashboard({
         isOpen={!!callModalCandidate}
         onClose={() => setCallModalCandidate(null)}
         candidate={callModalCandidate}
+        jobId={jobId || undefined}
       />
 
       {/* Candidate Edit Modal */}
