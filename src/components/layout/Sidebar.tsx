@@ -174,12 +174,12 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
     { id: 'companies', label: 'Companies', icon: CompaniesIcon },
-    { id: 'candidatePool', label: 'Candidates', icon: CandidatesIcon },
+    { id: 'candidateSearch', label: 'Candidates', icon: CandidatesIcon },
     { id: 'calendar', label: 'Schedule', icon: ScheduleIcon, badge: 4 },
   ];
 
   const bottomItems: MenuItem[] = [
-    { id: 'help', label: 'Help', icon: HelpIcon },
+    { id: 'candidatePool', label: 'Help', icon: HelpIcon },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
     { id: 'logout', label: 'Logout', icon: LogoutIcon },
   ];

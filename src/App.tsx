@@ -41,6 +41,7 @@ import CandidatesPool from "./pages/candidates/CandidatesPool";
 import JobPipeline from "./pages/companies/components/JobPipeline";
 import Companies from "./pages/companies/Companies";
 import SchedulePage from "./pages/schedules/SchedulePage";
+import CandidateSearch from "./pages/candidates/CandidateSearch";
 
 function MainApp() {
   const navigate = useNavigate();
@@ -171,6 +172,8 @@ function MainApp() {
         return "Interviews";
       case "candidatePool":
         return "Candidate Pool";
+      case "candidateSearch":
+        return "Candidates";
       case "jobPipeline":
         return "Pipeline Stage";
       case "calendar":
@@ -228,6 +231,8 @@ function MainApp() {
         return <Interviews />;
       case "candidatePool":
         return <CandidatesPool initialJobId={null} />;
+      case "candidateSearch":
+        return <CandidateSearch />;
       case "jobPipeline":
         return <JobPipeline jobId={null} workspaceId={0} workspaces={[]} />;
       case "calendar":
