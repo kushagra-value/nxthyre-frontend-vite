@@ -8,6 +8,14 @@ import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 export interface CalendarDayActivity {
   date: string; // "YYYY-MM-DD"
   activityLevel: 0 | 1 | 2 | 3 | 4 | 5;
+  totalEvents?: number;
+  breakdown?: {
+    interviews: number;
+    calls: number;
+    follow_ups: number;
+    shortlisted: number;
+    hired: number;
+  };
 }
 
 export interface CalendarWidgetProps {
@@ -68,8 +76,10 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
   }, []);
 
   // Build activity lookup
-  const activityMap = new Map<string, number>();
-  activities.forEach((a) => activityMap.set(a.date, a.activityLevel));
+  const activityMap = new Map<string, CalendarDayActivity>();
+  activities.forEach((a) => activityMap.set(a.date, a));
+
+  const [hoveredDate, setHoveredDate] = useState<string | null>(null);
 
   // Calendar math
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -122,7 +132,13 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
   const years = Array.from({ length: yearEnd - yearStart + 1 }, (_, i) => yearStart + i);
 
   return (
-    <div className="bg-white rounded-[10px] p-5">
+    <div className={`bg-white rounded-[10px] p-5 relative ${isLoading ? 'pointer-events-none' : ''}`}>
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-[10px]">
+          <div className="w-6 h-6 border-2 border-[#0F47F2] border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="relative" ref={pickerRef}>
@@ -219,41 +235,43 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
           const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isToday = dateStr === todayStr;
           const isSelected = dateStr === selectedDate;
-          const activity = activityMap.get(dateStr) || 0;
+          const dayActivity = activityMap.get(dateStr);
+          const activityLevel = dayActivity?.activityLevel || 0;
 
           const dateObj = new Date(currentYear, currentMonth, day);
           const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
           const isPast = dateObj < todayStart;
 
           // Determine rendering
-          const hasActivity = activity > 0;
+          const hasActivity = activityLevel > 0;
           let bgColor: string | undefined;
           let textColor = '#4B5563';
 
           if (hasActivity) {
             if (isPast) {
-              // Past dates with activity → grey shades
-              const colors = PAST_ACTIVITY_COLORS[activity] || PAST_ACTIVITY_COLORS[1];
+              const colors = PAST_ACTIVITY_COLORS[activityLevel] || PAST_ACTIVITY_COLORS[1];
               bgColor = colors.bg;
               textColor = colors.text;
             } else {
-              // Today or future with activity → blue shades
-              const colors = ACTIVITY_COLORS[activity] || ACTIVITY_COLORS[1];
+              const colors = ACTIVITY_COLORS[activityLevel] || ACTIVITY_COLORS[1];
               bgColor = colors.bg;
               textColor = colors.text;
             }
           }
 
-          // Today highlight: ring
           const todayRing = isToday ? 'ring-2 ring-[#0F47F2] ring-offset-1' : '';
-          // Selected highlight
           const selectedStyle = isSelected && !hasActivity ? 'bg-[#0F47F2] !text-white' : '';
+
+          const isHovered = hoveredDate === dateStr;
+          const showTooltip = isHovered && dayActivity && dayActivity.breakdown;
 
           return (
             <div
               key={day}
-              className="flex items-center justify-center cursor-pointer"
+              className="flex items-center justify-center cursor-pointer relative"
               onClick={() => handleDateSelect(day)}
+              onMouseEnter={() => setHoveredDate(dateStr)}
+              onMouseLeave={() => setHoveredDate(null)}
             >
               {hasActivity || isSelected ? (
                 <span
@@ -272,6 +290,40 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
                 >
                   {String(day).padStart(2, '0')}
                 </span>
+              )}
+
+              {/* Hover Breakdown Tooltip */}
+              {showTooltip && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
+                  <div className="bg-white border border-[#D1D1D6] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.12)] p-3 min-w-[170px] flex flex-col gap-2">
+                    <div className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                      Activity Breakdown
+                    </div>
+                    
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-[#4B5563]">Interviews</span>
+                      <span className="text-xs font-medium text-black">{dayActivity.breakdown?.interviews || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-[#4B5563]">Calls Made</span>
+                      <span className="text-xs font-medium text-black">{dayActivity.breakdown?.calls || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-[#4B5563]">Follow Ups</span>
+                      <span className="text-xs font-medium text-black">{dayActivity.breakdown?.follow_ups || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-[#4B5563]">Shortlisted</span>
+                      <span className="text-xs font-medium text-black">{dayActivity.breakdown?.shortlisted || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 border-t border-[#F3F5F7] pt-2 mt-1">
+                      <span className="text-xs font-semibold text-black">Total Events</span>
+                      <span className="text-xs font-bold text-[#0F47F2]">{dayActivity.totalEvents || 0}</span>
+                    </div>
+                  </div>
+                  {/* Tooltip Arrow */}
+                  <div className="w-2.5 h-2.5 bg-white border-r border-b border-[#D1D1D6] rotate-45 absolute -bottom-1.5 left-1/2 -translate-x-1/2" />
+                </div>
               )}
             </div>
           );

@@ -1209,7 +1209,12 @@ export default function Dashboard() {
         <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget
             onDateClick={handleDateClick}
-            activities={calendarActivities.map(day => ({ date: day.date, activityLevel: day.activity_level as any }))}
+            activities={calendarActivities.map(day => ({ 
+              date: day.date, 
+              activityLevel: day.activity_level as any,
+              totalEvents: day.total_events,
+              breakdown: day.breakdown 
+            }))}
             onMonthChange={fetchCalendarActivity}
             isLoading={calendarLoading}
           />
