@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Search, ChevronRight } from "lucide-react";
+import { debounce } from "lodash";
+import { candidateService } from "../../../services/candidateService";
 
 export interface FilterOption {
   value: string;
@@ -54,8 +56,39 @@ export default function CandidateFilterPanel({
   const [filters, setFilters] = useState<FiltersState>(initialFilters);
   const [searchQuery, setSearchQuery] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
+  const [locationSuggestions, setLocationSuggestions] = useState<FilterOption[]>([]);
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
 
-  // Sync state when panel opens to reset to last applied if cancelled
+  // Debounced api fetch for location
+  const fetchLocationSuggestions = useMemo(
+    () =>
+      debounce(async (query: string) => {
+        if (query.trim().length < 2) {
+          setLocationSuggestions([]);
+          setIsSearchingLocation(false);
+          return;
+        }
+        try {
+          setIsSearchingLocation(true);
+          const suggestions = await candidateService.getCitySuggestions(query);
+          setLocationSuggestions(suggestions.map((s: string) => ({ value: s, label: s })));
+        } catch (error) {
+          console.error("Failed to fetch location suggestions", error);
+        } finally {
+          setIsSearchingLocation(false);
+        }
+      }, 300),
+    []
+  );
+
+  // Trigger search on input change
+  useEffect(() => {
+    if (activeTab === "location") {
+      fetchLocationSuggestions(searchQuery);
+    } else {
+      setLocationSuggestions([]); // Reset when leaving location tab
+    }
+  }, [searchQuery, activeTab, fetchLocationSuggestions]);
   useEffect(() => {
     if (isOpen) {
       setFilters(initialFilters);
@@ -113,24 +146,41 @@ export default function CandidateFilterPanel({
 
   // Rendering the right side options based on active tab
   const renderOptions = () => {
-    const currentOptions = optionsData[activeTab] || [];
+    let currentOptions = optionsData[activeTab] || [];
+    let filteredOptions = currentOptions;
 
-    // Filter options by search query
-    const filteredOptions = currentOptions.filter((opt) =>
-      opt.label.toLowerCase().includes(searchQuery.toLowerCase())
+    // For location, if we have a search query, use the API suggestions instead of local string match
+    if (activeTab === "location" && searchQuery.trim().length >= 2) {
+      filteredOptions = locationSuggestions;
+    } else {
+      // Filter options locally by search query for other tabs, or when query is < 2 chars
+      filteredOptions = currentOptions.filter((opt) =>
+        opt.label.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Keep all selected options visible at the top, even if they don't match the search query
+    // We need to fetch their label/logo either from the current options list or just create a new FilterOption for them.
+    const selectedItems: FilterOption[] = filters[activeTab].map((val) => {
+      // Try to find the full object in either currentOptions or filteredOptions
+      const found = currentOptions.find((o) => o.value === val) || filteredOptions.find((o) => o.value === val);
+      return found || { value: val, label: val }; // Fallback to raw string
+    });
+
+    // Remove selected items from the filtered options to avoid duplicates, 
+    // then put selected items at the top.
+    const nonSelectedOptions = filteredOptions.filter(
+      (opt) => !filters[activeTab].includes(opt.value)
     );
 
-    // Keep selected options visible even if they don't match the search query
-    const selectedNotMatched = currentOptions.filter(
-      (opt) =>
-        filters[activeTab].includes(opt.value) &&
-        !filteredOptions.some((fo) => fo.value === opt.value)
-    );
-
-    const displayOptions = [...selectedNotMatched, ...filteredOptions];
+    const displayOptions = [...selectedItems, ...nonSelectedOptions];
 
     return (
-      <div className="flex flex-col gap-3 mt-4 h-[300px] overflow-y-auto custom-scrollbar pr-2">
+      <div className="flex flex-col gap-3 mt-4 h-[300px] overflow-y-auto custom-scrollbar pr-2 relative">
+        {isSearchingLocation && activeTab === "location" && (
+          <div className="text-sm text-gray-500 text-center mb-2 animate-pulse">Searching...</div>
+        )}
+        
         {displayOptions.length > 0 ? (
           displayOptions.map((opt) => (
             <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
