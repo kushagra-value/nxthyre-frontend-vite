@@ -294,7 +294,7 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
 
               {/* Hover Breakdown Tooltip */}
               {showTooltip && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-999 pointer-events-none">
                   <div className="bg-white border border-[#D1D1D6] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.12)] p-3 min-w-[170px] flex flex-col gap-2">
                     <div className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
                       Activity Breakdown
