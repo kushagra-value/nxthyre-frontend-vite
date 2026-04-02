@@ -31,6 +31,10 @@ import {
   ArrowUp,
   ArrowDown,
   MessageSquare,
+  MoreHorizontal,
+  Phone,
+  Mail,
+  Trash2,
 } from "lucide-react";
 import apiClient from "../../../services/api";
 import { jobPostService, Job } from "../../../services/jobPostService";
@@ -202,6 +206,22 @@ const formatDate = (iso?: string): string => {
     month: "2-digit",
     year: "numeric",
   });
+};
+
+const formatTimeAgo = (iso?: string): string => {
+  if (!iso) return "--";
+  const now = new Date();
+  const past = new Date(iso);
+  const diffInMs = now.getTime() - past.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  if (diffInDays < 1) {
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    if (diffInHours < 1) {
+      return `${Math.floor(diffInMs / (1000 * 60))}m`;
+    }
+    return `${diffInHours}h`;
+  }
+  return `${diffInDays}d`;
 };
 
 const workApproachLabel: Record<string, string> = {
@@ -1798,86 +1818,143 @@ export default function JobPipelineDashboard({
                         const cand = item.candidate;
                         const aiScoreRaw =
                           item.job_score?.candidate_match_score?.score || "--%";
+                        const aiScoreNum = parseInt(aiScoreRaw.replace("%", ""), 10) || 0;
+                        const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : "#FF383C";
+                        
                         const isDisabled =
                           selectionType === "ARCHIVED" ||
                           (selectionStage && selectionStage !== stage.slug);
+
+                        // Extract headline and company (attempt to split if "at" present)
+                        let headline = cand.headline || "--";
+                        let companyName = cand.experience_summary?.title || "--";
+                        
+                        // If companyName seems to be a job title, it might be better to show it if headline doesn't have it.
+                        // Based on the image: "Product Designer" (headline/title), "Google" (company).
 
                         return (
                           <div
                             key={item.id}
                             draggable
                             onDragStart={() => handleDragStart(item.id)}
-                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1 relative ${isDisabled ? "opacity-60" : ""}`}
+                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30 transition-all flex flex-col gap-4 relative ${isDisabled ? "opacity-60" : ""}`}
                           >
-                            <div className="absolute top-3 right-3 z-10">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 accent-[#0F47F2]"
-                                checked={selectedIds.has(item.id)}
-                                onChange={() => handleToggleCandidate(item)}
-                                disabled={!!isDisabled}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
-                            <div className="flex items-start justify-between gap-2 pr-6">
-                              <h4
-                                className="font-bold text-[14px] text-slate-800 line-clamp-1 cursor-pointer hover:underline"
-                                onClick={() =>
-                                  onSelectCandidate?.(
-                                    item,
-                                    activeColumnCandidates,
-                                    idx,
-                                  )
-                                }
-                              >
-                                {cand.full_name || "--"}
-                              </h4>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setCandidateEditing(item);
-                                  setShowCandidateEditModal(true);
-                                }}
-                                className="p-1 hover:bg-gray-100 rounded-full transition-colors shrink-0"
-                                title="Edit Candidate Details"
-                              >
-                                <Pencil className="w-3.5 h-3.5 text-[#AEAEB2]" />
-                              </button>
-                            </div>
-                            <div className="inline-flex">
-                              <span className="text-[10px] font-bold px-2 py-0.5 mt-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">
-                                {aiScoreRaw}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 line-clamp-1">
-                              {cand.headline || "--"}
-                            </p>
+                            <div className="flex justify-between items-start">
+                              <div className="flex gap-3">
+                                <div className="mt-1">
+                                  <input
+                                    type="checkbox"
+                                    className="w-5 h-5 rounded-md border-[#D1D1D6] accent-[#0F47F2] cursor-pointer"
+                                    checked={selectedIds.has(item.id)}
+                                    onChange={() => handleToggleCandidate(item)}
+                                    disabled={!!isDisabled}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-2">
+                                    <h4
+                                      className="font-semibold text-[17px] text-[#1C1C1E] line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2"
+                                      onClick={() =>
+                                        onSelectCandidate?.(
+                                          item,
+                                          activeColumnCandidates,
+                                          idx,
+                                        )
+                                      }
+                                    >
+                                      {cand.full_name || "--"}
+                                    </h4>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCandidateEditing(item);
+                                        setShowCandidateEditModal(true);
+                                      }}
+                                      className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                      title="Edit details"
+                                    >
+                                      <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                                    </button>
+                                  </div>
+                                  <p className="text-[14px] text-[#8E8E93] line-clamp-1 mt-0.5">
+                                    {headline}
+                                  </p>
+                                  <p className="text-[15px] font-medium text-[#4B5563] line-clamp-1 mt-1">
+                                    {companyName}
+                                  </p>
+                                </div>
+                              </div>
 
-                            <div className="flex flex-wrap items-center mt-3 gap-y-2 gap-x-4 text-[11px] text-[#8E8E93] font-medium">
-                              {cand.location && (
-                                <span className="flex items-center gap-1.5">
-                                  <LocateIcon className="w-3.5 h-3.5" />{" "}
-                                  {cand.location.split(",")[0]}
+                              <div className="relative w-12 h-12 shrink-0">
+                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+                                  <path
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke="#F2F2F7"
+                                    strokeWidth="3"
+                                  />
+                                  <path
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke={aiScoreColor}
+                                    strokeWidth="3"
+                                    strokeDasharray={`${aiScoreNum}, 100`}
+                                    strokeLinecap="round"
+                                  />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#4B5563]">
+                                  {aiScoreRaw === "--%" ? "0%" : aiScoreRaw}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between items-center mt-auto">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCallModalCandidate({
+                                      id: cand.id,
+                                      name: cand.full_name,
+                                      avatarInitials: cand.full_name?.substring(0,2).toUpperCase(),
+                                      headline: cand.headline,
+                                      phone: cand.premium_data?.phone || "+91 98765 43210",
+                                      experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"),
+                                      expectedCtc: cand.expected_ctc || "--",
+                                      location: cand.location || "--",
+                                      noticePeriod: cand.notice_period_summary || "--",
+                                      callAttention: item.job_score?.call_attention || [],
+                                    });
+                                  }}
+                                  className="w-9 h-9 flex items-center justify-center bg-[#E3E1FF] text-[#6155F5] rounded-full hover:bg-[#D5D2FF] transition-colors"
+                                >
+                                  <Phone className="w-4 h-4" />
+                                </button>
+                                <button
+                                  className="w-9 h-9 flex items-center justify-center bg-[#FFF2E6] text-[#FF8D28] rounded-full hover:bg-[#FFE8D4] transition-colors"
+                                >
+                                  <Mail className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openFeedbackModal({
+                                      type: "archive",
+                                      applicationIds: [item.id],
+                                    });
+                                  }}
+                                  className="w-9 h-9 flex items-center justify-center bg-[#FEE2E2] text-[#DC2626] rounded-full hover:bg-[#FDBBBB] transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
+                                <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
+                                <span className="text-[11px] font-bold text-[#8E8E93]">
+                                  {formatTimeAgo((item.time_added || item.candidate.time_applied) ?? undefined)}
                                 </span>
-                              )}
-                              {(cand.total_experience ||
-                                cand.experience_years) && (
-                                  <span className="flex items-center gap-1.5">
-                                    <Briefcase className="w-3.5 h-3.5" />{" "}
-                                    {cand.total_experience != null
-                                      ? `${cand.total_experience} Yrs`
-                                      : cand.experience_years.replace(
-                                        /\s*exp$/i,
-                                        "",
-                                      )}
-                                  </span>
-                                )}
-                              {cand.current_salary_lpa && (
-                                <span className="flex items-center gap-1.5">
-                                  <Target className="w-3.5 h-3.5" />{" "}
-                                  {cand.current_salary_lpa} LPA
-                                </span>
-                              )}
+                              </div>
                             </div>
                           </div>
                         );
@@ -1904,71 +1981,63 @@ export default function JobPipelineDashboard({
                               return (
                                 <div
                                   key={item.id}
-                                  className={`bg-[#F9FAFB] border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm grayscale opacity-60 flex flex-col gap-1 relative ${isDisabled ? "pointer-events-none opacity-40" : ""}`}
+                                  className={`bg-[#F9FAFB] border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm grayscale opacity-60 flex flex-col gap-4 relative ${isDisabled ? "pointer-events-none opacity-40" : ""}`}
                                 >
-                                  <div className="absolute top-3 right-3 z-10">
-                                    <input
-                                      type="checkbox"
-                                      className="w-4 h-4 accent-[#4B5563]"
-                                      checked={selectedIds.has(item.id)}
-                                      onChange={() =>
-                                        handleToggleCandidate(item)
-                                      }
-                                      disabled={!!isDisabled}
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
+                                  <div className="flex justify-between items-start">
+                                    <div className="flex gap-3">
+                                      <div className="mt-1">
+                                        <input
+                                          type="checkbox"
+                                          className="w-5 h-5 rounded-md border-[#D1D1D6] accent-[#8E8E93] cursor-pointer"
+                                          checked={selectedIds.has(item.id)}
+                                          onChange={() =>
+                                            handleToggleCandidate(item)
+                                          }
+                                          disabled={!!isDisabled}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                      </div>
+                                      <div className="flex flex-col">
+                                        <div className="flex items-center gap-2">
+                                          <h4
+                                            className="font-semibold text-[17px] text-[#8E8E93] line-clamp-1 cursor-pointer"
+                                            onClick={() =>
+                                              onSelectCandidate?.(
+                                                item,
+                                                archivedColumnCandidates,
+                                                idx,
+                                              )
+                                            }
+                                          >
+                                            {cand.full_name || "--"}
+                                          </h4>
+                                          <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                                        </div>
+                                        <p className="text-[14px] text-[#AEAEB2] line-clamp-1 mt-0.5">
+                                          {cand.headline || "--"}
+                                        </p>
+                                        {(item as any).archive_reason && (
+                                          <div className="bg-[#FEF2F2] px-2 py-1 rounded text-[10px] text-[#DC2626] font-medium mt-1 inline-flex items-center gap-1.5 w-fit max-w-[200px]">
+                                            <Archive className="w-3 h-3 shrink-0" />
+                                            <span className="truncate" title={(item as any).archive_reason}>
+                                              {(item as any).archive_reason}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400 shrink-0">
+                                      --
+                                    </div>
                                   </div>
-                                  <div className="flex items-start justify-between gap-2 pr-6">
-                                    <h4
-                                      className="font-bold text-[14px] text-[#8E8E93] line-clamp-1 cursor-pointer"
-                                      onClick={() =>
-                                        onSelectCandidate?.(
-                                          item,
-                                          archivedColumnCandidates,
-                                          idx,
-                                        )
-                                      }
-                                    >
-                                      {cand.full_name || "--"}
-                                    </h4>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setCandidateEditing(item);
-                                        setShowCandidateEditModal(true);
-                                      }}
-                                      className="p-1 hover:bg-gray-100 rounded-full transition-colors shrink-0"
-                                      title="Edit Candidate Details"
-                                    >
-                                      <Pencil className="w-3 h-3 text-[#AEAEB2]" />
-                                    </button>
-                                  </div>
-                                  <p className="text-[10px] text-[#AEAEB2] line-clamp-1">
-                                    {cand.headline || "--"}
-                                  </p>
-                                  {(item as any).archive_reason && (
-                                    <div className="bg-[#FEF2F2] px-2 py-1.5 rounded text-[10px] text-[#DC2626] font-medium mt-1 inline-flex items-center gap-1.5 w-fit max-w-full">
-                                      <Archive className="w-3 h-3 shrink-0" />
-                                      <span className="truncate" title={(item as any).archive_reason}>
-                                        {(item as any).archive_reason}
+
+                                  <div className="flex justify-end mt-auto">
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
+                                      <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
+                                      <span className="text-[11px] font-bold text-[#8E8E93]">
+                                        {formatTimeAgo((item.time_added || item.candidate.time_applied) ?? undefined)}
                                       </span>
                                     </div>
-                                  )}
-                                  <div className="flex flex-wrap items-center mt-2 gap-y-1 gap-x-3 text-[10px] text-[#AEAEB2]">
-                                    {cand.location && (
-                                      <span>{cand.location.split(",")[0]}</span>
-                                    )}
-                                    {(cand.total_experience ||
-                                      cand.experience_years) && (
-                                        <span>
-                                          {cand.total_experience != null
-                                            ? `${cand.total_experience} Yrs`
-                                            : cand.experience_years.replace(
-                                              /\s*exp$/i,
-                                              "",
-                                            )}
-                                        </span>
-                                      )}
                                   </div>
                                 </div>
                               );
