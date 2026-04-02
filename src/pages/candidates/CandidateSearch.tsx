@@ -395,15 +395,32 @@ export default function CandidateSearch() {
                   />
                 </div>
                 <div className="space-y-1">
-                  {workspaces.filter(ws => ws.name.toLowerCase().includes(filterSearchQuery.toLowerCase())).map(ws => (
-                    <CheckboxItem 
-                      key={ws.id} 
-                      label={ws.name} 
-                      icon={ws.company_research_data?.website ? `https://logo.clearbit.com/${new URL(ws.company_research_data.website).hostname}` : null}
-                      checked={selectedFilters.clients.includes(ws.id)}
-                      onChange={() => toggleFilter('clients', ws.id)}
-                    />
-                  ))}
+                  {workspaces
+                    .filter((ws) => ws.name.toLowerCase().includes(filterSearchQuery.toLowerCase()))
+                    .map((ws) => {
+                      let logoUrl = null;
+                      if (ws.company_research_data?.website) {
+                        try {
+                          const websiteStr = ws.company_research_data.website.trim();
+                          const finalUrl = websiteStr.includes("://") ? websiteStr : `https://${websiteStr}`;
+                          const hostname = new URL(finalUrl).hostname;
+                          if (hostname) {
+                            logoUrl = `https://logo.clearbit.com/${hostname}`;
+                          }
+                        } catch (e) {
+                          logoUrl = null;
+                        }
+                      }
+                      return (
+                        <CheckboxItem
+                          key={ws.id}
+                          label={ws.name}
+                          icon={logoUrl}
+                          checked={selectedFilters.clients.includes(ws.id)}
+                          onChange={() => toggleFilter("clients", ws.id)}
+                        />
+                      );
+                    })}
                 </div>
               </div>
             )}
