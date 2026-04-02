@@ -224,6 +224,39 @@ const formatTimeAgo = (iso?: string): string => {
   return `${diffInDays}d`;
 };
 
+const formatMovedDate = (statusTags?: { text: string; color: string }[]): string => {
+  if (!statusTags || statusTags.length === 0) return "0d";
+  
+  const movedTag = statusTags.find(tag => 
+    tag.text.toLowerCase().includes("moved") || 
+    tag.text.toLowerCase().includes("added")
+  );
+  
+  if (!movedTag) return "0d";
+  
+  const text = movedTag.text.toLowerCase();
+  
+  if (text.includes("today")) return "0d";
+  if (text.includes("yesterday")) return "1d";
+  
+  // Extract date from strings like "Moved on 31 Mar 2026" or "Moved 31 Mar 2026"
+  const dateParts = movedTag.text.replace(/Moved on |Added on |Moved |Added /i, "").trim();
+  const pastDate = new Date(dateParts);
+  
+  if (isNaN(pastDate.getTime())) return "0d";
+
+  const now = new Date();
+  // Clear time parts to compare only dates
+  now.setHours(0, 0, 0, 0);
+  const midnightPast = new Date(pastDate);
+  midnightPast.setHours(0, 0, 0, 0);
+  
+  const diffInMs = now.getTime() - midnightPast.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  
+  return `${Math.max(0, diffInDays)}d`;
+};
+
 const workApproachLabel: Record<string, string> = {
   ONSITE: "Onsite",
   REMOTE: "Remote",
@@ -1880,9 +1913,9 @@ export default function JobPipelineDashboard({
                                   <p className="text-[14px] text-[#8E8E93] line-clamp-1 mt-0.5">
                                     {headline}
                                   </p>
-                                  <p className="text-[15px] font-medium text-[#4B5563] line-clamp-1 mt-1">
+                                  {/* <p className="text-[15px] font-medium text-[#4B5563] line-clamp-1 mt-1">
                                     {companyName}
-                                  </p>
+                                  </p> */}
                                 </div>
                               </div>
 
@@ -1952,7 +1985,7 @@ export default function JobPipelineDashboard({
                               <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
                                 <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
                                 <span className="text-[11px] font-bold text-[#8E8E93]">
-                                  {formatTimeAgo((item.time_added || item.candidate.time_applied) ?? undefined)}
+                                  {formatMovedDate(item.status_tags)}
                                 </span>
                               </div>
                             </div>
@@ -2035,7 +2068,7 @@ export default function JobPipelineDashboard({
                                     <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
                                       <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
                                       <span className="text-[11px] font-bold text-[#8E8E93]">
-                                        {formatTimeAgo((item.time_added || item.candidate.time_applied) ?? undefined)}
+                                        {formatMovedDate(item.status_tags)}
                                       </span>
                                     </div>
                                   </div>
