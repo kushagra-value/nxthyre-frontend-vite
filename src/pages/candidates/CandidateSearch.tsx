@@ -255,10 +255,10 @@ export default function CandidateSearch() {
   const [filters, setFilters] = React.useState<FiltersState>({
     location: [],
     clients: [],
-    experience: [],
+    experience: { min: "", max: "" },
     jobRole: [],
-    noticePeriod: [],
-    dateCreated: [],
+    noticePeriod: { selected: [], minDays: "", maxDays: "" },
+    dateCreated: { type: "", from: "", to: "" },
     source: [],
   });
 
@@ -293,8 +293,11 @@ export default function CandidateSearch() {
         const mappedClients = uniqueClientNames.map(name => ({ value: name, label: name as string, logo: undefined as any }));
 
         // Map Job Roles
-        const uniqueTitles = Array.from(new Set(jobsData.map((j: any) => j.title))).filter(Boolean);
-        const mappedJobs = uniqueTitles.map(t => ({ value: t, label: t as string }));
+        const mappedJobs = jobsData.map((j: any) => ({ 
+          value: String(j.id || j.title), 
+          label: j.title as string,
+          subLabel: `Job ID :${j.job_id || j.id}` 
+        }));
 
         setOptionsData((prev: any) => ({
           ...prev,
@@ -333,10 +336,24 @@ export default function CandidateSearch() {
     return () => { cancelled = true; };
   }, []);
 
-  const totalFiltersApplied = Object.values(filters).reduce(
-    (acc, val) => acc + val.length,
-    0
-  );
+  const totalFiltersApplied = Object.entries(filters).reduce((acc, [key, val]) => {
+    if (key === 'experience') {
+      const exp = val as FiltersState['experience'];
+      return acc + (exp.min ? 1 : 0) + (exp.max ? 1 : 0);
+    }
+    if (key === 'noticePeriod') {
+      const np = val as FiltersState['noticePeriod'];
+      return acc + np.selected.length + (np.minDays ? 1 : 0) + (np.maxDays ? 1 : 0);
+    }
+    if (key === 'dateCreated') {
+      const dc = val as FiltersState['dateCreated'];
+      return acc + (dc.type ? 1 : 0);
+    }
+    if (Array.isArray(val)) {
+      return acc + val.length;
+    }
+    return acc;
+  }, 0);
 
   const handleApplyFilters = (newFilters: FiltersState) => {
     setFilters(newFilters);

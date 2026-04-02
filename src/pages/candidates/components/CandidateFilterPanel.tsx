@@ -7,19 +7,26 @@ export interface FilterOption {
   value: string;
   label: string;
   logo?: React.ReactNode | string;
+  subLabel?: string;
 }
 
 export type FilterCategoryOptions = {
-  [K in TabKey]: FilterOption[];
+  location: FilterOption[];
+  clients: FilterOption[];
+  experience: FilterOption[];
+  jobRole: FilterOption[];
+  noticePeriod: FilterOption[];
+  dateCreated: FilterOption[];
+  source: FilterOption[];
 };
 
 export interface FiltersState {
   location: string[];
   clients: string[];
-  experience: string[];
+  experience: { min: string; max: string };
   jobRole: string[];
-  noticePeriod: string[];
-  dateCreated: string[];
+  noticePeriod: { selected: string[]; minDays: string; maxDays: string };
+  dateCreated: { type: string; from: string; to: string };
   source: string[];
 }
 
@@ -117,13 +124,30 @@ export default function CandidateFilterPanel({
 
   const handleToggleOption = (tab: TabKey, value: string) => {
     setFilters((prev) => {
-      const current = prev[tab];
-      const isSelected = current.includes(value);
-      if (isSelected) {
-        return { ...prev, [tab]: current.filter((item) => item !== value) };
-      } else {
-        return { ...prev, [tab]: [...current, value] };
+      if (tab === "noticePeriod") {
+        const np = prev.noticePeriod;
+        const isSelected = np.selected.includes(value);
+        return {
+          ...prev,
+          noticePeriod: {
+            ...np,
+            selected: isSelected
+              ? np.selected.filter((item) => item !== value)
+              : [...np.selected, value],
+          },
+        };
       }
+      const current = prev[tab];
+      if (Array.isArray(current)) {
+        const isSelected = current.includes(value);
+        return {
+          ...prev,
+          [tab]: isSelected
+            ? current.filter((item) => item !== value)
+            : [...current, value],
+        };
+      }
+      return prev;
     });
   };
 
@@ -131,10 +155,10 @@ export default function CandidateFilterPanel({
     setFilters({
       location: [],
       clients: [],
-      experience: [],
+      experience: { min: "", max: "" },
       jobRole: [],
-      noticePeriod: [],
-      dateCreated: [],
+      noticePeriod: { selected: [], minDays: "", maxDays: "" },
+      dateCreated: { type: "", from: "", to: "" },
       source: [],
     });
   };
@@ -145,7 +169,7 @@ export default function CandidateFilterPanel({
   };
 
   // Rendering the right side options based on active tab
-  const renderOptions = () => {
+  const renderListOptions = () => {
     let currentOptions = optionsData[activeTab] || [];
     let filteredOptions = currentOptions;
 
@@ -159,18 +183,16 @@ export default function CandidateFilterPanel({
       );
     }
 
+    const currentListValues = (activeTab === "noticePeriod" ? filters.noticePeriod.selected : filters[activeTab]) as string[];
+
     // Keep all selected options visible at the top, even if they don't match the search query
-    // We need to fetch their label/logo either from the current options list or just create a new FilterOption for them.
-    const selectedItems: FilterOption[] = filters[activeTab].map((val) => {
-      // Try to find the full object in either currentOptions or filteredOptions
+    const selectedItems: FilterOption[] = currentListValues.map((val) => {
       const found = currentOptions.find((o) => o.value === val) || filteredOptions.find((o) => o.value === val);
       return found || { value: val, label: val }; // Fallback to raw string
     });
 
-    // Remove selected items from the filtered options to avoid duplicates, 
-    // then put selected items at the top.
     const nonSelectedOptions = filteredOptions.filter(
-      (opt) => !filters[activeTab].includes(opt.value)
+      (opt) => !currentListValues.includes(opt.value)
     );
 
     const displayOptions = [...selectedItems, ...nonSelectedOptions];
@@ -183,28 +205,28 @@ export default function CandidateFilterPanel({
         
         {displayOptions.length > 0 ? (
           displayOptions.map((opt) => (
-            <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
+            <label key={opt.value} className="flex items-start gap-3 cursor-pointer group py-0.5">
               <input
                 type="checkbox"
                 className="hidden"
-                checked={filters[activeTab].includes(opt.value)}
+                checked={currentListValues.includes(opt.value)}
                 onChange={() => handleToggleOption(activeTab, opt.value)}
               />
               <div
-                className={`w-[18px] h-[18px] rounded flex items-center justify-center transition-colors flex-shrink-0 ${
-                  filters[activeTab].includes(opt.value)
+                className={`w-[18px] h-[18px] rounded flex items-center justify-center transition-colors flex-shrink-0 mt-0.5 ${
+                  currentListValues.includes(opt.value)
                     ? "bg-[#0F47F2] border-[#0F47F2]"
                     : "bg-white border-gray-300 border group-hover:border-[#0F47F2]"
                 }`}
               >
-                {filters[activeTab].includes(opt.value) && (
+                {currentListValues.includes(opt.value) && (
                   <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 )}
               </div>
               {opt.logo && (
-                <div className="flex items-center justify-center w-[20px] max-h-[20px]">
+                <div className="flex items-center justify-center w-[20px] h-[20px] flex-shrink-0 mt-0.5">
                   {typeof opt.logo === "string" ? (
                     <img src={opt.logo} alt={opt.label} className="w-full h-full object-contain rounded-full" />
                   ) : (
@@ -212,14 +234,187 @@ export default function CandidateFilterPanel({
                   )}
                 </div>
               )}
-              <span className={`text-sm select-none ${filters[activeTab].includes(opt.value) ? "text-[#0F47F2] font-medium" : "text-gray-600"}`}>
-                {opt.label}
-              </span>
+              <div className="flex flex-col">
+                <span className={`text-sm select-none ${currentListValues.includes(opt.value) ? "text-[#0F47F2] font-medium" : "text-gray-600"}`}>
+                  {opt.label}
+                </span>
+                {opt.subLabel && (
+                  <span className="text-xs text-gray-400 mt-0.5 font-normal">{opt.subLabel}</span>
+                )}
+              </div>
             </label>
           ))
         ) : (
           <div className="text-sm text-gray-500 text-center mt-10">No options found.</div>
         )}
+      </div>
+    );
+  };
+
+  const renderContent = () => {
+    if (activeTab === "experience") {
+      return (
+        <div className="flex-1 flex flex-col p-6 bg-white">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-base font-semibold text-[#0F47F2]">
+              Experience (in years)
+            </h3>
+          </div>
+          <div className="flex flex-col gap-4">
+            <select
+              value={filters.experience.min}
+              onChange={(e) => setFilters(prev => ({ ...prev, experience: { ...prev.experience, min: e.target.value } }))}
+              className="w-full h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-600 focus:outline-none focus:border-[#0F47F2] appearance-none bg-white"
+            >
+              <option value="" disabled className="text-gray-400">Minimum Experience</option>
+              {Array.from({ length: 20 }).map((_, i) => (
+                <option key={`min-${i}`} value={i}>{i} Years</option>
+              ))}
+            </select>
+            <select
+              value={filters.experience.max}
+              onChange={(e) => setFilters(prev => ({ ...prev, experience: { ...prev.experience, max: e.target.value } }))}
+              className="w-full h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-600 focus:outline-none focus:border-[#0F47F2] appearance-none bg-white"
+            >
+              <option value="" disabled className="text-gray-400">Maximum Experience</option>
+              {Array.from({ length: 30 }).map((_, i) => (
+                <option key={`max-${i+1}`} value={i+1}>{i+1} Years</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === "noticePeriod") {
+      return (
+        <div className="flex-1 flex flex-col p-6 bg-white">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-base font-semibold text-[#0F47F2]">
+              Notice Period
+            </h3>
+          </div>
+          {renderListOptions()}
+          
+          <div className="flex items-center gap-3 mt-6">
+            <input
+              type="text"
+              placeholder="Min Days"
+              value={filters.noticePeriod.minDays}
+              onChange={(e) => setFilters(prev => ({ ...prev, noticePeriod: { ...prev.noticePeriod, minDays: e.target.value } }))}
+              className="w-[100px] h-10 px-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-[#0F47F2] placeholder:text-gray-400"
+            />
+            <input
+              type="text"
+              placeholder="Max Days"
+              value={filters.noticePeriod.maxDays}
+              onChange={(e) => setFilters(prev => ({ ...prev, noticePeriod: { ...prev.noticePeriod, maxDays: e.target.value } }))}
+              className="w-[100px] h-10 px-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-[#0F47F2] placeholder:text-gray-400"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === "dateCreated") {
+      return (
+        <div className="flex-1 flex flex-col p-6 bg-white">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-base font-semibold text-[#0F47F2]">
+              Date Created
+            </h3>
+          </div>
+          <div className="flex flex-col gap-5">
+            {["Last week", "Last 1 month", "Last 3 months", "Custom"].map(
+              (option) => (
+                <label key={option} className="flex items-center gap-3 cursor-pointer group">
+                  <div
+                    className={`w-[18px] h-[18px] rounded-full flex items-center justify-center transition-colors flex-shrink-0 border ${
+                      filters.dateCreated.type === option
+                        ? "border-[#0F47F2]"
+                        : "border-gray-400 group-hover:border-[#0F47F2]"
+                    }`}
+                  >
+                    {filters.dateCreated.type === option && (
+                      <div className="w-[10px] h-[10px] rounded-full bg-[#0F47F2]" />
+                    )}
+                  </div>
+                  <input
+                    type="radio"
+                    className="hidden"
+                    name="dateCreatedType"
+                    value={option}
+                    checked={filters.dateCreated.type === option}
+                    onChange={() => setFilters(prev => ({ ...prev, dateCreated: { ...prev.dateCreated, type: option } }))}
+                  />
+                  <span className={`text-sm select-none ${filters.dateCreated.type === option ? "text-[#0F47F2] font-medium" : "text-gray-600"}`}>
+                    {option}
+                  </span>
+                </label>
+              )
+            )}
+            
+            <div className="flex flex-col gap-3 mt-1 pl-7">
+              <div className="relative">
+                <input
+                  type="date"
+                  value={filters.dateCreated.from}
+                  disabled={filters.dateCreated.type !== "Custom"}
+                  onChange={(e) => setFilters(prev => ({ ...prev, dateCreated: { ...prev.dateCreated, from: e.target.value } }))}
+                  className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-[#0F47F2] placeholder:text-gray-400 disabled:opacity-50 disabled:bg-gray-50"
+                  placeholder="From"
+                />
+              </div>
+              <div className="relative">
+                <input
+                  type="date"
+                  value={filters.dateCreated.to}
+                  disabled={filters.dateCreated.type !== "Custom"}
+                  onChange={(e) => setFilters(prev => ({ ...prev, dateCreated: { ...prev.dateCreated, to: e.target.value } }))}
+                  className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-[#0F47F2] placeholder:text-gray-400 disabled:opacity-50 disabled:bg-gray-50"
+                  placeholder="To"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === "source") {
+      return (
+        <div className="flex-1 flex flex-col p-6 bg-white">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-base font-semibold text-[#0F47F2]">
+              Candidates Sourced
+            </h3>
+          </div>
+          {renderListOptions()}
+        </div>
+      );
+    }
+
+    // Default List rendering (Jobs, Locations, Clients)
+    return (
+      <div className="flex-1 flex flex-col p-6 bg-white">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-base font-semibold text-[#0F47F2]">
+            {TABS.find((t) => t.key === activeTab)?.label}
+          </h3>
+        </div>
+
+        <div className="relative">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+          <input
+            type="text"
+            placeholder={`Search ${activeTab === 'jobRole' ? 'by Job Id, Role' : ''}`}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-9 pl-9 pr-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-[#0F47F2] focus:ring-1 focus:ring-[#0F47F2]/20 transition-all placeholder:text-gray-400"
+          />
+        </div>
+
+        {renderListOptions()}
       </div>
     );
   };
@@ -237,9 +432,18 @@ export default function CandidateFilterPanel({
     >
       <div className="flex h-[400px]">
         {/* Left Sidebar */}
-        <div className="w-[200px] border-r border-gray-100 bg-white flex flex-col py-2">
+        <div className="w-[200px] border-r border-gray-100 bg-white flex flex-col">
           {TABS.map((tab) => {
-            const count = filters[tab.key].length;
+            let count = 0;
+            if (tab.key === 'experience') {
+              count = (filters.experience.min ? 1 : 0) + (filters.experience.max ? 1 : 0);
+            } else if (tab.key === 'noticePeriod') {
+              count = filters.noticePeriod.selected.length + (filters.noticePeriod.minDays ? 1 : 0) + (filters.noticePeriod.maxDays ? 1 : 0);
+            } else if (tab.key === 'dateCreated') {
+              count = filters.dateCreated.type ? 1 : 0;
+            } else {
+              count = (filters[tab.key] as string[]).length;
+            }
             const isActive = activeTab === tab.key;
             return (
               <button
@@ -248,49 +452,28 @@ export default function CandidateFilterPanel({
                   setActiveTab(tab.key);
                   setSearchQuery(""); // Reset search when switching tabs
                 }}
-                className={`flex items-center justify-between px-5 py-3 text-sm text-left transition-colors relative ${
-                  isActive ? "bg-white text-[#0F47F2] font-medium" : "text-gray-600 hover:bg-gray-50 bg-white"
-                }`}
+                className="flex items-center justify-between px-5 text-sm text-left transition-colors relative bg-white h-12"
               >
                 <div className="flex items-center gap-2">
-                  {tab.label}
+                  <span className={`${isActive ? "text-[#0F47F2] font-medium" : "text-gray-600"}`}>
+                    {tab.label}
+                  </span>
                   {count > 0 && (
-                    <span className="bg-[#E6EBFE] text-[#0F47F2] text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center inline-block">
+                    <span className="bg-[#f0f2f5] text-[#0F47F2] text-[11px] font-bold px-1.5 py-0 rounded-full min-w-[20px] text-center inline-block">
                       {count}
                     </span>
                   )}
                 </div>
                 {isActive && <ChevronRight className="w-4 h-4 text-[#0F47F2]" />}
-                {/* Active Indicator Line */}
-                {isActive && (
-                  <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-[#0F47F2]" />
-                )}
+                {/* Underline for active tab correctly placed based on the design */}
+                <div className={`absolute bottom-0 left-5 right-5 h-[1px] ${isActive ? "bg-[#0F47F2]" : "bg-gray-100"}`} />
               </button>
             );
           })}
         </div>
 
         {/* Right Content */}
-        <div className="flex-1 flex flex-col p-6 bg-white">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-semibold text-[#0F47F2]">
-              {TABS.find((t) => t.key === activeTab)?.label}
-            </h3>
-          </div>
-
-          <div className="relative">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-[#0F47F2] focus:ring-1 focus:ring-[#0F47F2]/20 transition-all placeholder:text-gray-400"
-            />
-          </div>
-
-          {renderOptions()}
-        </div>
+        {renderContent()}
       </div>
 
       {/* Footer */}
