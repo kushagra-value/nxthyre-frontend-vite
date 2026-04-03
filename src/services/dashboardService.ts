@@ -583,7 +583,7 @@ class DashboardService {
       const events: ScheduleEventAPI[] = (response.data.results || response.data || []).map((ev: any) => {
         const start = new Date(ev.start_at);
         const end = new Date(ev.end_at);
-        const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const formatTime = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' });
         
         return {
           id: ev.id,
