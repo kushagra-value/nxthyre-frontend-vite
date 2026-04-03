@@ -527,8 +527,78 @@ export default function JobPipelineDashboard({
     null,
   );
 
-  const handleDragStart = (id: number) => {
+  const getInitials = (name: string) => {
+    if (!name) return "--";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const handleDragStart = (e: React.DragEvent, id: number) => {
     setDraggedCandidateId(id);
+
+    // Custom drag image logic for multiple selections
+    if (selectedIds.has(id) && selectedIds.size > 1) {
+      const selectedArray = Array.from(selectedIds);
+      
+      const getCandidateName = (cId: number) => {
+        const c = candidates.find(cand => cand.id === cId) || archivedCandidates.find((cand: any) => cand.id === cId);
+        return c?.candidate?.full_name || "Unknown";
+      };
+
+      const candidatesToDrag = selectedArray.map(getCandidateName);
+      
+      const overlay = document.createElement("div");
+      overlay.id = "custom-drag-image";
+      overlay.style.position = "absolute";
+      overlay.style.top = "-1000px";
+      overlay.style.display = "flex";
+      overlay.style.flexDirection = "column";
+      overlay.style.alignItems = "center";
+      overlay.style.pointerEvents = "none";
+      overlay.style.zIndex = "9999";
+
+      let avatarsHtml = "";
+      const positions = [
+        "top: -8px; left: -8px;",
+        "top: -8px; right: -8px;",
+        "bottom: -8px; left: -8px;"
+      ];
+      
+      const colors = ["#FCA5A5", "#FCD34D", "#93C5FD", "#D8B4FE", "#86EFAC"];
+
+      candidatesToDrag.slice(0, 3).forEach((name, idx) => {
+        const initials = getInitials(name);
+        // Map name length roughly to color index for consistency
+        const color = colors[name.length % colors.length];
+        avatarsHtml += `<div style="position: absolute; ${positions[idx]} width: 44px; height: 44px; border-radius: 50%; background: ${color}; border: 3px solid white; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: 700; color: #1C1C1E; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">${initials}</div>`;
+      });
+
+      if (candidatesToDrag.length > 3) {
+        avatarsHtml += `<div style="position: absolute; bottom: -8px; right: -8px; width: 44px; height: 44px; border-radius: 50%; background: #1C1C1E; color: white; border: 3px solid white; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: 700; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">+${candidatesToDrag.length - 3}</div>`;
+      }
+      
+      const handIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 14v4"/><path d="M11 20H8a2 2 0 0 1-2-2v-5"/><path d="M6 10a2 2 0 0 1 2-2h1"/><path d="M9 8V5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v8"/><path d="M14 11V9a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v2"/><path d="M19 14v-1a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v6a2 2 0 0 1-2 2h-1"/></svg>`;
+
+      overlay.innerHTML = `
+        <div style="position: relative; width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #0F47F2; background: rgba(231, 237, 255, 0.7); display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+          ${handIcon}
+          ${avatarsHtml}
+        </div>
+        <div style="margin-top: 14px; background: #0F47F2; color: white; padding: 6px 16px; border-radius: 999px; font-size: 11px; font-weight: 700; text-align: center; box-shadow: 0 4px 6px rgba(15,71,242,0.3); text-transform: uppercase;">
+          MOVE TO NEXT STAGE
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      e.dataTransfer.setDragImage(overlay, 50, 50);
+
+      setTimeout(() => {
+        if(overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 0);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -544,9 +614,14 @@ export default function JobPipelineDashboard({
 
     const actionType = toStageSlug === "archives" ? "archive" : "move";
 
+    let idsToMove = [draggedCandidateId];
+    if (selectedIds.has(draggedCandidateId)) {
+      idsToMove = Array.from(selectedIds);
+    }
+
     openFeedbackModal({
       type: actionType,
-      applicationIds: [draggedCandidateId],
+      applicationIds: idsToMove,
       targetStageId: toStage.id,
       targetStageName: toStage.name,
     });
@@ -1869,7 +1944,7 @@ export default function JobPipelineDashboard({
                           <div
                             key={item.id}
                             draggable
-                            onDragStart={() => handleDragStart(item.id)}
+                            onDragStart={(e) => handleDragStart(e, item.id)}
                             className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30 transition-all flex flex-col gap-4 relative ${isDisabled ? "opacity-60" : ""}`}
                           >
                             <div className="flex justify-between items-start">
