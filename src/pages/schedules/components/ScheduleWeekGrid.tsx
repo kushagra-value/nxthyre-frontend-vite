@@ -31,6 +31,7 @@ interface ScheduleWeekGridProps {
   onCellClick?: (date: string, time: string) => void;
   onDateSelect?: (date: Date) => void;
   onWeekChange?: (date: Date) => void;
+  onTodayClick?: () => void;
 }
 
 /* ─── Constants ─── */
@@ -82,6 +83,7 @@ export default function ScheduleWeekGrid({
   onCellClick,
   onDateSelect,
   onWeekChange,
+  onTodayClick,
 }: ScheduleWeekGridProps) {
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
   const today = new Date();
@@ -122,6 +124,7 @@ export default function ScheduleWeekGrid({
   const goToToday = () => {
     onWeekChange?.(new Date());
     onDateSelect?.(new Date());
+    onTodayClick?.();
   };
 
   /** Group events by dateStr */

@@ -66,6 +66,8 @@ export default function SchedulePage() {
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
   const [selectedJobRole, setSelectedJobRole] = useState<string>('all');
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
+  const [clickedDate, setClickedDate] = useState<string | undefined>();
+  const [clickedTime, setClickedTime] = useState<string | undefined>();
   const [eventModalData, setEventModalData] = useState<{ events: ScheduleEventAPI[]; index: number } | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -74,6 +76,7 @@ export default function SchedulePage() {
   const [sidebarEvents, setSidebarEvents] = useState<ScheduleEvent[]>([]);
   const [calendarActivities, setCalendarActivities] = useState<CalendarDayActivity[]>([]);
   const [counts, setCounts] = useState({ all: 0, scheduled: 0, completed: 0, overdue: 0, cancelled: 0 });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
   const [allJobs, setAllJobs] = useState<Job[]>([]);
@@ -176,7 +179,14 @@ export default function SchedulePage() {
     setSelectedDate(date);
   }, []);
 
-  const handleCellClick = useCallback((_date: string, _time: string) => {
+  const handleCellClick = useCallback((date: string, time: string) => {
+    setClickedDate(date);
+    const [h, m] = time.split(':');
+    const hour = parseInt(h, 10);
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    const ampmHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+    const formattedTime = `${String(ampmHour).padStart(2, '0')}:${m} ${suffix}`;
+    setClickedTime(formattedTime);
     setIsEventFormOpen(true);
   }, []);
 
@@ -253,7 +263,11 @@ export default function SchedulePage() {
             jobRoles={jobOptions}
           />
           <button
-            onClick={() => setIsEventFormOpen(true)}
+            onClick={() => {
+              setClickedDate(undefined);
+              setClickedTime(undefined);
+              setIsEventFormOpen(true);
+            }}
             className="flex items-center gap-1.5 px-4 py-2 bg-[#0F47F2] text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
@@ -284,14 +298,17 @@ export default function SchedulePage() {
           onCellClick={handleCellClick}
           onDateSelect={handleGridDateSelect}
           onWeekChange={handleWeekChange}
+          onTodayClick={() => setIsSidebarOpen(prev => !prev)}
         />
 
         {/* Right Panel: Selected Date Schedule */}
-        <TodaysSidebar
-          selectedDate={selectedDate}
-          events={sidebarEvents}
-          onEventClick={handleEventClick}
-        />
+        {isSidebarOpen && (
+          <TodaysSidebar
+            selectedDate={selectedDate}
+            events={sidebarEvents}
+            onEventClick={handleEventClick}
+          />
+        )}
       </div>
 
       {/* ─── Schedule Interview Modal ─── */}
@@ -302,6 +319,8 @@ export default function SchedulePage() {
         onSuccess={() => setRefreshTrigger(prev => prev + 1)}
         initialCompanyId={selectedCompany !== 'all' ? selectedCompany : undefined}
         initialJobId={selectedJobRole !== 'all' ? selectedJobRole : undefined}
+        initialDate={clickedDate}
+        initialTime={clickedTime}
       />
 
       {/* ─── Event Detail Modal ─── */}

@@ -193,6 +193,19 @@ export const EventForm = ({
     }
   }, [isOpen, initialJobId, selectedCompanyId]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setFormData((prev) => ({
+        ...prev,
+        date: initialDate || (() => {
+          const d = new Date();
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        })(),
+        startTime: initialTime || '11:00 AM',
+      }));
+    }
+  }, [isOpen, initialDate, initialTime]);
+
   // ── Fetch workspaces (companies) ──
   useEffect(() => {
     if (!isOpen) return;
