@@ -36,6 +36,7 @@ import {
   Mail,
   Trash2,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
 import { jobPostService, Job } from "../../../services/jobPostService";
 import {
@@ -304,6 +305,7 @@ export default function JobPipelineDashboard({
   externalStages,
   onRefreshStages,
 }: JobPipelineDashboardProps) {
+  const navigate = useNavigate();
   // ── Job details
   const [jobDetails, setJobDetails] = useState<Job | null>(null);
   const [loadingJob, setLoadingJob] = useState(false);
@@ -521,11 +523,23 @@ export default function JobPipelineDashboard({
     "pipeline" | "naukbot" | "inbound"
   >("pipeline");
 
-  // ── Kanban View State
   const [isKanbanView, setIsKanbanView] = useState(false);
   const [draggedCandidateId, setDraggedCandidateId] = useState<number | null>(
     null,
   );
+  const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpenId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
 
   const getInitials = (name: string) => {
     if (!name) return "--";
@@ -2036,26 +2050,74 @@ export default function JobPipelineDashboard({
                                     });
                                   }}
                                   className="w-9 h-9 flex items-center justify-center bg-[#E3E1FF] text-[#6155F5] rounded-full hover:bg-[#D5D2FF] transition-colors"
+                                  title="Call"
                                 >
                                   <Phone className="w-4 h-4" />
                                 </button>
                                 <button
                                   className="w-9 h-9 flex items-center justify-center bg-[#FFF2E6] text-[#FF8D28] rounded-full hover:bg-[#FFE8D4] transition-colors"
+                                  title="Email"
                                 >
                                   <Mail className="w-4 h-4" />
                                 </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openFeedbackModal({
-                                      type: "archive",
-                                      applicationIds: [item.id],
-                                    });
-                                  }}
-                                  className="w-9 h-9 flex items-center justify-center bg-[#FEE2E2] text-[#DC2626] rounded-full hover:bg-[#FDBBBB] transition-colors"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                
+                                <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setMenuOpenId(menuOpenId === item.id ? null : item.id);
+                                    }}
+                                    className="w-9 h-9 flex items-center justify-center bg-[#F3F5F7] text-[#8E8E93] rounded-full hover:bg-gray-200 transition-colors"
+                                    title="Options"
+                                  >
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </button>
+
+                                  {menuOpenId === item.id && (
+                                    <div className="absolute bottom-full mb-2 left-0 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[100] py-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, {
+                                            state: {
+                                              shareOption: "full_profile",
+                                              resumeUrl: cand.premium_data?.resume_url || cand.resume_url || ""
+                                            }
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Share2 className="w-4 h-4" /> Share Profile
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCandidateEditing(item);
+                                          setShowCandidateEditModal(true);
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Pencil className="w-4 h-4" /> Edit Details
+                                      </button>
+                                      <div className="h-px bg-[#F3F5F7] my-1" />
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          openFeedbackModal({
+                                            type: "archive",
+                                            applicationIds: [item.id],
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"
+                                      >
+                                        <Trash2 className="w-4 h-4" /> Move to Archive
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                               <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
                                 <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
@@ -2560,24 +2622,58 @@ export default function JobPipelineDashboard({
                                   className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
                                   title="Call Candidate"
                                 >
-                                  <span className="text-[#6155F5]">☎</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setCandidateEditing(item);
-                                    setShowCandidateEditModal(true);
-                                  }}
-                                  className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
-                                  title="Edit Candidate Details"
-                                >
-                                  <Pencil className="w-4 h-4 text-[#4B5563]" />
+                                  <span className="text-[#6155F5]"><Phone className="w-4 h-4" /></span>
                                 </button>
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors"
                                   title="Email Candidate"
                                 >
-                                  <span className="text-[#FF8D28]">✉</span>
+                                  <span className="text-[#FF8D28]"><Mail className="w-4 h-4" /></span>
                                 </button>
+
+                                <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setMenuOpenId(menuOpenId === item.id ? null : item.id);
+                                    }}
+                                    className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
+                                    title="Options"
+                                  >
+                                    <MoreHorizontal className="w-4 h-4 text-[#4B5563]" />
+                                  </button>
+
+                                  {menuOpenId === item.id && (
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[100] py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, {
+                                            state: {
+                                              shareOption: "full_profile",
+                                              resumeUrl: cand.premium_data?.resume_url || cand.resume_url || ""
+                                            }
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Share2 className="w-4 h-4" /> Share Profile
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCandidateEditing(item);
+                                          setShowCandidateEditModal(true);
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Pencil className="w-4 h-4" /> Edit Details
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </td>
                           </tr>

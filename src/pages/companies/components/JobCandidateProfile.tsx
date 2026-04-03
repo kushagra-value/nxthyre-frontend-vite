@@ -24,6 +24,7 @@ import {
   MessageSquare,
   X,
   Archive,
+  Share2,
 } from "lucide-react";
 import candidateService from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
@@ -1020,6 +1021,17 @@ export default function JobCandidateProfile({
                             <Globe className="w-4 h-4 text-black hover:text-[#1DA1F2] cursor-pointer transition-colors" />
                           </a>
                         )}
+                        <button
+                          onClick={() => {
+                            const url = window.location.href;
+                            navigator.clipboard.writeText(url);
+                            showToast.success("Profile link copied to clipboard!");
+                          }}
+                          className="hover:scale-110 transition-transform"
+                          title="Share Profile"
+                        >
+                          <Share2 className="w-4 h-4 text-[#0F47F2] cursor-pointer" />
+                        </button>
                         {!premiumData.linkedin_url && !cand.linkedin_url && !premiumData.github_url && !premiumData.portfolio_url && !premiumData.twitter_url && (
                           <span className="text-[#AEAEB2] text-xs">--</span>
                         )}
