@@ -1568,7 +1568,7 @@ export default function JobPipelineDashboard({
       {/* ═══════════════════════════════════════════════════════
           Stage Filter Pills & Pipeline Content
          ═══════════════════════════════════════════════════════ */}
-      {activeTab === "pipeline" && (
+      {(activeTab === "pipeline" || activeTab === "inbound") && (
         <>
           <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
             <div className="flex items-center gap-2 flex-wrap">
