@@ -470,18 +470,17 @@ const JobListing: React.FC<JobListingProps> = ({
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
 
                                 const defaultStages = [
-                                    { name: 'Shortlisted', count: job.shortlisted_candidate_count || 12, color: '#34C759', archive: 4 },
-                                    { name: 'Interview', count: 6, color: '#4A90D9', archive: 1 },
-                                    { name: 'Assessment', count: 4, color: '#00B8D4', archive: 1 },
-                                    { name: 'Offer', count: 2, color: '#FFB74D', archive: 1 },
-                                    { name: 'Hired', count: 1, color: '#EF5350', archive: 0 },
-                                    { name: 'Onboarded', count: 1, color: '#AB47BC', archive: 0 },
+                                    { name: 'Shortlisted', count: job.shortlisted_candidate_count || 2, color: '#14b8a6', archive: 0 },
                                 ];
-                                // Filter API stages: only show from shortlisted onwards (exclude sourced/screening/uncontacted)
-                                const preShortlistSlugs = ['sourced', 'screening', 'uncontacted', 'applied', 'new', 'contacted'];
-                                const allStages = job.stage_breakdown || defaultStages;
-                                const stages = Array.isArray(allStages)
-                                    ? allStages.filter((s: any) => !preShortlistSlugs.includes((s.slug || s.name || '').toLowerCase()))
+                                // Extract Archives count from stage_breakdown (it's a separate stage in the API)
+                                const allStages = job.stage_breakdown || null;
+                                const archivesStage = allStages?.find((s: any) => (s.name || '').toLowerCase() === 'archives');
+                                const totalArchived = archivesStage?.count || 0;
+
+                                // Filter: show only stages from Shortlisted onwards, exclude meta-stages
+                                const hiddenStages = ['uncontacted', 'invites sent', 'applied', 'new', 'contacted', 'sourced', 'screening', 'archives'];
+                                const stages = allStages
+                                    ? allStages.filter((s: any) => !hiddenStages.includes((s.name || '').toLowerCase()))
                                     : defaultStages;
 
                                 const staticNotes = [
@@ -542,16 +541,15 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                         {/* Candidates */}
                                         <td className="px-4 py-3 text-sm font-medium text-[#4B5563] text-center">
-                                            {job.candidates_count ?? job.total_applied ?? 42}
+                                            {job.candidates_count ?? job.total_applied ?? 0}
                                         </td>
 
                                         {/* Pipeline Stages */}
                                         <td className="px-4 py-3">
-                                            <div className="flex gap-[4px]">
-                                                {stages.map((item: any, idx: number) => {
-                                                    const archiveCount = item.archive ?? Math.max(0, Math.floor(item.count * 0.25));
-                                                    const displayLabel = archiveCount > 0
-                                                        ? `${item.count}-${archiveCount}`
+                                            <div className="flex gap-[4px] items-center">
+                                                {stages.length > 0 ? stages.map((item: any, idx: number) => {
+                                                    const displayLabel = totalArchived > 0
+                                                        ? `${item.count}-${totalArchived}`
                                                         : `${item.count}`;
                                                     return (
                                                         <div key={idx} className="relative group/stage">
@@ -562,13 +560,15 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                 {displayLabel}
                                                             </div>
                                                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-[#1C1C1E] text-white text-[11px] rounded-lg whitespace-nowrap opacity-0 group-hover/stage:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
-                                                                <div className="font-medium">{item.name || `Stage ${idx + 1}`}</div>
-                                                                <div className="text-gray-300">Total: {item.count} · Archived: {archiveCount}</div>
+                                                                <div className="font-medium">{item.name}</div>
+                                                                <div className="text-gray-300">Active: {item.count} · Archived: {totalArchived}</div>
                                                                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#1C1C1E]" />
                                                             </div>
                                                         </div>
                                                     );
-                                                })}
+                                                }) : (
+                                                    <span className="text-xs text-[#8E8E93]">--</span>
+                                                )}
                                             </div>
                                         </td>
 
