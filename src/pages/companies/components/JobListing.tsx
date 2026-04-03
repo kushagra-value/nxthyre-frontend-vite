@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     ChevronLeft,
     Globe,
@@ -25,6 +25,10 @@ import {
     ArrowUpDown,
     Copy,
     ChevronDown,
+    MoreHorizontal,
+    Flag,
+    Trash2,
+    MessageSquare,
 } from "lucide-react";
 import { MyWorkspace } from "../../../services/organizationService";
 import { Job, jobPostService } from "../../../services/jobPostService";
@@ -103,6 +107,18 @@ const JobListing: React.FC<JobListingProps> = ({
     const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
     const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
+    const [menuOpenJobId, setMenuOpenJobId] = useState<number | null>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setMenuOpenJobId(null);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const handleStatusChange = async (jobId: number, newStatus: string) => {
         setStatusUpdating(jobId);
@@ -410,195 +426,237 @@ const JobListing: React.FC<JobListingProps> = ({
                 <div className="overflow-x-auto overflow-y-hidden">
                     <table className="w-full text-left border-collapse">
                         <colgroup>
+                            <col style={{ width: '3%' }} />  {/* Checkbox */}
                             <col style={{ width: '22%' }} /> {/* Job Title */}
-                            <col style={{ width: '8%' }} />  {/* Candidates */}
-                            <col style={{ width: '8%' }} />  {/* Days open */}
-                            <col style={{ width: '7%' }} />  {/* Position */}
-                            <col style={{ width: '9%' }} />  {/* Budget */}
-                            <col style={{ width: '10%' }} /> {/* Active Date */}
-                            <col style={{ width: '20%' }} /> {/* Stage */}
+                            <col style={{ width: '6%' }} />  {/* Position */}
+                            <col style={{ width: '7%' }} />  {/* Candidates */}
+                            <col style={{ width: '24%' }} /> {/* Pipeline Stages */}
+                            <col style={{ width: '6%' }} />  {/* Days Open */}
                             <col style={{ width: '8%' }} />  {/* Status */}
-                            <col style={{ width: '8%' }} />  {/* Actions */}
+                            <col style={{ width: '19%' }} /> {/* Note */}
+                            <col style={{ width: '5%' }} />  {/* Actions */}
                         </colgroup>
                         <thead className="bg-[#F9FAFB]">
                             <tr>
+                                <th className="px-4 py-3">
+                                    <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded" />
+                                </th>
                                 {[
                                     { key: "Job Title" },
-                                    { key: "Candidates" },
-                                    { key: "Days open" },
                                     { key: "Position" },
-                                    { key: "Budget" },
-                                    { key: "Active Date" },
-                                    { key: "Stage", sortable: false },
+                                    { key: "Candidates" },
+                                    { key: "Pipeline Stages", sortable: false },
+                                    { key: "Days Open", sortKey: "Days open" },
                                     { key: "Status" },
-                                ].map(({ key, sortable = true }) => (
+                                    { key: "Note", sortable: false },
+                                ].map(({ key, sortable = true, sortKey }: any) => (
                                     <th
                                         key={key}
-                                        className={`px-4 py-3 text-[13px] font-normal text-[#AEAEB2] ${sortable ? 'cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
-                                        onClick={sortable ? () => handleSort(key) : undefined}
+                                        className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#AEAEB2] ${sortable ? 'cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
+                                        onClick={sortable ? () => handleSort(sortKey || key) : undefined}
                                     >
                                         <div className="flex items-center">
                                             {key}
-                                            {sortable && <SortIcon columnKey={key} />}
+                                            {sortable && <SortIcon columnKey={sortKey || key} />}
                                         </div>
                                     </th>
                                 ))}
-                                <th className="px-4 py-3 text-[13px] font-normal text-[#AEAEB2] text-center select-none">Actions</th>
+                                <th className="px-4 py-3"></th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#D1D1D6]">
-                            {paginatedJobs.map((job) => {
-                                const daysOpen = job.days_open_text || (job.days_open ? `${job.days_open} Days` : "36 Days");
-                                const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || "3";
-                                const budgetDisplay = job.salary_display || `${formatSalaryToLPA(job.salary_min)}-${formatSalaryToLPA(job.salary_max)} LPA`;
+                        <tbody className="divide-y divide-[#F3F5F7]">
+                            {paginatedJobs.map((job, jobIdx) => {
+                                const daysOpen = job.days_open || 18;
+                                const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
+
+                                const defaultStages = [
+                                    { name: 'Sourced', count: job.total_applied || 12, color: '#34C759', archive: 4 },
+                                    { name: 'Screening', count: job.shortlisted_candidate_count || 6, color: '#4A90D9', archive: 1 },
+                                    { name: 'Interview', count: 4, color: '#00B8D4', archive: 1 },
+                                    { name: 'Assessment', count: 2, color: '#FFB74D', archive: 1 },
+                                    { name: 'Offer', count: 1, color: '#EF5350', archive: 0 },
+                                    { name: 'Hired', count: 1, color: '#AB47BC', archive: 0 },
+                                ];
+                                const stages = job.stage_breakdown || defaultStages;
+
+                                const staticNotes = [
+                                    "Change 1 year to 2 years of experience",
+                                    "Update job description for Q2",
+                                    "Review salary range with hiring manager",
+                                    "Discussed requirements with team lead",
+                                    "Waiting for team feedback on JD",
+                                ];
 
                                 return (
-                                    <tr key={job.id} className="h-[69px] hover:bg-gray-50 transition-colors">
+                                    <tr key={job.id} className="h-[72px] hover:bg-[#FAFBFC] transition-colors group">
+                                        {/* Checkbox */}
+                                        <td className="px-4 py-3">
+                                            <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded" />
+                                        </td>
+
                                         {/* Job Title */}
                                         <td className="px-4 py-3">
                                             <div className="flex flex-col gap-1.5">
                                                 <span
-                                                    className="text-[14px] font-medium text-[#4B5563] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors truncate"
+                                                    className="text-[14px] font-semibold text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors truncate"
                                                     onClick={() => onJobSelect?.(job)}
                                                 >{job.title}</span>
                                                 <div className="flex items-center gap-1 flex-wrap">
+                                                    <span
+                                                        className="px-2 py-0.5 bg-[#E8F5E9] rounded-full text-[10px] font-medium text-[#2E7D32] whitespace-nowrap cursor-pointer hover:bg-[#C8E6C9] transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigator.clipboard.writeText(`${job.job_id || job.id}`).then(() => showToast.success("Job ID copied"));
+                                                        }}
+                                                    >
+                                                        {job.job_id || job.id}
+                                                    </span>
                                                     <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563] whitespace-nowrap">
-                                                        {job.experience_display || `${job.experience_min_years}-${job.experience_max_years} Yrs`}
+                                                        {job.experience_display || `${job.experience_min_years || 3} - ${job.experience_max_years || 5}yrs`}
+                                                    </span>
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${
+                                                        (job.notice_period || 'Immediate') === 'Immediate'
+                                                            ? 'bg-[#E8F5E9] text-[#2E7D32]'
+                                                            : (job.notice_period || '').includes('90')
+                                                                ? 'bg-[#FFEBEE] text-[#C62828]'
+                                                                : 'bg-[#FFF3E0] text-[#E65100]'
+                                                    }`}>
+                                                        {job.notice_period || 'Immediate'}
                                                     </span>
                                                     <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563] whitespace-nowrap">
                                                         {job.salary_display || `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
                                                     </span>
-                                                    {/* add a copy button in the jon id and if clicked copy to clipboard and avoid propagating to that job  */}
-                                                    <span className="px-2 py-0.5 bg-[#F2F2F7] rounded-full text-[10px] text-[#8E8E93] whitespace-nowrap">
-                                                        {job.jd_code || `JD-${job.id}`}
-                                                    </span>
-                                                    <button
-                                                        className="ml-2 text-[#8E8E93] hover:text-[#0F47F2] transition-colors"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigator.clipboard.writeText(`${job.title}, ${job.location} (Job ID: ${job.id})`).then(() => showToast.success("Job ID copied"));
-
-                                                        }}
-                                                    >
-                                                        <Copy className="w-3 h-3" />
-                                                    </button>
-
                                                 </div>
                                             </div>
-                                        </td>
-
-                                        {/* Candidates */}
-                                        <td className="px-4 py-3 text-sm text-[#4B5563] leading-[17px] text-center">
-                                            {job.candidates_count ?? job.total_applied ?? 0}
-                                        </td>
-
-                                        {/* Days open */}
-                                        <td className="px-4 py-3 text-[14px] text-[#FF8D28] font-medium leading-[17px] text-center whitespace-nowrap">
-                                            {daysOpen}
                                         </td>
 
                                         {/* Position */}
-                                        <td className="px-4 py-3 text-sm text-[#4B5563] leading-[17px] text-center">
+                                        <td className="px-4 py-3 text-sm font-medium text-[#4B5563] text-center">
                                             {noOfPositions}
                                         </td>
 
-                                        {/* Budget */}
-                                        <td className="px-4 py-3 text-sm text-[#4B5563] leading-[17px] text-center whitespace-nowrap">
-                                            {budgetDisplay}
+                                        {/* Candidates */}
+                                        <td className="px-4 py-3 text-sm font-medium text-[#4B5563] text-center">
+                                            {job.candidates_count ?? job.total_applied ?? 42}
                                         </td>
 
-                                        {/* Active Date */}
-                                        <td className="px-4 py-3 text-sm text-[#4B5563] leading-[17px] text-center whitespace-nowrap">
-                                            {job.last_active_date_display || new Date(job.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                                        </td>
-
-                                        {/* Stage - colored boxes */}
+                                        {/* Pipeline Stages */}
                                         <td className="px-4 py-3">
-                                            <div className="flex justify-center gap-[4px]">
-                                                {job.stage_breakdown ? (
-                                                    job.stage_breakdown.map((item, idx) => (
-                                                        <div
-                                                            key={idx}
-                                                            className="w-[36px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[13px] leading-[17px] font-medium"
-                                                            style={{ backgroundColor: item.color }}
-                                                            title={item.name}
-                                                        >
-                                                            {item.count}
+                                            <div className="flex gap-[4px]">
+                                                {stages.map((item: any, idx: number) => {
+                                                    const archiveCount = item.archive ?? Math.max(0, Math.floor(item.count * 0.25));
+                                                    const displayLabel = archiveCount > 0
+                                                        ? `${item.count}-${archiveCount}`
+                                                        : `${item.count}`;
+                                                    return (
+                                                        <div key={idx} className="relative group/stage">
+                                                            <div
+                                                                className="min-w-[28px] h-[26px] px-1.5 rounded-[5px] flex items-center justify-center text-white text-[12px] font-semibold cursor-default"
+                                                                style={{ backgroundColor: item.color }}
+                                                            >
+                                                                {displayLabel}
+                                                            </div>
+                                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-[#1C1C1E] text-white text-[11px] rounded-lg whitespace-nowrap opacity-0 group-hover/stage:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
+                                                                <div className="font-medium">{item.name || `Stage ${idx + 1}`}</div>
+                                                                <div className="text-gray-300">Total: {item.count} · Archived: {archiveCount}</div>
+                                                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#1C1C1E]" />
+                                                            </div>
                                                         </div>
-                                                    ))
-                                                ) : (
-                                                    [
-                                                        { color: '#FF8D28', value: job.total_applied || 52 },
-                                                        { color: '#00C0E8', value: job.shortlisted_candidate_count || 24 },
-                                                        { color: '#00C3D0', value: 12 },
-                                                        { color: '#6155F5', value: 10 },
-                                                        { color: '#0088FF', value: 2 },
-                                                    ].map((item, idx) => (
-                                                        <div
-                                                            key={idx}
-                                                            className="w-[36px] h-[24px] rounded-[5px] flex items-center justify-center text-white text-[13px] leading-[17px] font-medium"
-                                                            style={{ backgroundColor: item.color }}
-                                                        >
-                                                            {item.value}
-                                                        </div>
-                                                    ))
-                                                )}
+                                                    );
+                                                })}
                                             </div>
+                                        </td>
+
+                                        {/* Days Open */}
+                                        <td className="px-4 py-3 text-center whitespace-nowrap">
+                                            <span className="text-[14px] font-medium text-[#FF8D28]">{daysOpen} d</span>
                                         </td>
 
                                         {/* Status */}
-                                        <td className="px-4 py-3 text-center relative">
-                                            <div className="relative inline-block">
-                                                <select
-                                                    value={job.status}
-                                                    disabled={statusUpdating === job.id}
-                                                    onChange={(e) => handleStatusChange(job.id, e.target.value)}
-                                                    className={`appearance-none px-4 flex items-center justify-center py-[5px] pr-8 rounded-full text-[13px] font-medium leading-[17px] outline-none cursor-pointer ${job.status === 'ACTIVE'
-                                                        ? 'bg-[#EBFFEE] text-[#069855]'
-                                                        : job.status === 'PAUSED'
-                                                            ? 'bg-[#FFF7D6] text-[#92400E]'
-                                                            : 'bg-[#F2F2F7] text-[#4B5563]'
-                                                        }`}
-                                                >
-                                                    <option value="ACTIVE" className="bg-white text-black">Active</option>
-                                                    <option value="PAUSED" className="bg-white text-black">Paused</option>
-                                                    <option value="INACTIVE" className="bg-white text-black">Inactive</option>
-                                                </select>
-                                                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
-                                                    <ChevronDown className="w-3.5 h-3.5" />
-                                                </div>
-                                            </div>
+                                        <td className="px-4 py-3 text-center">
+                                            <span className={`inline-flex items-center gap-1.5 text-[13px] font-medium ${
+                                                job.status === 'ACTIVE' ? 'text-[#069855]'
+                                                : job.status === 'PAUSED' ? 'text-[#92400E]'
+                                                : 'text-[#8E8E93]'
+                                            }`}>
+                                                <span className={`w-2 h-2 rounded-full ${
+                                                    job.status === 'ACTIVE' ? 'bg-[#069855]'
+                                                    : job.status === 'PAUSED' ? 'bg-[#92400E]'
+                                                    : 'bg-[#8E8E93]'
+                                                }`} />
+                                                {job.status === 'ACTIVE' ? 'Active'
+                                                    : job.status === 'PAUSED' ? 'Paused'
+                                                    : job.status === 'INACTIVE' ? 'Closed'
+                                                    : job.status?.charAt(0) + job.status?.slice(1).toLowerCase()}
+                                            </span>
                                         </td>
 
-                                        {/* Actions */}
+                                        {/* Note */}
                                         <td className="px-4 py-3">
-                                            <div className="flex items-center justify-center gap-2">
+                                            <span className="text-[13px] text-[#4B5563] line-clamp-2 leading-relaxed">
+                                                {staticNotes[jobIdx % staticNotes.length]}
+                                            </span>
+                                        </td>
+
+                                        {/* Three-dot Menu */}
+                                        <td className="px-4 py-3">
+                                            <div className="relative" ref={menuOpenJobId === job.id ? menuRef : null}>
                                                 <button
-                                                    onClick={() => {
-                                                        setEditingJobId(job.id);
-                                                        setShowEditJobRole(true);
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setMenuOpenJobId(menuOpenJobId === job.id ? null : job.id);
                                                     }}
-                                                    className="w-7 h-7 bg-[#E7EDFF] border border-white rounded-[5px] flex items-center justify-center hover:bg-[#D7E3FF] transition-colors"
+                                                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F3F5F7] transition-colors"
                                                 >
-                                                    <Pencil className="w-3.5 h-3.5 text-[#0F47F2]" />
+                                                    <MoreHorizontal className="w-5 h-5 text-[#8E8E93]" />
                                                 </button>
-                                                {job.pyjamahr_status === "PUBLISHED" && job.visibility === "PUBLIC" && (
-                                                    <button
-                                                        onClick={() => setShowUnpublishModal(job.id)}
-                                                        title="Unpublish"
-                                                        className="w-7 h-7 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-gray-200 transition-colors"
-                                                    >
-                                                        <Pause className="w-3.5 h-3.5 text-[#4B5563]" />
-                                                    </button>
-                                                )}
-                                                {job.pyjamahr_status === "DRAFT" && job.visibility === "PRIVATE" && (
-                                                    <button
-                                                        onClick={() => setShowPublishModal(job.id)}
-                                                        title="Publish"
-                                                        className="w-7 h-7 bg-[#F2F2F7] border border-white rounded-[5px] flex items-center justify-center hover:bg-gray-200 transition-colors"
-                                                    >
-                                                        <Globe className="w-3.5 h-3.5 text-[#4B5563]" />
-                                                    </button>
+
+                                                {menuOpenJobId === job.id && (
+                                                    <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[100] py-2">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); setEditingJobId(job.id); setShowEditJobRole(true); setMenuOpenJobId(null); }}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
+                                                        >
+                                                            <Pencil className="w-4 h-4" /> Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleStatusChange(job.id, job.status === 'PAUSED' ? 'ACTIVE' : 'PAUSED'); setMenuOpenJobId(null); }}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
+                                                        >
+                                                            <Pause className="w-4 h-4" /> {job.status === 'PAUSED' ? 'Resume' : 'Pause'}
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); toastUtil.success("Add Note — Coming soon"); setMenuOpenJobId(null); }}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
+                                                        >
+                                                            <MessageSquare className="w-4 h-4" /> Add Note
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); toastUtil.success("Note History — Coming soon"); setMenuOpenJobId(null); }}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
+                                                        >
+                                                            <MessageSquare className="w-4 h-4" /> Note History
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); window.open(`/jobs/${job.id}`, '_blank'); setMenuOpenJobId(null); }}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
+                                                        >
+                                                            <Share2 className="w-4 h-4" /> Share Job
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); toastUtil.success("Flagged — Coming soon"); setMenuOpenJobId(null); }}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
+                                                        >
+                                                            <Flag className="w-4 h-4" /> Mark as Flag
+                                                        </button>
+                                                        <div className="h-px bg-[#E5E7EB] my-1" />
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); toastUtil.success("Delete Role — Coming soon"); setMenuOpenJobId(null); }}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#DC2626] hover:bg-red-50 flex items-center gap-3"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" /> Delete Role
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </div>
                                         </td>
