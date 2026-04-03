@@ -294,8 +294,12 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
 
               {/* Hover Breakdown Tooltip */}
               {showTooltip && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-9999 pointer-events-none">
-                  <div className="bg-white border border-[#D1D1D6] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.12)] p-3 min-w-[170px] flex flex-col gap-2">
+                <div
+                  className={`absolute left-1/2 -translate-x-1/2 z-[9999] pointer-events-none ${
+                    Math.floor((firstDayOfWeek + day - 1) / 7) <= 1 ? "top-full mt-2" : "bottom-full mb-2"
+                  }`}
+                >
+                  <div className="bg-white border border-[#D1D1D6] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.12)] p-3 min-w-[170px] flex flex-col gap-2 relative">
                     <div className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
                       Activity Breakdown
                     </div>
@@ -322,7 +326,13 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
                     </div>
                   </div>
                   {/* Tooltip Arrow */}
-                  <div className="w-2.5 h-2.5 bg-white border-r border-b border-[#D1D1D6] rotate-45 absolute -bottom-1.5 left-1/2 -translate-x-1/2" />
+                  <div
+                    className={`w-2.5 h-2.5 bg-white rotate-45 absolute left-1/2 -translate-x-1/2 ${
+                      Math.floor((firstDayOfWeek + day - 1) / 7) <= 1
+                        ? "-top-1.5 border-l border-t border-[#D1D1D6]"
+                        : "-bottom-1.5 border-r border-b border-[#D1D1D6]"
+                    }`}
+                  />
                 </div>
               )}
             </div>
