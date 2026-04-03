@@ -141,6 +141,11 @@ export default function JobCandidateProfile({
   const [callModalCandidate, setCallModalCandidate] =
     useState<CallCandidateData | null>(null);
 
+  // ── Match Description Editing State ──
+  const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
+  const [editedMatchDesc, setEditedMatchDesc] = useState("");
+  const [isSavingMatchDesc, setIsSavingMatchDesc] = useState(false);
+
   const openFeedbackModal = (action: {
     type: "archive" | "unarchive" | "move";
     applicationIds: number[];
@@ -279,6 +284,42 @@ export default function JobCandidateProfile({
   }, [cand.id, activeTab]);
 
   // ── Call tab helpers ─────────────────────────────────────
+
+  // ── Match Description Helpers ──
+  useEffect(() => {
+    if (matchScore.description) {
+      setEditedMatchDesc(matchScore.description);
+    }
+  }, [matchScore.description]);
+
+  const handleSaveMatchDescription = async () => {
+    if (!cand.id || !jobId) {
+      showToast.error("Missing candidate or job information");
+      return;
+    }
+
+    try {
+      setIsSavingMatchDesc(true);
+      const success = await candidateService.updateCandidateJobScoreDescription(
+        cand.id,
+        jobId,
+        editedMatchDesc
+      );
+
+      if (success) {
+        showToast.success("Match reasoning updated successfully");
+        matchScore.description = editedMatchDesc; // Update local ref
+        setIsEditingMatchDesc(false);
+      } else {
+        showToast.error("Failed to update match reasoning");
+      }
+    } catch (error) {
+      console.error("Error updating match reasoning:", error);
+      showToast.error("An error occurred while updating match reasoning");
+    } finally {
+      setIsSavingMatchDesc(false);
+    }
+  };
 
   const formatDuration = (seconds: number): string => {
     if (!seconds) return "0 secs";
@@ -846,12 +887,53 @@ export default function JobCandidateProfile({
         {/* ── Additional AI Sections ── */}
         {matchScore.description && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
-              MATCH REASONING
-            </h3>
-            <p className="text-sm leading-relaxed text-[#4B5563]">
-              {matchScore.description}
-            </p>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider">
+                MATCH REASONING
+              </h3>
+              {!isEditingMatchDesc && (
+                <button
+                  onClick={() => setIsEditingMatchDesc(true)}
+                  className="text-[#0F47F2] text-xs font-bold hover:underline"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+
+            {!isEditingMatchDesc ? (
+              <p className="text-sm leading-relaxed text-[#4B5563]">
+                {matchScore.description}
+              </p>
+            ) : (
+              <div className="space-y-4">
+                <textarea
+                  value={editedMatchDesc}
+                  onChange={(e) => setEditedMatchDesc(e.target.value)}
+                  rows={6}
+                  className="w-full p-4 border border-[#E5E7EB] rounded-xl text-sm leading-relaxed text-[#4B5563] focus:outline-none focus:border-[#0F47F2] transition-colors resize-none"
+                  placeholder="Enter match reasoning..."
+                />
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => {
+                      setEditedMatchDesc(matchScore.description || "");
+                      setIsEditingMatchDesc(false);
+                    }}
+                    className="px-4 py-2 text-xs font-bold text-[#8E8E93] hover:text-[#4B5563] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveMatchDescription}
+                    disabled={isSavingMatchDesc}
+                    className="px-6 py-2 bg-[#0F47F2] text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 shadow-sm"
+                  >
+                    {isSavingMatchDesc ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
