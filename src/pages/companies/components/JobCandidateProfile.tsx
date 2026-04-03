@@ -1105,9 +1105,12 @@ export default function JobCandidateProfile({
                         )}
                         <button
                           onClick={() => {
-                            const url = window.location.href;
-                            navigator.clipboard.writeText(url);
-                            showToast.success("Profile link copied to clipboard!");
+                            if (cand.id) {
+                              const shareUrl = `/candidate-profiles/${cand.id}${jobId ? `?job_id=${jobId}` : ""}`;
+                              window.open(shareUrl, "_blank");
+                            } else {
+                              showToast.error("Candidate ID not found");
+                            }
                           }}
                           className="hover:scale-110 transition-transform"
                           title="Share Profile"
