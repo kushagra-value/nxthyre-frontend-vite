@@ -478,7 +478,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                 const totalArchived = archivesStage?.count || 0;
 
                                 // Filter: show only stages from Shortlisted onwards, exclude meta-stages
-                                const hiddenStages = ['uncontacted', 'invites sent', 'applied', 'new', 'contacted', 'sourced', 'screening', 'archives'];
+                                const hiddenStages = ['uncontacted', 'invites sent', 'applied','archives'];
                                 const stages = allStages
                                     ? allStages.filter((s: any) => !hiddenStages.includes((s.name || '').toLowerCase()))
                                     : defaultStages;
