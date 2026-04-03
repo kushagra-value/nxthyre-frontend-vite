@@ -470,14 +470,19 @@ const JobListing: React.FC<JobListingProps> = ({
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
 
                                 const defaultStages = [
-                                    { name: 'Sourced', count: job.total_applied || 12, color: '#34C759', archive: 4 },
-                                    { name: 'Screening', count: job.shortlisted_candidate_count || 6, color: '#4A90D9', archive: 1 },
-                                    { name: 'Interview', count: 4, color: '#00B8D4', archive: 1 },
-                                    { name: 'Assessment', count: 2, color: '#FFB74D', archive: 1 },
-                                    { name: 'Offer', count: 1, color: '#EF5350', archive: 0 },
-                                    { name: 'Hired', count: 1, color: '#AB47BC', archive: 0 },
+                                    { name: 'Shortlisted', count: job.shortlisted_candidate_count || 12, color: '#34C759', archive: 4 },
+                                    { name: 'Interview', count: 6, color: '#4A90D9', archive: 1 },
+                                    { name: 'Assessment', count: 4, color: '#00B8D4', archive: 1 },
+                                    { name: 'Offer', count: 2, color: '#FFB74D', archive: 1 },
+                                    { name: 'Hired', count: 1, color: '#EF5350', archive: 0 },
+                                    { name: 'Onboarded', count: 1, color: '#AB47BC', archive: 0 },
                                 ];
-                                const stages = job.stage_breakdown || defaultStages;
+                                // Filter API stages: only show from shortlisted onwards (exclude sourced/screening/uncontacted)
+                                const preShortlistSlugs = ['sourced', 'screening', 'uncontacted', 'applied', 'new', 'contacted'];
+                                const allStages = job.stage_breakdown || defaultStages;
+                                const stages = Array.isArray(allStages)
+                                    ? allStages.filter((s: any) => !preShortlistSlugs.includes((s.slug || s.name || '').toLowerCase()))
+                                    : defaultStages;
 
                                 const staticNotes = [
                                     "Change 1 year to 2 years of experience",
