@@ -156,6 +156,16 @@ const JobListing: React.FC<JobListingProps> = ({
         setShowPublishModal(null);
     };
 
+    const handleToggleFlag = async (jobId: number, currentFlag: boolean) => {
+        try {
+            await jobPostService.toggleJobFlag(jobId, !currentFlag);
+            fetchJobs();
+            toastUtil.success(!currentFlag ? "Job flagged" : "Job unflagged");
+        } catch {
+            toastUtil.error("Failed to update flag status");
+        }
+    };
+
     const sortedJobs = React.useMemo(() => {
         if (!sortConfig) return filteredWorkspaceJobs;
 
@@ -329,7 +339,7 @@ const JobListing: React.FC<JobListingProps> = ({
                     { label: "Total Candidates", value: selectedWorkspace.candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <Users className="w-5 h-5 text-[#0F47F2]" /> },
                     { label: "In Pipeline", value: workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <Route className="w-5 h-5 text-[#0F47F2]" /> },
                     { label: "Shortlisted", value: selectedWorkspace.shortlisted_candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: shortlistedTrend, trendColor: shortlistedColor, icon: <UserCheck className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "Interview this week", value: "--", trend: "--", trendColor: "text-[#8E8E93]", icon: <Calendar className="w-5 h-5 text-[#0F47F2]" /> },
+                    { label: "Interview this week", value: workspaceJobs.reduce((acc, j) => acc + (j.interview_this_week || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <Calendar className="w-5 h-5 text-[#0F47F2]" /> },
                     { label: "Hired", value: selectedWorkspace.hired_candidates_in_workspace_count ?? 0, trend: hiredTrend, trendColor: hiredColor, icon: <UserCircle className="w-5 h-5 text-[#0F47F2]" /> },
                 ].map((stat, idx) => (
                     <div key={idx} className="bg-white p-5 rounded-xl border border-[#D1D1D6] flex flex-col gap-2 shadow-sm">
@@ -472,10 +482,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                 const defaultStages = [
                                     { name: 'Shortlisted', count: job.shortlisted_candidate_count || 2, color: '#14b8a6', archive: 0 },
                                 ];
-                                // Extract Archives count from stage_breakdown (it's a separate stage in the API)
                                 const allStages = job.stage_breakdown || null;
-                                const archivesStage = allStages?.find((s: any) => (s.name || '').toLowerCase() === 'archives');
-                                const totalArchived = archivesStage?.count || 0;
 
                                 // Filter: show only stages from Shortlisted onwards, exclude meta-stages
                                 const hiddenStages = ['uncontacted', 'invites sent', 'applied','archives'];
@@ -501,10 +508,13 @@ const JobListing: React.FC<JobListingProps> = ({
                                         {/* Job Title */}
                                         <td className="px-4 py-3">
                                             <div className="flex flex-col gap-1.5">
-                                                <span
-                                                    className="text-[14px] font-semibold text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors truncate"
-                                                    onClick={() => onJobSelect?.(job)}
-                                                >{job.title}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span
+                                                        className="text-[14px] font-semibold text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors truncate"
+                                                        onClick={() => onJobSelect?.(job)}
+                                                    >{job.title}</span>
+                                                    {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
+                                                </div>
                                                 <div className="flex items-center gap-1 flex-wrap">
                                                     <span
                                                         className="px-2 py-0.5 bg-[#E8F5E9] rounded-full text-[10px] font-medium text-[#2E7D32] whitespace-nowrap cursor-pointer hover:bg-[#C8E6C9] transition-colors"
@@ -548,8 +558,9 @@ const JobListing: React.FC<JobListingProps> = ({
                                         <td className="px-4 py-3">
                                             <div className="flex gap-[4px] items-center">
                                                 {stages.length > 0 ? stages.map((item: any, idx: number) => {
-                                                    const displayLabel = totalArchived > 0
-                                                        ? `${item.count}-${totalArchived}`
+                                                    const stageArchivedCount = item.archived_count || 0;
+                                                    const displayLabel = stageArchivedCount > 0
+                                                        ? `${item.count}-${stageArchivedCount}`
                                                         : `${item.count}`;
                                                     return (
                                                         <div key={idx} className="relative group/stage">
@@ -561,7 +572,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             </div>
                                                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-[#1C1C1E] text-white text-[11px] rounded-lg whitespace-nowrap opacity-0 group-hover/stage:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
                                                                 <div className="font-medium">{item.name}</div>
-                                                                <div className="text-gray-300">Active: {item.count} · Archived: {totalArchived}</div>
+                                                                <div className="text-gray-300">Active: {item.count} · Archived: {stageArchivedCount}</div>
                                                                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#1C1C1E]" />
                                                             </div>
                                                         </div>
@@ -649,10 +660,10 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             <Share2 className="w-4 h-4" /> Share Job
                                                         </button>
                                                         <button
-                                                            onClick={(e) => { e.stopPropagation(); toastUtil.success("Flagged — Coming soon"); setMenuOpenJobId(null); }}
+                                                            onClick={(e) => { e.stopPropagation(); handleToggleFlag(job.id, !!job.is_flagged); setMenuOpenJobId(null); }}
                                                             className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
                                                         >
-                                                            <Flag className="w-4 h-4" /> Mark as Flag
+                                                            <Flag className="w-4 h-4" /> {job.is_flagged ? "Remove Flag" : "Mark as Flag"}
                                                         </button>
                                                         <div className="h-px bg-[#E5E7EB] my-1" />
                                                         <button

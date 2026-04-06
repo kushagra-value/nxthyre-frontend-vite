@@ -62,8 +62,41 @@ export interface Job {
     name: string;
     count: number;
     color: string;
+    archived_count?: number;
   }[];
   num_positions?: number;
+  is_flagged?: boolean;
+  interview_this_week?: number;
+}
+
+export interface JobsStatsCount {
+  total_jobs: number;
+  total_candidates: number;
+  in_pipeline: number;
+  shortlisted: number;
+  interview_this_week: number;
+  hired: number;
+  need_action: number;
+  shortlisted_across_jobs: number;
+  increased_decreased_rate_percentages?: {
+    total_jobs?: { yesterday: string; weekly: string; monthly: string };
+    total_candidates?: { yesterday: string; weekly: string; monthly: string };
+    interview_this_week?: { yesterday: string; weekly: string; monthly: string };
+    hired?: { yesterday: string; weekly: string; monthly: string };
+  };
+}
+
+export interface JobsStatusCounts {
+  all: number;
+  active: number;
+  paused: number;
+  inactive: number;
+}
+
+export interface JobsApiResponse {
+  stats_count: JobsStatsCount;
+  status_counts: JobsStatusCounts;
+  jobs: Job[];
 }
 
 export interface SearchedCandidateItem {
@@ -153,6 +186,37 @@ class JobPostService {
       return response.data.jobs || response.data.roles || response.data.results || response.data.data || [];
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch jobs");
+    }
+  }
+
+  async getJobsWithStats(): Promise<JobsApiResponse> {
+    try {
+      const response = await apiClient.get("/jobs/roles/");
+      if (Array.isArray(response.data)) {
+        return {
+          stats_count: { total_jobs: 0, total_candidates: 0, in_pipeline: 0, shortlisted: 0, interview_this_week: 0, hired: 0, need_action: 0, shortlisted_across_jobs: 0 },
+          status_counts: { all: response.data.length, active: 0, paused: 0, inactive: 0 },
+          jobs: response.data,
+        };
+      }
+      return {
+        stats_count: response.data.stats_count || { total_jobs: 0, total_candidates: 0, in_pipeline: 0, shortlisted: 0, interview_this_week: 0, hired: 0, need_action: 0, shortlisted_across_jobs: 0 },
+        status_counts: response.data.status_counts || { all: 0, active: 0, paused: 0, inactive: 0 },
+        jobs: response.data.jobs || response.data.roles || response.data.results || response.data.data || [],
+      };
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch jobs");
+    }
+  }
+
+  async toggleJobFlag(jobId: number, isFlagged: boolean): Promise<{ id: number; is_flagged: boolean; updated_at: string }> {
+    try {
+      const response = await apiClient.patch(`/api/v1/jobs/${jobId}/`, {
+        is_flagged: isFlagged,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to update flag");
     }
   }
 
