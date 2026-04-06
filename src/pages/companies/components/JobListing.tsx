@@ -36,7 +36,6 @@ import { showToast as toastUtil } from "../../../utils/toast";
 import CreateJobRoleModal from "../../candidates/components/CreateJobRoleModal";
 import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoDrawer from "./CompanyInfoDrawer";
-import JobNotesModal from "./JobNotesModal";
 
 interface JobListingProps {
     selectedWorkspace: MyWorkspace;
@@ -109,8 +108,12 @@ const JobListing: React.FC<JobListingProps> = ({
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
     const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
     const [menuOpenJobId, setMenuOpenJobId] = useState<number | null>(null);
-    const [showNotesJobId, setShowNotesJobId] = useState<number | null>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, right: 0, bottom: 0, isBottom: false });
+    
+    // Inline Notes state
+    const [inlineEditJobId, setInlineEditJobId] = useState<number | null>(null);
+    const [inlineNoteContent, setInlineNoteContent] = useState<string>("");
+    const [fetchedNotes, setFetchedNotes] = useState<Record<number, any[]>>({});
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -280,6 +283,44 @@ const JobListing: React.FC<JobListingProps> = ({
 
     const hiredTrend = renderTrend(selectedWorkspace.increased_decreased_rate_percentages?.hired?.monthly, "--");
     const hiredColor = (selectedWorkspace.increased_decreased_rate_percentages?.hired?.monthly || 0) >= 0 ? "text-[#009951]" : "text-[#DC2626]";
+
+    useEffect(() => {
+        // Fetch notes for currently viewed jobs
+        paginatedJobs.forEach(job => {
+            if (!fetchedNotes[job.id]) {
+                jobPostService.getJobNotes(job.id).then(notes => {
+                    setFetchedNotes(prev => ({ ...prev, [job.id]: notes || [] }));
+                }).catch(() => {});
+            }
+        });
+    }, [paginatedJobs]);
+
+    const handleSaveInlineNote = async (jobId: number) => {
+        if (!inlineNoteContent.trim()) return;
+        try {
+            const existingNotes = fetchedNotes[jobId] || [];
+            if (existingNotes.length > 0) {
+                // Update the most recent note
+                const latestNote = existingNotes[0];
+                const updated = await jobPostService.updateJobNote(jobId, latestNote.id, inlineNoteContent);
+                setFetchedNotes(prev => ({
+                    ...prev,
+                    [jobId]: [updated, ...existingNotes.slice(1)]
+                }));
+            } else {
+                // Add new note
+                const newNote = await jobPostService.addJobNote(jobId, inlineNoteContent);
+                setFetchedNotes(prev => ({
+                    ...prev,
+                    [jobId]: [newNote]
+                }));
+            }
+            setInlineEditJobId(null);
+            toastUtil.success("Note saved successfully");
+        } catch (error) {
+            toastUtil.error("Failed to save note");
+        }
+    };
 
     return (
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#F3F5F7]">
@@ -485,7 +526,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F5F7]">
-                            {paginatedJobs.map((job) => {
+                            {paginatedJobs.map((job, jobIdx) => {
                                 const daysOpen = job.days_open || 18;
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
 
@@ -500,11 +541,29 @@ const JobListing: React.FC<JobListingProps> = ({
                                     ? allStages.filter((s: any) => !hiddenStages.includes((s.name || '').toLowerCase()))
                                     : defaultStages;
 
+                                const staticNotes = [
+                                    "Change 1 year to 2 years of experience",
+                                    "Update job description for Q2",
+                                    "Review salary range with hiring manager",
+                                    "Discussed requirements with team lead",
+                                    "Waiting for team feedback on JD",
+                                ];
+
+                                const stageColors = [
+                                    { bg: '#EEF2FF', text: '#4F46E5', border: '#C7D2FE' }, // Indigo
+                                    { bg: '#F3E8FF', text: '#9333EA', border: '#E9D5FF' }, // Purple
+                                    { bg: '#FCE7F3', text: '#DB2777', border: '#FBCFE8' }, // Pink
+                                    { bg: '#FEF9C3', text: '#D97706', border: '#FEF08A' }, // Yellow
+                                    { bg: '#FFEDD5', text: '#EA580C', border: '#FED7AA' }, // Orange
+                                    { bg: '#DCFCE7', text: '#16A34A', border: '#BBF7D0' }, // Green
+                                    { bg: '#E0F2FE', text: '#0284C7', border: '#BAE6FD' }, // Light Blue
+                                ];
+
                                 return (
                                     <tr key={job.id} className="h-[72px] hover:bg-[#FAFBFC] transition-colors group">
                                         {/* Checkbox */}
                                         <td className="px-4 py-3">
-                                            <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded" />
+                                            <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded border-gray-300" />
                                         </td>
 
                                         {/* Job Title */}
@@ -512,14 +571,14 @@ const JobListing: React.FC<JobListingProps> = ({
                                             <div className="flex flex-col gap-1.5">
                                                 <div className="flex items-center gap-2">
                                                     <span
-                                                        className="text-[14px] font-semibold text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors truncate"
+                                                        className="text-[14px] font-[600] text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors truncate"
                                                         onClick={() => onJobSelect?.(job)}
                                                     >{job.title}</span>
                                                     {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
                                                 </div>
-                                                <div className="flex items-center gap-1 flex-wrap">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
                                                     <span
-                                                        className="px-2 py-0.5 bg-[#E8F5E9] rounded-full text-[10px] font-medium text-[#2E7D32] whitespace-nowrap cursor-pointer hover:bg-[#C8E6C9] transition-colors"
+                                                        className="px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap cursor-pointer hover:bg-[#E0E9FF] transition-colors"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             navigator.clipboard.writeText(`${job.job_id || job.id}`).then(() => showToast.success("Job ID copied"));
@@ -527,19 +586,19 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     >
                                                         {job.job_id || job.id}
                                                     </span>
-                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563] whitespace-nowrap">
+                                                    <span className="px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap">
                                                         {job.experience_display || `${job.experience_min_years || 3} - ${job.experience_max_years || 5}yrs`}
                                                     </span>
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${
+                                                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap ${
                                                         (job.notice_period || 'Immediate') === 'Immediate'
-                                                            ? 'bg-[#E8F5E9] text-[#2E7D32]'
+                                                            ? 'bg-[#FFF0F2] text-[#E11D48]'
                                                             : (job.notice_period || '').includes('90')
-                                                                ? 'bg-[#FFEBEE] text-[#C62828]'
+                                                                ? 'bg-[#FFF0F2] text-[#E11D48]'
                                                                 : 'bg-[#FFF3E0] text-[#E65100]'
                                                     }`}>
                                                         {job.notice_period || 'Immediate'}
                                                     </span>
-                                                    <span className="px-2 py-0.5 bg-[#E7EDFF] rounded-full text-[10px] text-[#4B5563] whitespace-nowrap">
+                                                    <span className="px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap">
                                                         {job.salary_display || `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
                                                     </span>
                                                 </div>
@@ -547,30 +606,29 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </td>
 
                                         {/* Position */}
-                                        <td className="px-4 py-3 text-sm font-medium text-[#4B5563] text-center">
+                                        <td className="px-4 py-3 text-[14px] text-[#4B5563] text-center">
                                             {noOfPositions}
                                         </td>
 
                                         {/* Candidates */}
-                                        <td className="px-4 py-3 text-sm font-medium text-[#4B5563] text-center">
+                                        <td className="px-4 py-3 text-[14px] text-[#4B5563] text-center">
                                             {job.candidates_count ?? job.total_applied ?? 0}
                                         </td>
 
                                         {/* Pipeline Stages */}
                                         <td className="px-4 py-3">
-                                            <div className="flex gap-[4px] items-center">
+                                            <div className="flex gap-1.5 items-center">
                                                 {stages.length > 0 ? stages.map((item: any, idx: number) => {
                                                     const stageArchivedCount = item.archived_count || 0;
-                                                    const displayLabel = stageArchivedCount > 0
-                                                        ? `${item.count}-${stageArchivedCount}`
-                                                        : `${item.count}`;
+                                                    const palette = stageColors[idx % stageColors.length];
                                                     return (
                                                         <div key={idx} className="relative group/stage">
                                                             <div
-                                                                className="min-w-[28px] h-[26px] px-1.5 rounded-[5px] flex items-center justify-center text-white text-[12px] font-semibold cursor-default"
-                                                                style={{ backgroundColor: item.color }}
+                                                                className="min-w-[28px] h-[28px] px-2 rounded-[6px] border flex items-center justify-center text-[13px] font-bold cursor-default"
+                                                                style={{ backgroundColor: palette.bg, borderColor: palette.border, color: palette.text }}
                                                             >
-                                                                {displayLabel}
+                                                                <span>{item.count}</span>
+                                                                {stageArchivedCount > 0 && <span className="text-[#8E8E93] text-[12px] font-semibold ml-1">- {stageArchivedCount}</span>}
                                                             </div>
                                                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-[#1C1C1E] text-white text-[11px] rounded-lg whitespace-nowrap opacity-0 group-hover/stage:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
                                                                 <div className="font-medium">{item.name}</div>
@@ -587,20 +645,20 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                         {/* Days Open */}
                                         <td className="px-4 py-3 text-center whitespace-nowrap">
-                                            <span className="text-[14px] font-medium text-[#FF8D28]">{daysOpen} d</span>
+                                            <span className="text-[14px] font-medium text-[#4B5563]">{daysOpen} d</span>
                                         </td>
 
                                         {/* Status */}
                                         <td className="px-4 py-3 text-center">
-                                            <span className={`inline-flex items-center gap-1.5 text-[13px] font-medium ${
-                                                job.status === 'ACTIVE' ? 'text-[#069855]'
-                                                : job.status === 'PAUSED' ? 'text-[#92400E]'
-                                                : 'text-[#8E8E93]'
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium ${
+                                                job.status === 'ACTIVE' ? 'bg-[#D1FAE5] text-[#059669]'
+                                                : job.status === 'PAUSED' ? 'bg-[#FEF3C7] text-[#D97706]'
+                                                : 'bg-[#F3F4F6] text-[#4B5563]'
                                             }`}>
-                                                <span className={`w-2 h-2 rounded-full ${
-                                                    job.status === 'ACTIVE' ? 'bg-[#069855]'
-                                                    : job.status === 'PAUSED' ? 'bg-[#92400E]'
-                                                    : 'bg-[#8E8E93]'
+                                                <span className={`w-1.5 h-1.5 rounded-full ${
+                                                    job.status === 'ACTIVE' ? 'bg-[#059669]'
+                                                    : job.status === 'PAUSED' ? 'bg-[#D97706]'
+                                                    : 'bg-[#4B5563]'
                                                 }`} />
                                                 {job.status === 'ACTIVE' ? 'Active'
                                                     : job.status === 'PAUSED' ? 'Paused'
@@ -610,14 +668,32 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </td>
 
                                         {/* Note */}
-                                        <td className="px-4 py-3">
-                                            <span 
-                                                onClick={(e) => { e.stopPropagation(); setShowNotesJobId(job.id); }}
-                                                className="text-[13px] text-[#0F47F2] font-medium hover:underline cursor-pointer flex items-center gap-1.5"
-                                                title="View or add notes"
-                                            >
-                                                <MessageSquare className="w-3.5 h-3.5" /> View Notes
-                                            </span>
+                                        <td className="px-4 py-3 min-w-[200px]">
+                                            {inlineEditJobId === job.id ? (
+                                                <div className="relative">
+                                                    <textarea
+                                                        value={inlineNoteContent}
+                                                        onChange={(e) => setInlineNoteContent(e.target.value)}
+                                                        className="w-full border border-gray-200 rounded text-[13px] p-2 focus:outline-none focus:border-[#0F47F2]"
+                                                        rows={2}
+                                                        autoFocus
+                                                    />
+                                                    <div className="flex items-center gap-2 mt-1 justify-end">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); setInlineEditJobId(null); }}
+                                                            className="text-xs text-gray-500 hover:text-gray-700"
+                                                        >Cancel</button>
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); handleSaveInlineNote(job.id); }}
+                                                            className="text-xs text-white bg-[#0F47F2] px-2 py-1 rounded"
+                                                        >Save</button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <span className="text-[13px] text-[#4B5563] line-clamp-2 leading-relaxed">
+                                                    {fetchedNotes[job.id]?.[0]?.content || staticNotes[jobIdx % staticNotes.length]}
+                                                </span>
+                                            )}
                                         </td>
 
                                         {/* Three-dot Menu */}
@@ -667,16 +743,15 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             <Pause className="w-4 h-4" /> {job.status === 'PAUSED' ? 'Resume' : 'Pause'}
                                                         </button>
                                                         <button
-                                                            onClick={(e) => { e.stopPropagation(); setShowNotesJobId(job.id); setMenuOpenJobId(null); }}
+                                                            onClick={(e) => { 
+                                                                e.stopPropagation(); 
+                                                                setMenuOpenJobId(null);
+                                                                setInlineEditJobId(job.id);
+                                                                setInlineNoteContent(fetchedNotes[job.id]?.[0]?.content || "");
+                                                            }}
                                                             className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
                                                         >
-                                                            <MessageSquare className="w-4 h-4" /> Add Note
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); setShowNotesJobId(job.id); setMenuOpenJobId(null); }}
-                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
-                                                        >
-                                                            <MessageSquare className="w-4 h-4" /> Note History
+                                                            <MessageSquare className="w-4 h-4" /> {fetchedNotes[job.id]?.[0] ? 'Edit Note' : 'Add Note'}
                                                         </button>
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); window.open(`/jobs/${job.id}`, '_blank'); setMenuOpenJobId(null); }}
@@ -788,15 +863,6 @@ const JobListing: React.FC<JobListingProps> = ({
                 />
             )}
 
-            {showNotesJobId && (
-                <JobNotesModal 
-                    isOpen={!!showNotesJobId}
-                    jobId={showNotesJobId}
-                    onClose={() => setShowNotesJobId(null)}
-                />
-            )}
-
-            {/* ── Company Info Modal Overlay ── */}
             <CompanyInfoDrawer
                 isOpen={!!infoWorkspace}
                 loading={loadingCompanyResearch}
