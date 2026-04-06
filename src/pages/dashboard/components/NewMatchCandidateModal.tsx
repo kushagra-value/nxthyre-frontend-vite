@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NewMatchCandidate } from '../dashboardData';
 import { naukbotService } from '../../../services/naukbotService';
 import NViteModal from '../../companies/components/NViteModal';
+import CallCandidateModal, { CallCandidateData } from '../../companies/components/CallCandidateModal';
 import toast from 'react-hot-toast';
 
 interface NewMatchCandidateModalProps {
@@ -37,6 +38,7 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
 }) => {
     const [isSkipping, setIsSkipping] = useState(false);
     const [nviteModal, setNviteModal] = useState(false);
+    const [showCallModal, setShowCallModal] = useState(false);
 
     if (!isOpen || candidates.length === 0) return null;
 
@@ -111,8 +113,26 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
         || currentItem?.aiSummary
         || 'No AI summary available.';
 
-    // ── Match label ──
+    // match label
     const matchLabel = candidateMatchScore?.label || '';
+
+    // ── Build CallCandidateData ──
+    const callCandidateData: CallCandidateData | null = currentItem ? {
+        id: candidate?.id || currentItem.id || '',
+        name: candidateName,
+        avatarInitials: candidateName
+            .split(' ')
+            .slice(0, 2)
+            .map((n: string) => n[0])
+            .join('')
+            .toUpperCase(),
+        headline: candidate?.headline || currentItem.role || '',
+        phone: candidate?.phone || candidate?.premium_data?.phone || '',
+        experience,
+        expectedCtc: expectedCTC,
+        location,
+        noticePeriod,
+    } : null;
 
     // SVG arc for the match percentage ring
     const radius = 20;
@@ -403,7 +423,13 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                             style={{ height: 37, border: '0.5px solid #9CA3AF', borderRadius: 5, padding: 10, gap: 5, color: '#9CA3AF' }}
                             onClick={() => {
                                 const candId = candidate?.id || currentItem?.id;
-                                if (candId) window.open(`/candidate-profiles/${candId}`, '_blank');
+                                const jobIdParam = currentItem?.jobId;
+                                if (candId) {
+                                    const url = jobIdParam
+                                        ? `/candidate-profiles/${candId}?job_id=${jobIdParam}`
+                                        : `/candidate-profiles/${candId}`;
+                                    window.open(url, '_blank');
+                                }
                             }}
                         >
                             View Profile
@@ -412,10 +438,7 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                         <button
                             className="flex items-center justify-center cursor-pointer bg-transparent text-sm font-normal hover:bg-blue-50 transition-colors"
                             style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2' }}
-                            onClick={() => {
-                                const phone = candidate?.phone || candidate?.premium_data?.phone;
-                                if (phone) window.open(`tel:${phone}`, '_self');
-                            }}
+                            onClick={() => setShowCallModal(true)}
                         >
                             Call
                         </button>
@@ -457,6 +480,12 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                 }}
             />
         )}
+        {/* ── Call Candidate Modal ── */}
+        <CallCandidateModal
+            isOpen={showCallModal}
+            onClose={() => setShowCallModal(false)}
+            candidate={callCandidateData}
+        />
         </>
     );
 };

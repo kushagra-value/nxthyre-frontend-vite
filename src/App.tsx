@@ -37,6 +37,8 @@ import Interviews from "./pages/interviews/Interviews";
 import CandidatesPool from "./pages/candidates/CandidatesPool";
 import JobPipeline from "./pages/companies/components/JobPipeline";
 import Companies from "./pages/companies/Companies";
+import SchedulePage from "./pages/schedules/SchedulePage";
+import CandidateSearch from "./pages/candidates/CandidateSearch";
 
 function MainApp() {
   const navigate = useNavigate();
@@ -138,11 +140,19 @@ function MainApp() {
       setHeaderJobName((window as any).__selectedJobName);
       setHeaderCandidateName((window as any).__selectedCandidateName);
     };
+    const handleTabSwitch = (e: any) => {
+      if (e.detail?.page) {
+        setCurrentPage(e.detail.page);
+      }
+    };
     window.addEventListener("header-update", handleHeaderUpdate);
+    window.addEventListener("tab-switch", handleTabSwitch);
     // Initial check
     handleHeaderUpdate();
-    return () =>
+    return () => {
       window.removeEventListener("header-update", handleHeaderUpdate);
+      window.removeEventListener("tab-switch", handleTabSwitch);
+    };
   }, []);
 
   const getCurrentDateTime = () => {
@@ -172,8 +182,12 @@ function MainApp() {
         return "Interviews";
       case "candidatePool":
         return "Candidate Pool";
+      case "candidateSearch":
+        return "Candidates";
       case "jobPipeline":
         return "Pipeline Stage";
+      case "calendar":
+        return "Schedule Interviews";
       default:
         return "Dashboard";
     }
@@ -237,8 +251,12 @@ function MainApp() {
         return <Interviews />;
       case "candidatePool":
         return <CandidatesPool initialJobId={null} />;
+      case "candidateSearch":
+        return <CandidateSearch />;
       case "jobPipeline":
         return <JobPipeline jobId={null} workspaceId={0} workspaces={[]} />;
+      case "calendar":
+        return <SchedulePage />;
       default:
         return <Dashboard />;
     }

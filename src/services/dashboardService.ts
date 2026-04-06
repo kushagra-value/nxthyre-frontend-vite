@@ -229,6 +229,171 @@ export interface ActivitySection {
 }
 
 // ──────────────────────────────────────────────
+//  Calendar Activity API Types
+// ──────────────────────────────────────────────
+
+export interface CalendarDayActivityBreakdown {
+  interviews: number;
+  calls: number;
+  follow_ups: number;
+  shortlisted: number;
+  hired: number;
+}
+
+export interface CalendarDayActivityAPI {
+  date: string;
+  activity_level: number;
+  total_events: number;
+  breakdown: CalendarDayActivityBreakdown;
+}
+
+export interface CalendarActivityResponse {
+  month: number;
+  year: number;
+  days: CalendarDayActivityAPI[];
+}
+
+// ──────────────────────────────────────────────
+//  Agenda API Types (today/future dates)
+// ──────────────────────────────────────────────
+
+export interface AgendaLiveStatus {
+  interviewer_name: string;
+  interviewer_avatar: string | null;
+  candidate_name: string;
+  round_type: string;
+  elapsed: string;
+}
+
+export interface AgendaAlert {
+  id: string;
+  type: 'soon' | 'completed';
+  label: string;
+  candidate_name: string;
+  action_url: string;
+}
+
+export interface AgendaItemAPI {
+  id: string;
+  candidate_name: string;
+  candidate_id?: string;
+  job_role_id?: number;
+  candidate_role: string;
+  time: string;
+  status: 'completed' | 'in-progress' | 'upcoming';
+  meeting_link: string | null;
+}
+
+export interface AgendaResponse {
+  date: string;
+  live_status: AgendaLiveStatus | null;
+  alerts: AgendaAlert[];
+  items: AgendaItemAPI[];
+}
+
+// ──────────────────────────────────────────────
+//  Daily Activities API Types (past dates)
+// ──────────────────────────────────────────────
+
+export interface DailyActivitySummary {
+  calls_made: number;
+  follow_ups: number;
+  shortlisted: number;
+  hired: number;
+}
+
+export interface DailyActivityItemAPI {
+  id: string;
+  title: string;
+  time: string;
+  type: string;
+  category_color: string;
+  category_bg: string;
+  pill_text: string;
+  pill_color: string;
+  pill_bg: string;
+}
+
+export interface DailyActivitiesResponse {
+  date: string;
+  date_label: string;
+  total_activities: number;
+  summary: DailyActivitySummary;
+  activities: DailyActivityItemAPI[];
+}
+
+// ──────────────────────────────────────────────
+//  Schedule Widget & Event Modal API Types
+// ──────────────────────────────────────────────
+
+export interface ScheduleWidgetSummary {
+  time: string;
+  type: string;
+  name: string;
+  details: string;
+  location: string;
+  color_theme: 'grey' | 'cyan' | 'purple' | 'orange';
+}
+
+export interface ScheduleModalRecruiter {
+  name: string;
+  role: string;
+  avatar: string;
+}
+
+export interface ScheduleModalCandidateContact {
+  email: string;
+  phone: string;
+}
+
+export interface ScheduleModalCandidateInfo {
+  company: string;
+  position: string;
+  experience: string;
+}
+
+export interface ScheduleModalInterviewerInfo {
+  interviewer_name: string;
+  job_role: string;
+}
+
+export interface ScheduleModalDetails {
+  title: string;
+  candidate_name: string;
+  candidate_id?: string;
+  job_id?: number;
+  interview_type: string;
+  date: string;
+  time_range: string;
+  timezone: string;
+  description: string;
+  meeting_platform: string;
+  meeting_url?: string;
+  status_label: string;
+  duration: string;
+  recruiter: ScheduleModalRecruiter;
+  candidate_contact: ScheduleModalCandidateContact;
+  candidate_info: ScheduleModalCandidateInfo;
+  interviewer_info: ScheduleModalInterviewerInfo;
+}
+
+export interface ScheduleEventAPI {
+  id: string;
+  status: 'completed' | 'in-progress' | 'upcoming';
+  is_done: boolean;
+  widget_summary: ScheduleWidgetSummary;
+  modal_details: ScheduleModalDetails;
+}
+
+export type ScheduleFilterType = 'today' | 'upcoming' | 'past' | 'all';
+
+export interface ScheduleResponse {
+  total_events: number;
+  filter_applied: string;
+  events: ScheduleEventAPI[];
+}
+
+// ──────────────────────────────────────────────
 //  Service
 // ──────────────────────────────────────────────
 
@@ -239,7 +404,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch dashboard data",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch dashboard data",
       );
     }
   }
@@ -250,7 +415,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch sidebar data",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch sidebar data",
       );
     }
   }
@@ -296,7 +461,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch priority actions",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch priority actions",
       );
     }
   }
@@ -307,7 +472,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to complete priority action",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to complete priority action",
       );
     }
   }
@@ -322,7 +487,7 @@ class DashboardService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.error || "Failed to fetch candidate details",
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidate details",
       );
     }
   }
@@ -340,7 +505,136 @@ class DashboardService {
       const response = await apiClient.get(`/candidates/talent-matches/?${queryParams.toString()}`);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch talent matches");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch talent matches");
+    }
+  }
+
+  // ── Calendar Activity API ──
+  async getCalendarActivity(month: number, year: number): Promise<CalendarActivityResponse> {
+    try {
+      const response = await apiClient.get(`/jobs/dashboard/calendar-activity/?month=${month}&year=${year}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch calendar activity",
+      );
+    }
+  }
+
+  // ── Date-wise Agenda API (today/future dates) ──
+  async getAgenda(date: string): Promise<AgendaResponse> {
+    try {
+      const response = await apiClient.get(`/jobs/dashboard/agenda/?date=${date}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch agenda",
+      );
+    }
+  }
+
+  // ── Daily Activities API (past dates) ──
+  async getDailyActivities(date: string): Promise<DailyActivitiesResponse> {
+    try {
+      const response = await apiClient.get(`/jobs/dashboard/daily-activities/?date=${date}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch daily activities",
+      );
+    }
+  }
+
+  // ── Schedule Widget API ──
+  async getScheduleEvents(params?: { filter?: ScheduleFilterType; date?: string }): Promise<ScheduleResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      let startDateStr = '';
+      let endDateStr = '';
+
+      const today = new Date();
+      const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
+      if (params?.date) {
+        startDateStr = params.date;
+        endDateStr = params.date;
+      } else if (params?.filter === 'today') {
+        startDateStr = formatDate(today);
+        endDateStr = formatDate(today);
+      } else if (params?.filter === 'upcoming') {
+        // Today to next 30 days
+        startDateStr = formatDate(today);
+        const upcomingEnd = new Date(today);
+        upcomingEnd.setDate(today.getDate() + 30);
+        endDateStr = formatDate(upcomingEnd);
+      } else {
+        // Default to today if no filter or unrecognized
+        startDateStr = formatDate(today);
+        endDateStr = formatDate(today);
+      }
+
+      queryParams.append('start_date', startDateStr);
+      queryParams.append('end_date', endDateStr);
+      queryParams.append('page_size', '1000');
+
+      const response = await apiClient.get(`/v1/schedule/interview-events/?${queryParams.toString()}`);
+      
+      // Transform InterviewEvent[] to ScheduleEventAPI[]
+      const events: ScheduleEventAPI[] = (response.data.results || response.data || []).map((ev: any) => {
+        const start = new Date(ev.start_at);
+        const end = new Date(ev.end_at);
+        const formatTime = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' });
+        
+        return {
+          id: ev.id,
+          status: ev.status === 'COMPLETED' ? 'completed' : (ev.status === 'IN_PROGRESS' ? 'in-progress' : 'upcoming'),
+          is_done: ev.status === 'COMPLETED',
+          widget_summary: {
+            time: `${formatTime(start)} – ${formatTime(end)}`,
+            type: ev.title || 'Interview',
+            name: ev.candidate_name,
+            details: ev.candidate_position || '',
+            location: ev.location_type || 'virtual',
+            color_theme: 'cyan'
+          },
+          modal_details: {
+            title: ev.title || 'Interview',
+            candidate_name: ev.candidate_name,
+            candidate_id: ev.candidate_id,
+            job_id: ev.job_role?.id,
+            interview_type: ev.title || 'Interview',
+            date: start.toLocaleDateString(),
+            time_range: `${formatTime(start)} – ${formatTime(end)}`,
+            timezone: ev.timezone || 'IST',
+            description: ev.description || ev.title || 'Scheduled Interview',
+            meeting_platform: ev.location_type === 'VIRTUAL' ? 'Virtual' : (ev.location_type || 'Virtual'),
+            meeting_url: ev.virtual_conference_url || '',
+            status_label: ev.status || 'scheduled',
+            duration: '60 min',
+            recruiter: { name: 'Recruiter', role: 'Team', avatar: '' },
+            candidate_contact: { email: '', phone: '' },
+            candidate_info: { 
+              company: ev.candidate_company || ev.company?.name || '', 
+              position: ev.candidate_position || ev.job_role?.name || '', 
+              experience: ev.candidate_experience || '' 
+            },
+            interviewer_info: {
+              interviewer_name: ev.interviewer?.name || 'Interviewer',
+              job_role: ev.candidate_position || ''
+            }
+          }
+        };
+      });
+
+      return {
+        total_events: events.length,
+        filter_applied: params?.filter || 'all',
+        events: events
+      };
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch schedule events",
+      );
     }
   }
 }

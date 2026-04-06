@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     ChevronLeft,
     Globe,
@@ -24,6 +24,7 @@ import {
     ArrowDown,
     ArrowUpDown,
     Copy,
+    ChevronDown,
 } from "lucide-react";
 import { MyWorkspace } from "../../../services/organizationService";
 import { Job, jobPostService } from "../../../services/jobPostService";
@@ -37,8 +38,8 @@ interface JobListingProps {
     setSelectedWorkspace: (ws: MyWorkspace | null) => void;
     logos: Record<string, string | null>;
     workspaceJobs: Job[];
-    activeJobFilter: "All" | "Active" | "Paused" | "Closed" | "Draft";
-    setActiveJobFilter: (filter: "All" | "Active" | "Paused" | "Closed" | "Draft") => void;
+    activeJobFilter: "All" | "Active" | "Paused" | "Inactive" | "Draft";
+    setActiveJobFilter: (filter: "All" | "Active" | "Paused" | "Inactive" | "Draft") => void;
     jobSearchQuery: string;
     setJobSearchQuery: (query: string) => void;
     filteredWorkspaceJobs: Job[];
@@ -94,13 +95,32 @@ const JobListing: React.FC<JobListingProps> = ({
     const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
+    // Reset pagination when filter or search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeJobFilter, jobSearchQuery]);
+
     const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
+    const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
+
+    const handleStatusChange = async (jobId: number, newStatus: string) => {
+        setStatusUpdating(jobId);
+        try {
+            await jobPostService.updateJobRoleStatus(jobId, newStatus);
+            fetchJobs();
+            toastUtil.success("Status updated");
+        } catch (error) {
+            toastUtil.error("Failed to update status");
+        } finally {
+            setStatusUpdating(null);
+        }
+    };
 
     const handleUnpublishJobRole = async (jobId: number) => {
         try {
             await jobPostService.unpublishJob(jobId);
-            await jobPostService.updateJob(jobId, { status: "DRAFT", visibility: "PRIVATE" });
+            await jobPostService.updateJob(jobId, { visibility: "PRIVATE" });
             fetchJobs();
             toastUtil.success("Unpublished");
         } catch {
@@ -111,7 +131,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
     const handlePublishJobRole = async (jobId: number) => {
         try {
-            await jobPostService.updateJob(jobId, { status: "PUBLISHED", visibility: "PUBLIC" });
+            await jobPostService.updateJob(jobId, { visibility: "PUBLIC" });
             fetchJobs();
             toastUtil.success("Published");
         } catch {
@@ -316,18 +336,18 @@ const JobListing: React.FC<JobListingProps> = ({
                 {/* Filters & Actions - first row */}
                 <div className="p-4 border-b border-[#C7C7CC] flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        {(["All", "Active", "Paused", "Closed", "Draft"] as const).map((filter) => {
+                        {(["All", "Active", "Paused", "Inactive", "Draft"] as const).map((filter) => {
                             let count = 0;
                             if (filter === "All") count = workspaceJobs.length;
-                            else if (filter === "Active") count = workspaceJobs.filter(j => j.status === "PUBLISHED" || j.status === "ACTIVE").length;
+                            else if (filter === "Active") count = workspaceJobs.filter(j => j.status === "ACTIVE").length;
                             else if (filter === "Paused") count = workspaceJobs.filter(j => j.status === "PAUSED").length;
-                            else if (filter === "Closed") count = workspaceJobs.filter(j => j.status === "CLOSED").length;
-                            else if (filter === "Draft") count = workspaceJobs.filter(j => j.status === "DRAFT").length;
+                            else if (filter === "Inactive") count = workspaceJobs.filter(j => j.status === "INACTIVE").length;
+                            else if (filter === "Draft") count = workspaceJobs.filter(j => j.pyjamahr_status === "DRAFT").length;
 
                             return (
                                 <button
                                     key={filter}
-                                    onClick={() => setActiveJobFilter(filter)}
+                                    onClick={() => { setActiveJobFilter(filter); setCurrentPage(1); }}
                                     className={`h-[30px] px-4 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center justify-center
                         ${activeJobFilter === filter
                                             ? 'bg-[#0F47F2] text-white'
@@ -527,17 +547,27 @@ const JobListing: React.FC<JobListingProps> = ({
                                         </td>
 
                                         {/* Status */}
-                                        <td className="px-4 py-3 text-center">
-                                            <span className={`px-3 py-1 rounded-full text-[13px] font-medium leading-[17px] whitespace-nowrap ${(job.status === 'PUBLISHED' || job.status === 'ACTIVE')
-                                                ? 'bg-[#EBFFEE] text-[#069855]'
-                                                : job.status === 'CLOSED'
-                                                    ? 'bg-[#F5F5F5] text-black'
-                                                    : 'bg-[#F2F2F7] text-[#4B5563]'
-                                                }`}>
-                                                {(job.status === 'PUBLISHED' || job.status === 'ACTIVE') ? 'Active'
-                                                    : job.status === 'CLOSED' ? 'Closed'
-                                                        : job.status === 'PAUSED' ? 'Paused' : 'Draft'}
-                                            </span>
+                                        <td className="px-4 py-3 text-center relative">
+                                            <div className="relative inline-block">
+                                                <select
+                                                    value={job.status}
+                                                    disabled={statusUpdating === job.id}
+                                                    onChange={(e) => handleStatusChange(job.id, e.target.value)}
+                                                    className={`appearance-none px-4 flex items-center justify-center py-[5px] pr-8 rounded-full text-[13px] font-medium leading-[17px] outline-none cursor-pointer ${job.status === 'ACTIVE'
+                                                        ? 'bg-[#EBFFEE] text-[#069855]'
+                                                        : job.status === 'PAUSED'
+                                                            ? 'bg-[#FFF7D6] text-[#92400E]'
+                                                            : 'bg-[#F2F2F7] text-[#4B5563]'
+                                                        }`}
+                                                >
+                                                    <option value="ACTIVE" className="bg-white text-black">Active</option>
+                                                    <option value="PAUSED" className="bg-white text-black">Paused</option>
+                                                    <option value="INACTIVE" className="bg-white text-black">Inactive</option>
+                                                </select>
+                                                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                                                    <ChevronDown className="w-3.5 h-3.5" />
+                                                </div>
+                                            </div>
                                         </td>
 
                                         {/* Actions */}
@@ -552,7 +582,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 >
                                                     <Pencil className="w-3.5 h-3.5 text-[#0F47F2]" />
                                                 </button>
-                                                {job.status === "PUBLISHED" && job.visibility === "PUBLIC" && (
+                                                {job.pyjamahr_status === "PUBLISHED" && job.visibility === "PUBLIC" && (
                                                     <button
                                                         onClick={() => setShowUnpublishModal(job.id)}
                                                         title="Unpublish"
@@ -561,7 +591,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                         <Pause className="w-3.5 h-3.5 text-[#4B5563]" />
                                                     </button>
                                                 )}
-                                                {job.status === "DRAFT" && job.visibility === "PRIVATE" && (
+                                                {job.pyjamahr_status === "DRAFT" && job.visibility === "PRIVATE" && (
                                                     <button
                                                         onClick={() => setShowPublishModal(job.id)}
                                                         title="Publish"

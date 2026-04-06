@@ -27,6 +27,7 @@ import {
   // ShareableProfileSensitiveCandidate,
   ShareableProfileCandidate,
   ReferenceData,
+  AnalysisResult,
   // CandidateListItem,
 } from "../../services/candidateService";
 
@@ -51,6 +52,8 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
   // const navigate = useNavigate();
   const [candidateData, setCandidateData] =
     useState<ShareableProfileCandidate | null>(null);
+  const [candidateDetailsJobScore, setCandidateDetailsJobScore] =
+    useState<AnalysisResult | null>(null);
 
   const { candidateId: paramCandidateId } = useParams<{
     candidateId: string;
@@ -102,8 +105,27 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
         setReferencesLoading(false);
       }
     };
+
+    // Fetch candidate details with job_id to get quick_fit_summary & profile_match_score
+    const fetchCandidateDetails = async () => {
+      if (!candidateId || !jobId) return;
+      try {
+        const data = await candidateService.getCandidateInboundScore(
+          candidateId,
+          jobId,
+        );
+        if (data?.candidate?.job_score) {
+          setCandidateDetailsJobScore(data.candidate.job_score);
+        }
+        console.log("Candidate Details (job score):", data?.candidate?.job_score);
+      } catch (err) {
+        console.error("Failed to fetch candidate details for job score:", err);
+      }
+    };
+
     fetchShareableProfile();
     fetchReferences();
+    fetchCandidateDetails();
   }, [candidateId, jobId]);
 
   // For back navigation (if needed), use history back instead of onBack
@@ -128,7 +150,9 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  let data = candidateData?.job_score?.quick_fit_summary || [];
+  // Prefer job score from candidate details API (fetched with job_id) over shareable profile
+  const jobScore = candidateDetailsJobScore || candidateData?.job_score;
+  let data = jobScore?.quick_fit_summary || [];
 
   // Sort data: CRITICAL first, then IMPORTANT, then others (LEADERSHIP, EXPERIENCE)
   const priorityOrder = {
@@ -482,7 +506,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                   Profile Match Description
                 </h3>
                 <p className="text-gray-500 leading-relaxed">
-                  {candidateData?.job_score?.candidate_match_score
+                  {jobScore?.candidate_match_score
                     ?.description || "N/A"}
                 </p>
               </div>

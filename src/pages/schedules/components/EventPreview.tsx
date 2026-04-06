@@ -1,5 +1,5 @@
-import apiClient from '../../services/api';
-import { showToast } from '../../utils/toast';
+import apiClient from '../../../services/api';
+import { showToast } from '../../../utils/toast';
 
 interface EventPreviewProps {
   event: any;

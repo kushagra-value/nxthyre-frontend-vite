@@ -30,7 +30,13 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  MessageSquare,
+  MoreHorizontal,
+  Phone,
+  Mail,
+  Trash2,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
 import { jobPostService, Job } from "../../../services/jobPostService";
 import {
@@ -203,6 +209,55 @@ const formatDate = (iso?: string): string => {
   });
 };
 
+const formatTimeAgo = (iso?: string): string => {
+  if (!iso) return "--";
+  const now = new Date();
+  const past = new Date(iso);
+  const diffInMs = now.getTime() - past.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  if (diffInDays < 1) {
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    if (diffInHours < 1) {
+      return `${Math.floor(diffInMs / (1000 * 60))}m`;
+    }
+    return `${diffInHours}h`;
+  }
+  return `${diffInDays}d`;
+};
+
+const formatMovedDate = (statusTags?: { text: string; color: string }[]): string => {
+  if (!statusTags || statusTags.length === 0) return "0d";
+  
+  const movedTag = statusTags.find(tag => 
+    tag.text.toLowerCase().includes("moved") || 
+    tag.text.toLowerCase().includes("added")
+  );
+  
+  if (!movedTag) return "0d";
+  
+  const text = movedTag.text.toLowerCase();
+  
+  if (text.includes("today")) return "0d";
+  if (text.includes("yesterday")) return "1d";
+  
+  // Extract date from strings like "Moved on 31 Mar 2026" or "Moved 31 Mar 2026"
+  const dateParts = movedTag.text.replace(/Moved on |Added on |Moved |Added /i, "").trim();
+  const pastDate = new Date(dateParts);
+  
+  if (isNaN(pastDate.getTime())) return "0d";
+
+  const now = new Date();
+  // Clear time parts to compare only dates
+  now.setHours(0, 0, 0, 0);
+  const midnightPast = new Date(pastDate);
+  midnightPast.setHours(0, 0, 0, 0);
+  
+  const diffInMs = now.getTime() - midnightPast.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  
+  return `${Math.max(0, diffInDays)}d`;
+};
+
 const workApproachLabel: Record<string, string> = {
   ONSITE: "Onsite",
   REMOTE: "Remote",
@@ -250,6 +305,7 @@ export default function JobPipelineDashboard({
   externalStages,
   onRefreshStages,
 }: JobPipelineDashboardProps) {
+  const navigate = useNavigate();
   // ── Job details
   const [jobDetails, setJobDetails] = useState<Job | null>(null);
   const [loadingJob, setLoadingJob] = useState(false);
@@ -306,6 +362,17 @@ export default function JobPipelineDashboard({
   const [selectionType, setSelectionType] = useState<
     "ACTIVE" | "ARCHIVED" | null
   >(null);
+
+  // ── Feedback Modal State ──
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [pendingAction, setPendingAction] = useState<{
+    type: "archive" | "unarchive" | "move";
+    applicationIds: number[];
+    targetStageId?: number;
+    targetStageName?: string;
+    candidateNames?: string[];
+  } | null>(null);
 
   // ── Sorting
   type CandidateSortKey =
@@ -456,14 +523,96 @@ export default function JobPipelineDashboard({
     "pipeline" | "naukbot" | "inbound"
   >("pipeline");
 
-  // ── Kanban View State
   const [isKanbanView, setIsKanbanView] = useState(false);
   const [draggedCandidateId, setDraggedCandidateId] = useState<number | null>(
     null,
   );
+  const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleDragStart = (id: number) => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpenId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+
+  const getInitials = (name: string) => {
+    if (!name) return "--";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const handleDragStart = (e: React.DragEvent, id: number) => {
     setDraggedCandidateId(id);
+
+    // Custom drag image logic for multiple selections
+    if (selectedIds.has(id) && selectedIds.size > 1) {
+      const selectedArray = Array.from(selectedIds);
+      
+      const getCandidateName = (cId: number) => {
+        const c = candidates.find(cand => cand.id === cId) || archivedCandidates.find((cand: any) => cand.id === cId);
+        return c?.candidate?.full_name || "Unknown";
+      };
+
+      const candidatesToDrag = selectedArray.map(getCandidateName);
+      
+      const overlay = document.createElement("div");
+      overlay.id = "custom-drag-image";
+      overlay.style.position = "absolute";
+      overlay.style.top = "-1000px";
+      overlay.style.display = "flex";
+      overlay.style.flexDirection = "column";
+      overlay.style.alignItems = "center";
+      overlay.style.pointerEvents = "none";
+      overlay.style.zIndex = "9999";
+
+      let avatarsHtml = "";
+      const positions = [
+        "top: -8px; left: -8px;",
+        "top: -8px; right: -8px;",
+        "bottom: -8px; left: -8px;"
+      ];
+      
+      const colors = ["#FCA5A5", "#FCD34D", "#93C5FD", "#D8B4FE", "#86EFAC"];
+
+      candidatesToDrag.slice(0, 3).forEach((name, idx) => {
+        const initials = getInitials(name);
+        // Map name length roughly to color index for consistency
+        const color = colors[name.length % colors.length];
+        avatarsHtml += `<div style="position: absolute; ${positions[idx]} width: 44px; height: 44px; border-radius: 50%; background: ${color}; border: 3px solid white; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: 700; color: #1C1C1E; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">${initials}</div>`;
+      });
+
+      if (candidatesToDrag.length > 3) {
+        avatarsHtml += `<div style="position: absolute; bottom: -8px; right: -8px; width: 44px; height: 44px; border-radius: 50%; background: #1C1C1E; color: white; border: 3px solid white; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: 700; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">+${candidatesToDrag.length - 3}</div>`;
+      }
+      
+      const handIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 14v4"/><path d="M11 20H8a2 2 0 0 1-2-2v-5"/><path d="M6 10a2 2 0 0 1 2-2h1"/><path d="M9 8V5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v8"/><path d="M14 11V9a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v2"/><path d="M19 14v-1a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v6a2 2 0 0 1-2 2h-1"/></svg>`;
+
+      overlay.innerHTML = `
+        <div style="position: relative; width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #0F47F2; background: rgba(231, 237, 255, 0.7); display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+          ${handIcon}
+          ${avatarsHtml}
+        </div>
+        <div style="margin-top: 14px; background: #0F47F2; color: white; padding: 6px 16px; border-radius: 999px; font-size: 11px; font-weight: 700; text-align: center; box-shadow: 0 4px 6px rgba(15,71,242,0.3); text-transform: uppercase;">
+          MOVE TO NEXT STAGE
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      e.dataTransfer.setDragImage(overlay, 50, 50);
+
+      setTimeout(() => {
+        if(overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 0);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -477,38 +626,21 @@ export default function JobPipelineDashboard({
     const toStage = stages.find((s) => s.slug === toStageSlug);
     if (!toStage) return;
 
-    // Optimistically update local state for fast UI feedback
-    setCandidates((prev) =>
-      prev.map((c) => {
-        if (c.id === draggedCandidateId) {
-          return {
-            ...c,
-            stage_slug: toStageSlug,
-            current_stage: toStage,
-          };
-        }
-        return c;
-      }),
-    );
-    setDraggedCandidateId(null);
+    const actionType = toStageSlug === "archives" ? "archive" : "move";
 
-    try {
-      if (toStageSlug === "archives") {
-        await apiClient.patch(`/jobs/applications/${draggedCandidateId}/`, {
-          current_stage: toStage.id,
-          status: "ARCHIVED",
-          archive_reason: "Candidate archived from Kanban",
-        });
-      } else {
-        await apiClient.patch(`/jobs/applications/${draggedCandidateId}/`, {
-          current_stage: toStage.id,
-        });
-      }
-      showToast.success(`Candidate moved to ${toStage.name}`);
-    } catch (error) {
-      console.error("Error moving candidate:", error);
-      showToast.error("Failed to move candidate");
+    let idsToMove = [draggedCandidateId];
+    if (selectedIds.has(draggedCandidateId)) {
+      idsToMove = Array.from(selectedIds);
     }
+
+    openFeedbackModal({
+      type: actionType,
+      applicationIds: idsToMove,
+      targetStageId: toStage.id,
+      targetStageName: toStage.name,
+    });
+
+    setDraggedCandidateId(null);
   };
 
   // ── Requisition Info Modal
@@ -541,11 +673,11 @@ export default function JobPipelineDashboard({
     const blob =
       typeof data === "string"
         ? new Blob([data], {
-            type:
-              type === "csv"
-                ? "text/csv"
-                : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          })
+          type:
+            type === "csv"
+              ? "text/csv"
+              : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        })
         : data;
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -828,12 +960,13 @@ export default function JobPipelineDashboard({
       stageSlug: string | null,
       page: number,
       search: string,
+      limit: number = pageSize
     ) => {
       setLoadingCandidates(true);
       try {
         let url = `/jobs/applications/?job_id=${jId}`;
         if (stageSlug) url += `&stage_slug=${stageSlug}`;
-        url += `&page=${page}&page_size=${pageSize}`;
+        url += `&page=${page}&page_size=${limit}`;
         if (search.trim())
           url += `&search=${encodeURIComponent(search.trim())}`;
 
@@ -865,13 +998,16 @@ export default function JobPipelineDashboard({
 
   useEffect(() => {
     if (jobId != null && searchQuery === "") {
-      fetchCandidates(jobId, activeStageSlug, currentPage, "");
+      const currentLimit = isKanbanView ? 1000 : pageSize;
+      const currentStage = isKanbanView ? null : activeStageSlug;
+      fetchCandidates(jobId, currentStage, currentPage, "", currentLimit);
       fetchArchivedCandidates(jobId);
     }
   }, [
     jobId,
     activeStageSlug,
     currentPage,
+    isKanbanView,
     searchQuery,
     fetchCandidates,
     fetchArchivedCandidates,
@@ -1092,120 +1228,118 @@ export default function JobPipelineDashboard({
 
   // ── Actions ──────────────────────────────────────────────────
 
-  const archiveCandidate = async (applicationId: number) => {
-    const archiveStage = stages.find((stage) => stage.slug === "archives");
-    if (!archiveStage) return;
-    try {
-      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
-        current_stage: archiveStage.id,
-        status: "ARCHIVED",
-        archive_reason: "Candidate archived from UI",
-      });
-      if (jobId != null) {
-        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
-        fetchStages(jobId);
-      }
-      showToast.success("Candidate archived successfully");
-    } catch (error) {
-      console.error("Error archiving candidate:", error);
-      showToast.error("Failed to archive candidate");
-    }
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+    setSelectAll(false);
+    setSelectionStage(null);
+    setSelectionType(null);
   };
 
-  const shortlistCandidate = async (applicationId: number) => {
-    try {
-      const shortlistedStage = stages.find(
-        (s) =>
-          s.slug === "shortlisted" ||
-          s.name.toLowerCase().includes("shortlist"),
-      );
-
-      if (!shortlistedStage) {
-        showToast.error("Shortlisted stage not found");
-        return;
-      }
-
-      await apiClient.patch(`/jobs/applications/${applicationId}/`, {
-        current_stage: shortlistedStage.id,
-      });
-
-      showToast.success("Candidate shortlisted successfully");
-
-      if (jobId != null) {
-        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
-        fetchStages(jobId);
-      }
-    } catch (error) {
-      console.error("Error shortlisting candidate:", error);
-      showToast.error("Failed to shortlist candidate");
-    }
+  const openFeedbackModal = (action: {
+    type: "archive" | "unarchive" | "move";
+    applicationIds: number[];
+    targetStageId?: number;
+    targetStageName?: string;
+  }) => {
+    // Gather candidate names for display
+    const names = action.applicationIds.map((id) => {
+      const cand = candidates.find((c) => c.id === id) || archivedCandidates.find((c: any) => c.id === id);
+      return cand?.candidate?.full_name || "Unknown";
+    });
+    setPendingAction({ ...action, candidateNames: names });
+    setFeedbackComment("");
+    setShowFeedbackModal(true);
   };
 
-  const bulkArchive = async (applicationIds: number[]) => {
-    if (applicationIds.length === 0) return;
-    try {
-      const archiveStage = stages.find((s) => s.slug === "archives");
-      if (!archiveStage) {
-        showToast.error("Archives stage not found");
-        return;
-      }
-      await apiClient.post("/jobs/bulk-move-stage/", {
-        application_ids: applicationIds,
-        current_stage: archiveStage.id,
-      });
-      showToast.success(
-        `Successfully archived ${applicationIds.length} candidate(s)`,
-      );
-      setSelectedIds(new Set());
-      setSelectAll(false);
-      if (jobId != null) {
-        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
-        fetchStages(jobId);
-      }
-    } catch (error) {
-      console.error("Error bulk archiving:", error);
-      showToast.error("Failed to archive candidates");
+  const handleFeedbackSubmit = async () => {
+    if (!pendingAction || !feedbackComment.trim()) {
+      showToast.error("Please enter a comment");
+      return;
     }
-  };
 
-  const bulkMoveCandidates = async (
-    applicationIds: number[],
-    stageId: number,
-  ) => {
-    if (applicationIds.length === 0) return;
+    const { type, applicationIds, targetStageId, targetStageName } = pendingAction;
+
     try {
-      await apiClient.post("/jobs/bulk-move-stage/", {
-        application_ids: applicationIds,
-        current_stage: stageId,
-      });
-
-      const targetStage = stages.find((stage) => stage.id === stageId);
-      if (targetStage?.slug === "applied") {
+      if (type === "archive") {
+        const archiveStage = stages.find((s) => s.slug === "archives");
+        if (!archiveStage) {
+          showToast.error("Archives stage not found");
+          return;
+        }
         await Promise.all(
-          applicationIds.map(async (appId) => {
-            const cand = candidates.find((c) => c.id === appId);
-            if (cand && jobId !== null) {
-              await candidateService.scheduleCodingAssessmentEmail(
-                cand.candidate.id,
-                jobId,
-              );
-            }
-          }),
+          applicationIds.map((id) =>
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: archiveStage.id,
+              status: "ARCHIVED",
+              archive_reason: feedbackComment.trim(),
+              feedback: {
+                subject: "Moved to Archive",
+                comment: feedbackComment.trim(),
+              },
+            })
+          )
         );
+        showToast.success(`${applicationIds.length} candidate(s) archived`);
+      } else if (type === "unarchive") {
+        await Promise.all(
+          applicationIds.map((id) => {
+            const archivedItem = archivedCandidates.find((c: any) => c.id === id);
+            const targetStage = archivedItem
+              ? stages.find((s) => s.slug === archivedItem.stage_slug) ||
+              stages.find((s) => s.slug === "shortlisted") ||
+              stages[0]
+              : stages.find((s) => s.slug === "shortlisted") || stages[0];
+
+            if (!targetStage) return Promise.resolve();
+
+            return apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: targetStage.id,
+              status: "ACTIVE",
+              feedback: {
+                subject: "Unarchived",
+                comment: feedbackComment.trim(),
+              },
+            });
+          })
+        );
+        showToast.success(`${applicationIds.length} candidate(s) unarchived`);
+      } else if (type === "move" && targetStageId) {
+        await Promise.all(
+          applicationIds.map((id) =>
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: targetStageId,
+              feedback: {
+                subject: `Moving to ${targetStageName || "next stage"}`,
+                comment: feedbackComment.trim(),
+              },
+            })
+          )
+        );
+
+
+        showToast.success(`${applicationIds.length} candidate(s) moved to ${targetStageName || "next stage"}`);
       }
 
-      showToast.success(
-        `Moved ${applicationIds.length} candidate(s) to ${targetStage?.name || "selected stage"}`,
-      );
-      setSelectedIds(new Set());
-      setSelectAll(false);
-      if (jobId !== null) {
-        fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
+      // Clear selection and refresh
+      clearSelection();
+      setShowFeedbackModal(false);
+      setFeedbackComment("");
+      setPendingAction(null);
+
+      if (jobId != null) {
+        const currentLimit = isKanbanView ? 1000 : pageSize;
+        const currentStage = isKanbanView ? null : activeStageSlug;
+        fetchCandidates(jobId, currentStage, currentPage, searchQuery, currentLimit);
         fetchStages(jobId);
+        fetchArchivedCandidates(jobId);
       }
-    } catch (error) {
-      console.error("Error bulk moving candidates:", error);
-      showToast.error("Failed to move candidates");
+    } catch (error: any) {
+      console.error("Action error:", error);
+      if (error.response?.status === 403) {
+        showToast.error("You don't have permission to perform this action.");
+      } else {
+        showToast.error(`Failed to ${type} candidate(s)`);
+      }
     }
   };
 
@@ -1504,11 +1638,10 @@ export default function JobPipelineDashboard({
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`pb-3 text-sm font-medium transition-colors relative ${
-                activeTab === tab.key
+              className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === tab.key
                   ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
                   : "text-[#8E8E93] hover:text-[#4B5563]"
-              }`}
+                }`}
             >
               {tab.label}{" "}
               <span
@@ -1524,7 +1657,7 @@ export default function JobPipelineDashboard({
       {/* ═══════════════════════════════════════════════════════
           Stage Filter Pills & Pipeline Content
          ═══════════════════════════════════════════════════════ */}
-      {activeTab === "pipeline" && (
+      {(activeTab === "pipeline" || activeTab === "inbound") && (
         <>
           <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
             <div className="flex items-center gap-2 flex-wrap">
@@ -1532,35 +1665,33 @@ export default function JobPipelineDashboard({
                 <>
                   <button
                     onClick={() => setActiveStageSlug(null)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                      activeStageSlug === null
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
                         ? "bg-[#0F47F2] text-white"
                         : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
-                    }`}
+                      }`}
                   >
                     All ({totalPipelineCandidates})
                   </button>
 
                   {loadingStages
                     ? Array.from({ length: 5 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="w-28 h-8 bg-gray-200 rounded-full animate-pulse"
-                        />
-                      ))
-                    : stages.map((stage) => (
-                        <button
-                          key={stage.id}
-                          onClick={() => setActiveStageSlug(stage.slug)}
-                          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                            activeStageSlug === stage.slug
-                              ? "bg-[#0F47F2] text-white"
-                              : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                      <div
+                        key={i}
+                        className="w-28 h-8 bg-gray-200 rounded-full animate-pulse"
+                      />
+                    ))
+                    : stages.filter(s => s.slug !== 'archives').map((stage) => (
+                      <button
+                        key={stage.id}
+                        onClick={() => setActiveStageSlug(stage.slug)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
+                            ? "bg-[#0F47F2] text-white"
+                            : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
                           }`}
-                        >
-                          {stage.name} ({stage.candidate_count})
-                        </button>
-                      ))}
+                      >
+                        {stage.name} ({stage.candidate_count})
+                      </button>
+                    ))}
                 </>
               )}
             </div>
@@ -1575,7 +1706,12 @@ export default function JobPipelineDashboard({
                 </button>
               )}
               <button
-                onClick={() => setIsKanbanView(!isKanbanView)}
+                onClick={() => {
+                  if (!isKanbanView) {
+                    setActiveStageSlug(null);
+                  }
+                  setIsKanbanView(!isKanbanView);
+                }}
                 className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
               >
                 {isKanbanView ? (
@@ -1672,52 +1808,78 @@ export default function JobPipelineDashboard({
                 Selected
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <button
-                  onClick={() => {
-                    let nextStageId: number | undefined;
-                    if (activeStageSlug) {
-                      const currentIdx = stages.findIndex(
-                        (s) => s.slug === activeStageSlug,
-                      );
-                      if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
-                        // Check if next stage is 'archives', if so skip or just use it. Typically archives is not a 'next' stage
-                        const nextStage = stages[currentIdx + 1];
-                        if (nextStage.slug !== "archives") {
-                          nextStageId = nextStage.id;
-                        } else if (currentIdx + 2 < stages.length) {
-                          nextStageId = stages[currentIdx + 2].id;
+                {/* Hide Move/Archive in kanban – those are in the stage footer */}
+                {!isKanbanView && (
+                  <>
+                    <button
+                      onClick={() => {
+                        let nextStageId: number | undefined;
+                        let nextStageName: string | undefined;
+                        if (activeStageSlug) {
+                          const currentIdx = stages.findIndex(
+                            (s) => s.slug === activeStageSlug,
+                          );
+                          if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
+                            const nextStage = stages[currentIdx + 1];
+                            if (nextStage.slug !== "archives") {
+                              nextStageId = nextStage.id;
+                              nextStageName = nextStage.name;
+                            } else if (currentIdx + 2 < stages.length) {
+                              nextStageId = stages[currentIdx + 2].id;
+                              nextStageName = stages[currentIdx + 2].name;
+                            }
+                          }
+                        } else {
+                          const firstCandId = Array.from(selectedIds)[0];
+                          const firstCand = candidates.find(
+                            (c) => c.id === firstCandId,
+                          );
+                          const currentSlug =
+                            firstCand?.current_stage?.slug || firstCand?.stage_slug;
+                          const currentIdx = stages.findIndex(
+                            (s) => s.slug === currentSlug,
+                          );
+                          if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
+                            const nextStage = stages[currentIdx + 1];
+                            if (nextStage.slug !== "archives") {
+                              nextStageId = nextStage.id;
+                              nextStageName = nextStage.name;
+                            } else if (currentIdx + 2 < stages.length) {
+                              nextStageId = stages[currentIdx + 2].id;
+                              nextStageName = stages[currentIdx + 2].name;
+                            }
+                          }
                         }
-                      }
-                    } else {
-                      const firstCandId = Array.from(selectedIds)[0];
-                      const firstCand = candidates.find(
-                        (c) => c.id === firstCandId,
-                      );
-                      const currentSlug =
-                        firstCand?.current_stage?.slug || firstCand?.stage_slug;
-                      const currentIdx = stages.findIndex(
-                        (s) => s.slug === currentSlug,
-                      );
-                      if (currentIdx !== -1 && currentIdx + 1 < stages.length) {
-                        const nextStage = stages[currentIdx + 1];
-                        if (nextStage.slug !== "archives") {
-                          nextStageId = nextStage.id;
-                        } else if (currentIdx + 2 < stages.length) {
-                          nextStageId = stages[currentIdx + 2].id;
-                        }
-                      }
-                    }
 
-                    if (nextStageId) {
-                      bulkMoveCandidates(Array.from(selectedIds), nextStageId);
-                    } else {
-                      showToast.error("No next stage available");
-                    }
-                  }}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Move to Next Stage
-                </button>
+                        if (nextStageId) {
+                          openFeedbackModal({
+                            type: "move",
+                            applicationIds: Array.from(selectedIds),
+                            targetStageId: nextStageId,
+                            targetStageName: nextStageName,
+                          });
+                        } else {
+                          showToast.error("No next stage available");
+                        }
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
+                    >
+                      Move to Next Stage
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        openFeedbackModal({
+                          type: "archive",
+                          applicationIds: Array.from(selectedIds),
+                        })
+                      }
+                      className="flex items-center gap-2 px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors font-medium"
+                    >
+                      <Archive className="w-4 h-4" /> Archive Candidates
+                    </button>
+                  </>
+                )}
 
                 <button
                   onClick={() => setShowExportDialog(true)}
@@ -1727,10 +1889,10 @@ export default function JobPipelineDashboard({
                 </button>
 
                 <button
-                  onClick={() => bulkArchive(Array.from(selectedIds))}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors font-medium"
+                  onClick={clearSelection}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-[#4B5563] border border-[#D1D1D6] rounded-md hover:bg-gray-50 transition-colors font-medium"
                 >
-                  <Archive className="w-4 h-4" /> Archive Candidates
+                  <X className="w-4 h-4" /> Cancel
                 </button>
               </div>
             </div>
@@ -1741,7 +1903,7 @@ export default function JobPipelineDashboard({
          ═══════════════════════════════════════════════════════ */}
           {isKanbanView ? (
             <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch">
-              {stages.map((stage) => {
+              {stages.filter(s => s.slug !== 'archives').map((stage) => {
                 const activeColumnCandidates = candidates.filter((item) => {
                   const itemStageSlug =
                     item.current_stage?.slug || item.stage_slug;
@@ -1778,86 +1940,191 @@ export default function JobPipelineDashboard({
                         const cand = item.candidate;
                         const aiScoreRaw =
                           item.job_score?.candidate_match_score?.score || "--%";
+                        const aiScoreNum = parseInt(aiScoreRaw.replace("%", ""), 10) || 0;
+                        const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : "#FF383C";
+                        
                         const isDisabled =
                           selectionType === "ARCHIVED" ||
                           (selectionStage && selectionStage !== stage.slug);
+
+                        // Extract headline and company (attempt to split if "at" present)
+                        let headline = cand.headline || "--";
+                        let companyName = cand.experience_summary?.title || "--";
+                        
+                        // If companyName seems to be a job title, it might be better to show it if headline doesn't have it.
+                        // Based on the image: "Product Designer" (headline/title), "Google" (company).
 
                         return (
                           <div
                             key={item.id}
                             draggable
-                            onDragStart={() => handleDragStart(item.id)}
-                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/50 transition-all flex flex-col gap-1 relative ${isDisabled ? "opacity-60" : ""}`}
+                            onDragStart={(e) => handleDragStart(e, item.id)}
+                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30 transition-all flex flex-col gap-4 relative ${isDisabled ? "opacity-60" : ""}`}
                           >
-                            <div className="absolute top-3 right-3 z-10">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 accent-[#0F47F2]"
-                                checked={selectedIds.has(item.id)}
-                                onChange={() => handleToggleCandidate(item)}
-                                disabled={!!isDisabled}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
-                            <div className="flex items-start justify-between gap-2 pr-6">
-                              <h4
-                                className="font-bold text-[14px] text-slate-800 line-clamp-1 cursor-pointer hover:underline"
-                                onClick={() =>
-                                  onSelectCandidate?.(
-                                    item,
-                                    activeColumnCandidates,
-                                    idx,
-                                  )
-                                }
-                              >
-                                {cand.full_name || "--"}
-                              </h4>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setCandidateEditing(item);
-                                  setShowCandidateEditModal(true);
-                                }}
-                                className="p-1 hover:bg-gray-100 rounded-full transition-colors shrink-0"
-                                title="Edit Candidate Details"
-                              >
-                                <Pencil className="w-3.5 h-3.5 text-[#AEAEB2]" />
-                              </button>
-                            </div>
-                            <div className="inline-flex">
-                              <span className="text-[10px] font-bold px-2 py-0.5 mt-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex-shrink-0">
-                                {aiScoreRaw}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 line-clamp-1">
-                              {cand.headline || "--"}
-                            </p>
+                            <div className="flex justify-between items-start">
+                              <div className="flex gap-3">
+                                <div className="mt-1">
+                                  <input
+                                    type="checkbox"
+                                    className="w-5 h-5 rounded-md border-[#D1D1D6] accent-[#0F47F2] cursor-pointer"
+                                    checked={selectedIds.has(item.id)}
+                                    onChange={() => handleToggleCandidate(item)}
+                                    disabled={!!isDisabled}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-2">
+                                    <h4
+                                      className="font-semibold text-[17px] text-[#1C1C1E] line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2"
+                                      onClick={() =>
+                                        onSelectCandidate?.(
+                                          item,
+                                          activeColumnCandidates,
+                                          idx,
+                                        )
+                                      }
+                                    >
+                                      {cand.full_name || "--"}
+                                    </h4>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCandidateEditing(item);
+                                        setShowCandidateEditModal(true);
+                                      }}
+                                      className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                      title="Edit details"
+                                    >
+                                      <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                                    </button>
+                                  </div>
+                                  <p className="text-[14px] text-[#8E8E93] line-clamp-1 mt-0.5">
+                                    {headline}
+                                  </p>
+                                  {/* <p className="text-[15px] font-medium text-[#4B5563] line-clamp-1 mt-1">
+                                    {companyName}
+                                  </p> */}
+                                </div>
+                              </div>
 
-                            <div className="flex flex-wrap items-center mt-3 gap-y-2 gap-x-4 text-[11px] text-[#8E8E93] font-medium">
-                              {cand.location && (
-                                <span className="flex items-center gap-1.5">
-                                  <LocateIcon className="w-3.5 h-3.5" />{" "}
-                                  {cand.location.split(",")[0]}
+                              <div className="relative w-12 h-12 shrink-0">
+                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+                                  <path
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke="#F2F2F7"
+                                    strokeWidth="3"
+                                  />
+                                  <path
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke={aiScoreColor}
+                                    strokeWidth="3"
+                                    strokeDasharray={`${aiScoreNum}, 100`}
+                                    strokeLinecap="round"
+                                  />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#4B5563]">
+                                  {aiScoreRaw === "--%" ? "0%" : aiScoreRaw}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between items-center mt-auto">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCallModalCandidate({
+                                      id: cand.id,
+                                      name: cand.full_name,
+                                      avatarInitials: cand.full_name?.substring(0,2).toUpperCase(),
+                                      headline: cand.headline,
+                                      phone: cand.premium_data?.phone || "+91 98765 43210",
+                                      experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"),
+                                      expectedCtc: cand.expected_ctc || "--",
+                                      location: cand.location || "--",
+                                      noticePeriod: cand.notice_period_summary || "--",
+                                      callAttention: item.job_score?.call_attention || [],
+                                    });
+                                  }}
+                                  className="w-9 h-9 flex items-center justify-center bg-[#E3E1FF] text-[#6155F5] rounded-full hover:bg-[#D5D2FF] transition-colors"
+                                  title="Call"
+                                >
+                                  <Phone className="w-4 h-4" />
+                                </button>
+                                <button
+                                  className="w-9 h-9 flex items-center justify-center bg-[#FFF2E6] text-[#FF8D28] rounded-full hover:bg-[#FFE8D4] transition-colors"
+                                  title="Email"
+                                >
+                                  <Mail className="w-4 h-4" />
+                                </button>
+                                
+                                <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setMenuOpenId(menuOpenId === item.id ? null : item.id);
+                                    }}
+                                    className="w-9 h-9 flex items-center justify-center bg-[#F3F5F7] text-[#8E8E93] rounded-full hover:bg-gray-200 transition-colors"
+                                    title="Options"
+                                  >
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </button>
+
+                                  {menuOpenId === item.id && (
+                                    <div className="absolute bottom-full mb-2 left-0 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[100] py-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, {
+                                            state: {
+                                              shareOption: "full_profile",
+                                              resumeUrl: cand.premium_data?.resume_url || cand.resume_url || ""
+                                            }
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Share2 className="w-4 h-4" /> Share Profile
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCandidateEditing(item);
+                                          setShowCandidateEditModal(true);
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Pencil className="w-4 h-4" /> Edit Details
+                                      </button>
+                                      <div className="h-px bg-[#F3F5F7] my-1" />
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          openFeedbackModal({
+                                            type: "archive",
+                                            applicationIds: [item.id],
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"
+                                      >
+                                        <Trash2 className="w-4 h-4" /> Move to Archive
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
+                                <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
+                                <span className="text-[11px] font-bold text-[#8E8E93]">
+                                  {formatMovedDate(item.status_tags)}
                                 </span>
-                              )}
-                              {(cand.total_experience ||
-                                cand.experience_years) && (
-                                <span className="flex items-center gap-1.5">
-                                  <Briefcase className="w-3.5 h-3.5" />{" "}
-                                  {cand.total_experience != null
-                                    ? `${cand.total_experience} Yrs`
-                                    : cand.experience_years.replace(
-                                        /\s*exp$/i,
-                                        "",
-                                      )}
-                                </span>
-                              )}
-                              {cand.current_salary_lpa && (
-                                <span className="flex items-center gap-1.5">
-                                  <Target className="w-3.5 h-3.5" />{" "}
-                                  {cand.current_salary_lpa} LPA
-                                </span>
-                              )}
+                              </div>
                             </div>
                           </div>
                         );
@@ -1884,63 +2151,63 @@ export default function JobPipelineDashboard({
                               return (
                                 <div
                                   key={item.id}
-                                  className={`bg-[#F9FAFB] border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm grayscale opacity-60 flex flex-col gap-1 relative ${isDisabled ? "pointer-events-none opacity-40" : ""}`}
+                                  className={`bg-[#F9FAFB] border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm grayscale opacity-60 flex flex-col gap-4 relative ${isDisabled ? "pointer-events-none opacity-40" : ""}`}
                                 >
-                                  <div className="absolute top-3 right-3 z-10">
-                                    <input
-                                      type="checkbox"
-                                      className="w-4 h-4 accent-[#4B5563]"
-                                      checked={selectedIds.has(item.id)}
-                                      onChange={() =>
-                                        handleToggleCandidate(item)
-                                      }
-                                      disabled={!!isDisabled}
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
+                                  <div className="flex justify-between items-start">
+                                    <div className="flex gap-3">
+                                      <div className="mt-1">
+                                        <input
+                                          type="checkbox"
+                                          className="w-5 h-5 rounded-md border-[#D1D1D6] accent-[#8E8E93] cursor-pointer"
+                                          checked={selectedIds.has(item.id)}
+                                          onChange={() =>
+                                            handleToggleCandidate(item)
+                                          }
+                                          disabled={!!isDisabled}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                      </div>
+                                      <div className="flex flex-col">
+                                        <div className="flex items-center gap-2">
+                                          <h4
+                                            className="font-semibold text-[17px] text-[#8E8E93] line-clamp-1 cursor-pointer"
+                                            onClick={() =>
+                                              onSelectCandidate?.(
+                                                item,
+                                                archivedColumnCandidates,
+                                                idx,
+                                              )
+                                            }
+                                          >
+                                            {cand.full_name || "--"}
+                                          </h4>
+                                          <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                                        </div>
+                                        <p className="text-[14px] text-[#AEAEB2] line-clamp-1 mt-0.5">
+                                          {cand.headline || "--"}
+                                        </p>
+                                        {(item as any).archive_reason && (
+                                          <div className="bg-[#FEF2F2] px-2 py-1 rounded text-[10px] text-[#DC2626] font-medium mt-1 inline-flex items-center gap-1.5 w-fit max-w-[200px]">
+                                            <Archive className="w-3 h-3 shrink-0" />
+                                            <span className="truncate" title={(item as any).archive_reason}>
+                                              {(item as any).archive_reason}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400 shrink-0">
+                                      --
+                                    </div>
                                   </div>
-                                  <div className="flex items-start justify-between gap-2 pr-6">
-                                    <h4
-                                      className="font-bold text-[14px] text-[#8E8E93] line-clamp-1 cursor-pointer"
-                                      onClick={() =>
-                                        onSelectCandidate?.(
-                                          item,
-                                          archivedColumnCandidates,
-                                          idx,
-                                        )
-                                      }
-                                    >
-                                      {cand.full_name || "--"}
-                                    </h4>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setCandidateEditing(item);
-                                        setShowCandidateEditModal(true);
-                                      }}
-                                      className="p-1 hover:bg-gray-100 rounded-full transition-colors shrink-0"
-                                      title="Edit Candidate Details"
-                                    >
-                                      <Pencil className="w-3 h-3 text-[#AEAEB2]" />
-                                    </button>
-                                  </div>
-                                  <p className="text-[10px] text-[#AEAEB2] line-clamp-1">
-                                    {cand.headline || "--"}
-                                  </p>
-                                  <div className="flex flex-wrap items-center mt-2 gap-y-1 gap-x-3 text-[10px] text-[#AEAEB2]">
-                                    {cand.location && (
-                                      <span>{cand.location.split(",")[0]}</span>
-                                    )}
-                                    {(cand.total_experience ||
-                                      cand.experience_years) && (
-                                      <span>
-                                        {cand.total_experience != null
-                                          ? `${cand.total_experience} Yrs`
-                                          : cand.experience_years.replace(
-                                              /\s*exp$/i,
-                                              "",
-                                            )}
+
+                                  <div className="flex justify-end mt-auto">
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
+                                      <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
+                                      <span className="text-[11px] font-bold text-[#8E8E93]">
+                                        {formatMovedDate(item.status_tags)}
                                       </span>
-                                    )}
+                                    </div>
                                   </div>
                                 </div>
                               );
@@ -1978,10 +2245,12 @@ export default function JobPipelineDashboard({
                                     currentIdx + 1 < stages.length
                                   ) {
                                     const nextStage = stages[currentIdx + 1];
-                                    bulkMoveCandidates(
-                                      Array.from(selectedIds),
-                                      nextStage.id,
-                                    );
+                                    openFeedbackModal({
+                                      type: "move",
+                                      applicationIds: Array.from(selectedIds),
+                                      targetStageId: nextStage.id,
+                                      targetStageName: nextStage.name,
+                                    });
                                   } else {
                                     showToast.error("No next stage available");
                                   }
@@ -1992,7 +2261,10 @@ export default function JobPipelineDashboard({
                               </button>
                               <button
                                 onClick={() =>
-                                  bulkArchive(Array.from(selectedIds))
+                                  openFeedbackModal({
+                                    type: "archive",
+                                    applicationIds: Array.from(selectedIds),
+                                  })
                                 }
                                 className="w-full py-2 bg-white text-red-600 border border-red-100 text-xs font-bold rounded-lg hover:bg-red-50 transition-colors"
                               >
@@ -2001,48 +2273,19 @@ export default function JobPipelineDashboard({
                             </>
                           ) : (
                             <button
-                              onClick={async () => {
-                                try {
-                                  // Simplified unarchive: move back to first stage or 'shortlisted'
-                                  const targetStage =
-                                    stages.find(
-                                      (s) => s.slug === "shortlisted",
-                                    ) || stages[0];
-                                  await apiClient.post(
-                                    "/jobs/bulk-move-stage/",
-                                    {
-                                      application_ids: Array.from(selectedIds),
-                                      current_stage: targetStage.id,
-                                    },
-                                  );
-                                  showToast.success(
-                                    `Unarchived ${selectedIds.size} candidate(s)`,
-                                  );
-                                  setSelectedIds(new Set());
-                                  setSelectionStage(null);
-                                  setSelectionType(null);
-                                  fetchCandidates(
-                                    jobId,
-                                    activeStageSlug,
-                                    currentPage,
-                                    searchQuery,
-                                  );
-                                  fetchArchivedCandidates(jobId);
-                                } catch (error) {
-                                  showToast.error("Failed to unarchive");
-                                }
-                              }}
+                              onClick={() =>
+                                openFeedbackModal({
+                                  type: "unarchive",
+                                  applicationIds: Array.from(selectedIds),
+                                })
+                              }
                               className="w-full py-2 bg-[#E7E5FF] text-[#6155F5] text-xs font-bold rounded-lg hover:bg-[#D5D2FF] transition-colors"
                             >
                               Unarchive Candidates
                             </button>
                           )}
                           <button
-                            onClick={() => {
-                              setSelectedIds(new Set());
-                              setSelectionStage(null);
-                              setSelectionType(null);
-                            }}
+                            onClick={clearSelection}
                             className="w-full py-1.5 text-[#AEAEB2] text-[10px] font-medium hover:text-[#4B5563]"
                           >
                             Cancel Selection
@@ -2277,7 +2520,7 @@ export default function JobPipelineDashboard({
                                 <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition">
                                   {cand.full_name || "--"}
                                 </div>
-                                <div className="text-xs text-[#727272]">
+                                <div className="text-xs text-[#727272] truncate max-w-[32ch]">
                                   {cand.headline || "--"}
                                 </div>
                               </div>
@@ -2335,17 +2578,9 @@ export default function JobPipelineDashboard({
                                   className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
                                   style={{
                                     backgroundColor:
-                                      attentionTag.color === "red"
-                                        ? "#FEE9E7"
-                                        : attentionTag.color === "yellow"
-                                          ? "#FFF7D6"
-                                          : "#FEE9E7",
+                                      attentionTag.color,
                                     color:
-                                      attentionTag.color === "red"
-                                        ? "#FF383C"
-                                        : attentionTag.color === "yellow"
-                                          ? "#92400E"
-                                          : "#FF383C",
+                                      "#fff"
                                   }}
                                 >
                                   {attentionTag.text}
@@ -2362,28 +2597,14 @@ export default function JobPipelineDashboard({
                             >
                               <div className="flex justify-end gap-2">
                                 <button
-                                  onClick={() => shortlistCandidate(item.id)}
-                                  className="w-8 h-8 flex items-center justify-center bg-[#E7E5FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
-                                  title="Shortlist Candidate"
-                                >
-                                  <Check className="w-4 h-4 text-[#6155F5]" />
-                                </button>
-                                <button
-                                  onClick={() => archiveCandidate(item.id)}
-                                  className="w-8 h-8 flex items-center justify-center bg-[#FEE9E7] rounded-full hover:bg-[#FDD2D0] transition-colors"
-                                  title="Archive Candidate"
-                                >
-                                  <Archive className="w-4 h-4 text-[#FF383C]" />
-                                </button>
-                                <button
                                   onClick={() => {
                                     setCallModalCandidate({
                                       id: cand.id,
                                       name: cand.full_name || "Unknown",
                                       avatarInitials: cand.full_name
                                         ? cand.full_name
-                                            .substring(0, 2)
-                                            .toUpperCase()
+                                          .substring(0, 2)
+                                          .toUpperCase()
                                         : "UN",
                                       headline: cand.headline || "--",
                                       phone:
@@ -2401,24 +2622,58 @@ export default function JobPipelineDashboard({
                                   className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
                                   title="Call Candidate"
                                 >
-                                  <span className="text-[#6155F5]">☎</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setCandidateEditing(item);
-                                    setShowCandidateEditModal(true);
-                                  }}
-                                  className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
-                                  title="Edit Candidate Details"
-                                >
-                                  <Pencil className="w-4 h-4 text-[#4B5563]" />
+                                  <span className="text-[#6155F5]"><Phone className="w-4 h-4" /></span>
                                 </button>
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors"
                                   title="Email Candidate"
                                 >
-                                  <span className="text-[#FF8D28]">✉</span>
+                                  <span className="text-[#FF8D28]"><Mail className="w-4 h-4" /></span>
                                 </button>
+
+                                <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setMenuOpenId(menuOpenId === item.id ? null : item.id);
+                                    }}
+                                    className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
+                                    title="Options"
+                                  >
+                                    <MoreHorizontal className="w-4 h-4 text-[#4B5563]" />
+                                  </button>
+
+                                  {menuOpenId === item.id && (
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[100] py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, {
+                                            state: {
+                                              shareOption: "full_profile",
+                                              resumeUrl: cand.premium_data?.resume_url || cand.resume_url || ""
+                                            }
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Share2 className="w-4 h-4" /> Share Profile
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCandidateEditing(item);
+                                          setShowCandidateEditModal(true);
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Pencil className="w-4 h-4" /> Edit Details
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </td>
                           </tr>
@@ -2468,6 +2723,14 @@ export default function JobPipelineDashboard({
                                     <div className="text-xs text-[#AEAEB2]">
                                       {cand.headline || "--"}
                                     </div>
+                                    {(item as any).archive_reason && (
+                                      <div className="bg-[#FEF2F2] px-2 py-1 rounded text-[10px] text-[#DC2626] font-medium mt-1.5 inline-flex items-center gap-1.5 w-fit max-w-[200px]">
+                                        <Archive className="w-3 h-3 shrink-0" />
+                                        <span className="truncate" title={(item as any).archive_reason}>
+                                          {(item as any).archive_reason}
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
                                 </td>
                                 <td className="px-4 py-5">
@@ -2483,9 +2746,9 @@ export default function JobPipelineDashboard({
                                     ? `${cand.total_experience} Yrs`
                                     : cand.experience_years
                                       ? cand.experience_years.replace(
-                                          /\s*exp$/i,
-                                          "",
-                                        )
+                                        /\s*exp$/i,
+                                        "",
+                                      )
                                       : "--"}
                                 </td>
                                 <td className="px-4 py-5 text-sm text-[#AEAEB2]">
@@ -2525,9 +2788,10 @@ export default function JobPipelineDashboard({
                                           );
                                           fetchCandidates(
                                             jobId,
-                                            activeStageSlug,
+                                            isKanbanView ? null : activeStageSlug,
                                             currentPage,
                                             searchQuery,
+                                            isKanbanView ? 1000 : pageSize
                                           );
                                           fetchArchivedCandidates(jobId);
                                         } catch {
@@ -2897,21 +3161,19 @@ export default function JobPipelineDashboard({
                 >
                   <div className="flex gap-[20px]">
                     <button
-                      className={`pb-[12px] text-[14px] font-medium transition-colors ${
-                        requisitionModalTab === "info"
+                      className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === "info"
                           ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
                           : "text-[#8E8E93] hover:text-[#4B5563]"
-                      }`}
+                        }`}
                       onClick={() => setRequisitionModalTab("info")}
                     >
                       Requisition Info
                     </button>
                     <button
-                      className={`pb-[12px] text-[14px] font-medium transition-colors ${
-                        requisitionModalTab === "company"
+                      className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === "company"
                           ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
                           : "text-[#8E8E93] hover:text-[#4B5563]"
-                      }`}
+                        }`}
                       onClick={async () => {
                         setRequisitionModalTab("company");
                         if (
@@ -3142,59 +3404,59 @@ export default function JobPipelineDashboard({
                       {/* Leadership responsibilities */}
                       {competenciesData.key_responsibilities_explained
                         .leadership?.length > 0 && (
-                        <>
-                          <div
-                            style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                            className="my-[20px]"
-                          ></div>
-                          <h4 className="flex items-center gap-[5px] mb-[14px]">
-                            <Zap className="w-4 h-4 text-[#4B5563]" />
-                            <span
-                              style={{
-                                fontSize: "16px",
-                                lineHeight: "20px",
-                                fontWeight: 500,
-                              }}
-                              className="text-[#4B5563]"
-                            >
-                              Leadership
-                            </span>
-                          </h4>
-                          <div className="flex flex-col gap-[10px]">
-                            {competenciesData.key_responsibilities_explained.leadership.map(
-                              (item: any, i: number) => (
-                                <div
-                                  key={i}
-                                  className="flex items-start gap-[10px] p-[20px] bg-[#EBFFEE] rounded-[10px]"
-                                >
-                                  <div className="flex flex-col gap-[4px]">
-                                    <span
-                                      style={{
-                                        fontSize: "14px",
-                                        lineHeight: "17px",
-                                        fontWeight: 500,
-                                      }}
-                                      className="text-black"
-                                    >
-                                      {item.responsibility}
-                                    </span>
-                                    <span
-                                      style={{
-                                        fontSize: "12px",
-                                        lineHeight: "20px",
-                                        fontWeight: 400,
-                                      }}
-                                      className="text-[#727272]"
-                                    >
-                                      {item.context}
-                                    </span>
+                          <>
+                            <div
+                              style={{ borderBottom: "0.5px solid #C7C7CC" }}
+                              className="my-[20px]"
+                            ></div>
+                            <h4 className="flex items-center gap-[5px] mb-[14px]">
+                              <Zap className="w-4 h-4 text-[#4B5563]" />
+                              <span
+                                style={{
+                                  fontSize: "16px",
+                                  lineHeight: "20px",
+                                  fontWeight: 500,
+                                }}
+                                className="text-[#4B5563]"
+                              >
+                                Leadership
+                              </span>
+                            </h4>
+                            <div className="flex flex-col gap-[10px]">
+                              {competenciesData.key_responsibilities_explained.leadership.map(
+                                (item: any, i: number) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-start gap-[10px] p-[20px] bg-[#EBFFEE] rounded-[10px]"
+                                  >
+                                    <div className="flex flex-col gap-[4px]">
+                                      <span
+                                        style={{
+                                          fontSize: "14px",
+                                          lineHeight: "17px",
+                                          fontWeight: 500,
+                                        }}
+                                        className="text-black"
+                                      >
+                                        {item.responsibility}
+                                      </span>
+                                      <span
+                                        style={{
+                                          fontSize: "12px",
+                                          lineHeight: "20px",
+                                          fontWeight: 400,
+                                        }}
+                                        className="text-[#727272]"
+                                      >
+                                        {item.context}
+                                      </span>
+                                    </div>
                                   </div>
-                                </div>
-                              ),
-                            )}
-                          </div>
-                        </>
-                      )}
+                                ),
+                              )}
+                            </div>
+                          </>
+                        )}
                     </div>
 
                     {/* Divider */}
@@ -3358,6 +3620,7 @@ export default function JobPipelineDashboard({
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
           <div className="ml-auto min-w-[400px]">
             <AddNewStageForm
+              pipelineId={jobId ?? undefined}
               onClose={() => setShowAddStageForm(false)}
               onStageCreated={() => {
                 if (jobId != null) {
@@ -3508,8 +3771,8 @@ export default function JobPipelineDashboard({
                   >
                     {candidateEditing.candidate.full_name
                       ? candidateEditing.candidate.full_name
-                          .substring(0, 2)
-                          .toUpperCase()
+                        .substring(0, 2)
+                        .toUpperCase()
                       : "CA"}
                   </div>
                 </div>
@@ -3668,6 +3931,94 @@ export default function JobPipelineDashboard({
                 onClick={handleCandidateEditSave}
               >
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FEEDBACK MODAL (Archive / Move / Unarchive) */}
+      {showFeedbackModal && pendingAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-blue-600" />
+                {pendingAction.type === "archive" && "Archive Candidates"}
+                {pendingAction.type === "unarchive" && "Unarchive Candidates"}
+                {pendingAction.type === "move" &&
+                  `Move to ${pendingAction.targetStageName || "Next Stage"}`}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(false);
+                  setPendingAction(null);
+                  setFeedbackComment("");
+                }}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-lg text-sm font-medium border border-blue-100">
+                You are about to {pendingAction.type}{" "}
+                {pendingAction.applicationIds.length} candidate(s):
+                <div className="mt-2 text-blue-600 font-normal text-xs bg-white/60 p-2 rounded border border-blue-100/50">
+                  {pendingAction.candidateNames?.slice(0, 3).join(", ")}
+                  {pendingAction.candidateNames &&
+                    pendingAction.candidateNames.length > 3 &&
+                    ` and ${pendingAction.candidateNames.length - 3} more`}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Feedback / Reason <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-sm bg-gray-50/50 focus:bg-white"
+                  rows={4}
+                  placeholder="Please provide a reason or feedback for this action..."
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  autoFocus
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  This comment will be added to the candidate's history.
+                </p>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(false);
+                  setPendingAction(null);
+                  setFeedbackComment("");
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFeedbackSubmit}
+                disabled={!feedbackComment.trim()}
+                className={`flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm
+                  ${!feedbackComment.trim()
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : pendingAction.type === "archive"
+                      ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
+                      : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
+                  }`}
+              >
+                {pendingAction.type === "archive" ? (
+                  <Archive className="w-4 h-4" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
+                Confirm {pendingAction.type === "archive" ? "Archive" : "Action"}
               </button>
             </div>
           </div>

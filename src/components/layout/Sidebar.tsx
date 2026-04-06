@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Settings as SettingsReactIcon } from 'lucide-react';
+import { scheduleService } from '../../services/scheduleService';
 
 interface SidebarProps {
   currentPage: string;
@@ -168,18 +169,38 @@ interface MenuItem {
 
 export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [scheduleCount, setScheduleCount] = useState<number>(0);
   const { signOut } = useAuthContext();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchTodayCount = async () => {
+      try {
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const res = await scheduleService.getDailyDetail(dateStr);
+        if (mounted) {
+          setScheduleCount(res.stats?.today || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch today schedule count:', error);
+      }
+    };
+    fetchTodayCount();
+    
+    return () => { mounted = false; };
+  }, [currentPage]); // Re-fetch subtly when navigation changes
 
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
     { id: 'companies', label: 'Companies', icon: CompaniesIcon },
-    { id: 'candidatePool', label: 'Candidates', icon: CandidatesIcon },
-    { id: 'calendar', label: 'Schedule', icon: ScheduleIcon, badge: 4 },
+    { id: 'candidateSearch', label: 'Candidates', icon: CandidatesIcon },
+    { id: 'calendar', label: 'Schedule', icon: ScheduleIcon, badge: scheduleCount > 0 ? scheduleCount : undefined },
   ];
 
   const bottomItems: MenuItem[] = [
-    { id: 'help', label: 'Help', icon: HelpIcon },
+    { id: 'candidatePool', label: 'Help', icon: HelpIcon },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
     { id: 'logout', label: 'Logout', icon: LogoutIcon },
   ];

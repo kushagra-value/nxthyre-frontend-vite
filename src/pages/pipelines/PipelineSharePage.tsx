@@ -53,11 +53,11 @@ import AddNewStageForm from "./AddNewStageForm";
 import { useAuthContext } from "../../context/AuthContext";
 import candidateService from "../../services/candidateService";
 import { useParams } from "react-router-dom";
-import { Calender } from "../../pages/schedules/Calender";
-import { EventForm } from "../../pages/schedules/EventForm";
+import { Calender } from "../../pages/schedules/components/Calender";
+import { EventForm } from "../../pages/schedules/components/EventForm";
 import { CalendarEvent } from "../../data/mockEvents";
 import { PipelineCandidate } from "../../data/pipelineData";
-import EventPreview from "../../pages/schedules/EventPreview";
+import EventPreview from "../../pages/schedules/components/EventPreview";
 
 interface DraggedCandidate {
   candidate: any;
@@ -3971,6 +3971,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
             <div className="ml-auto">
               <AddNewStageForm
+                pipelineId={pipelineId}
                 onClose={() => setShowAddStageForm(false)}
                 onStageCreated={() => setStagesRefreshKey((prev) => prev + 1)}
               />
@@ -3993,62 +3994,54 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             </div>
           </div>
         )}
-        {showAddEventForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex">
-            <div
-              className="flex-1"
-              onClick={() => setShowAddEventForm(false)}
-            />
-            <EventForm
-              isOpen={showAddEventForm}
-              onClose={() => setShowAddEventForm(false)}
-              onSubmit={async (eventData) => {
-                try {
-                  const payload = {
-                    application: Number(eventData.applicationId), // We'll add this field next
-                    title:
-                      eventData.title || `${eventData.attendee} - Interview`,
-                    start_at: `${eventData.date}T${eventData.startTime}:00Z`,
-                    end_at: `${eventData.date}T${eventData.endTime}:00Z`,
-                    location_type: "VIRTUAL",
-                    virtual_conference_url:
-                      "https://meet.google.com/placeholder-tbd",
-                    status: "SCHEDULED",
-                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    reminder_preferences: {
-                      candidate: [24],
-                      interviewers: [2],
-                    },
-                  };
+        <EventForm
+          isOpen={showAddEventForm}
+          onClose={() => setShowAddEventForm(false)}
+          onSubmit={async (eventData) => {
+            try {
+              const payload = {
+                application: Number(eventData.applicationId),
+                title:
+                  eventData.title || `${eventData.attendee} - Interview`,
+                start_at: `${eventData.date}T${eventData.startTime}:00Z`,
+                end_at: `${eventData.date}T${eventData.endTime}:00Z`,
+                location_type: "VIRTUAL",
+                virtual_conference_url:
+                  "https://meet.google.com/placeholder-tbd",
+                status: "SCHEDULED",
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                reminder_preferences: {
+                  candidate: [24],
+                  interviewers: [2],
+                },
+              };
 
-                  await apiClient.post("/jobs/interview-events/", payload);
-                  showToast.success("Interview scheduled successfully!");
+              await apiClient.post("/jobs/interview-events/", payload);
+              showToast.success("Interview scheduled successfully!");
 
-                  // Trigger calendar refresh
-                  setCalendarRefreshTrigger((prev) => prev + 1);
-                } catch (err: any) {
-                  const msg =
-                    err.response?.data?.detail ||
-                    "Failed to schedule interview";
-                  showToast.error(msg);
-                } finally {
-                  setShowAddEventForm(false);
-                }
-              }}
-              initialDate={selectedEventDate}
-              initialTime={selectedEventTime}
-              pipelineStages={pipelineStages.filter((s) => {
-                const order = s.sort_order;
-                const shortlistedOrder =
-                  pipelineStages.find((st) => st.slug === "shortlisted")
-                    ?.sort_order || 5;
-                return s.sort_order > shortlistedOrder && s.slug !== "archives";
-              })}
-              stagesLoading={stagesLoading}
-              candidates={Object.values(stageCandidates).flat()}
-            />
-          </div>
-        )}
+              // Trigger calendar refresh
+              setCalendarRefreshTrigger((prev) => prev + 1);
+            } catch (err: any) {
+              const msg =
+                err.response?.data?.detail ||
+                "Failed to schedule interview";
+              showToast.error(msg);
+            } finally {
+              setShowAddEventForm(false);
+            }
+          }}
+          initialDate={selectedEventDate}
+          initialTime={selectedEventTime}
+          pipelineStages={pipelineStages.filter((s) => {
+            const order = s.sort_order;
+            const shortlistedOrder =
+              pipelineStages.find((st) => st.slug === "shortlisted")
+                ?.sort_order || 5;
+            return s.sort_order > shortlistedOrder && s.slug !== "archives";
+          })}
+          stagesLoading={stagesLoading}
+          candidates={Object.values(stageCandidates).flat()}
+        />
       </div>
     </>
   );

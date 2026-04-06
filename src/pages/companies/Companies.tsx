@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import {
     organizationService,
@@ -87,6 +87,15 @@ const StopIcon = () => (
 
 export default function Companies() {
     const { isAuthenticated } = useAuth();
+
+    const isMounted = useRef(true);
+
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
     const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
     const [statsCount, setStatsCount] = useState<WorkspaceStatsCount | null>(null);
@@ -194,9 +203,9 @@ export default function Companies() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
-        "All" | "Active" | "Paused" | "Inactive" | "Needs Attention"
+        "All" | "Active" | "Paused" | "Inactive"
     >("All");
-    const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Closed" | "Draft">("All");
+    const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Inactive" | "Draft">("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [jobSearchQuery, setJobSearchQuery] = useState("");
 
@@ -220,9 +229,13 @@ export default function Companies() {
             );
             const data = await response.json();
             const logoUrl = data.length > 0 ? data[0].logo_url : null;
-            setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+            if (isMounted.current) {
+                setLogos((prev) => ({ ...prev, [query]: logoUrl }));
+            }
         } catch (error) {
-            setLogos((prev) => ({ ...prev, [query]: null }));
+            if (isMounted.current) {
+                setLogos((prev) => ({ ...prev, [query]: null }));
+            }
         }
     };
 
@@ -230,12 +243,14 @@ export default function Companies() {
         setLoading(true);
         try {
             const data = await organizationService.getMyWorkspacesData();
-            setWorkspaces(data.workspaces || []);
-            setStatsCount(data.stats_count || null);
+            if (isMounted.current) {
+                setWorkspaces(data.workspaces || []);
+                setStatsCount(data.stats_count || null);
+            }
         } catch (error) {
             console.error("Failed to fetch workspaces", error);
         } finally {
-            setLoading(false);
+            if (isMounted.current) setLoading(false);
         }
     };
 
@@ -243,11 +258,11 @@ export default function Companies() {
         setJobsLoading(true);
         try {
             const data = await jobPostService.getJobs();
-            setAllJobs(data);
+            if (isMounted.current) setAllJobs(data);
         } catch (error) {
             console.error("Failed to fetch jobs", error);
         } finally {
-            setJobsLoading(false);
+            if (isMounted.current) setJobsLoading(false);
         }
     };
 
@@ -263,11 +278,11 @@ export default function Companies() {
         setSidebarLoading(true);
         try {
             const data = await dashboardService.getSidebar();
-            setSidebarData(data);
+            if (isMounted.current) setSidebarData(data);
         } catch (error) {
             console.error('Failed to fetch sidebar data', error);
         } finally {
-            setSidebarLoading(false);
+            if (isMounted.current) setSidebarLoading(false);
         }
     };
 
@@ -292,7 +307,7 @@ export default function Companies() {
         }
     }, [allJobs, pendingJobId, selectedWorkspace]);
 
-    const buildTableRows = useCallback((): CompanyTableRow[] => {
+    const allRows = useMemo((): CompanyTableRow[] => {
         if (workspaces.length === 0) return companyTableRows;
 
         return workspaces.map((ws) => {
@@ -317,11 +332,10 @@ export default function Companies() {
                     ? new Date(ws.last_active_date).toLocaleDateString('en-GB')
                     : "--",
                 status: normalizedStatus as any,
+                createdBy: ws.created_by || undefined,
             };
         });
     }, [workspaces]);
-
-    const allRows = buildTableRows();
 
     useEffect(() => {
         const uniqueCompanies = Array.from(new Set(allRows.map((r) => r.name)));
@@ -332,18 +346,19 @@ export default function Companies() {
         });
     }, [allRows]);
 
-    const searchedRows = searchQuery.trim()
+    const searchedRows = useMemo(() => searchQuery.trim()
         ? allRows.filter(
             (r) =>
                 r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 r.domain.toLowerCase().includes(searchQuery.toLowerCase())
         )
-        : allRows;
+        : allRows, [allRows, searchQuery]);
 
-    const filteredRows =
+    const filteredRows = useMemo(() =>
         activeFilter === "All"
             ? searchedRows
-            : searchedRows.filter((r) => r.status === activeFilter);
+            : searchedRows.filter((r) => r.status === activeFilter),
+        [searchedRows, activeFilter]);
 
     const handleStatusToggle = async (workspaceId: number, currentStatus: string) => {
         if (statusUpdating) return;
@@ -358,21 +373,27 @@ export default function Companies() {
         setStatusUpdating(workspaceId);
         try {
             await organizationService.updateWorkspace(workspaceId, { status: newStatus });
-            setWorkspaces(prev => prev.map(w => w.id === workspaceId ? { ...w, workspace_status: newStatus } : w));
-            showToast.success("Workspace status updated");
+            if (isMounted.current) {
+                setWorkspaces(prev => prev.map(w => w.id === workspaceId ? { ...w, workspace_status: newStatus } : w));
+                showToast.success("Workspace status updated");
+            }
         } catch (err: any) {
-            showToast.error(err.message || "Failed to update status");
+            if (isMounted.current) {
+                showToast.error(err.message || "Failed to update status");
+            }
         } finally {
-            setStatusUpdating(null);
+            if (isMounted.current) {
+                setStatusUpdating(null);
+            }
         }
     };
 
-    const filterCounts = {
+    const filterCounts = useMemo(() => ({
         All: searchedRows.length,
         Active: searchedRows.filter((r) => r.status === "Active").length,
         Paused: searchedRows.filter((r) => r.status === "Paused").length,
         Inactive: searchedRows.filter((r) => r.status === "Inactive").length,
-    };
+    }), [searchedRows]);
 
     const handleSort = (key: keyof CompanyTableRow) => {
         let direction: 'asc' | 'desc' = 'asc';
@@ -428,12 +449,20 @@ export default function Companies() {
         });
     };
 
-    const sortedRows = getSortedRows(filteredRows);
+    const sortedRows = useMemo(() => getSortedRows(filteredRows), [filteredRows, sortConfig]);
 
     const itemsPerPage = 10;
+    const totalPages = Math.max(1, Math.ceil(sortedRows.length / itemsPerPage));
+
+    // Clamp currentPage to valid range when data changes (e.g. filter reduces results)
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedRows = sortedRows.slice(startIndex, startIndex + itemsPerPage);
-    const totalPages = Math.max(1, Math.ceil(sortedRows.length / itemsPerPage));
 
     const getPageNumbers = (): (number | "...")[] => {
         if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -461,22 +490,25 @@ export default function Companies() {
         }
     };
 
-    const workspaceJobs = allJobs.filter(j => j.workspace_details?.id === selectedWorkspace?.id);
+    const workspaceJobs = useMemo(() => 
+        allJobs.filter(j => j.workspace_details?.id === selectedWorkspace?.id),
+        [allJobs, selectedWorkspace?.id]
+    );
 
-    const filteredWorkspaceJobs = workspaceJobs.filter(j => {
+    const filteredWorkspaceJobs = useMemo(() => workspaceJobs.filter(j => {
         const matchesSearch = j.title.toLowerCase().includes(jobSearchQuery.toLowerCase());
         let matchesStatus = true;
         if (activeJobFilter === "Active") {
-            matchesStatus = j.status === "PUBLISHED" || j.status === "ACTIVE";
+            matchesStatus = j.status === "ACTIVE";
         } else if (activeJobFilter === "Paused") {
             matchesStatus = j.status === "PAUSED";
-        } else if (activeJobFilter === "Closed") {
-            matchesStatus = j.status === "CLOSED";
+        } else if (activeJobFilter === "Inactive") {
+            matchesStatus = j.status === "INACTIVE";
         } else if (activeJobFilter === "Draft") {
-            matchesStatus = j.status === "DRAFT";
+            matchesStatus = j.pyjamahr_status === "DRAFT";
         }
         return matchesSearch && matchesStatus;
-    });
+    }), [workspaceJobs, jobSearchQuery, activeJobFilter]);
 
     // ── Job Pipeline View ──
     if (selectedJob && selectedWorkspace) {
@@ -638,7 +670,7 @@ export default function Companies() {
                             <div className="flex items-center justify-between p-4 flex-wrap">
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {(
-                                        ["All", "Active", "Paused", "Inactive", "Needs Attention"] as const
+                                        ["All", "Active", "Paused", "Inactive"] as const
                                     ).map((f) => (
                                         <button
                                             key={f}
@@ -869,9 +901,16 @@ export default function Companies() {
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <p className="text-sm font-normal text-[#0F47F2] hover:underline hover:text-blue-700 transition-colors truncate max-w-[200px]">
-                                                                        {row.name}
-                                                                    </p>
+                                                                    <div className="flex flex-col">
+                                                                        <p className="text-sm font-normal text-[#0F47F2] hover:underline hover:text-blue-700 transition-colors truncate max-w-[200px]">
+                                                                            {row.name}
+                                                                        </p>
+                                                                        {row.createdBy && (
+                                                                            <p className="text-[11px] text-[#AEAEB2] font-normal truncate max-w-[200px]">
+                                                                                Created by: {row.createdBy}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </td>
 

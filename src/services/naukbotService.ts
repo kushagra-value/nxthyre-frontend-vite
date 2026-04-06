@@ -96,7 +96,7 @@ class NaukbotService {
       const response = await apiClient.get("/candidates/naukri-bot/candidates/", { params });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch naukbot candidates");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch naukbot candidates");
     }
   }
 
@@ -108,7 +108,7 @@ class NaukbotService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to edit candidates");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to edit candidates");
     }
   }
 
@@ -122,7 +122,7 @@ class NaukbotService {
       });
       return response.data;
     } catch (error: any) {
-       throw new Error(error.response?.data?.error || "Failed to send nvite");
+       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to send nvite");
     }
   }
 
@@ -131,7 +131,7 @@ class NaukbotService {
       const response = await apiClient.get("/candidates/naukri-bot/naukri-jobs/");
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch Naukri jobs");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch Naukri jobs");
     }
   }
 
@@ -140,7 +140,7 @@ class NaukbotService {
         const response = await apiClient.get("/candidates/naukri-bot/nvite-logs/", { params });
         return response.data;
       } catch (error: any) {
-        throw new Error(error.response?.data?.error || "Failed to fetch nvite logs");
+        throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch nvite logs");
       }
   }
 
@@ -152,7 +152,7 @@ class NaukbotService {
       });
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to move candidates to pipeline");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to move candidates to pipeline");
     }
   }
 
@@ -161,7 +161,7 @@ class NaukbotService {
       const response = await apiClient.get("/candidates/naukri-bot/job-roles/");
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to fetch Naukbot job roles");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch Naukbot job roles");
     }
   }
 
@@ -170,7 +170,7 @@ class NaukbotService {
       const response = await apiClient.post(`/candidates/naukri-bot/job-roles/${job_id}/activate/`, {});
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to activate job for Naukri Bot");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to activate job for Naukri Bot");
     }
   }
 
@@ -179,7 +179,7 @@ class NaukbotService {
       const response = await apiClient.post(`/candidates/naukri-bot/job-roles/${job_id}/deactivate/`, {});
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Failed to deactivate job for Naukri Bot");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to deactivate job for Naukri Bot");
     }
   }
 }

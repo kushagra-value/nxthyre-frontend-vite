@@ -21,8 +21,15 @@ import {
   Sparkles,
   PhoneOff,
   ChevronDown,
+  MessageSquare,
+  X,
+  Archive,
+  Share2,
 } from "lucide-react";
 import candidateService from "../../../services/candidateService";
+import { showToast } from "../../../utils/toast";
+import apiClient from "../../../services/api";
+import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 
 import {
   getCandidateCallHistory,
@@ -56,6 +63,7 @@ interface JobCandidateProfileProps {
 
 export default function JobCandidateProfile({
   candidate,
+  jobId,
   stages,
   goBack,
   loading,
@@ -118,6 +126,93 @@ export default function JobCandidateProfile({
   const [loadingCalls, setLoadingCalls] = useState(false);
   const [expandedCallId, setExpandedCallId] = useState<number | null>(null);
   const [showTranscript, setShowTranscript] = useState<number | null>(null);
+
+  // ── Feedback Modal State ──
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [pendingAction, setPendingAction] = useState<{
+    type: "archive" | "unarchive" | "move";
+    applicationIds: number[];
+    targetStageId?: number;
+    targetStageName?: string;
+    candidateNames?: string[];
+  } | null>(null);
+  const [showStageMenu, setShowStageMenu] = useState(false);
+  const [callModalCandidate, setCallModalCandidate] =
+    useState<CallCandidateData | null>(null);
+
+  // ── Match Description Editing State ──
+  const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
+  const [editedMatchDesc, setEditedMatchDesc] = useState("");
+  const [isSavingMatchDesc, setIsSavingMatchDesc] = useState(false);
+
+  const openFeedbackModal = (action: {
+    type: "archive" | "unarchive" | "move";
+    applicationIds: number[];
+    targetStageId?: number;
+    targetStageName?: string;
+  }) => {
+    const names = [fullName];
+    setPendingAction({ ...action, candidateNames: names });
+    setFeedbackComment("");
+    setShowFeedbackModal(true);
+  };
+
+  const handleFeedbackSubmit = async () => {
+    if (!pendingAction || !feedbackComment.trim()) {
+      showToast.error("Please enter a comment");
+      return;
+    }
+
+    const { type, applicationIds, targetStageId, targetStageName } = pendingAction;
+
+    try {
+      if (type === "archive") {
+        const archiveStage = stages.find((s) => s.slug === "archives");
+        if (!archiveStage) {
+          showToast.error("Archives stage not found");
+          return;
+        }
+        await Promise.all(
+          applicationIds.map((id) =>
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: archiveStage.id,
+              status: "ARCHIVED",
+              archive_reason: feedbackComment.trim(),
+              feedback: {
+                subject: "Moved to Archive",
+                comment: feedbackComment.trim(),
+              },
+            })
+          )
+        );
+        showToast.success("Candidate archived");
+      } else if (type === "move" && targetStageId) {
+        await Promise.all(
+          applicationIds.map((id) =>
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+              current_stage: targetStageId,
+              feedback: {
+                subject: `Moving to ${targetStageName || "next stage"}`,
+                comment: feedbackComment.trim(),
+              },
+            })
+          )
+        );
+
+
+        showToast.success(`Candidate moved to ${targetStageName || "next stage"}`);
+      }
+
+      setShowFeedbackModal(false);
+      setFeedbackComment("");
+      setPendingAction(null);
+      goBack(); // Return to pipeline view to reflect changes
+    } catch (error: any) {
+      console.error("Action error:", error);
+      showToast.error(`Failed to ${type} candidate`);
+    }
+  };
 
   // ── Fetch Activity ───────────────────────────────────────
 
@@ -189,6 +284,42 @@ export default function JobCandidateProfile({
   }, [cand.id, activeTab]);
 
   // ── Call tab helpers ─────────────────────────────────────
+
+  // ── Match Description Helpers ──
+  useEffect(() => {
+    if (matchScore.description) {
+      setEditedMatchDesc(matchScore.description);
+    }
+  }, [matchScore.description]);
+
+  const handleSaveMatchDescription = async () => {
+    if (!cand.id || !jobId) {
+      showToast.error("Missing candidate or job information");
+      return;
+    }
+
+    try {
+      setIsSavingMatchDesc(true);
+      const success = await candidateService.updateCandidateJobScoreDescription(
+        cand.id,
+        jobId,
+        editedMatchDesc
+      );
+
+      if (success) {
+        showToast.success("Match reasoning updated successfully");
+        matchScore.description = editedMatchDesc; // Update local ref
+        setIsEditingMatchDesc(false);
+      } else {
+        showToast.error("Failed to update match reasoning");
+      }
+    } catch (error) {
+      console.error("Error updating match reasoning:", error);
+      showToast.error("An error occurred while updating match reasoning");
+    } finally {
+      setIsSavingMatchDesc(false);
+    }
+  };
 
   const formatDuration = (seconds: number): string => {
     if (!seconds) return "0 secs";
@@ -385,7 +516,31 @@ export default function JobCandidateProfile({
                         <Mail className="w-4 h-4" /> Send Mail
                       </button>
                     )}
-                    <button className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition">
+                    <button
+                      onClick={() => {
+                        setCallModalCandidate({
+                          id: cand.id,
+                          name: fullName,
+                          avatarInitials: fullName
+                            ? fullName.substring(0, 2).toUpperCase()
+                            : "UN",
+                          headline: headline || "--",
+                          phone:
+                            premiumData.phone ||
+                            premiumData.all_phone_numbers?.[0] ||
+                            "--",
+                          experience: totalExp,
+                          expectedCtc: cand.expected_ctc
+                            ? `${cand.expected_ctc} LPA`
+                            : "--",
+                          location: location || "--",
+                          noticePeriod: noticePeriod,
+                          callAttention:
+                            jobScoreObj?.call_attention || [],
+                        });
+                      }}
+                      className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition"
+                    >
                       <Phone className="w-4 h-4" /> Call
                     </button>
                     {cand.resume_url && (
@@ -489,6 +644,17 @@ export default function JobCandidateProfile({
                   {tag.text}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Archived Reason */}
+          {candidate.archive_reason && (candidate.status === "ARCHIVED" || currentStageSlug === "archives") && (
+            <div className="bg-[#FEF2F2] px-6 py-4 text-sm font-medium border-t border-[#FECACA] flex items-start gap-3 rounded-b-xl">
+              <Archive className="w-5 h-5 text-[#DC2626] shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-[#DC2626] mr-2">Archived Reason:</span>
+                <span className="text-[#991B1B] leading-relaxed">{candidate.archive_reason}</span>
+              </div>
             </div>
           )}
         </div>
@@ -598,11 +764,39 @@ export default function JobCandidateProfile({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md">
+          <div className="flex items-center gap-3 relative">
+            <button 
+              onClick={() => setShowStageMenu(!showStageMenu)}
+              className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md">
               Move to Stage
+              <ChevronDown className="w-4 h-4 ml-1" />
             </button>
-            <button className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#FEE9E7] transition">
+            
+            {showStageMenu && (
+              <div className="absolute top-14 left-0 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-2">
+                {stages.filter(s => s.slug !== "archives").map(s => (
+                  <button
+                    key={s.id}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700 block"
+                    onClick={() => {
+                        setShowStageMenu(false);
+                        openFeedbackModal({
+                           type: "move",
+                           applicationIds: [applicationId],
+                           targetStageId: s.id,
+                           targetStageName: s.name
+                        });
+                    }}
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button 
+              onClick={() => openFeedbackModal({ type: "archive", applicationIds: [applicationId] })}
+              className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#FEE9E7] transition">
               Move to Archive
             </button>
           </div>
@@ -693,12 +887,53 @@ export default function JobCandidateProfile({
         {/* ── Additional AI Sections ── */}
         {matchScore.description && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
-              MATCH REASONING
-            </h3>
-            <p className="text-sm leading-relaxed text-[#4B5563]">
-              {matchScore.description}
-            </p>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider">
+                MATCH REASONING
+              </h3>
+              {!isEditingMatchDesc && (
+                <button
+                  onClick={() => setIsEditingMatchDesc(true)}
+                  className="text-[#0F47F2] text-xs font-bold hover:underline"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+
+            {!isEditingMatchDesc ? (
+              <p className="text-sm leading-relaxed text-[#4B5563]">
+                {matchScore.description}
+              </p>
+            ) : (
+              <div className="space-y-4">
+                <textarea
+                  value={editedMatchDesc}
+                  onChange={(e) => setEditedMatchDesc(e.target.value)}
+                  rows={6}
+                  className="w-full p-4 border border-[#E5E7EB] rounded-xl text-sm leading-relaxed text-[#4B5563] focus:outline-none focus:border-[#0F47F2] transition-colors resize-none"
+                  placeholder="Enter match reasoning..."
+                />
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => {
+                      setEditedMatchDesc(matchScore.description || "");
+                      setIsEditingMatchDesc(false);
+                    }}
+                    className="px-4 py-2 text-xs font-bold text-[#8E8E93] hover:text-[#4B5563] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveMatchDescription}
+                    disabled={isSavingMatchDesc}
+                    className="px-6 py-2 bg-[#0F47F2] text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 shadow-sm"
+                  >
+                    {isSavingMatchDesc ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -815,19 +1050,76 @@ export default function JobCandidateProfile({
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">Phone</span>
-                      <span className="text-[#0F47F2] font-medium cursor-pointer">
-                        {premiumData.phone || "--"}
+                      <span
+                        className="text-[#0F47F2] font-medium cursor-pointer"
+                        onClick={() =>
+                          (premiumData.phone || cand.phone) &&
+                          window.open(`tel:${premiumData.phone || cand.phone}`)
+                        }
+                      >
+                        {premiumData.phone || cand.phone || "--"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">Links</span>
                       <div className="flex gap-2">
-                        {cand.linkedin_url && (
-                          <Linkedin className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
+                        {(premiumData.linkedin_url || cand.linkedin_url) && (
+                          <a
+                            href={premiumData.linkedin_url || cand.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="LinkedIn"
+                          >
+                            <Linkedin className="w-4 h-4 text-black hover:text-[#0A66C2] cursor-pointer transition-colors" />
+                          </a>
                         )}
-                        <Github className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
-                        <Palette className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
-                        <Globe className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer" />
+                        {premiumData.github_url && (
+                          <a
+                            href={premiumData.github_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="GitHub"
+                          >
+                            <Github className="w-4 h-4 text-black hover:text-[#333] cursor-pointer transition-colors" />
+                          </a>
+                        )}
+                        {premiumData.portfolio_url && (
+                          <a
+                            href={premiumData.portfolio_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Portfolio"
+                          >
+                            <Palette className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer transition-colors" />
+                          </a>
+                        )}
+                        {premiumData.twitter_url && (
+                          <a
+                            href={premiumData.twitter_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Twitter"
+                          >
+                            <Globe className="w-4 h-4 text-black hover:text-[#1DA1F2] cursor-pointer transition-colors" />
+                          </a>
+                        )}
+                        <button
+                          onClick={() => {
+                            if (cand.id) {
+                              const shareUrl = `/candidate-profiles/${cand.id}${jobId ? `?job_id=${jobId}` : ""}`;
+                              window.open(shareUrl, "_blank");
+                            } else {
+                              showToast.error("Candidate ID not found");
+                            }
+                          }}
+                          className="hover:scale-110 transition-transform"
+                          title="Share Profile"
+                        >
+                          <Share2 className="w-4 h-4 text-[#0F47F2] cursor-pointer" />
+                        </button>
+                        {!premiumData.linkedin_url && !cand.linkedin_url && !premiumData.github_url && !premiumData.portfolio_url && !premiumData.twitter_url && (
+                          <span className="text-[#AEAEB2] text-xs">--</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -836,13 +1128,13 @@ export default function JobCandidateProfile({
                 <div className="h-[1px] bg-[#E5E7EB] w-full" />
 
                 {/* ── Résumé ── */}
-                {cand.resume_url && (
+                {(cand.resume_url || premiumData.resume_url) && (
                   <div>
-                    <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider uppercase">
+                    <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
                       RESUME
                     </h4>
                     <a
-                      href={cand.resume_url}
+                      href={cand.resume_url || premiumData.resume_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="border border-[#E5E7EB] rounded-lg p-3 bg-white flex items-center justify-between group cursor-pointer hover:border-[#0F47F2] transition"
@@ -850,8 +1142,7 @@ export default function JobCandidateProfile({
                       <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-[#8E8E93]" />
                         <span className="font-bold text-xs text-black line-clamp-1 truncate w-40">
-                          {fullName.replace(/\s+/g, "_").toLowerCase()}
-                          _resume.pdf
+                          {fullName.replace(/\s+/g, "_")}_resume.pdf
                         </span>
                       </div>
                       <Download className="w-4 h-4 text-[#0F47F2]" />
@@ -1240,6 +1531,99 @@ export default function JobCandidateProfile({
             </div>
           </div>
         )}
+      {/* FEEDBACK MODAL (Archive / Move) */}
+      {showFeedbackModal && pendingAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-blue-600" />
+                {pendingAction.type === "archive" && "Archive Candidate"}
+                {pendingAction.type === "unarchive" && "Unarchive Candidate"}
+                {pendingAction.type === "move" &&
+                  `Move to ${pendingAction.targetStageName || "Next Stage"}`}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(false);
+                  setPendingAction(null);
+                  setFeedbackComment("");
+                }}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-lg text-sm font-medium border border-blue-100">
+                You are about to {pendingAction.type}{" "}
+                {pendingAction.applicationIds.length} candidate(s):
+                <div className="mt-2 text-blue-600 font-normal text-xs bg-white/60 p-2 rounded border border-blue-100/50">
+                  {pendingAction.candidateNames?.join(", ")}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Feedback / Reason <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-sm bg-gray-50/50 focus:bg-white"
+                  rows={4}
+                  placeholder="Please provide a reason or feedback for this action..."
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  autoFocus
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  This comment will be added to the candidate's history.
+                </p>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(false);
+                  setPendingAction(null);
+                  setFeedbackComment("");
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFeedbackSubmit}
+                disabled={!feedbackComment.trim()}
+                className={`flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm
+                  ${
+                    !feedbackComment.trim()
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : pendingAction.type === "archive"
+                        ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
+                        : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
+                  }`}
+              >
+                {pendingAction.type === "archive" ? (
+                  <Archive className="w-4 h-4" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
+                Confirm {pendingAction.type === "archive" ? "Archive" : "Action"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Call Candidate Modal */}
+      <CallCandidateModal
+        isOpen={!!callModalCandidate}
+        onClose={() => setCallModalCandidate(null)}
+        candidate={callModalCandidate}
+      />
+
       </div>
     </div>
   );
