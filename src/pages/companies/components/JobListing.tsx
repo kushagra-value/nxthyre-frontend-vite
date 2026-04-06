@@ -541,14 +541,6 @@ const JobListing: React.FC<JobListingProps> = ({
                                     ? allStages.filter((s: any) => !hiddenStages.includes((s.name || '').toLowerCase()))
                                     : defaultStages;
 
-                                const staticNotes = [
-                                    "Change 1 year to 2 years of experience",
-                                    "Update job description for Q2",
-                                    "Review salary range with hiring manager",
-                                    "Discussed requirements with team lead",
-                                    "Waiting for team feedback on JD",
-                                ];
-
                                 const stageColors = [
                                     { bg: '#EEF2FF', text: '#4F46E5', border: '#C7D2FE' }, // Indigo
                                     { bg: '#F3E8FF', text: '#9333EA', border: '#E9D5FF' }, // Purple
@@ -691,7 +683,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 </div>
                                             ) : (
                                                 <span className="text-[13px] text-[#4B5563] line-clamp-2 leading-relaxed">
-                                                    {fetchedNotes[job.id]?.[0]?.content || staticNotes[jobIdx % staticNotes.length]}
+                                                    {fetchedNotes[job.id]?.[0]?.content || <span className="text-[#8E8E93] opacity-70">Add a note</span>}
                                                 </span>
                                             )}
                                         </td>
