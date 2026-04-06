@@ -211,7 +211,7 @@ class JobPostService {
 
   async toggleJobFlag(jobId: number, isFlagged: boolean): Promise<{ id: number; is_flagged: boolean; updated_at: string }> {
     try {
-      const response = await apiClient.patch(`/api/v1/jobs/${jobId}/`, {
+      const response = await apiClient.patch(`/v1/jobs/${jobId}/`, {
         is_flagged: isFlagged,
       });
       return response.data;
