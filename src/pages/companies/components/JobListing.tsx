@@ -108,6 +108,7 @@ const JobListing: React.FC<JobListingProps> = ({
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
     const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
     const [menuOpenJobId, setMenuOpenJobId] = useState<number | null>(null);
+    const [menuPos, setMenuPos] = useState({ top: 0, right: 0, bottom: 0, isBottom: false });
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -116,8 +117,15 @@ const JobListing: React.FC<JobListingProps> = ({
                 setMenuOpenJobId(null);
             }
         };
+        const handleScroll = () => {
+            setMenuOpenJobId(null);
+        };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        window.addEventListener("scroll", handleScroll, true);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            window.removeEventListener("scroll", handleScroll, true);
+        };
     }, []);
 
     const handleStatusChange = async (jobId: number, newStatus: string) => {
@@ -620,7 +628,19 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setMenuOpenJobId(menuOpenJobId === job.id ? null : job.id);
+                                                        if (menuOpenJobId === job.id) {
+                                                            setMenuOpenJobId(null);
+                                                        } else {
+                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                            const isBottom = rect.bottom + 320 > window.innerHeight;
+                                                            setMenuPos({ 
+                                                                top: rect.bottom, 
+                                                                bottom: window.innerHeight - rect.top,
+                                                                right: window.innerWidth - rect.right, 
+                                                                isBottom 
+                                                            });
+                                                            setMenuOpenJobId(job.id);
+                                                        }
                                                     }}
                                                     className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F3F5F7] transition-colors"
                                                 >
@@ -628,7 +648,14 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 </button>
 
                                                 {menuOpenJobId === job.id && (
-                                                    <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[100] py-2">
+                                                    <div 
+                                                        className="fixed w-52 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[9999] py-2"
+                                                        style={
+                                                            menuPos.isBottom
+                                                                ? { bottom: menuPos.bottom + 4, right: menuPos.right }
+                                                                : { top: menuPos.top + 4, right: menuPos.right }
+                                                        }
+                                                    >
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); setEditingJobId(job.id); setShowEditJobRole(true); setMenuOpenJobId(null); }}
                                                             className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
