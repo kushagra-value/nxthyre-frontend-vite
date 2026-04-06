@@ -176,6 +176,16 @@ export interface UploadResumesResponse {
   failed_files: string[];
 }
 
+export interface JobNote {
+  id: number;
+  job_id: number;
+  content: string;
+  created_by: string;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
 class JobPostService {
   async getJobs(): Promise<Job[]> {
     try {
@@ -217,6 +227,43 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to update flag");
+    }
+  }
+
+  // --- JOB NOTES ---
+
+  async getJobNotes(jobId: number): Promise<JobNote[]> {
+    try {
+      const response = await apiClient.get(`/v1/jobs/${jobId}/notes/`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch job notes");
+    }
+  }
+
+  async addJobNote(jobId: number, content: string): Promise<JobNote> {
+    try {
+      const response = await apiClient.post(`/v1/jobs/${jobId}/notes/`, { content });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to add job note");
+    }
+  }
+
+  async updateJobNote(jobId: number, noteId: number, content: string): Promise<JobNote> {
+    try {
+      const response = await apiClient.patch(`/v1/jobs/${jobId}/notes/${noteId}/`, { content });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to update job note");
+    }
+  }
+
+  async deleteJobNote(jobId: number, noteId: number): Promise<void> {
+    try {
+      await apiClient.delete(`/v1/jobs/${jobId}/notes/${noteId}/`);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to delete job note");
     }
   }
 

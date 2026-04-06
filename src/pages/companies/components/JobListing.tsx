@@ -36,6 +36,7 @@ import { showToast as toastUtil } from "../../../utils/toast";
 import CreateJobRoleModal from "../../candidates/components/CreateJobRoleModal";
 import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoDrawer from "./CompanyInfoDrawer";
+import JobNotesModal from "./JobNotesModal";
 
 interface JobListingProps {
     selectedWorkspace: MyWorkspace;
@@ -108,6 +109,7 @@ const JobListing: React.FC<JobListingProps> = ({
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
     const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
     const [menuOpenJobId, setMenuOpenJobId] = useState<number | null>(null);
+    const [showNotesJobId, setShowNotesJobId] = useState<number | null>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, right: 0, bottom: 0, isBottom: false });
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -483,7 +485,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F5F7]">
-                            {paginatedJobs.map((job, jobIdx) => {
+                            {paginatedJobs.map((job) => {
                                 const daysOpen = job.days_open || 18;
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
 
@@ -497,14 +499,6 @@ const JobListing: React.FC<JobListingProps> = ({
                                 const stages = allStages
                                     ? allStages.filter((s: any) => !hiddenStages.includes((s.name || '').toLowerCase()))
                                     : defaultStages;
-
-                                const staticNotes = [
-                                    "Change 1 year to 2 years of experience",
-                                    "Update job description for Q2",
-                                    "Review salary range with hiring manager",
-                                    "Discussed requirements with team lead",
-                                    "Waiting for team feedback on JD",
-                                ];
 
                                 return (
                                     <tr key={job.id} className="h-[72px] hover:bg-[#FAFBFC] transition-colors group">
@@ -617,8 +611,12 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                         {/* Note */}
                                         <td className="px-4 py-3">
-                                            <span className="text-[13px] text-[#4B5563] line-clamp-2 leading-relaxed">
-                                                {staticNotes[jobIdx % staticNotes.length]}
+                                            <span 
+                                                onClick={(e) => { e.stopPropagation(); setShowNotesJobId(job.id); }}
+                                                className="text-[13px] text-[#0F47F2] font-medium hover:underline cursor-pointer flex items-center gap-1.5"
+                                                title="View or add notes"
+                                            >
+                                                <MessageSquare className="w-3.5 h-3.5" /> View Notes
                                             </span>
                                         </td>
 
@@ -669,13 +667,13 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             <Pause className="w-4 h-4" /> {job.status === 'PAUSED' ? 'Resume' : 'Pause'}
                                                         </button>
                                                         <button
-                                                            onClick={(e) => { e.stopPropagation(); toastUtil.success("Add Note — Coming soon"); setMenuOpenJobId(null); }}
+                                                            onClick={(e) => { e.stopPropagation(); setShowNotesJobId(job.id); setMenuOpenJobId(null); }}
                                                             className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
                                                         >
                                                             <MessageSquare className="w-4 h-4" /> Add Note
                                                         </button>
                                                         <button
-                                                            onClick={(e) => { e.stopPropagation(); toastUtil.success("Note History — Coming soon"); setMenuOpenJobId(null); }}
+                                                            onClick={(e) => { e.stopPropagation(); setShowNotesJobId(job.id); setMenuOpenJobId(null); }}
                                                             className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
                                                         >
                                                             <MessageSquare className="w-4 h-4" /> Note History
@@ -787,6 +785,14 @@ const JobListing: React.FC<JobListingProps> = ({
                         setEditingJobId(null);
                         fetchJobs(); // Refresh jobs after update
                     }}
+                />
+            )}
+
+            {showNotesJobId && (
+                <JobNotesModal 
+                    isOpen={!!showNotesJobId}
+                    jobId={showNotesJobId}
+                    onClose={() => setShowNotesJobId(null)}
                 />
             )}
 
