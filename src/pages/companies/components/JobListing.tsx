@@ -275,7 +275,7 @@ const JobListing: React.FC<JobListingProps> = ({
     };
 
     const formatSalaryToLPA = (salary: number | null | undefined): string => {
-        if (salary == null || salary <= 0) return '??';
+        if (salary == null || salary < 0) return '0';
         const lpa = salary / 100000;
         return lpa % 1 === 0 ? lpa.toString() : lpa.toFixed(2);
     };
@@ -584,7 +584,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                         }}
                                                     >
                                                         {/* add a copy button here  */}
-                                                        <Copy className="w-3.5 h-3.5 text-[#4674E5] fill-[#4674E5] shrink-0" />
+                                                        <Copy className="w-3.5 h-3.5 text-[#4674E5] shrink-0" />
                                                         {job.job_id || job.id}
                                                     </span>
                                                     <span className="px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap">
@@ -599,7 +599,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                         {job.notice_period || '--'}
                                                     </span>
                                                     <span className="px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap">
-                                                        {(!job.salary_min && !job.salary_max) ? "Confidential" : `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
+                                                        {(Number(job.salary_min || 0) === 0 && Number(job.salary_max || 0) === 0) ? "Confidential" : `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
                                                     </span>
                                                 </div>
                                             </div>
@@ -656,22 +656,20 @@ const JobListing: React.FC<JobListingProps> = ({
                                                         e.stopPropagation();
                                                         setStatusMenuOpenId(statusMenuOpenId === job.id ? null : job.id);
                                                     }}
-                                                    className={`inline-flex items-center justify-between min-w-[90px] gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium transition-colors hover:opacity-80 active:opacity-60 cursor-pointer ${
-                                                        job.status === 'ACTIVE' ? 'bg-[#D1FAE5] text-[#059669]'
-                                                        : job.status === 'PAUSED' ? 'bg-[#FEF3C7] text-[#D97706]'
-                                                        : 'bg-[#F3F4F6] text-[#4B5563]'
-                                                    }`}
+                                                    className={`inline-flex items-center justify-between min-w-[90px] gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium transition-colors hover:opacity-80 active:opacity-60 cursor-pointer ${job.status === 'ACTIVE' ? 'bg-[#D1FAE5] text-[#059669]'
+                                                            : job.status === 'PAUSED' ? 'bg-[#FEF3C7] text-[#D97706]'
+                                                                : 'bg-[#F3F4F6] text-[#4B5563]'
+                                                        }`}
                                                 >
                                                     <div className="flex items-center gap-1.5">
-                                                        <span className={`w-1.5 h-1.5 rounded-full ${
-                                                            job.status === 'ACTIVE' ? 'bg-[#059669]'
-                                                            : job.status === 'PAUSED' ? 'bg-[#D97706]'
-                                                            : 'bg-[#4B5563]'
-                                                        }`} />
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${job.status === 'ACTIVE' ? 'bg-[#059669]'
+                                                                : job.status === 'PAUSED' ? 'bg-[#D97706]'
+                                                                    : 'bg-[#4B5563]'
+                                                            }`} />
                                                         {job.status === 'ACTIVE' ? 'Active'
                                                             : job.status === 'PAUSED' ? 'Paused'
-                                                            : job.status === 'INACTIVE' ? 'Inactive'
-                                                            : job.status?.charAt(0) + job.status?.slice(1).toLowerCase()}
+                                                                : job.status === 'INACTIVE' ? 'Inactive'
+                                                                    : job.status?.charAt(0) + job.status?.slice(1).toLowerCase()}
                                                     </div>
                                                     <ChevronDown className="w-3 h-3 opacity-50 ml-1" />
                                                 </button>
