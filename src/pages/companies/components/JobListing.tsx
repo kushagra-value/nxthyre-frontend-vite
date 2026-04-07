@@ -118,6 +118,15 @@ const JobListing: React.FC<JobListingProps> = ({
     const menuRef = useRef<HTMLDivElement>(null);
     const [statusMenuOpenId, setStatusMenuOpenId] = useState<number | null>(null);
     const statusMenuRef = useRef<HTMLDivElement>(null);
+    const [statusMenuPos, setStatusMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+    const [stageTooltip, setStageTooltip] = useState<{
+        visible: boolean;
+        name: string;
+        active: number;
+        archived: number;
+        top: number;
+        left: number;
+    }>({ visible: false, name: "", active: 0, archived: 0, top: 0, left: 0 });
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -131,6 +140,7 @@ const JobListing: React.FC<JobListingProps> = ({
         const handleScroll = () => {
             setMenuOpenJobId(null);
             setStatusMenuOpenId(null);
+            setStageTooltip((prev) => ({ ...prev, visible: false }));
         };
         document.addEventListener("mousedown", handleClickOutside);
         window.addEventListener("scroll", handleScroll, true);
@@ -329,6 +339,32 @@ const JobListing: React.FC<JobListingProps> = ({
         } catch (error) {
             toastUtil.error("Failed to save note");
         }
+    };
+
+    const showStageTooltip = (
+        event: React.MouseEvent<HTMLDivElement>,
+        name: string,
+        active: number,
+        archived: number
+    ) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const tooltipWidth = 210;
+        const tooltipHeight = 56;
+        const horizontalPadding = 10;
+        const top = rect.top - tooltipHeight - 10;
+        let left = rect.left + rect.width / 2 - tooltipWidth / 2;
+        if (left < horizontalPadding) left = horizontalPadding;
+        if (left + tooltipWidth > window.innerWidth - horizontalPadding) {
+            left = window.innerWidth - tooltipWidth - horizontalPadding;
+        }
+        setStageTooltip({
+            visible: true,
+            name,
+            active,
+            archived,
+            top: Math.max(8, top),
+            left,
+        });
     };
 
     return (
@@ -725,18 +761,18 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     const stageArchivedCount = item.archived_count || 0;
                                                     const palette = stageColors[idx % stageColors.length];
                                                     return (
-                                                        <div key={idx} className="relative group/stage">
+                                                        <div
+                                                            key={idx}
+                                                            className="relative"
+                                                            onMouseEnter={(e) => showStageTooltip(e, item.name, item.count, stageArchivedCount)}
+                                                            onMouseLeave={() => setStageTooltip((prev) => ({ ...prev, visible: false }))}
+                                                        >
                                                             <div
                                                                 className="min-w-[28px] h-[28px] px-2 rounded-[6px] border flex items-center justify-center text-[13px] font-bold cursor-default"
                                                                 style={{ backgroundColor: palette.bg, borderColor: palette.border, color: palette.text }}
                                                             >
                                                                 <span>{item.count}</span>
                                                                 <span className="text-[#8E8E93] text-[12px] font-semibold ml-1">- {stageArchivedCount}</span>
-                                                            </div>
-                                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-[#1C1C1E] text-white text-[11px] rounded-lg whitespace-nowrap opacity-0 group-hover/stage:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
-                                                                <div className="font-medium">{item.name}</div>
-                                                                <div className="text-gray-300">Active: {item.count} · Archived: {stageArchivedCount}</div>
-                                                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#1C1C1E]" />
                                                             </div>
                                                         </div>
                                                     );
@@ -758,7 +794,25 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setStatusMenuOpenId(statusMenuOpenId === job.id ? null : job.id);
+                                                        if (statusMenuOpenId === job.id) {
+                                                            setStatusMenuOpenId(null);
+                                                            return;
+                                                        }
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        const menuWidth = 128;
+                                                        const menuHeight = 116;
+                                                        const verticalGap = 6;
+                                                        const openUp = rect.bottom + menuHeight + verticalGap > window.innerHeight;
+                                                        const top = openUp
+                                                            ? Math.max(8, rect.top - menuHeight - verticalGap)
+                                                            : rect.bottom + verticalGap;
+                                                        let left = rect.left + rect.width / 2 - menuWidth / 2;
+                                                        if (left < 8) left = 8;
+                                                        if (left + menuWidth > window.innerWidth - 8) {
+                                                            left = window.innerWidth - menuWidth - 8;
+                                                        }
+                                                        setStatusMenuPos({ top, left });
+                                                        setStatusMenuOpenId(job.id);
                                                     }}
                                                     className={`inline-flex items-center justify-between min-w-[90px] gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium transition-colors hover:opacity-80 active:opacity-60 cursor-pointer ${job.status === 'ACTIVE' ? 'bg-[#D1FAE5] text-[#059669]'
                                                         : job.status === 'PAUSED' ? 'bg-[#FEF3C7] text-[#D97706]'
@@ -777,29 +831,6 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     </div>
                                                     <ChevronDown className="w-3 h-3 opacity-50 ml-1" />
                                                 </button>
-
-                                                {statusMenuOpenId === job.id && (
-                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-32 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[100] py-1">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleStatusChange(job.id, 'ACTIVE'); setStatusMenuOpenId(null); }}
-                                                            className="w-full text-left px-4 py-2 text-[13px] text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                                                        >
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" /> Active
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleStatusChange(job.id, 'PAUSED'); setStatusMenuOpenId(null); }}
-                                                            className="w-full text-left px-4 py-2 text-[13px] text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                                                        >
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" /> Paused
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleStatusChange(job.id, 'INACTIVE'); setStatusMenuOpenId(null); }}
-                                                            className="w-full text-left px-4 py-2 text-[13px] text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                                                        >
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-[#4B5563]" /> Inactive
-                                                        </button>
-                                                    </div>
-                                                )}
                                             </div>
                                         </td>
 
@@ -1127,6 +1158,44 @@ const JobListing: React.FC<JobListingProps> = ({
                             </div>
                         )}
                     </div>
+                </div>
+            )}
+
+            {statusMenuOpenId !== null && (
+                <div
+                    ref={statusMenuRef}
+                    className="fixed w-32 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1"
+                    style={{ top: statusMenuPos.top, left: statusMenuPos.left }}
+                >
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleStatusChange(statusMenuOpenId, 'ACTIVE'); setStatusMenuOpenId(null); }}
+                        className="w-full text-left px-4 py-2 text-[13px] text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" /> Active
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleStatusChange(statusMenuOpenId, 'PAUSED'); setStatusMenuOpenId(null); }}
+                        className="w-full text-left px-4 py-2 text-[13px] text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" /> Paused
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleStatusChange(statusMenuOpenId, 'INACTIVE'); setStatusMenuOpenId(null); }}
+                        className="w-full text-left px-4 py-2 text-[13px] text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#4B5563]" /> Inactive
+                    </button>
+                </div>
+            )}
+
+            {stageTooltip.visible && (
+                <div
+                    className="fixed px-2.5 py-1.5 bg-[#1C1C1E] text-white text-[11px] rounded-lg pointer-events-none z-[10000] shadow-lg"
+                    style={{ top: stageTooltip.top, left: stageTooltip.left, width: 210 }}
+                >
+                    <div className="font-medium">{stageTooltip.name}</div>
+                    <div className="text-gray-300">Active: {stageTooltip.active} · Archived: {stageTooltip.archived}</div>
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#1C1C1E] rotate-45" />
                 </div>
             )}
         </div>
