@@ -2733,7 +2733,7 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td
-                              className="sticky right-0 z-10 bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]"
+                              className="sticky right-0 z-30 bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex justify-end items-center gap-2">
@@ -2790,7 +2790,7 @@ export default function JobPipelineDashboard({
 
                                   {menuOpenId === item.id && (
                                     <div
-                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10050] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
                                       style={{ top: menuPos.top, left: menuPos.left }}
                                     >
                                       <button
@@ -3000,7 +3000,7 @@ export default function JobPipelineDashboard({
                                     --
                                   </span>
                                 </td>
-                                <td className="sticky right-0 z-10 bg-[#F9FAFB] px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]">
+                                <td className="sticky right-0 z-20 bg-[#F9FAFB] px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]">
                                   <div className="flex justify-end gap-2">
                                     <button
                                       onClick={async () => {
