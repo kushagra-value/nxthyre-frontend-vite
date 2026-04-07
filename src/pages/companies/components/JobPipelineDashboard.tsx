@@ -30,6 +30,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  ArrowRight,
+  MoveRight,
   MessageSquare,
   MoreHorizontal,
   Phone,
@@ -532,6 +534,15 @@ export default function JobPipelineDashboard({
   const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [shiftStageItem, setShiftStageItem] = useState<CandidateListItem | null>(null);
+  const [shiftStageTargetId, setShiftStageTargetId] = useState<number | null>(null);
+  const [confirmMoveAction, setConfirmMoveAction] = useState<{
+    applicationId: number;
+    fromStageName: string;
+    toStageId: number;
+    toStageName: string;
+    mode: "move" | "archive";
+  } | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1238,6 +1249,63 @@ export default function JobPipelineDashboard({
     setSelectionType(null);
   };
 
+  const nonArchiveStages = stages
+    .filter((s) => s.slug !== "archives" && !s.name.toLowerCase().includes("archive"))
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+
+  const getNextStageForItem = (item: CandidateListItem) => {
+    const currentSlug = item.current_stage?.slug || item.stage_slug;
+    const idx = nonArchiveStages.findIndex((s) => s.slug === currentSlug);
+    if (idx === -1) return null;
+    if (idx + 1 >= nonArchiveStages.length) return null;
+    return nonArchiveStages[idx + 1];
+  };
+
+  const getPrimaryMoveLabel = (item: CandidateListItem) => {
+    const currentSlug = (item.current_stage?.slug || item.stage_slug || "").toLowerCase();
+    return currentSlug === "uncontacted" ? "Shortlist" : "Move to nxt stage";
+  };
+
+  const executeCandidateStageMove = async (
+    applicationId: number,
+    toStageId: number,
+    toStageName: string,
+    mode: "move" | "archive"
+  ) => {
+    await apiClient.patch(`/jobs/applications/${applicationId}/?view=kanban`, {
+      current_stage: toStageId,
+      ...(mode === "archive" ? { status: "ARCHIVED" } : {}),
+      feedback: {
+        subject: mode === "archive" ? "Moved to Archive" : `Moved to ${toStageName}`,
+        comment: mode === "archive"
+          ? "Candidate moved to archive from action column"
+          : `Candidate moved to ${toStageName} from action column`,
+      },
+    });
+
+    if (jobId != null) {
+      const currentLimit = isKanbanView ? 1000 : pageSize;
+      const currentStage = isKanbanView ? null : activeStageSlug;
+      fetchCandidates(jobId, currentStage, currentPage, searchQuery, currentLimit);
+      fetchStages(jobId);
+      fetchArchivedCandidates(jobId);
+      refreshJobDetails();
+    }
+  };
+
+  const handleCopyCandidateEmail = async (item: CandidateListItem) => {
+    const email =
+      item.candidate?.premium_data?.email ||
+      item.candidate?.premium_data?.all_emails?.[0] ||
+      "";
+    if (!email) {
+      showToast.error("Candidate email not available");
+      return;
+    }
+    await navigator.clipboard.writeText(email);
+    showToast.success("Email copied");
+  };
+
   const openFeedbackModal = (action: {
     type: "archive" | "unarchive" | "move";
     applicationIds: number[];
@@ -1405,48 +1473,6 @@ export default function JobPipelineDashboard({
     (sum, s) => sum + (s.candidate_count || 0),
     0,
   );
-
-  const nonArchiveStages = stages.filter(
-    (s) => s.slug !== "archives" && !s.name.toLowerCase().includes("archive"),
-  );
-
-  const getCurrentStageSlug = (item: any) => item.current_stage?.slug || item.stage_slug;
-
-  const getShortlistStage = () =>
-    nonArchiveStages.find((s) =>
-      s.slug.toLowerCase().includes("shortlist") ||
-      s.name.toLowerCase().includes("shortlist"),
-    );
-
-  const getNextStageForItem = (item: any) => {
-    const currentSlug = getCurrentStageSlug(item);
-    const currentIdx = nonArchiveStages.findIndex((s) => s.slug === currentSlug);
-    if (currentIdx === -1 || currentIdx + 1 >= nonArchiveStages.length) return null;
-    return nonArchiveStages[currentIdx + 1];
-  };
-
-  const getPrimaryStageActionForItem = (item: any) => {
-    const currentSlug = (getCurrentStageSlug(item) || "").toLowerCase();
-    const shortlistStage = getShortlistStage();
-
-    if (
-      (currentSlug === "uncontacted" || currentSlug.includes("un-contacted")) &&
-      shortlistStage &&
-      shortlistStage.slug !== currentSlug
-    ) {
-      return { label: "Shortlist", targetStage: shortlistStage };
-    }
-
-    const nextStage = getNextStageForItem(item);
-    if (!nextStage) return null;
-    return { label: "Move to Next Stage", targetStage: nextStage };
-  };
-
-  const getCandidateEmail = (cand: any) =>
-    cand?.email ||
-    cand?.premium_data?.email ||
-    cand?.premium_data?.all_emails?.[0] ||
-    "";
 
   // ── Render ───────────────────────────────────────────────────
 
@@ -2512,7 +2538,7 @@ export default function JobPipelineDashboard({
                         </div>
                       </th>
                     ))}
-                    <th className="px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap sticky right-0 z-20 bg-[#F9FAFB] min-w-[320px]">
+                    <th className="px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">
                       Actions
                     </th>
                   </tr>
@@ -2734,43 +2760,51 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td
-                              className="px-4 py-5 sticky right-0 z-10 bg-white whitespace-nowrap min-w-[320px]"
+                              className="px-4 py-5"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <div className="flex justify-end gap-2 flex-nowrap">
-                                {(() => {
-                                  const primaryAction = getPrimaryStageActionForItem(item);
-                                  return primaryAction ? (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        openFeedbackModal({
-                                          type: "move",
-                                          applicationIds: [item.id],
-                                          targetStageId: primaryAction.targetStage.id,
-                                          targetStageName: primaryAction.targetStage.name,
-                                        });
-                                      }}
-                                      className="h-8 px-3 inline-flex items-center justify-center text-[12px] font-medium rounded-md bg-[#0F47F2] text-white hover:bg-[#0A3BCC] transition-colors whitespace-nowrap"
-                                      title={`${primaryAction.label} candidate`}
-                                    >
-                                      {primaryAction.label}
-                                    </button>
-                                  ) : null;
-                                })()}
+                              <div className="flex justify-end items-center gap-2">
                                 <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openFeedbackModal({
-                                      type: "archive",
-                                      applicationIds: [item.id],
+                                  onClick={() => {
+                                    const archiveStage = stages.find((s) => s.slug === "archives");
+                                    if (!archiveStage) {
+                                      showToast.error("Archives stage not found");
+                                      return;
+                                    }
+                                    setConfirmMoveAction({
+                                      applicationId: item.id,
+                                      fromStageName: item.current_stage?.name || "--",
+                                      toStageId: archiveStage.id,
+                                      toStageName: archiveStage.name,
+                                      mode: "archive",
                                     });
                                   }}
-                                  className="h-8 px-3 inline-flex items-center justify-center text-[12px] font-medium rounded-md bg-[#FEE2E2] text-[#DC2626] hover:bg-[#FECACA] transition-colors whitespace-nowrap"
-                                  title="Move candidate to archive"
+                                  className="px-3 py-1.5 rounded-md text-xs font-medium text-[#DC2626] bg-[#FEE2E2] hover:bg-[#FECACA] transition-colors"
+                                  title="Move candidate to Archive"
                                 >
                                   Archive
                                 </button>
+                                <button
+                                  onClick={() => {
+                                    const nextStage = getNextStageForItem(item);
+                                    if (!nextStage) {
+                                      showToast.info("No next stage available");
+                                      return;
+                                    }
+                                    setConfirmMoveAction({
+                                      applicationId: item.id,
+                                      fromStageName: item.current_stage?.name || "--",
+                                      toStageId: nextStage.id,
+                                      toStageName: nextStage.name,
+                                      mode: "move",
+                                    });
+                                  }}
+                                  className="px-3 py-1.5 rounded-md text-xs font-medium text-white bg-[#0F47F2] hover:bg-[#0D3ECF] transition-colors"
+                                  title={getPrimaryMoveLabel(item)}
+                                >
+                                  {getPrimaryMoveLabel(item)}
+                                </button>
+
                                 <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
                                   <button
                                     onClick={(e) => {
@@ -2803,7 +2837,7 @@ export default function JobPipelineDashboard({
 
                                   {menuOpenId === item.id && (
                                     <div
-                                      className="fixed w-56 max-h-[320px] overflow-y-auto bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
                                       style={{ top: menuPos.top, left: menuPos.left }}
                                     >
                                       <button
@@ -2833,6 +2867,70 @@ export default function JobPipelineDashboard({
                                         <Phone className="w-4 h-4" /> Call
                                       </button>
                                       <button
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          await handleCopyCandidateEmail(item);
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Mail className="w-4 h-4" /> Copy Mail ID
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const archiveStage = stages.find((s) => s.slug === "archives");
+                                          if (!archiveStage) {
+                                            showToast.error("Archives stage not found");
+                                            return;
+                                          }
+                                          setConfirmMoveAction({
+                                            applicationId: item.id,
+                                            fromStageName: item.current_stage?.name || "--",
+                                            toStageId: archiveStage.id,
+                                            toStageName: archiveStage.name,
+                                            mode: "archive",
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"
+                                      >
+                                        <Archive className="w-4 h-4" /> Archive
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const nextStage = getNextStageForItem(item);
+                                          if (!nextStage) {
+                                            showToast.info("No next stage available");
+                                            return;
+                                          }
+                                          setConfirmMoveAction({
+                                            applicationId: item.id,
+                                            fromStageName: item.current_stage?.name || "--",
+                                            toStageId: nextStage.id,
+                                            toStageName: nextStage.name,
+                                            mode: "move",
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#0F47F2] hover:bg-[#E7EDFF] flex items-center gap-2"
+                                      >
+                                        <ArrowRight className="w-4 h-4" /> {getPrimaryMoveLabel(item)}
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setShiftStageItem(item);
+                                          setShiftStageTargetId(null);
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <MoveRight className="w-4 h-4" /> Shift to Stage
+                                      </button>
+                                      <div className="h-px bg-[#F3F5F7] my-1" />
+                                      <button
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, {
@@ -2847,61 +2945,6 @@ export default function JobPipelineDashboard({
                                       >
                                         <Share2 className="w-4 h-4" /> Share Profile
                                       </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const email = getCandidateEmail(cand);
-                                          if (!email) {
-                                            showToast.error("Candidate email not available");
-                                            return;
-                                          }
-                                          navigator.clipboard.writeText(email).then(() => {
-                                            showToast.success("Email copied");
-                                          });
-                                          setMenuOpenId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                                      >
-                                        <Copy className="w-4 h-4" /> Copy Mail ID
-                                      </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          openFeedbackModal({
-                                            type: "archive",
-                                            applicationIds: [item.id],
-                                          });
-                                          setMenuOpenId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"
-                                      >
-                                        <Archive className="w-4 h-4" /> Archive
-                                      </button>
-                                      <div className="h-px bg-[#F3F5F7] my-1" />
-                                      <div className="px-4 py-1.5 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wide">
-                                        Shift to Stage
-                                      </div>
-                                      {nonArchiveStages
-                                        .filter((s) => s.slug !== getCurrentStageSlug(item))
-                                        .map((stage) => (
-                                          <button
-                                            key={`shift-${item.id}-${stage.id}`}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              openFeedbackModal({
-                                                type: "move",
-                                                applicationIds: [item.id],
-                                                targetStageId: stage.id,
-                                                targetStageName: stage.name,
-                                              });
-                                              setMenuOpenId(null);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7]"
-                                          >
-                                            {stage.name}
-                                          </button>
-                                        ))}
-                                      <div className="h-px bg-[#F3F5F7] my-1" />
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -3012,14 +3055,35 @@ export default function JobPipelineDashboard({
                                     --
                                   </span>
                                 </td>
-                                <td className="px-4 py-5 sticky right-0 z-10 bg-gray-50 whitespace-nowrap min-w-[320px]">
+                                <td className="px-4 py-5">
                                   <div className="flex justify-end gap-2">
                                     <button
-                                      onClick={() => {
-                                        openFeedbackModal({
-                                          type: "unarchive",
-                                          applicationIds: [item.id],
-                                        });
+                                      onClick={async () => {
+                                        try {
+                                          const targetStage =
+                                            stages.find(
+                                              (s) => s.slug === "shortlisted",
+                                            ) || stages[0];
+                                          await apiClient.patch(
+                                            `/jobs/applications/${item.id}/`,
+                                            { current_stage: targetStage.id },
+                                          );
+                                          showToast.success(
+                                            "Candidate unarchived",
+                                          );
+                                          fetchCandidates(
+                                            jobId,
+                                            isKanbanView ? null : activeStageSlug,
+                                            currentPage,
+                                            searchQuery,
+                                            isKanbanView ? 1000 : pageSize
+                                          );
+                                          fetchArchivedCandidates(jobId);
+                                        } catch {
+                                          showToast.error(
+                                            "Failed to unarchive",
+                                          );
+                                        }
                                       }}
                                       className="text-[10px] font-bold text-[#0F47F2] hover:underline"
                                     >
@@ -4153,6 +4217,111 @@ export default function JobPipelineDashboard({
                 onClick={handleCandidateEditSave}
               >
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {shiftStageItem && (
+        <div className="fixed inset-0 z-[1002] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 className="text-lg font-semibold text-[#1C1C1E] mb-2">Shift to Stage</h3>
+            <p className="text-sm text-[#6B7280] mb-4">
+              Select a stage for {shiftStageItem.candidate.full_name || "candidate"}.
+            </p>
+            <select
+              value={shiftStageTargetId ?? ""}
+              onChange={(e) => setShiftStageTargetId(Number(e.target.value))}
+              className="w-full border border-[#D1D1D6] rounded-lg px-3 py-2 text-sm mb-5 focus:outline-none focus:ring-1 focus:ring-[#0F47F2]"
+            >
+              <option value="" disabled>Select stage</option>
+              {nonArchiveStages
+                .filter((s) => s.id !== shiftStageItem.current_stage?.id)
+                .map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+            </select>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShiftStageItem(null);
+                  setShiftStageTargetId(null);
+                }}
+                className="px-4 py-2 text-sm border border-[#D1D1D6] rounded-lg text-[#4B5563] hover:bg-[#F9FAFB]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!shiftStageTargetId) {
+                    showToast.error("Please select a stage");
+                    return;
+                  }
+                  const targetStage = nonArchiveStages.find((s) => s.id === shiftStageTargetId);
+                  if (!targetStage) {
+                    showToast.error("Selected stage not found");
+                    return;
+                  }
+                  setConfirmMoveAction({
+                    applicationId: shiftStageItem.id,
+                    fromStageName: shiftStageItem.current_stage?.name || "--",
+                    toStageId: targetStage.id,
+                    toStageName: targetStage.name,
+                    mode: "move",
+                  });
+                  setShiftStageItem(null);
+                  setShiftStageTargetId(null);
+                }}
+                className="px-4 py-2 text-sm bg-[#0F47F2] text-white rounded-lg hover:bg-[#0D3ECF]"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmMoveAction && (
+        <div className="fixed inset-0 z-[1003] flex items-center justify-center bg-black/35 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-lg font-semibold text-[#1C1C1E] mb-2">Confirm Action</h3>
+            <p className="text-sm text-[#4B5563]">
+              Are you sure of moving candidate from{" "}
+              <span className="font-medium">{confirmMoveAction.fromStageName}</span>{" "}
+              to{" "}
+              <span className="font-medium">{confirmMoveAction.toStageName}</span>?
+            </p>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => setConfirmMoveAction(null)}
+                className="px-4 py-2 text-sm border border-[#D1D1D6] rounded-lg text-[#4B5563] hover:bg-[#F9FAFB]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await executeCandidateStageMove(
+                      confirmMoveAction.applicationId,
+                      confirmMoveAction.toStageId,
+                      confirmMoveAction.toStageName,
+                      confirmMoveAction.mode
+                    );
+                    showToast.success(
+                      confirmMoveAction.mode === "archive"
+                        ? "Candidate archived successfully"
+                        : `Candidate moved to ${confirmMoveAction.toStageName}`
+                    );
+                  } catch (error: any) {
+                    showToast.error(error?.response?.data?.detail || "Failed to move candidate");
+                  } finally {
+                    setConfirmMoveAction(null);
+                  }
+                }}
+                className="px-4 py-2 text-sm bg-[#0F47F2] text-white rounded-lg hover:bg-[#0D3ECF]"
+              >
+                Yes, Continue
               </button>
             </div>
           </div>
