@@ -2468,16 +2468,16 @@ export default function JobPipelineDashboard({
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: "2%" }} /> {/* checkbox */}
-                  <col style={{ width: "25%" }} /> {/* name & headline */}
-                  <col style={{ width: "6%" }} /> {/* ai score */}
-                  <col style={{ width: "8%" }} /> {/* location */}
+                  <col style={{ width: "30%" }} /> {/* name & headline */}
+                  <col style={{ width: "7%" }} /> {/* ai score */}
+                  <col style={{ width: "11%" }} /> {/* location */}
                   <col style={{ width: "5%" }} /> {/* exp */}
                   <col style={{ width: "6%" }} /> {/* ctc */}
-                  <col style={{ width: "7%" }} /> {/* expected ctc */}
-                  <col style={{ width: "7%" }} /> {/* notice period */}
-                  <col style={{ width: "9%" }} /> {/* stage */}
-                  <col style={{ width: "13%" }} /> {/* attention */}
-                  <col style={{ width: "12%" }} /> {/* actions */}
+                  <col style={{ width: "8%" }} /> {/* expected ctc */}
+                  <col style={{ width: "8%" }} /> {/* notice period */}
+                  <col style={{ width: "8%" }} /> {/* stage */}
+                  <col style={{ width: "8%" }} /> {/* attention */}
+                  <col style={{ width: "8%" }} /> {/* actions */}
                 </colgroup>
 
                 <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
@@ -2650,11 +2650,11 @@ export default function JobPipelineDashboard({
                                   onSelectCandidate?.(item, candidates, index)
                                 }
                               >
-                                <div className="max-h-20 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                  <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition break-words whitespace-normal">
+                                <div>
+                                  <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition truncate">
                                     {cand.full_name || "--"}
                                   </div>
-                                  <div className="text-xs text-[#727272] break-words whitespace-normal">
+                                  <div className="text-xs text-[#727272] truncate">
                                     {cand.headline || "--"}
                                   </div>
                                 </div>
@@ -2686,27 +2686,27 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563]">
-                              <div className="break-words whitespace-normal">
+                              <div className="truncate" title={cand.location || "--"}>
                                 {cand.location || "--"}
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563]">
-                              <div className="break-words whitespace-normal">
+                              <div className="whitespace-nowrap">
                                 {expYears}
                               </div>
                             </td>
-                            <td className="px-4 py-5 text-sm text-[#4B5563]">
+                            <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               {ctc}
                             </td>
-                            <td className="px-4 py-5 text-sm text-[#4B5563]">
+                            <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               {expectedCtc}
                             </td>
-                            <td className="px-4 py-5 text-sm text-[#4B5563]">
+                            <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               {noticePeriod}
                             </td>
                             <td className="px-4 py-5">
                               <div>
-                                <div className="text-[#6155F5] text-sm font-medium">
+                                <div className="text-[#6155F5] text-sm font-medium whitespace-nowrap truncate" title={item.current_stage?.name || "--"}>
                                   {item.current_stage?.name || "--"}
                                 </div>
                               </div>
@@ -2752,7 +2752,7 @@ export default function JobPipelineDashboard({
                                       targetStageName: nextStage.name,
                                     });
                                   }}
-                                  className="px-3 py-1.5 rounded-md text-xs font-medium text-white bg-[#0F47F2] hover:bg-[#0D3ECF] transition-colors"
+                                  className="h-8 min-w-[88px] px-3 rounded-md text-xs font-medium text-white bg-[#0F47F2] hover:bg-[#0D3ECF] transition-colors whitespace-nowrap"
                                   title={getPrimaryMoveLabel(item)}
                                 >
                                   {getPrimaryMoveLabel(item)}
