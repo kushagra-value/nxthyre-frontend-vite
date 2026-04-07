@@ -30,8 +30,6 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  ArrowRight,
-  MoveRight,
   MessageSquare,
   MoreHorizontal,
   Phone,
@@ -536,13 +534,6 @@ export default function JobPipelineDashboard({
   const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [shiftStageItem, setShiftStageItem] = useState<CandidateListItem | null>(null);
   const [shiftStageTargetId, setShiftStageTargetId] = useState<number | null>(null);
-  const [confirmMoveAction, setConfirmMoveAction] = useState<{
-    applicationId: number;
-    fromStageName: string;
-    toStageId: number;
-    toStageName: string;
-    mode: "move" | "archive";
-  } | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1263,34 +1254,7 @@ export default function JobPipelineDashboard({
 
   const getPrimaryMoveLabel = (item: CandidateListItem) => {
     const currentSlug = (item.current_stage?.slug || item.stage_slug || "").toLowerCase();
-    return currentSlug === "uncontacted" ? "Shortlist" : "Move to nxt stage";
-  };
-
-  const executeCandidateStageMove = async (
-    applicationId: number,
-    toStageId: number,
-    toStageName: string,
-    mode: "move" | "archive"
-  ) => {
-    await apiClient.patch(`/jobs/applications/${applicationId}/?view=kanban`, {
-      current_stage: toStageId,
-      ...(mode === "archive" ? { status: "ARCHIVED" } : {}),
-      feedback: {
-        subject: mode === "archive" ? "Moved to Archive" : `Moved to ${toStageName}`,
-        comment: mode === "archive"
-          ? "Candidate moved to archive from action column"
-          : `Candidate moved to ${toStageName} from action column`,
-      },
-    });
-
-    if (jobId != null) {
-      const currentLimit = isKanbanView ? 1000 : pageSize;
-      const currentStage = isKanbanView ? null : activeStageSlug;
-      fetchCandidates(jobId, currentStage, currentPage, searchQuery, currentLimit);
-      fetchStages(jobId);
-      fetchArchivedCandidates(jobId);
-      refreshJobDetails();
-    }
+    return currentSlug === "uncontacted" ? "Shortlist Candidate" : "Move to Next Stage";
   };
 
   const handleCopyCandidateEmail = async (item: CandidateListItem) => {
@@ -2490,8 +2454,8 @@ export default function JobPipelineDashboard({
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto overflow-y-hidden mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-hidden overflow-y-visible mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl">
+              <table className="w-full table-fixed text-left border-collapse">
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: "2%" }} /> {/* checkbox */}
@@ -2677,11 +2641,11 @@ export default function JobPipelineDashboard({
                                   onSelectCandidate?.(item, candidates, index)
                                 }
                               >
-                                <div className="max-h-14 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                  <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition whitespace-nowrap overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                <div className="max-h-20 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                  <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition break-words whitespace-normal">
                                     {cand.full_name || "--"}
                                   </div>
-                                  <div className="text-xs text-[#727272] whitespace-nowrap overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                  <div className="text-xs text-[#727272] break-words whitespace-normal">
                                     {cand.headline || "--"}
                                   </div>
                                 </div>
@@ -2713,12 +2677,12 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563]">
-                              <div className="overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                              <div className="break-words whitespace-normal">
                                 {cand.location || "--"}
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563]">
-                              <div className="overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                              <div className="break-words whitespace-normal">
                                 {expYears}
                               </div>
                             </td>
@@ -2739,7 +2703,7 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5">
-                              <div className="overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                              <div className="break-words whitespace-normal">
                                 {attentionTag ? (
                                   <span
                                     className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
@@ -2766,21 +2730,13 @@ export default function JobPipelineDashboard({
                               <div className="flex justify-end items-center gap-2">
                                 <button
                                   onClick={() => {
-                                    const archiveStage = stages.find((s) => s.slug === "archives");
-                                    if (!archiveStage) {
-                                      showToast.error("Archives stage not found");
-                                      return;
-                                    }
-                                    setConfirmMoveAction({
-                                      applicationId: item.id,
-                                      fromStageName: item.current_stage?.name || "--",
-                                      toStageId: archiveStage.id,
-                                      toStageName: archiveStage.name,
-                                      mode: "archive",
+                                    openFeedbackModal({
+                                      type: "archive",
+                                      applicationIds: [item.id],
                                     });
                                   }}
                                   className="px-3 py-1.5 rounded-md text-xs font-medium text-[#DC2626] bg-[#FEE2E2] hover:bg-[#FECACA] transition-colors"
-                                  title="Move candidate to Archive"
+                                  title="Move candidate to archive"
                                 >
                                   Archive
                                 </button>
@@ -2791,12 +2747,11 @@ export default function JobPipelineDashboard({
                                       showToast.info("No next stage available");
                                       return;
                                     }
-                                    setConfirmMoveAction({
-                                      applicationId: item.id,
-                                      fromStageName: item.current_stage?.name || "--",
-                                      toStageId: nextStage.id,
-                                      toStageName: nextStage.name,
-                                      mode: "move",
+                                    openFeedbackModal({
+                                      type: "move",
+                                      applicationIds: [item.id],
+                                      targetStageId: nextStage.id,
+                                      targetStageName: nextStage.name,
                                     });
                                   }}
                                   className="px-3 py-1.5 rounded-md text-xs font-medium text-white bg-[#0F47F2] hover:bg-[#0D3ECF] transition-colors"
@@ -2864,7 +2819,18 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                        <Phone className="w-4 h-4" /> Call
+                                         Call
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCandidateEditing(item);
+                                          setShowCandidateEditModal(true);
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                         Edit Details
                                       </button>
                                       <button
                                         onClick={async (e) => {
@@ -2874,28 +2840,20 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                        <Mail className="w-4 h-4" /> Copy Mail ID
+                                         Copy Mail ID
                                       </button>
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          const archiveStage = stages.find((s) => s.slug === "archives");
-                                          if (!archiveStage) {
-                                            showToast.error("Archives stage not found");
-                                            return;
-                                          }
-                                          setConfirmMoveAction({
-                                            applicationId: item.id,
-                                            fromStageName: item.current_stage?.name || "--",
-                                            toStageId: archiveStage.id,
-                                            toStageName: archiveStage.name,
-                                            mode: "archive",
+                                          openFeedbackModal({
+                                            type: "archive",
+                                            applicationIds: [item.id],
                                           });
                                           setMenuOpenId(null);
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"
                                       >
-                                        <Archive className="w-4 h-4" /> Archive
+                                         Archive
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -2905,18 +2863,17 @@ export default function JobPipelineDashboard({
                                             showToast.info("No next stage available");
                                             return;
                                           }
-                                          setConfirmMoveAction({
-                                            applicationId: item.id,
-                                            fromStageName: item.current_stage?.name || "--",
-                                            toStageId: nextStage.id,
-                                            toStageName: nextStage.name,
-                                            mode: "move",
+                                          openFeedbackModal({
+                                            type: "move",
+                                            applicationIds: [item.id],
+                                            targetStageId: nextStage.id,
+                                            targetStageName: nextStage.name,
                                           });
                                           setMenuOpenId(null);
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#0F47F2] hover:bg-[#E7EDFF] flex items-center gap-2"
                                       >
-                                        <ArrowRight className="w-4 h-4" /> {getPrimaryMoveLabel(item)}
+                                        {getPrimaryMoveLabel(item)}
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -2927,7 +2884,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                        <MoveRight className="w-4 h-4" /> Shift to Stage
+                                         Shift to Stage
                                       </button>
                                       <div className="h-px bg-[#F3F5F7] my-1" />
                                       <button
@@ -2943,19 +2900,9 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                        <Share2 className="w-4 h-4" /> Share Profile
+                                        Share Profile
                                       </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setCandidateEditing(item);
-                                          setShowCandidateEditModal(true);
-                                          setMenuOpenId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                                      >
-                                        <Pencil className="w-4 h-4" /> Edit Details
-                                      </button>
+                                      
                                     </div>
                                   )}
                                 </div>
@@ -4263,12 +4210,11 @@ export default function JobPipelineDashboard({
                     showToast.error("Selected stage not found");
                     return;
                   }
-                  setConfirmMoveAction({
-                    applicationId: shiftStageItem.id,
-                    fromStageName: shiftStageItem.current_stage?.name || "--",
-                    toStageId: targetStage.id,
-                    toStageName: targetStage.name,
-                    mode: "move",
+                  openFeedbackModal({
+                    type: "move",
+                    applicationIds: [shiftStageItem.id],
+                    targetStageId: targetStage.id,
+                    targetStageName: targetStage.name,
                   });
                   setShiftStageItem(null);
                   setShiftStageTargetId(null);
@@ -4276,52 +4222,6 @@ export default function JobPipelineDashboard({
                 className="px-4 py-2 text-sm bg-[#0F47F2] text-white rounded-lg hover:bg-[#0D3ECF]"
               >
                 Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {confirmMoveAction && (
-        <div className="fixed inset-0 z-[1003] flex items-center justify-center bg-black/35 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-            <h3 className="text-lg font-semibold text-[#1C1C1E] mb-2">Confirm Action</h3>
-            <p className="text-sm text-[#4B5563]">
-              Are you sure of moving candidate from{" "}
-              <span className="font-medium">{confirmMoveAction.fromStageName}</span>{" "}
-              to{" "}
-              <span className="font-medium">{confirmMoveAction.toStageName}</span>?
-            </p>
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                onClick={() => setConfirmMoveAction(null)}
-                className="px-4 py-2 text-sm border border-[#D1D1D6] rounded-lg text-[#4B5563] hover:bg-[#F9FAFB]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  try {
-                    await executeCandidateStageMove(
-                      confirmMoveAction.applicationId,
-                      confirmMoveAction.toStageId,
-                      confirmMoveAction.toStageName,
-                      confirmMoveAction.mode
-                    );
-                    showToast.success(
-                      confirmMoveAction.mode === "archive"
-                        ? "Candidate archived successfully"
-                        : `Candidate moved to ${confirmMoveAction.toStageName}`
-                    );
-                  } catch (error: any) {
-                    showToast.error(error?.response?.data?.detail || "Failed to move candidate");
-                  } finally {
-                    setConfirmMoveAction(null);
-                  }
-                }}
-                className="px-4 py-2 text-sm bg-[#0F47F2] text-white rounded-lg hover:bg-[#0D3ECF]"
-              >
-                Yes, Continue
               </button>
             </div>
           </div>
