@@ -1254,7 +1254,7 @@ export default function JobPipelineDashboard({
 
   const getPrimaryMoveLabel = (item: CandidateListItem) => {
     const currentSlug = (item.current_stage?.slug || item.stage_slug || "").toLowerCase();
-    return currentSlug === "uncontacted" ? "Shortlist Candidate" : "Move to Next Stage";
+    return currentSlug === "uncontacted" ? "Shortlist" : "Move Ahead";
   };
 
   const handleCopyCandidateEmail = async (item: CandidateListItem) => {
@@ -2459,7 +2459,7 @@ export default function JobPipelineDashboard({
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: "2%" }} /> {/* checkbox */}
-                  <col style={{ width: "30%" }} /> {/* name & headline */}
+                  <col style={{ width: "25%" }} /> {/* name & headline */}
                   <col style={{ width: "6%" }} /> {/* ai score */}
                   <col style={{ width: "8%" }} /> {/* location */}
                   <col style={{ width: "5%" }} /> {/* exp */}
@@ -2468,7 +2468,7 @@ export default function JobPipelineDashboard({
                   <col style={{ width: "7%" }} /> {/* notice period */}
                   <col style={{ width: "9%" }} /> {/* stage */}
                   <col style={{ width: "9%" }} /> {/* attention */}
-                  <col style={{ width: "11%" }} /> {/* actions */}
+                  <col style={{ width: "16%" }} /> {/* actions */}
                 </colgroup>
 
                 <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
