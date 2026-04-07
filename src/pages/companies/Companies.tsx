@@ -616,6 +616,7 @@ export default function Companies() {
         const totalCompanyTrend = statsCount.increased_decreased_rate_percentages?.total_companies?.monthly;
         const activeCompanyTrend = statsCount.increased_decreased_rate_percentages?.active_companies?.monthly;
         const totalOpenJobsTrend = statsCount.increased_decreased_rate_percentages?.total_open_jobs?.monthly;
+        const immediateActionsTrend = statsCount.increased_decreased_rate_percentages?.immediate_action_jobs?.monthly;
 
         return [
             {
@@ -643,6 +644,8 @@ export default function Companies() {
                 id: 'cs-4',
                 label: 'Immediate Actions',
                 value: statsCount.immediate_action_jobs,
+                trend: renderTrend(immediateActionsTrend),
+                trendColor: (immediateActionsTrend && immediateActionsTrend >= 0) ? 'green' : 'red',
                 subText: `${statsCount.immediate_action_jobs} pending`,
             },
         ] as any;
@@ -668,46 +671,38 @@ export default function Companies() {
                             return (
                                 <div
                                     key={stat.id}
-                                    className={`bg-white rounded-xl flex flex-col ${isAction ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}`} // UPDATED: clickable only for Immediate Action card
-                                    style={{ padding: "20px", gap: "8px" }}
+                                    className={`bg-white rounded-xl flex flex-col border border-[#E5E7EB] ${isAction ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}`}
+                                    style={{ padding: "16px", gap: "10px" }}
                                     onClick={isAction ? () => setIsActionView(!isActionView) : undefined}
                                 >
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-[12px] font-normal text-[#4B5563] leading-[14px]">
-                                            {stat.label}
-                                        </p>
-                                        {stat.trend && (
-                                            <span
-                                                className={`flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded ${stat.trendColor === "green"
-                                                    ? "text-[#069855] bg-[#DEF7EC]"
-                                                    : "text-[#DC2626] bg-[#FEE2E2]"
-                                                    }`}
-                                            >
-                                                {stat.trend}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="flex items-end justify-between">
-                                        <span
-                                            className={`font-medium leading-[40px] ${isAction ? "text-[#DC2626]" : "text-black"
-                                                }`}
-                                            style={{ fontSize: "32px" }}
-                                        >
-                                            {stat.value}
-                                        </span>
-
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex items-start justify-between">
+                                        <div className="shrink-0">
                                             {stat.id === "cs-1" && <TotalCompaniesIcon />}
                                             {stat.id === "cs-2" && <ActiveCompaniesIcon />}
                                             {stat.id === "cs-3" && <TotalOpenJobsIcon />}
                                             {stat.id === "cs-4" && <ImmediateActionsIcon />}
-
-                                        {stat.subText && (
-                                            <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FFF7D6] text-[#92400E]">
-                                                ⚠️ {stat.subText}
+                                        </div>
+                                        {stat.trend && (
+                                            <span className={`text-[11px] font-medium ${stat.trendColor === "green" ? "text-[#14AE5C]" : "text-[#DC2626]"}`}>
+                                                {stat.trend} vs last month
                                             </span>
                                         )}
-                                        </div>
+                                    </div>
+                                    <p className="text-[13px] font-normal text-[#4B5563] leading-[18px]">
+                                        {stat.label}
+                                    </p>
+                                    <div className="flex items-end justify-between">
+                                        <span
+                                            className={`font-medium leading-[40px] ${isAction ? "text-black" : "text-black"}`}
+                                            style={{ fontSize: "40px" }}
+                                        >
+                                            {stat.value}
+                                        </span>
+                                        {stat.subText && (
+                                            <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FFF7D6] text-[#92400E]">
+                                                 {stat.subText}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             );
