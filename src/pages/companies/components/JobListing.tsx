@@ -667,7 +667,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                         {/* Job Title */}
                                         <td className="px-4 py-3">
-                                            <div className="flex flex-col gap-1.5">
+                                            <div className="flex flex-col gap-1.5 overflow-hidden">
                                                 <div className="flex items-center gap-2">
                                                     <span
                                                         className="text-[14px] font-[600] text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors truncate"
@@ -675,7 +675,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     >{job.title}</span>
                                                     {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
                                                 </div>
-                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                                                     {/* add a copy button here and line it up with job id */}
                                                     <span
                                                         className="flex items-center gap-1 px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap cursor-pointer hover:bg-[#E0E9FF] transition-colors"
@@ -719,7 +719,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                         {/* Pipeline Stages */}
                                         <td className="px-4 py-3">
-                                            <div className="flex gap-1.5 items-center">
+                                            <div className="flex gap-1.5 items-center overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                                                 {stages.length > 0 ? stages.map((item: any, idx: number) => {
                                                     const stageArchivedCount = item.archived_count || 0;
                                                     const palette = stageColors[idx % stageColors.length];
@@ -808,7 +808,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     <textarea
                                                         value={inlineNoteContent}
                                                         onChange={(e) => setInlineNoteContent(e.target.value)}
-                                                        className="w-full border border-gray-200 rounded text-[13px] p-2 focus:outline-none focus:border-[#0F47F2]"
+                                                        className="w-full max-h-20 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden border border-gray-200 rounded text-[13px] p-2 focus:outline-none focus:border-[#0F47F2]"
                                                         rows={2}
                                                         autoFocus
                                                     />
@@ -824,7 +824,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <span className="text-[13px] text-[#4B5563] line-clamp-2 leading-relaxed">
+                                                <span className="block max-h-10 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden text-[13px] text-[#4B5563] leading-relaxed">
                                                     {fetchedNotes[job.id]?.[0]?.content || <span className="text-[#8E8E93] opacity-70">Add a note</span>}
                                                 </span>
                                             )}
