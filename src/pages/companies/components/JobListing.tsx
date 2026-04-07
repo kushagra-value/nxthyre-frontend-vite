@@ -106,6 +106,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
     const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
+    const [showRatingModal, setShowRatingModal] = useState(false);
     const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
     const [menuOpenJobId, setMenuOpenJobId] = useState<number | null>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, right: 0, bottom: 0, isBottom: false });
@@ -289,6 +290,8 @@ const JobListing: React.FC<JobListingProps> = ({
 
     const hiredTrend = renderTrend(selectedWorkspace.increased_decreased_rate_percentages?.hired?.monthly, "--");
     const hiredColor = (selectedWorkspace.increased_decreased_rate_percentages?.hired?.monthly || 0) >= 0 ? "text-[#009951]" : "text-[#DC2626]";
+    const workspaceRating = selectedWorkspace.company_research_data?.overall_rating ?? companyResearchData?.overall_rating ?? null;
+    const hasRatingData = workspaceRating !== null && workspaceRating !== undefined;
 
     useEffect(() => {
         // Fetch notes for currently viewed jobs
@@ -374,11 +377,25 @@ const JobListing: React.FC<JobListingProps> = ({
                         View info <Eye className="w-3.5 h-3.5" />
                     </button>
                     <button
-                        disabled
-                        title="Feature coming Soon"
-                        className="flex items-center gap-1.5 px-4 py-2 bg-[#EBFFEE] border border-[#34C759] rounded-md text-sm font-medium text-[#14AE5C] opacity-50 cursor-not-allowed"
+                        onClick={() => hasRatingData && setShowRatingModal(true)}
+                        title={hasRatingData ? "View company rating details" : "Rating data not available"}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors ${hasRatingData
+                            ? "bg-[#EBFFEE] border border-[#34C759] text-[#14AE5C] hover:bg-[#DFFBE7]"
+                            : "bg-[#F3F5F7] border border-[#D1D1D6] text-[#8E8E93] cursor-not-allowed"
+                            }`}
+                        disabled={!hasRatingData}
                     >
-                        <Star className="w-4 h-4 fill-current" /> --
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_1077_16127)">
+                                <path d="M6.10178 3.60575C6.94621 2.09092 7.36841 1.3335 7.99968 1.3335C8.63094 1.3335 9.05314 2.09091 9.89754 3.60574L10.116 3.99765C10.356 4.42812 10.4759 4.64336 10.6631 4.78537C10.8501 4.92738 11.0831 4.9801 11.5491 5.08553L11.9733 5.18152C13.6131 5.55254 14.433 5.73804 14.6281 6.36532C14.8231 6.99256 14.2642 7.64623 13.1463 8.95343L12.8571 9.29163C12.5394 9.6631 12.3805 9.84883 12.3091 10.0786C12.2377 10.3084 12.2617 10.5562 12.3097 11.0519L12.3534 11.5031C12.5224 13.2472 12.6069 14.1193 12.0963 14.507C11.5855 14.8946 10.8179 14.5412 9.28254 13.8343L8.88534 13.6514C8.44908 13.4505 8.23094 13.35 7.99968 13.35C7.76841 13.35 7.55028 13.4505 7.11401 13.6514L6.71681 13.8343C5.18146 14.5412 4.4138 14.8946 3.90311 14.507C3.39242 14.1193 3.47693 13.2472 3.64594 11.5031L3.68966 11.0519C3.7377 10.5562 3.76171 10.3084 3.69025 10.0786C3.6188 9.84883 3.45996 9.6631 3.14229 9.29163L2.85308 8.95343C1.73518 7.64623 1.17622 6.99256 1.37129 6.36532C1.56636 5.73804 2.38625 5.55254 4.02604 5.18152L4.45027 5.08553C4.91624 4.9801 5.14923 4.92738 5.3363 4.78537C5.52338 4.64336 5.64336 4.42812 5.88332 3.99765L6.10178 3.60575Z" fill="#AFF4C6" stroke="#14AE5C" />
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_1077_16127">
+                                    <rect width="16" height="16" fill="white" />
+                                </clipPath>
+                            </defs>
+                        </svg>
+                        {hasRatingData ? Number(workspaceRating).toFixed(1) : "--"}
                     </button>
                     <button
                         onClick={() => setShowCreateJobRole(true)}
@@ -392,18 +409,68 @@ const JobListing: React.FC<JobListingProps> = ({
             {/* ── Stat Cards ── */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
                 {[
-                    { label: "Total Jobs", value: selectedWorkspace.jobs_count ?? workspaceJobs.length, trend: "--", trendColor: "text-[#8E8E93]", icon: <Briefcase className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "Total Candidates", value: selectedWorkspace.candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <Users className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "In Pipeline", value: workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <Route className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "Shortlisted", value: selectedWorkspace.shortlisted_candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: shortlistedTrend, trendColor: shortlistedColor, icon: <UserCheck className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "Interview this week", value: workspaceJobs.reduce((acc, j) => acc + (j.interview_this_week || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <Calendar className="w-5 h-5 text-[#0F47F2]" /> },
-                    { label: "Hired", value: selectedWorkspace.hired_candidates_in_workspace_count ?? 0, trend: hiredTrend, trendColor: hiredColor, icon: <UserCircle className="w-5 h-5 text-[#0F47F2]" /> },
+                    {
+                        label: "Total Jobs", value: selectedWorkspace.jobs_count ?? workspaceJobs.length, trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                            <path d="M20 22.5L20 23.75" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M12.5 19.1665L12.6274 21.5526C12.7643 24.564 12.8327 26.0697 13.799 26.9931C14.7654 27.9165 16.2726 27.9165 19.2872 27.9165H20.7128C23.7274 27.9165 25.2346 27.9165 26.201 26.9931C27.1673 26.0697 27.2357 24.564 27.3726 21.5526L27.5 19.1665" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M12.3728 18.7025C13.7889 21.3954 16.9828 22.5 20.0002 22.5C23.0175 22.5 26.2114 21.3954 27.6275 18.7025C28.3035 17.4171 27.7916 15 26.1268 15H13.8735C12.2087 15 11.6969 17.4171 12.3728 18.7025Z" stroke="#0F47F2" />
+                            <path d="M23.3332 15.0002L23.2596 14.7426C22.8929 13.4592 22.7096 12.8176 22.2731 12.4505C21.8366 12.0835 21.2568 12.0835 20.0973 12.0835H19.9024C18.7428 12.0835 18.1631 12.0835 17.7266 12.4505C17.2901 12.8176 17.1068 13.4592 16.7401 14.7426L16.6665 15.0002" stroke="#0F47F2" />
+                        </svg>
+                    },
+                    {
+                        label: "Total Candidates", value: selectedWorkspace.candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                            <path d="M17.8333 18.6667C19.6743 18.6667 21.1667 17.1743 21.1667 15.3333C21.1667 13.4924 19.6743 12 17.8333 12C15.9924 12 14.5 13.4924 14.5 15.3333C14.5 17.1743 15.9924 18.6667 17.8333 18.6667Z" stroke="#0F47F2" />
+                            <path d="M22.833 17.8335C24.2138 17.8335 25.333 16.7142 25.333 15.3335C25.333 13.9528 24.2138 12.8335 22.833 12.8335" stroke="#0F47F2" stroke-linecap="round" />
+                            <path d="M17.8333 27.8332C21.055 27.8332 23.6667 26.3408 23.6667 24.4998C23.6667 22.6589 21.055 21.1665 17.8333 21.1665C14.6117 21.1665 12 22.6589 12 24.4998C12 26.3408 14.6117 27.8332 17.8333 27.8332Z" stroke="#0F47F2" />
+                            <path d="M25.333 22C26.7948 22.3206 27.833 23.1324 27.833 24.0833C27.833 24.9411 26.9883 25.6857 25.7497 26.0587" stroke="#0F47F2" stroke-linecap="round" />
+                        </svg>
+                    },
+                    {
+                        label: "In Pipeline", value: workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                            <path d="M14.167 16.6665C15.5477 16.6665 16.667 15.5472 16.667 14.1665C16.667 12.7858 15.5477 11.6665 14.167 11.6665C12.7863 11.6665 11.667 12.7858 11.667 14.1665C11.667 15.5472 12.7863 16.6665 14.167 16.6665Z" stroke="#0F47F2" />
+                            <path d="M25.833 28.3335C27.2137 28.3335 28.333 27.2142 28.333 25.8335C28.333 24.4528 27.2137 23.3335 25.833 23.3335C24.4523 23.3335 23.333 24.4528 23.333 25.8335C23.333 27.2142 24.4523 28.3335 25.833 28.3335Z" stroke="#0F47F2" />
+                            <path d="M19.1182 25.7085L19.2422 25.8325L19.1416 25.9341L19.1172 25.9585H17.0566V25.7085H19.1182ZM15.3486 23.1997C14.6799 24.0131 15.0559 25.302 16.0566 25.6294V25.8911C14.8057 25.5478 14.3369 23.9402 15.208 22.979L15.3486 23.1997ZM23.9834 17.6128L16.1504 22.5972L16.0156 22.3862L23.8486 17.4019L23.9834 17.6128ZM23.9434 14.1079C25.1942 14.4514 25.6615 16.0589 24.79 17.02L24.6494 16.7993C25.3184 15.986 24.9441 14.6972 23.9434 14.3696V14.1079ZM22.9434 14.0415V14.2915H19.666V14.0415H22.9434Z" fill="#1C274C" stroke="#0F47F2" />
+                        </svg>
+                    },
+                    {
+                        label: "Shortlisted", value: selectedWorkspace.shortlisted_candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: shortlistedTrend, trendColor: shortlistedColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                            <path d="M20.0003 18.3332C21.8413 18.3332 23.3337 16.8408 23.3337 14.9998C23.3337 13.1589 21.8413 11.6665 20.0003 11.6665C18.1594 11.6665 16.667 13.1589 16.667 14.9998C16.667 16.8408 18.1594 18.3332 20.0003 18.3332Z" stroke="#0F47F2" />
+                            <path d="M24.1663 28.3332C26.0073 28.3332 27.4997 26.8408 27.4997 24.9998C27.4997 23.1589 26.0073 21.6665 24.1663 21.6665C22.3254 21.6665 20.833 23.1589 20.833 24.9998C20.833 26.8408 22.3254 28.3332 24.1663 28.3332Z" stroke="#0F47F2" />
+                            <path d="M23.0557 25L23.7502 25.8334L25.2779 24.2593" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M21.667 27.3622C21.1389 27.4519 20.5795 27.5002 20.0003 27.5002C16.7787 27.5002 14.167 26.0077 14.167 24.1668C14.167 22.3259 16.7787 20.8335 20.0003 20.8335C21.4282 20.8335 22.7363 21.1267 23.7503 21.6134" stroke="#0F47F2" />
+                        </svg>
+                    },
+                    {
+                        label: "Interview this week", value: workspaceJobs.reduce((acc, j) => acc + (j.interview_this_week || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                            <path d="M11.667 20.0002C11.667 16.8575 11.667 15.2861 12.6433 14.3098C13.6196 13.3335 15.191 13.3335 18.3337 13.3335H21.667C24.8097 13.3335 26.3811 13.3335 27.3573 14.3098C28.3337 15.2861 28.3337 16.8575 28.3337 20.0002V21.6668C28.3337 24.8095 28.3337 26.3809 27.3573 27.3572C26.3811 28.3335 24.8097 28.3335 21.667 28.3335H18.3337C15.191 28.3335 13.6196 28.3335 12.6433 27.3572C11.667 26.3809 11.667 24.8095 11.667 21.6668V20.0002Z" stroke="#0F47F2" />
+                            <path d="M15.833 13.3335V12.0835" stroke="#0F47F2" stroke-linecap="round" />
+                            <path d="M24.167 13.3335V12.0835" stroke="#0F47F2" stroke-linecap="round" />
+                            <path d="M12.083 17.5H27.9163" stroke="#0F47F2" stroke-linecap="round" />
+                            <path d="M24.9997 24.1668C24.9997 24.6271 24.6266 25.0002 24.1663 25.0002C23.7061 25.0002 23.333 24.6271 23.333 24.1668C23.333 23.7066 23.7061 23.3335 24.1663 23.3335C24.6266 23.3335 24.9997 23.7066 24.9997 24.1668Z" fill="#0F47F2" />
+                            <path d="M24.9997 20.8333C24.9997 21.2936 24.6266 21.6667 24.1663 21.6667C23.7061 21.6667 23.333 21.2936 23.333 20.8333C23.333 20.3731 23.7061 20 24.1663 20C24.6266 20 24.9997 20.3731 24.9997 20.8333Z" fill="#0F47F2" />
+                            <path d="M20.8337 24.1668C20.8337 24.6271 20.4606 25.0002 20.0003 25.0002C19.5401 25.0002 19.167 24.6271 19.167 24.1668C19.167 23.7066 19.5401 23.3335 20.0003 23.3335C20.4606 23.3335 20.8337 23.7066 20.8337 24.1668Z" fill="#0F47F2" />
+                            <path d="M20.8337 20.8333C20.8337 21.2936 20.4606 21.6667 20.0003 21.6667C19.5401 21.6667 19.167 21.2936 19.167 20.8333C19.167 20.3731 19.5401 20 20.0003 20C20.4606 20 20.8337 20.3731 20.8337 20.8333Z" fill="#0F47F2" />
+                            <path d="M16.6667 24.1668C16.6667 24.6271 16.2936 25.0002 15.8333 25.0002C15.3731 25.0002 15 24.6271 15 24.1668C15 23.7066 15.3731 23.3335 15.8333 23.3335C16.2936 23.3335 16.6667 23.7066 16.6667 24.1668Z" fill="#0F47F2" />
+                            <path d="M16.6667 20.8333C16.6667 21.2936 16.2936 21.6667 15.8333 21.6667C15.3731 21.6667 15 21.2936 15 20.8333C15 20.3731 15.3731 20 15.8333 20C16.2936 20 16.6667 20.3731 16.6667 20.8333Z" fill="#0F47F2" />
+                        </svg>
+                    },
+                    {
+                        label: "Hired", value: selectedWorkspace.hired_candidates_in_workspace_count ?? 0, trend: hiredTrend, trendColor: hiredColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                            <path d="M20 20C21.3807 20 22.5 18.8807 22.5 17.5C22.5 16.1193 21.3807 15 20 15C18.6193 15 17.5 16.1193 17.5 17.5C17.5 18.8807 18.6193 20 20 20Z" stroke="#0F47F2" />
+                            <path d="M20.0003 28.3332C24.6027 28.3332 28.3337 24.6022 28.3337 19.9998C28.3337 15.3975 24.6027 11.6665 20.0003 11.6665C15.398 11.6665 11.667 15.3975 11.667 19.9998C11.667 24.6022 15.398 28.3332 20.0003 28.3332Z" stroke="#0F47F2" />
+                            <path d="M24.974 26.6667C24.8414 24.2571 24.1037 22.5 19.9997 22.5C15.8958 22.5 15.158 24.2571 15.0254 26.6667" stroke="#0F47F2" stroke-linecap="round" />
+                        </svg>
+                    },
                 ].map((stat, idx) => (
                     <div key={idx} className="bg-white p-5 rounded-xl border border-[#D1D1D6] flex flex-col gap-2 shadow-sm">
                         <div className="flex items-center justify-between">
-                            <div className="w-10 h-10 rounded-lg border border-black/20 flex items-center justify-center">
-                                {stat.icon}
-                            </div>
+                            {stat.icon}
                             <span className={`text-[12px] font-light text-right ${stat.trendColor}`}>{stat.trend}</span>
                         </div>
                         <div>
@@ -446,7 +513,20 @@ const JobListing: React.FC<JobListingProps> = ({
                         title="Feature coming Soon"
                         className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
                     >
-                        <LayoutGrid className="w-4 h-4" /> Grid View
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_1077_15886)">
+                                <path d="M5.99967 14.6668H9.99967C13.333 14.6668 14.6663 13.3335 14.6663 10.0002V6.00016C14.6663 2.66683 13.333 1.3335 9.99967 1.3335H5.99967C2.66634 1.3335 1.33301 2.66683 1.33301 6.00016V10.0002C1.33301 13.3335 2.66634 14.6668 5.99967 14.6668Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M8 1.3335V14.6668" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M1.33301 6.3335H7.99967" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M8 9.66699H14.6667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_1077_15886">
+                                    <rect width="16" height="16" fill="white" />
+                                </clipPath>
+                            </defs>
+                        </svg>
+                        Grid View
                     </button>
                 </div>
 
@@ -469,7 +549,18 @@ const JobListing: React.FC<JobListingProps> = ({
                             onClick={handleSharePipeline}
                             className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
                         >
-                            <Share2 className="w-4 h-4" /> Share Pipeline
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g clip-path="url(#clip0_1077_15875)">
+                                    <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="#374151" stroke-linecap="round" />
+                                    <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                </g>
+                                <defs>
+                                    <clipPath id="clip0_1077_15875">
+                                        <rect width="16" height="16" fill="white" />
+                                    </clipPath>
+                                </defs>
+                            </svg>
+                            Share Pipeline
                         </button>
 
                         <button
@@ -477,7 +568,11 @@ const JobListing: React.FC<JobListingProps> = ({
                             title="Feature coming Soon"
                             className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
                         >
-                            <DownloadCloud className="w-4 h-4" /> Export CSV
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.6514 6.00737C11.6564 6.00735 11.6614 6.00734 11.6663 6.00734C13.3232 6.00734 14.6663 7.35295 14.6663 9.01284C14.6663 10.5599 13.4997 11.8339 11.9997 12M11.6514 6.00737C11.6613 5.89737 11.6663 5.78597 11.6663 5.67339C11.6663 3.64463 10.0247 2 7.99967 2C6.08183 2 4.50789 3.47511 4.34662 5.35461M11.6514 6.00737C11.5832 6.76506 11.2854 7.4564 10.8282 8.01101M4.34662 5.35461C2.65566 5.51582 1.33301 6.94261 1.33301 8.6789C1.33301 10.2945 2.47818 11.6421 3.99967 11.9515M4.34662 5.35461C4.45185 5.34458 4.5585 5.33945 4.66634 5.33945C5.41689 5.33945 6.1095 5.58796 6.66667 6.00734" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M7.99967 8.6665L7.99967 13.9998M7.99967 8.6665C7.53286 8.6665 6.66069 9.99604 6.33301 10.3332M7.99967 8.6665C8.46649 8.6665 9.33865 9.99604 9.66634 10.3332" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            Export CSV
                         </button>
 
                         <button
@@ -485,7 +580,13 @@ const JobListing: React.FC<JobListingProps> = ({
                             title="Feature coming Soon"
                             className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
                         >
-                            <Calendar className="w-4 h-4" /> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M6.66667 11.3332L6.66666 8.89798C6.66666 8.77014 6.5755 8.6665 6.46305 8.6665H6M9.08644 11.3332L9.98945 8.89928C10.0317 8.78547 9.94189 8.6665 9.81379 8.6665H8.66667" stroke="#374151" stroke-linecap="round" />
+                                <path d="M1.6665 8.16216C1.6665 5.25729 1.6665 3.80486 2.50125 2.90243C3.336 2 4.6795 2 7.3665 2H8.63317C11.3202 2 12.6637 2 13.4984 2.90243C14.3332 3.80486 14.3332 5.25729 14.3332 8.16216V8.5045C14.3332 11.4094 14.3332 12.8618 13.4984 13.7642C12.6637 14.6667 11.3202 14.6667 8.63317 14.6667H7.3665C4.6795 14.6667 3.336 14.6667 2.50125 13.7642C1.6665 12.8618 1.6665 11.4094 1.6665 8.5045V8.16216Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M4 5.3335H12" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </button>
                     </div>
                 </div>
@@ -936,6 +1037,93 @@ const JobListing: React.FC<JobListingProps> = ({
                                 <button onClick={() => handleUnpublishJobRole(showUnpublishModal)} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Unpublish</button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {showRatingModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6">
+                        <div className="flex items-start justify-between mb-5">
+                            <div>
+                                <h3 className="text-lg font-semibold text-[#1C1C1E]">
+                                    {selectedWorkspace.company_research_data?.company_name || selectedWorkspace.name} Rating
+                                </h3>
+                                <p className="text-sm text-[#6B7280] mt-1">
+                                    Based on company research insights
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowRatingModal(false)}
+                                className="text-sm text-[#6B7280] hover:text-[#1C1C1E]"
+                            >
+                                Close
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
+                            <div className="p-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB]">
+                                <p className="text-xs text-[#6B7280] mb-1">Overall Rating</p>
+                                <p className="text-2xl font-semibold text-[#14AE5C]">
+                                    {hasRatingData ? Number(workspaceRating).toFixed(1) : "--"}
+                                    <span className="text-sm text-[#6B7280] font-normal"> / 5</span>
+                                </p>
+                            </div>
+                            <div className="p-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB]">
+                                <p className="text-xs text-[#6B7280] mb-1">Rating Source</p>
+                                <p className="text-base font-medium text-[#1C1C1E]">
+                                    {selectedWorkspace.company_research_data?.rating_source || "--"}
+                                </p>
+                            </div>
+                            <div className="p-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB]">
+                                <p className="text-xs text-[#6B7280] mb-1">Review Count</p>
+                                <p className="text-base font-medium text-[#1C1C1E]">
+                                    {selectedWorkspace.company_research_data?.review_count ?? "--"}
+                                </p>
+                            </div>
+                            <div className="p-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB]">
+                                <p className="text-xs text-[#6B7280] mb-1">Recommend to Friend</p>
+                                <p className="text-base font-medium text-[#1C1C1E]">
+                                    {selectedWorkspace.company_research_data?.recommend_to_friend_pct != null
+                                        ? `${selectedWorkspace.company_research_data.recommend_to_friend_pct}%`
+                                        : "--"}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                            <div className="p-3 rounded-lg border border-[#E5E7EB]">
+                                <p className="text-xs text-[#6B7280]">Work-Life Balance</p>
+                                <p className="text-sm font-medium text-[#1C1C1E]">{selectedWorkspace.company_research_data?.work_life_balance_rating ?? "--"}</p>
+                            </div>
+                            <div className="p-3 rounded-lg border border-[#E5E7EB]">
+                                <p className="text-xs text-[#6B7280]">Management</p>
+                                <p className="text-sm font-medium text-[#1C1C1E]">{selectedWorkspace.company_research_data?.management_rating ?? "--"}</p>
+                            </div>
+                            <div className="p-3 rounded-lg border border-[#E5E7EB]">
+                                <p className="text-xs text-[#6B7280]">Compensation</p>
+                                <p className="text-sm font-medium text-[#1C1C1E]">{selectedWorkspace.company_research_data?.compensation_rating ?? "--"}</p>
+                            </div>
+                            <div className="p-3 rounded-lg border border-[#E5E7EB]">
+                                <p className="text-xs text-[#6B7280]">Career Growth</p>
+                                <p className="text-sm font-medium text-[#1C1C1E]">{selectedWorkspace.company_research_data?.career_growth_rating ?? "--"}</p>
+                            </div>
+                            <div className="p-3 rounded-lg border border-[#E5E7EB]">
+                                <p className="text-xs text-[#6B7280]">Job Security</p>
+                                <p className="text-sm font-medium text-[#1C1C1E]">{selectedWorkspace.company_research_data?.job_security_rating ?? "--"}</p>
+                            </div>
+                        </div>
+
+                        {Array.isArray(selectedWorkspace.company_research_data?.culture_summary) && selectedWorkspace.company_research_data.culture_summary.length > 0 && (
+                            <div className="p-4 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB]">
+                                <p className="text-xs text-[#6B7280] mb-2">Culture Summary</p>
+                                <ul className="list-disc pl-5 space-y-1 text-sm text-[#4B5563]">
+                                    {selectedWorkspace.company_research_data.culture_summary.slice(0, 3).map((item: string, idx: number) => (
+                                        <li key={`culture-${idx}`}>{item}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
