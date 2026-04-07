@@ -2790,7 +2790,7 @@ export default function JobPipelineDashboard({
 
                                   {menuOpenId === item.id && (
                                     <div
-                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10050] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
                                       style={{ top: menuPos.top, left: menuPos.left }}
                                     >
                                       <button
