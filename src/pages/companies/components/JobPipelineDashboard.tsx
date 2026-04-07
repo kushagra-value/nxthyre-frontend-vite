@@ -35,6 +35,7 @@ import {
   Phone,
   Mail,
   Trash2,
+  Copy,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
@@ -228,23 +229,23 @@ const formatTimeAgo = (iso?: string): string => {
 
 const formatMovedDate = (statusTags?: { text: string; color: string }[]): string => {
   if (!statusTags || statusTags.length === 0) return "0d";
-  
-  const movedTag = statusTags.find(tag => 
-    tag.text.toLowerCase().includes("moved") || 
+
+  const movedTag = statusTags.find(tag =>
+    tag.text.toLowerCase().includes("moved") ||
     tag.text.toLowerCase().includes("added")
   );
-  
+
   if (!movedTag) return "0d";
-  
+
   const text = movedTag.text.toLowerCase();
-  
+
   if (text.includes("today")) return "0d";
   if (text.includes("yesterday")) return "1d";
-  
+
   // Extract date from strings like "Moved on 31 Mar 2026" or "Moved 31 Mar 2026"
   const dateParts = movedTag.text.replace(/Moved on |Added on |Moved |Added /i, "").trim();
   const pastDate = new Date(dateParts);
-  
+
   if (isNaN(pastDate.getTime())) return "0d";
 
   const now = new Date();
@@ -252,10 +253,10 @@ const formatMovedDate = (statusTags?: { text: string; color: string }[]): string
   now.setHours(0, 0, 0, 0);
   const midnightPast = new Date(pastDate);
   midnightPast.setHours(0, 0, 0, 0);
-  
+
   const diffInMs = now.getTime() - midnightPast.getTime();
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-  
+
   return `${Math.max(0, diffInDays)}d`;
 };
 
@@ -557,14 +558,14 @@ export default function JobPipelineDashboard({
     // Custom drag image logic for multiple selections
     if (selectedIds.has(id) && selectedIds.size > 1) {
       const selectedArray = Array.from(selectedIds);
-      
+
       const getCandidateName = (cId: number) => {
         const c = candidates.find(cand => cand.id === cId) || archivedCandidates.find((cand: any) => cand.id === cId);
         return c?.candidate?.full_name || "Unknown";
       };
 
       const candidatesToDrag = selectedArray.map(getCandidateName);
-      
+
       const overlay = document.createElement("div");
       overlay.id = "custom-drag-image";
       overlay.style.position = "absolute";
@@ -581,7 +582,7 @@ export default function JobPipelineDashboard({
         "top: -8px; right: -8px;",
         "bottom: -8px; left: -8px;"
       ];
-      
+
       const colors = ["#FCA5A5", "#FCD34D", "#93C5FD", "#D8B4FE", "#86EFAC"];
 
       candidatesToDrag.slice(0, 3).forEach((name, idx) => {
@@ -594,7 +595,7 @@ export default function JobPipelineDashboard({
       if (candidatesToDrag.length > 3) {
         avatarsHtml += `<div style="position: absolute; bottom: -8px; right: -8px; width: 44px; height: 44px; border-radius: 50%; background: #1C1C1E; color: white; border: 3px solid white; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: 700; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">+${candidatesToDrag.length - 3}</div>`;
       }
-      
+
       const handIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 14v4"/><path d="M11 20H8a2 2 0 0 1-2-2v-5"/><path d="M6 10a2 2 0 0 1 2-2h1"/><path d="M9 8V5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v8"/><path d="M14 11V9a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v2"/><path d="M19 14v-1a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v6a2 2 0 0 1-2 2h-1"/></svg>`;
 
       overlay.innerHTML = `
@@ -611,7 +612,7 @@ export default function JobPipelineDashboard({
       e.dataTransfer.setDragImage(overlay, 50, 50);
 
       setTimeout(() => {
-        if(overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
       }, 0);
     }
   };
@@ -1443,7 +1444,18 @@ export default function JobPipelineDashboard({
                   </div>
                 )}
               </div>
-              <div className="text-sm text-[#8E8E93] mt-0.5">JD-{jobId}</div>
+              <div
+                className="text-sm text-[#8E8E93] mt-0.5 flex items-center gap-1 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(`${jobDetails?.title}, ${jobDetails?.location} (Job ID: ${jobDetails?.id})`).then(() => showToast.success("Job ID copied"));
+                }}
+              >
+
+                {/* add a copy button here  */}
+                <Copy className="w-3.5 h-3.5 text-[#4674E5] shrink-0" />
+                JD-{jobDetails?.job_id || jobDetails?.id}
+              </div>
             </div>
           </div>
 
@@ -1456,9 +1468,17 @@ export default function JobPipelineDashboard({
               title={isMetadataExpanded ? "Collapse details" : "Expand details"}
             >
               {isMetadataExpanded ? (
-                <Minimize2 className="w-4 h-4" />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1.33301 14.6667L5.99967 10M5.99967 10H2.09491M5.99967 10V13.9047" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M14.6667 1.3335L10 6.00016M10 6.00016H13.9047M10 6.00016V2.0954" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+
               ) : (
-                <Maximize2 className="w-4 h-4" />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 9.99984L1.33333 14.6665M1.33333 14.6665H5.23809M1.33333 14.6665L1.33333 10.7618" stroke="#6B7280" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M10.0013 6L14.668 1.33333M14.668 1.33333L10.7632 1.33333M14.668 1.33333V5.23809" stroke="#6B7280" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+
               )}
             </button>
 
@@ -1467,7 +1487,11 @@ export default function JobPipelineDashboard({
               onClick={() => jobId && handleRequisitionInfo(jobId)}
               className="flex items-center gap-2 px-4 py-2 border border-[#D1D1D6] rounded-lg text-sm text-[#757575] hover:bg-[#F9FAFB] transition-colors"
             >
-              View JD <span className="text-[#AEAEB2]">ⓘ</span>
+              View JD <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.91068 8.92265C1.41489 8.27854 1.16699 7.95648 1.16699 7.00016C1.16699 6.04385 1.41489 5.7218 1.91068 5.07769C2.90064 3.79157 4.56089 2.3335 7.00033 2.3335C9.43977 2.3335 11.1 3.79157 12.09 5.07769C12.5857 5.7218 12.8337 6.04385 12.8337 7.00016C12.8337 7.95648 12.5857 8.27854 12.09 8.92265C11.1 10.2087 9.43977 11.6668 7.00033 11.6668C4.56089 11.6668 2.90064 10.2087 1.91068 8.92265Z" stroke="#0F47F2" />
+                <path d="M8.75 7C8.75 7.96652 7.96652 8.75 7 8.75C6.03347 8.75 5.25 7.96652 5.25 7C5.25 6.03347 6.03347 5.25 7 5.25C7.96652 5.25 8.75 6.03347 8.75 7Z" stroke="#0F47F2" />
+              </svg>
+
             </button>
 
             {/* Edit */}
@@ -1475,7 +1499,12 @@ export default function JobPipelineDashboard({
               onClick={() => setShowEditModal(true)}
               className="flex items-center gap-2 px-4 py-2 border border-[#0F47F2] bg-[#E7EDFF] text-[#0F47F2] rounded-lg text-sm font-medium hover:bg-[#DDE6FF] transition-colors"
             >
-              <Pencil className="w-4 h-4" /> Edit
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.8396 2.39982L3.36624 8.19317C3.15958 8.41317 2.95958 8.84651 2.91958 9.14651L2.67291 11.3065C2.58624 12.0865 3.14624 12.6198 3.91958 12.4865L6.06624 12.1198C6.36624 12.0665 6.78626 11.8465 6.99293 11.6198L12.4663 5.82649C13.4129 4.82649 13.8396 3.68649 12.3663 2.29315C10.8996 0.913152 9.78626 1.39982 8.8396 2.39982Z" stroke="#0F47F2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M7.92676 3.3667C8.21342 5.2067 9.70676 6.61337 11.5601 6.8" stroke="#0F47F2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M2 14.6665H14" stroke="#0F47F2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Edit
             </button>
 
             {/* + Candidate (Upload) */}
@@ -1645,8 +1674,8 @@ export default function JobPipelineDashboard({
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === tab.key
-                  ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
-                  : "text-[#8E8E93] hover:text-[#4B5563]"
+                ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
+                : "text-[#8E8E93] hover:text-[#4B5563]"
                 }`}
             >
               {tab.label}{" "}
@@ -1672,8 +1701,8 @@ export default function JobPipelineDashboard({
                   <button
                     onClick={() => setActiveStageSlug(null)}
                     className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
-                        ? "bg-[#0F47F2] text-white"
-                        : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                      ? "bg-[#0F47F2] text-white"
+                      : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
                       }`}
                   >
                     All ({totalPipelineCandidates})
@@ -1691,8 +1720,8 @@ export default function JobPipelineDashboard({
                         key={stage.id}
                         onClick={() => setActiveStageSlug(stage.slug)}
                         className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
-                            ? "bg-[#0F47F2] text-white"
-                            : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                          ? "bg-[#0F47F2] text-white"
+                          : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
                           }`}
                       >
                         {stage.name} ({stage.candidate_count})
@@ -1948,7 +1977,7 @@ export default function JobPipelineDashboard({
                           item.job_score?.candidate_match_score?.score || "--%";
                         const aiScoreNum = parseInt(aiScoreRaw.replace("%", ""), 10) || 0;
                         const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : "#FF383C";
-                        
+
                         const isDisabled =
                           selectionType === "ARCHIVED" ||
                           (selectionStage && selectionStage !== stage.slug);
@@ -1956,7 +1985,7 @@ export default function JobPipelineDashboard({
                         // Extract headline and company (attempt to split if "at" present)
                         let headline = cand.headline || "--";
                         let companyName = cand.experience_summary?.title || "--";
-                        
+
                         // If companyName seems to be a job title, it might be better to show it if headline doesn't have it.
                         // Based on the image: "Product Designer" (headline/title), "Google" (company).
 
@@ -2045,7 +2074,7 @@ export default function JobPipelineDashboard({
                                     setCallModalCandidate({
                                       id: cand.id,
                                       name: cand.full_name,
-                                      avatarInitials: cand.full_name?.substring(0,2).toUpperCase(),
+                                      avatarInitials: cand.full_name?.substring(0, 2).toUpperCase(),
                                       headline: cand.headline,
                                       phone: cand.premium_data?.phone || "+91 98765 43210",
                                       experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"),
@@ -2066,7 +2095,7 @@ export default function JobPipelineDashboard({
                                 >
                                   <Mail className="w-4 h-4" />
                                 </button>
-                                
+
                                 <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
                                   <button
                                     onClick={(e) => {
@@ -3169,8 +3198,8 @@ export default function JobPipelineDashboard({
                   <div className="flex gap-[20px]">
                     <button
                       className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === "info"
-                          ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
-                          : "text-[#8E8E93] hover:text-[#4B5563]"
+                        ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
+                        : "text-[#8E8E93] hover:text-[#4B5563]"
                         }`}
                       onClick={() => setRequisitionModalTab("info")}
                     >
@@ -3178,8 +3207,8 @@ export default function JobPipelineDashboard({
                     </button>
                     <button
                       className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === "company"
-                          ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
-                          : "text-[#8E8E93] hover:text-[#4B5563]"
+                        ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
+                        : "text-[#8E8E93] hover:text-[#4B5563]"
                         }`}
                       onClick={async () => {
                         setRequisitionModalTab("company");
