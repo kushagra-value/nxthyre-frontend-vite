@@ -2481,7 +2481,7 @@ export default function JobPipelineDashboard({
                   <col style={{ width: "8%" }} /> {/* notice period */}
                   <col style={{ width: "8%" }} /> {/* stage */}
                   <col style={{ width: "8%" }} /> {/* attention */}
-                  <col style={{ width: "8%" }} /> {/* actions */}
+                  <col style={{ width: "12%" }} /> {/* actions */}
                 </colgroup>
 
                 <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
