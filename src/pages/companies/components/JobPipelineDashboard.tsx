@@ -2468,7 +2468,7 @@ export default function JobPipelineDashboard({
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: "2%" }} /> {/* checkbox */}
-                  <col style={{ width: "30%" }} /> {/* name & headline */}
+                  <col style={{ width: "25%" }} /> {/* name & headline */}
                   <col style={{ width: "7%" }} /> {/* ai score */}
                   <col style={{ width: "11%" }} /> {/* location */}
                   <col style={{ width: "5%" }} /> {/* exp */}
