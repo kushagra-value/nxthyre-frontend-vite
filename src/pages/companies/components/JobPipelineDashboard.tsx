@@ -2476,8 +2476,8 @@ export default function JobPipelineDashboard({
                   <col style={{ width: "7%" }} /> {/* expected ctc */}
                   <col style={{ width: "7%" }} /> {/* notice period */}
                   <col style={{ width: "9%" }} /> {/* stage */}
-                  <col style={{ width: "9%" }} /> {/* attention */}
-                  <col style={{ width: "16%" }} /> {/* actions */}
+                  <col style={{ width: "13%" }} /> {/* attention */}
+                  <col style={{ width: "12%" }} /> {/* actions */}
                 </colgroup>
 
                 <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
@@ -2712,15 +2712,15 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5">
-                              <div className="break-words whitespace-normal">
+                              <div className="text-nowrap">
                                 {attentionTag ? (
                                   <span
                                     className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
                                     style={{
                                       backgroundColor:
-                                        attentionTag.color,
+                                        attentionTag.color === "red" ? "#FEE9E7" : attentionTag.color === "blue" ? "#EDE9FE" : "#D1FAE5",
                                       color:
-                                        "#fff"
+                                      attentionTag.color === "red" ? "#FF383C" : attentionTag.color === "blue" ? "#6366F1" : "#059669",
                                     }}
                                   >
                                     {attentionTag.text}
