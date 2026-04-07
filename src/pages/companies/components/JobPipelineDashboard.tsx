@@ -2463,8 +2463,8 @@ export default function JobPipelineDashboard({
               </div>
             </div>
           ) : (
-            <div className="overflow-x-hidden overflow-y-visible mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl">
-              <table className="w-full table-fixed text-left border-collapse">
+            <div className="overflow-x-auto overflow-y-visible mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl">
+              <table className="w-full min-w-[1480px] table-fixed text-left border-collapse">
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: "2%" }} /> {/* checkbox */}
@@ -2511,7 +2511,7 @@ export default function JobPipelineDashboard({
                         </div>
                       </th>
                     ))}
-                    <th className="px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">
+                    <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">
                       Actions
                     </th>
                   </tr>
@@ -2553,7 +2553,7 @@ export default function JobPipelineDashboard({
                         <td className="px-4 py-5">
                           <div className="h-5 bg-gray-200 rounded-full w-16" />
                         </td>
-                        <td className="px-4 py-5">
+                        <td className="sticky right-0 z-10 bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]">
                           <div className="flex gap-2 justify-end">
                             <div className="w-8 h-8 bg-gray-200 rounded-full" />
                             <div className="w-8 h-8 bg-gray-200 rounded-full" />
@@ -2685,7 +2685,7 @@ export default function JobPipelineDashboard({
                                 </div>
                               </div>
                             </td>
-                            <td className="px-4 py-5 text-sm text-[#4B5563]">
+                            <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               <div className="truncate" title={cand.location || "--"}>
                                 {cand.location || "--"}
                               </div>
@@ -2704,15 +2704,15 @@ export default function JobPipelineDashboard({
                             <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               {noticePeriod}
                             </td>
-                            <td className="px-4 py-5">
+                            <td className="px-4 py-5 whitespace-nowrap">
                               <div>
                                 <div className="text-[#6155F5] text-sm font-medium whitespace-nowrap truncate" title={item.current_stage?.name || "--"}>
                                   {item.current_stage?.name || "--"}
                                 </div>
                               </div>
                             </td>
-                            <td className="px-4 py-5">
-                              <div className="text-nowrap">
+                            <td className="px-4 py-5 whitespace-nowrap">
+                              <div className="whitespace-nowrap">
                                 {attentionTag ? (
                                   <span
                                     className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
@@ -2733,7 +2733,7 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td
-                              className="px-4 py-5"
+                              className="sticky right-0 z-10 bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex justify-end items-center gap-2">
@@ -2945,12 +2945,12 @@ export default function JobPipelineDashboard({
                                     disabled={isDisabled}
                                   />
                                 </td>
-                                <td className="px-4 py-5">
+                                <td className="px-4 py-5 whitespace-nowrap">
                                   <div className="flex flex-col">
-                                    <div className="font-medium text-[#8E8E93]">
+                                    <div className="font-medium text-[#8E8E93] truncate" title={cand.full_name || "--"}>
                                       {cand.full_name || "--"}
                                     </div>
-                                    <div className="text-xs text-[#AEAEB2]">
+                                    <div className="text-xs text-[#AEAEB2] truncate" title={cand.headline || "--"}>
                                       {cand.headline || "--"}
                                     </div>
                                     {(item as any).archive_reason && (
@@ -2968,8 +2968,8 @@ export default function JobPipelineDashboard({
                                     --%
                                   </div>
                                 </td>
-                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">
-                                  {cand.location || "--"}
+                                <td className="px-4 py-5 text-sm text-[#AEAEB2] whitespace-nowrap">
+                                  <span className="truncate block" title={cand.location || "--"}>{cand.location || "--"}</span>
                                 </td>
                                 <td className="px-4 py-5 text-sm text-[#AEAEB2]">
                                   {cand.total_experience != null
@@ -2990,17 +2990,17 @@ export default function JobPipelineDashboard({
                                 <td className="px-4 py-5 text-sm text-[#AEAEB2]">
                                   --
                                 </td>
-                                <td className="px-4 py-5">
+                                <td className="px-4 py-5 whitespace-nowrap">
                                   <span className="text-[10px] px-2 py-0.5 bg-gray-200 text-gray-500 rounded-full font-bold">
                                     ARCHIVED
                                   </span>
                                 </td>
-                                <td className="px-4 py-5">
+                                <td className="px-4 py-5 whitespace-nowrap">
                                   <span className="text-[10px] text-[#AEAEB2]">
                                     --
                                   </span>
                                 </td>
-                                <td className="px-4 py-5">
+                                <td className="sticky right-0 z-10 bg-[#F9FAFB] px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]">
                                   <div className="flex justify-end gap-2">
                                     <button
                                       onClick={async () => {
