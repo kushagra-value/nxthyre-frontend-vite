@@ -522,7 +522,7 @@ export default function JobPipelineDashboard({
   // ── Active tab
   const [activeTab, setActiveTab] = useState<
     "pipeline" | "naukbot" | "inbound" | "linkedinbot"
-  >("linkedinbot");
+  >("pipeline");
 
   const [isKanbanView, setIsKanbanView] = useState(false);
   const [draggedCandidateId, setDraggedCandidateId] = useState<number | null>(
