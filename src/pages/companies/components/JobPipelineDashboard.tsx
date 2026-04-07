@@ -531,6 +531,7 @@ export default function JobPipelineDashboard({
   );
   const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1405,6 +1406,48 @@ export default function JobPipelineDashboard({
     0,
   );
 
+  const nonArchiveStages = stages.filter(
+    (s) => s.slug !== "archives" && !s.name.toLowerCase().includes("archive"),
+  );
+
+  const getCurrentStageSlug = (item: any) => item.current_stage?.slug || item.stage_slug;
+
+  const getShortlistStage = () =>
+    nonArchiveStages.find((s) =>
+      s.slug.toLowerCase().includes("shortlist") ||
+      s.name.toLowerCase().includes("shortlist"),
+    );
+
+  const getNextStageForItem = (item: any) => {
+    const currentSlug = getCurrentStageSlug(item);
+    const currentIdx = nonArchiveStages.findIndex((s) => s.slug === currentSlug);
+    if (currentIdx === -1 || currentIdx + 1 >= nonArchiveStages.length) return null;
+    return nonArchiveStages[currentIdx + 1];
+  };
+
+  const getPrimaryStageActionForItem = (item: any) => {
+    const currentSlug = (getCurrentStageSlug(item) || "").toLowerCase();
+    const shortlistStage = getShortlistStage();
+
+    if (
+      (currentSlug === "uncontacted" || currentSlug.includes("un-contacted")) &&
+      shortlistStage &&
+      shortlistStage.slug !== currentSlug
+    ) {
+      return { label: "Shortlist", targetStage: shortlistStage };
+    }
+
+    const nextStage = getNextStageForItem(item);
+    if (!nextStage) return null;
+    return { label: "Move to Next Stage", targetStage: nextStage };
+  };
+
+  const getCandidateEmail = (cand: any) =>
+    cand?.email ||
+    cand?.premium_data?.email ||
+    cand?.premium_data?.all_emails?.[0] ||
+    "";
+
   // ── Render ───────────────────────────────────────────────────
 
   if (!jobId) {
@@ -1751,11 +1794,19 @@ export default function JobPipelineDashboard({
               >
                 {isKanbanView ? (
                   <>
-                    <List className="w-4 h-4" /> Table View
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M3.33398 8.3335V5.00016C3.33398 4.07969 4.08018 3.3335 5.00065 3.3335H15.0007C15.9212 3.3335 16.6673 4.07969 16.6673 5.00016V8.3335M3.33398 8.3335V12.5002M3.33398 8.3335H7.50065M16.6673 8.3335V12.5002M16.6673 8.3335H12.5007M3.33398 12.5002V15.0002C3.33398 15.9207 4.08018 16.6668 5.00065 16.6668H7.50065M3.33398 12.5002H7.50065M7.50065 8.3335V12.5002M7.50065 8.3335H12.5007M16.6673 12.5002V15.0002C16.6673 15.9207 15.9212 16.6668 15.0007 16.6668H12.5007M16.6673 12.5002H12.5007M12.5007 8.3335V12.5002M7.50065 16.6668V12.5002M7.50065 16.6668H12.5007M7.50065 12.5002H12.5007M12.5007 16.6668V12.5002M8.33398 5.8335H11.6673" stroke="#464455" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Table View
                   </>
                 ) : (
                   <>
-                    <Grid3X3 className="w-4 h-4" /> Kanban
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7.16699 0.5V13.8333" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M0.5 5.5H7.16667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M7.16699 8.8335H13.8337" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Kanban
                   </>
                 )}
               </button>
@@ -1791,7 +1842,13 @@ export default function JobPipelineDashboard({
                 )}
               </div>
               <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
-                <SlidersHorizontal className="w-4 h-4" /> Filters
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 2H14" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M5.33301 6H10.6663" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M2 10H14" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M5.33301 14H10.6663" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Filters
               </button>
             </div>
             <div className="flex items-center gap-2">
@@ -1802,7 +1859,18 @@ export default function JobPipelineDashboard({
                 }}
                 className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
               >
-                <Share2 className="w-4 h-4" /> Share Pipeline
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#clip0_360_5904)">
+                    <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="#374151" stroke-linecap="round" />
+                    <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_360_5904">
+                      <rect width="16" height="16" fill="white" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                Share Pipeline
               </button>
               <button
                 onClick={() => {
@@ -1816,14 +1884,24 @@ export default function JobPipelineDashboard({
                 }}
                 className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
               >
-                <Download className="w-4 h-4" /> Export CSV
+                <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Export CSV
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
                 title="Feature Coming Soon"
                 disabled
               >
-                <Calendar className="w-4 h-4" />{" "}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="#374151" stroke-linecap="round" />
+                  <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M4 5.3335H12" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                {" "}
                 {new Date().toLocaleDateString("en-GB", {
                   day: "2-digit",
                   month: "2-digit",
@@ -2100,7 +2178,25 @@ export default function JobPipelineDashboard({
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setMenuOpenId(menuOpenId === item.id ? null : item.id);
+                                      if (menuOpenId === item.id) {
+                                        setMenuOpenId(null);
+                                        return;
+                                      }
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      const menuWidth = 192;
+                                      const menuHeight = 144;
+                                      const gap = 8;
+                                      const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
+                                      const top = openUp
+                                        ? Math.max(8, rect.top - menuHeight - gap)
+                                        : rect.bottom + gap;
+                                      let left = rect.right - menuWidth;
+                                      if (left < 8) left = 8;
+                                      if (left + menuWidth > window.innerWidth - 8) {
+                                        left = window.innerWidth - menuWidth - 8;
+                                      }
+                                      setMenuPos({ top, left });
+                                      setMenuOpenId(item.id);
                                     }}
                                     className="w-9 h-9 flex items-center justify-center bg-[#F3F5F7] text-[#8E8E93] rounded-full hover:bg-gray-200 transition-colors"
                                     title="Options"
@@ -2109,7 +2205,10 @@ export default function JobPipelineDashboard({
                                   </button>
 
                                   {menuOpenId === item.id && (
-                                    <div className="absolute bottom-full mb-2 left-0 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[100] py-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                    <div
+                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                                      style={{ top: menuPos.top, left: menuPos.left }}
+                                    >
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2413,7 +2512,7 @@ export default function JobPipelineDashboard({
                         </div>
                       </th>
                     ))}
-                    <th className="px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">
+                    <th className="px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap sticky right-0 z-20 bg-[#F9FAFB] min-w-[320px]">
                       Actions
                     </th>
                   </tr>
@@ -2552,11 +2651,13 @@ export default function JobPipelineDashboard({
                                   onSelectCandidate?.(item, candidates, index)
                                 }
                               >
-                                <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition">
-                                  {cand.full_name || "--"}
-                                </div>
-                                <div className="text-xs text-[#727272] truncate max-w-[32ch]">
-                                  {cand.headline || "--"}
+                                <div className="max-h-14 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                  <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition whitespace-nowrap overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                    {cand.full_name || "--"}
+                                  </div>
+                                  <div className="text-xs text-[#727272] whitespace-nowrap overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                    {cand.headline || "--"}
+                                  </div>
                                 </div>
                               </div>
                             </td>
@@ -2586,10 +2687,14 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563]">
-                              {cand.location || "--"}
+                              <div className="overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                {cand.location || "--"}
+                              </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563]">
-                              {expYears}
+                              <div className="overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                {expYears}
+                              </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563]">
                               {ctc}
@@ -2608,69 +2713,87 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5">
-                              {attentionTag ? (
-                                <span
-                                  className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
-                                  style={{
-                                    backgroundColor:
-                                      attentionTag.color,
-                                    color:
-                                      "#fff"
-                                  }}
-                                >
-                                  {attentionTag.text}
-                                </span>
-                              ) : (
-                                <span className="text-xs text-[#8E8E93]">
-                                  --
-                                </span>
-                              )}
+                              <div className="overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                {attentionTag ? (
+                                  <span
+                                    className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
+                                    style={{
+                                      backgroundColor:
+                                        attentionTag.color,
+                                      color:
+                                        "#fff"
+                                    }}
+                                  >
+                                    {attentionTag.text}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-[#8E8E93]">
+                                    --
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td
-                              className="px-4 py-5"
+                              className="px-4 py-5 sticky right-0 z-10 bg-white whitespace-nowrap min-w-[320px]"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <div className="flex justify-end gap-2">
+                              <div className="flex justify-end gap-2 flex-nowrap">
+                                {(() => {
+                                  const primaryAction = getPrimaryStageActionForItem(item);
+                                  return primaryAction ? (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openFeedbackModal({
+                                          type: "move",
+                                          applicationIds: [item.id],
+                                          targetStageId: primaryAction.targetStage.id,
+                                          targetStageName: primaryAction.targetStage.name,
+                                        });
+                                      }}
+                                      className="h-8 px-3 inline-flex items-center justify-center text-[12px] font-medium rounded-md bg-[#0F47F2] text-white hover:bg-[#0A3BCC] transition-colors whitespace-nowrap"
+                                      title={`${primaryAction.label} candidate`}
+                                    >
+                                      {primaryAction.label}
+                                    </button>
+                                  ) : null;
+                                })()}
                                 <button
-                                  onClick={() => {
-                                    setCallModalCandidate({
-                                      id: cand.id,
-                                      name: cand.full_name || "Unknown",
-                                      avatarInitials: cand.full_name
-                                        ? cand.full_name
-                                          .substring(0, 2)
-                                          .toUpperCase()
-                                        : "UN",
-                                      headline: cand.headline || "--",
-                                      phone:
-                                        cand.premium_data?.phone ||
-                                        cand.premium_data
-                                          ?.all_phone_numbers?.[0] ||
-                                        "+91 98765 43210", // Fallback for UI testing
-                                      experience: expYears,
-                                      expectedCtc: expectedCtc,
-                                      location: cand.location || "--",
-                                      noticePeriod: noticePeriod,
-                                      callAttention: callAttention,
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openFeedbackModal({
+                                      type: "archive",
+                                      applicationIds: [item.id],
                                     });
                                   }}
-                                  className="w-8 h-8 flex items-center justify-center bg-[#E3E1FF] rounded-full hover:bg-[#D5D2FF] transition-colors"
-                                  title="Call Candidate"
+                                  className="h-8 px-3 inline-flex items-center justify-center text-[12px] font-medium rounded-md bg-[#FEE2E2] text-[#DC2626] hover:bg-[#FECACA] transition-colors whitespace-nowrap"
+                                  title="Move candidate to archive"
                                 >
-                                  <span className="text-[#6155F5]"><Phone className="w-4 h-4" /></span>
+                                  Archive
                                 </button>
-                                <button
-                                  className="w-8 h-8 flex items-center justify-center bg-[#FFF2E6] rounded-full hover:bg-[#FFE8D4] transition-colors"
-                                  title="Email Candidate"
-                                >
-                                  <span className="text-[#FF8D28]"><Mail className="w-4 h-4" /></span>
-                                </button>
-
                                 <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setMenuOpenId(menuOpenId === item.id ? null : item.id);
+                                      if (menuOpenId === item.id) {
+                                        setMenuOpenId(null);
+                                        return;
+                                      }
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      const menuWidth = 192;
+                                      const menuHeight = 108;
+                                      const gap = 8;
+                                      const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
+                                      const top = openUp
+                                        ? Math.max(8, rect.top - menuHeight - gap)
+                                        : rect.bottom + gap;
+                                      let left = rect.right - menuWidth;
+                                      if (left < 8) left = 8;
+                                      if (left + menuWidth > window.innerWidth - 8) {
+                                        left = window.innerWidth - menuWidth - 8;
+                                      }
+                                      setMenuPos({ top, left });
+                                      setMenuOpenId(item.id);
                                     }}
                                     className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
                                     title="Options"
@@ -2679,7 +2802,36 @@ export default function JobPipelineDashboard({
                                   </button>
 
                                   {menuOpenId === item.id && (
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[100] py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div
+                                      className="fixed w-56 max-h-[320px] overflow-y-auto bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                                      style={{ top: menuPos.top, left: menuPos.left }}
+                                    >
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCallModalCandidate({
+                                            id: cand.id,
+                                            name: cand.full_name || "Unknown",
+                                            avatarInitials: cand.full_name
+                                              ? cand.full_name.substring(0, 2).toUpperCase()
+                                              : "UN",
+                                            headline: cand.headline || "--",
+                                            phone:
+                                              cand.premium_data?.phone ||
+                                              cand.premium_data?.all_phone_numbers?.[0] ||
+                                              "+91 98765 43210",
+                                            experience: expYears,
+                                            expectedCtc: expectedCtc,
+                                            location: cand.location || "--",
+                                            noticePeriod: noticePeriod,
+                                            callAttention: callAttention,
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Phone className="w-4 h-4" /> Call
+                                      </button>
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2695,6 +2847,61 @@ export default function JobPipelineDashboard({
                                       >
                                         <Share2 className="w-4 h-4" /> Share Profile
                                       </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const email = getCandidateEmail(cand);
+                                          if (!email) {
+                                            showToast.error("Candidate email not available");
+                                            return;
+                                          }
+                                          navigator.clipboard.writeText(email).then(() => {
+                                            showToast.success("Email copied");
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                      >
+                                        <Copy className="w-4 h-4" /> Copy Mail ID
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          openFeedbackModal({
+                                            type: "archive",
+                                            applicationIds: [item.id],
+                                          });
+                                          setMenuOpenId(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"
+                                      >
+                                        <Archive className="w-4 h-4" /> Archive
+                                      </button>
+                                      <div className="h-px bg-[#F3F5F7] my-1" />
+                                      <div className="px-4 py-1.5 text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wide">
+                                        Shift to Stage
+                                      </div>
+                                      {nonArchiveStages
+                                        .filter((s) => s.slug !== getCurrentStageSlug(item))
+                                        .map((stage) => (
+                                          <button
+                                            key={`shift-${item.id}-${stage.id}`}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              openFeedbackModal({
+                                                type: "move",
+                                                applicationIds: [item.id],
+                                                targetStageId: stage.id,
+                                                targetStageName: stage.name,
+                                              });
+                                              setMenuOpenId(null);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7]"
+                                          >
+                                            {stage.name}
+                                          </button>
+                                        ))}
+                                      <div className="h-px bg-[#F3F5F7] my-1" />
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2805,35 +3012,14 @@ export default function JobPipelineDashboard({
                                     --
                                   </span>
                                 </td>
-                                <td className="px-4 py-5">
+                                <td className="px-4 py-5 sticky right-0 z-10 bg-gray-50 whitespace-nowrap min-w-[320px]">
                                   <div className="flex justify-end gap-2">
                                     <button
-                                      onClick={async () => {
-                                        try {
-                                          const targetStage =
-                                            stages.find(
-                                              (s) => s.slug === "shortlisted",
-                                            ) || stages[0];
-                                          await apiClient.patch(
-                                            `/jobs/applications/${item.id}/`,
-                                            { current_stage: targetStage.id },
-                                          );
-                                          showToast.success(
-                                            "Candidate unarchived",
-                                          );
-                                          fetchCandidates(
-                                            jobId,
-                                            isKanbanView ? null : activeStageSlug,
-                                            currentPage,
-                                            searchQuery,
-                                            isKanbanView ? 1000 : pageSize
-                                          );
-                                          fetchArchivedCandidates(jobId);
-                                        } catch {
-                                          showToast.error(
-                                            "Failed to unarchive",
-                                          );
-                                        }
+                                      onClick={() => {
+                                        openFeedbackModal({
+                                          type: "unarchive",
+                                          applicationIds: [item.id],
+                                        });
                                       }}
                                       className="text-[10px] font-bold text-[#0F47F2] hover:underline"
                                     >
