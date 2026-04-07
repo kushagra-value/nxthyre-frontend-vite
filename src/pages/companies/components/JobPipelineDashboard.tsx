@@ -1791,11 +1791,20 @@ export default function JobPipelineDashboard({
                   </>
                 ) : (
                   <>
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7.16699 0.5V13.8333" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                      <path d="M0.5 5.5H7.16667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                      <path d="M7.16699 8.8335H13.8337" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g clip-path="url(#clip0_360_5915)">
+                        <path d="M5.99967 14.6668H9.99967C13.333 14.6668 14.6663 13.3335 14.6663 10.0002V6.00016C14.6663 2.66683 13.333 1.3335 9.99967 1.3335H5.99967C2.66634 1.3335 1.33301 2.66683 1.33301 6.00016V10.0002C1.33301 13.3335 2.66634 14.6668 5.99967 14.6668Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M8 1.3335V14.6668" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M1.33301 6.3335H7.99967" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M8 9.66699H14.6667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_360_5915">
+                          <rect width="16" height="16" fill="white" />
+                        </clipPath>
+                      </defs>
                     </svg>
+
                     Kanban
                   </>
                 )}
@@ -2728,7 +2737,7 @@ export default function JobPipelineDashboard({
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex justify-end items-center gap-2">
-                                
+
                                 <button
                                   onClick={() => {
                                     const nextStage = getNextStageForItem(item);
@@ -2808,7 +2817,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Call
+                                        Call
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -2819,7 +2828,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Edit Details
+                                        Edit Details
                                       </button>
                                       <button
                                         onClick={async (e) => {
@@ -2829,7 +2838,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Copy Mail ID
+                                        Copy Mail ID
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -2842,7 +2851,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Archive
+                                        Archive
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -2873,7 +2882,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Shift to Stage
+                                        Shift to Stage
                                       </button>
                                       <div className="h-px bg-[#F3F5F7] my-1" />
                                       <button
@@ -2891,7 +2900,7 @@ export default function JobPipelineDashboard({
                                       >
                                         Share Profile
                                       </button>
-                                      
+
                                     </div>
                                   )}
                                 </div>
