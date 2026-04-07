@@ -451,57 +451,58 @@ export default function JobCandidateProfile({
 
                   <div className="flex items-center gap-4 text-xs text-[#4B5563] mb-6 font-medium">
                     <span className="flex items-center gap-1.5 ">
-                      <Briefcase className="w-4 h-4 text-[#8E8E93]" />{" "}
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 10L8 11" stroke="#4B5563" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M2 7.33301L2.10192 9.24185C2.21142 11.651 2.26618 12.8556 3.03923 13.5943C3.81229 14.333 5.01811 14.333 7.42975 14.333H8.57025C10.9819 14.333 12.1877 14.333 12.9608 13.5943C13.7338 12.8556 13.7886 11.651 13.8981 9.24185L14 7.33301" stroke="#4B5563" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M1.89845 6.96204C3.03131 9.11629 5.58646 10 8.00033 10C10.4142 10 12.9693 9.11629 14.1022 6.96204C14.643 5.93371 14.2335 4 12.9017 4H3.09899C1.76715 4 1.35768 5.93371 1.89845 6.96204Z" stroke="#4B5563" />
+                        <path d="M10.6663 3.99984L10.6075 3.7938C10.3141 2.7671 10.1675 2.25375 9.81828 1.96013C9.46909 1.6665 9.00528 1.6665 8.07765 1.6665H7.9217C6.99407 1.6665 6.53026 1.6665 6.18107 1.96013C5.83189 2.25375 5.68522 2.7671 5.39188 3.7938L5.33301 3.99984" stroke="#4B5563" />
+                      </svg>
+                      {" "}
                       {totalExp}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-[#8E8E93]" />{" "}
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.66797 6.76236C2.66797 3.76408 5.05578 1.3335 8.0013 1.3335C10.9468 1.3335 13.3346 3.76408 13.3346 6.76236C13.3346 9.73716 11.6324 13.2084 8.97657 14.4498C8.3575 14.7392 7.6451 14.7392 7.02604 14.4498C4.37018 13.2084 2.66797 9.73716 2.66797 6.76236Z" stroke="#4B5563" />
+                        <path d="M8 8.6665C9.10457 8.6665 10 7.77107 10 6.6665C10 5.56193 9.10457 4.6665 8 4.6665C6.89543 4.6665 6 5.56193 6 6.6665C6 7.77107 6.89543 8.6665 8 8.6665Z" stroke="#4B5563" />
+                      </svg>
+                      {" "}
                       {location || "--"}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="text-[#8E8E93]"
-                      >
-                        <path
-                          d="M12.6667 3.33333H3.33333C2.59695 3.33333 2 3.93029 2 4.66667V11.3333C2 12.0697 2.59695 12.6667 3.33333 12.6667H12.6667C13.403 12.6667 14 12.0697 14 11.3333V4.66667C14 3.93029 13.403 3.33333 12.6667 3.33333Z"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M2.66663 6.66667H13.3333"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6.6665H6.66667" stroke="#4B5563" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M13.8889 7.3335H12.1539C10.9643 7.3335 10 8.2289 10 9.3335C10 10.4381 10.9643 11.3335 12.1539 11.3335H13.8889C13.9445 11.3335 13.9722 11.3335 13.9957 11.3321C14.3552 11.3102 14.6415 11.0443 14.6651 10.7104C14.6667 10.6886 14.6667 10.6628 14.6667 10.6113V8.0557C14.6667 8.00416 14.6667 7.97836 14.6651 7.95656C14.6415 7.6227 14.3552 7.35683 13.9957 7.3349C13.9722 7.3335 13.9445 7.3335 13.8889 7.3335Z" stroke="#4B5563" />
+                        <path d="M13.9773 7.33333C13.9255 6.08513 13.7584 5.31983 13.2196 4.78105C12.4386 4 11.1815 4 8.66732 4H6.66732C4.15316 4 2.89608 4 2.11503 4.78105C1.33398 5.5621 1.33398 6.8192 1.33398 9.33333C1.33398 11.8475 1.33398 13.1046 2.11503 13.8856C2.89608 14.6667 4.15316 14.6667 6.66732 14.6667H8.66732C11.1815 14.6667 12.4386 14.6667 13.2196 13.8856C13.7584 13.3469 13.9255 12.5815 13.9773 11.3333" stroke="#4B5563" />
+                        <path d="M4 4L6.49033 2.34875C7.1916 1.88375 8.14173 1.88375 8.843 2.34875L11.3333 4" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M11.9941 9.3335H12.0001" stroke="#4B5563" stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
+
                       {currentSalary} LPA
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="text-[#8E8E93]"
-                      >
-                        <path
-                          d="M12.6667 3.33333H3.33333C2.59695 3.33333 2 3.93029 2 4.66667V11.3333C2 12.0697 2.59695 12.6667 3.33333 12.6667H12.6667C13.403 12.6667 14 12.0697 14 11.3333V4.66667C14 3.93029 13.403 3.33333 12.6667 3.33333Z"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.6095 6.9428C12 6.55229 12 5.92375 12 4.66667C12 3.40959 12 2.78105 11.6095 2.39053M11.6095 6.9428C11.2189 7.33333 10.5904 7.33333 9.33333 7.33333H6.66667C5.40959 7.33333 4.78105 7.33333 4.39053 6.9428M11.6095 2.39053C11.2189 2 10.5904 2 9.33333 2H6.66667C5.40959 2 4.78105 2 4.39053 2.39053M4.39053 2.39053C4 2.78105 4 3.40959 4 4.66667C4 5.92375 4 6.55229 4.39053 6.9428" stroke="#4B5563" />
+                        <path d="M8.66732 4.66667C8.66732 5.03485 8.36885 5.33333 8.00065 5.33333C7.63245 5.33333 7.33398 5.03485 7.33398 4.66667C7.33398 4.29848 7.63245 4 8.00065 4C8.36885 4 8.66732 4.29848 8.66732 4.66667Z" stroke="#4B5563" />
+                        <path d="M12 4C10.8954 4 10 3.10457 10 2" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M12 5.3335C10.8954 5.3335 10 6.22893 10 7.3335" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M4 4C5.10457 4 6 3.10457 6 2" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M4 5.3335C5.10457 5.3335 6 6.22893 6 7.3335" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M3.33398 13.5924H4.8406C5.51451 13.5924 6.19567 13.6626 6.85152 13.7978C8.01172 14.0368 9.23318 14.0657 10.4053 13.876C10.9832 13.7824 11.5513 13.6394 12.0657 13.3912C12.5299 13.1671 13.0986 12.8512 13.4806 12.4974C13.8621 12.1442 14.2593 11.566 14.5413 11.114C14.7831 10.7264 14.6661 10.251 14.2837 9.96218C13.8589 9.64144 13.2285 9.64151 12.8037 9.96238L11.5989 10.8724C11.132 11.2252 10.622 11.5498 10.0144 11.6468C9.94132 11.6584 9.86478 11.669 9.78492 11.6783M9.78492 11.6783C9.76085 11.6811 9.73652 11.6838 9.71185 11.6863M9.78492 11.6783C9.88212 11.6575 9.97858 11.5975 10.0692 11.5185C10.498 11.1442 10.5251 10.5135 10.153 10.0956C10.0667 9.99864 9.96565 9.91778 9.85338 9.85078C7.98845 8.73844 5.08693 9.58564 3.33398 10.8288M9.78492 11.6783C9.76058 11.6835 9.73618 11.6863 9.71185 11.6863M9.71185 11.6863C9.36292 11.7221 8.95478 11.7314 8.50185 11.6886" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M3.33398 10.3335C3.33398 9.78121 2.88627 9.3335 2.33398 9.3335C1.7817 9.3335 1.33398 9.78121 1.33398 10.3335V13.6668C1.33398 14.2191 1.7817 14.6668 2.33398 14.6668C2.88627 14.6668 3.33398 14.2191 3.33398 13.6668V10.3335Z" stroke="#4B5563" />
                       </svg>
+
                       {cand.expected_ctc || "--"} LPA
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-[#8E8E93]" />{" "}
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.6673 9.33317V7.99984C14.6673 5.48568 14.6673 4.2286 13.8863 3.44755C13.1053 2.6665 11.8481 2.6665 9.33398 2.6665H6.66732C4.15316 2.6665 2.89608 2.6665 2.11503 3.44755C1.33398 4.2286 1.33398 5.48568 1.33398 7.99984V9.33317C1.33398 11.8473 1.33398 13.1044 2.11503 13.8854C2.89608 14.6665 4.15316 14.6665 6.66732 14.6665H9.33398" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M4.66602 2.6665V1.6665" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M11.334 2.6665V1.6665" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z" stroke="#4B5563" />
+                        <path d="M13.666 13.6665L14.666 14.6665" stroke="#4B5563" stroke-linecap="round" />
+                        <path d="M1.66602 6H14.3327" stroke="#4B5563" stroke-linecap="round" />
+                      </svg>
+                      {" "}
                       {noticePeriod}
                     </span>
                   </div>
@@ -513,7 +514,11 @@ export default function JobCandidateProfile({
                         }
                         className="flex items-center gap-2 bg-[#0F47F2] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
                       >
-                        <Mail className="w-4 h-4" /> Send Mail
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1.33398 7.99984C1.33398 5.48568 1.33398 4.2286 2.11503 3.44755C2.89608 2.6665 4.15316 2.6665 6.66732 2.6665H9.33398C11.8481 2.6665 13.1053 2.6665 13.8863 3.44755C14.6673 4.2286 14.6673 5.48568 14.6673 7.99984C14.6673 10.514 14.6673 11.7711 13.8863 12.5521C13.1053 13.3332 11.8481 13.3332 9.33398 13.3332H6.66732C4.15316 13.3332 2.89608 13.3332 2.11503 12.5521C1.33398 11.7711 1.33398 10.514 1.33398 7.99984Z" stroke="white" />
+                          <path d="M4 5.3335L5.43927 6.53288C6.66369 7.55323 7.27593 8.06343 8 8.06343C8.72407 8.06343 9.33633 7.55323 10.5607 6.53288L12 5.3335" stroke="white" stroke-linecap="round" />
+                        </svg>
+                        Send Mail
                       </button>
                     )}
                     <button
@@ -541,14 +546,23 @@ export default function JobCandidateProfile({
                       }}
                       className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition"
                     >
-                      <Phone className="w-4 h-4" /> Call
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.33398 1.3335C9.33398 1.3335 10.8007 1.46683 12.6673 3.3335C14.534 5.20016 14.6673 6.66683 14.6673 6.66683" stroke="#0F47F2" stroke-linecap="round" />
+                        <path d="M9.4707 3.69043C9.4707 3.69043 10.1307 3.879 11.1206 4.86894C12.1106 5.8589 12.2992 6.51886 12.2992 6.51886" stroke="#0F47F2" stroke-linecap="round" />
+                        <path d="M6.69108 3.54395L7.12375 4.31924C7.51422 5.01889 7.35748 5.93672 6.74248 6.5517C6.74248 6.5517 5.9966 7.2977 7.34902 8.65017C8.70102 10.0022 9.44748 9.2567 9.44748 9.2567C10.0625 8.6417 10.9803 8.48497 11.68 8.87544L12.4552 9.3081C13.5117 9.8977 13.6365 11.3793 12.7079 12.308C12.1499 12.866 11.4663 13.3002 10.7106 13.3288C9.43855 13.377 7.27822 13.0551 5.11115 10.888C2.9441 8.72097 2.62216 6.56065 2.67038 5.28856C2.69903 4.5329 3.13322 3.84932 3.69122 3.29132C4.61986 2.36269 6.10146 2.48746 6.69108 3.54395Z" stroke="#0F47F2" stroke-linecap="round" />
+                      </svg>
+                      Call
                     </button>
                     {cand.resume_url && (
                       <button
                         onClick={() => window.open(cand.resume_url, "_blank")}
                         className="flex items-center gap-2 bg-[#E7EDFF] text-[#0F47F2] w-10 h-10 justify-center rounded-lg text-sm font-medium hover:bg-[#D4E0FF] transition"
                       >
-                        <Download className="w-4 h-4" />
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M2 10C2 11.8856 2 12.8284 2.58579 13.4142C3.17157 14 4.11438 14 6 14H10C11.8856 14 12.8284 14 13.4142 13.4142C14 12.8284 14 11.8856 14 10" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M8.00065 2V10.6667M8.00065 10.6667L10.6673 7.75M8.00065 10.6667L5.33398 7.75" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+
                       </button>
                     )}
                   </div>
@@ -765,13 +779,15 @@ export default function JobCandidateProfile({
           </div>
 
           <div className="flex items-center gap-3 relative">
-            <button 
+            <button
               onClick={() => setShowStageMenu(!showStageMenu)}
               className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
               Move to Stage
-              <ChevronDown className="w-4 h-4 ml-1" />
             </button>
-            
+
             {showStageMenu && (
               <div className="absolute top-14 left-0 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-2">
                 {stages.filter(s => s.slug !== "archives").map(s => (
@@ -779,13 +795,13 @@ export default function JobCandidateProfile({
                     key={s.id}
                     className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700 block"
                     onClick={() => {
-                        setShowStageMenu(false);
-                        openFeedbackModal({
-                           type: "move",
-                           applicationIds: [applicationId],
-                           targetStageId: s.id,
-                           targetStageName: s.name
-                        });
+                      setShowStageMenu(false);
+                      openFeedbackModal({
+                        type: "move",
+                        applicationIds: [applicationId],
+                        targetStageId: s.id,
+                        targetStageName: s.name
+                      });
                     }}
                   >
                     {s.name}
@@ -794,9 +810,16 @@ export default function JobCandidateProfile({
               </div>
             )}
 
-            <button 
+            <button
               onClick={() => openFeedbackModal({ type: "archive", applicationIds: [applicationId] })}
               className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#FEE9E7] transition">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.11328 2.66683C6.38783 1.89004 7.12868 1.3335 7.99948 1.3335C8.87028 1.3335 9.61115 1.89004 9.88568 2.66683" stroke="#FF383C" stroke-linecap="round" />
+                <path d="M13.6674 4H2.33398" stroke="#FF383C" stroke-linecap="round" />
+                <path d="M12.5545 5.6665L12.2478 10.2659C12.1298 12.0358 12.0708 12.9208 11.4942 13.4603C10.9175 13.9998 10.0306 13.9998 8.25669 13.9998H7.74116C5.96726 13.9998 5.08033 13.9998 4.50365 13.4603C3.92699 12.9208 3.86799 12.0358 3.74999 10.2659L3.44336 5.6665" stroke="#FF383C" stroke-linecap="round" />
+                <path d="M6.33398 7.3335L6.66732 10.6668" stroke="#FF383C" stroke-linecap="round" />
+                <path d="M9.66732 7.3335L9.33398 10.6668" stroke="#FF383C" stroke-linecap="round" />
+              </svg>
               Move to Archive
             </button>
           </div>
@@ -831,18 +854,26 @@ export default function JobCandidateProfile({
                     title={item.evidence}
                   >
                     {item.badge}
-                    {item.status && (
-                      <span className="font-normal opacity-80 ml-1">
-                        · {item.status}
-                      </span>
-                    )}
+
                     {item.color === "green" && (
-                      <Check className="w-3.5 h-3.5" />
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 11.5C9.03756 11.5 11.5 9.03756 11.5 6C11.5 2.96243 9.03756 0.5 6 0.5C2.96243 0.5 0.5 2.96243 0.5 6C0.5 9.03756 2.96243 11.5 6 11.5Z" stroke="#009951" />
+                        <path d="M4.07324 6.275L5.17324 7.375L7.92324 4.625" stroke="#009951" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+
                     )}
                     {item.color === "red" && (
-                      <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center border border-current text-[10px]">
-                        x
-                      </div>
+                      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_465_8838)">
+                          <path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 10.3125C2.84212 10.3125 0.6875 8.15719 0.6875 5.5C0.6875 2.84281 2.84212 0.6875 5.5 0.6875C8.15788 0.6875 10.3125 2.84281 10.3125 5.5C10.3125 8.15719 8.15788 10.3125 5.5 10.3125ZM5.5 0C2.46228 0 0 2.46125 0 5.5C0 8.53875 2.46228 11 5.5 11C8.53772 11 11 8.53875 11 5.5C11 2.46125 8.53772 0 5.5 0ZM7.46521 3.53376C7.32977 3.3997 7.11081 3.3997 6.97537 3.53376L5.49794 5.01186L4.04181 3.55436C3.9074 3.4203 3.68947 3.4203 3.55575 3.55436C3.42134 3.68843 3.42134 3.90844 3.55575 4.0425L5.01188 5.49656L3.54545 6.96438C3.41035 7.09844 3.41035 7.31842 3.54545 7.45592C3.68088 7.58998 3.90018 7.58998 4.03562 7.45592L5.50206 5.98814L6.95819 7.44564C7.0926 7.5797 7.31053 7.5797 7.44459 7.44564C7.57899 7.31157 7.57899 7.09156 7.44459 6.9575L5.98812 5.50344L7.46521 4.0253C7.60031 3.8878 7.60031 3.67126 7.46521 3.53376Z" fill="#CF272D" />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_465_8838">
+                            <rect width="11" height="11" fill="white" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+
                     )}
                   </div>
                 );
@@ -984,25 +1015,48 @@ export default function JobCandidateProfile({
       </div>
 
       <div className="w-full xl:w-[360px] flex flex-col gap-6 shrink-0">
-        <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB]">
           {/* Sidebar tabs */}
           <div className="flex border-b border-[#E5E7EB]">
             {(["info", "activity", "call", "notes"] as const).map((id) => {
               const icons: Record<string, React.ReactNode> = {
-                info: <UserCircle className="w-5 h-5" />,
-                activity: <TrendingUp className="w-5 h-5" />,
-                call: <Phone className="w-5 h-5" />,
-                notes: <FileText className="w-5 h-5" />,
+                info: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7.50065 9.16683C8.42113 9.16683 9.16732 8.42064 9.16732 7.50016C9.16732 6.57969 8.42113 5.8335 7.50065 5.8335C6.58018 5.8335 5.83398 6.57969 5.83398 7.50016C5.83398 8.42064 6.58018 9.16683 7.50065 9.16683Z" stroke="#0F47F2" />
+                  <path d="M10.8327 12.5002C10.8327 13.4207 10.8327 14.1668 7.49935 14.1668C4.16602 14.1668 4.16602 13.4207 4.16602 12.5002C4.16602 11.5797 5.6584 10.8335 7.49935 10.8335C9.34027 10.8335 10.8327 11.5797 10.8327 12.5002Z" stroke="#0F47F2" />
+                  <path d="M1.66602 10.0002C1.66602 6.85746 1.66602 5.28612 2.64232 4.3098C3.61864 3.3335 5.18998 3.3335 8.33268 3.3335H11.666C14.8087 3.3335 16.3801 3.3335 17.3563 4.3098C18.3327 5.28612 18.3327 6.85746 18.3327 10.0002C18.3327 13.1428 18.3327 14.7142 17.3563 15.6905C16.3801 16.6668 14.8087 16.6668 11.666 16.6668H8.33268C5.18998 16.6668 3.61864 16.6668 2.64232 15.6905C1.66602 14.7142 1.66602 13.1428 1.66602 10.0002Z" stroke="#0F47F2" />
+                  <path d="M15.8333 10H12.5" stroke="#0F47F2" stroke-linecap="round" />
+                  <path d="M15.8327 7.5H11.666" stroke="#0F47F2" stroke-linecap="round" />
+                  <path d="M15.834 12.5H13.334" stroke="#0F47F2" stroke-linecap="round" />
+                </svg>
+                ,
+                activity: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18.3327 8.74984V9.99984C18.3327 13.9282 18.3327 15.8924 17.1123 17.1128C15.8919 18.3332 13.9277 18.3332 9.99935 18.3332C6.07097 18.3332 4.10679 18.3332 2.88641 17.1128C1.66602 15.8924 1.66602 13.9282 1.66602 9.99984C1.66602 6.07146 1.66602 4.10728 2.88641 2.8869C4.10679 1.6665 6.07097 1.6665 9.99935 1.6665H11.2493" stroke="#4B5563" stroke-linecap="round" />
+                  <path d="M15.834 6.6665C17.2147 6.6665 18.334 5.54722 18.334 4.1665C18.334 2.78579 17.2147 1.6665 15.834 1.6665C14.4533 1.6665 13.334 2.78579 13.334 4.1665C13.334 5.54722 14.4533 6.6665 15.834 6.6665Z" stroke="#4B5563" />
+                  <path d="M5.83398 11.6668L7.74473 9.75608C8.07017 9.43066 8.59782 9.43066 8.92323 9.75608L10.2447 11.0776C10.5702 11.403 11.0978 11.403 11.4232 11.0776L14.1673 8.3335M14.1673 8.3335V10.4168M14.1673 8.3335H12.084" stroke="#4B5563" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                ,
+                call: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11.666 1.6665C11.666 1.6665 13.4993 1.83317 15.8327 4.1665C18.166 6.49984 18.3327 8.33317 18.3327 8.33317" stroke="#4B5563" stroke-linecap="round" />
+                  <path d="M11.8398 4.61328C11.8398 4.61328 12.6648 4.84899 13.9023 6.08642C15.1397 7.32386 15.3754 8.14882 15.3754 8.14882" stroke="#4B5563" stroke-linecap="round" />
+                  <path d="M8.36532 4.4303L8.90615 5.39941C9.39424 6.27398 9.19832 7.42126 8.42957 8.19C8.42957 8.19 7.49722 9.1225 9.18774 10.8131C10.8777 12.5031 11.8108 11.5712 11.8108 11.5712C12.5796 10.8025 13.7268 10.6066 14.6014 11.0947L15.5705 11.6355C16.8912 12.3725 17.0471 14.2245 15.8863 15.3853C15.1888 16.0828 14.3343 16.6256 13.3897 16.6613C11.7997 16.7217 9.09924 16.3192 6.3904 13.6104C3.68159 10.9016 3.27916 8.20118 3.33944 6.61107C3.37525 5.6665 3.91799 4.81202 4.61549 4.11452C5.77629 2.95373 7.62829 3.1097 8.36532 4.4303Z" stroke="#4B5563" stroke-linecap="round" />
+                </svg>
+                ,
+                notes: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.9078 10.5806L16.2833 9.2051C16.7214 7.59957 16.9405 6.79679 16.7755 6.10207C16.6453 5.55353 16.3522 5.05523 15.9335 4.67019C15.4031 4.18255 14.5854 3.96745 12.95 3.53724C11.3145 3.10703 10.4968 2.89193 9.78916 3.05392C9.23037 3.18182 8.72279 3.46951 8.33059 3.88061C7.90531 4.32639 7.68353 4.97897 7.3535 6.16514C7.29808 6.36434 7.2396 6.5786 7.17659 6.80944L6.80115 8.18501C6.36293 9.79056 6.14382 10.5933 6.30883 11.288C6.43911 11.8366 6.73216 12.3349 7.15091 12.72C7.68126 13.2076 8.49898 13.4227 10.1344 13.8529C11.6085 14.2407 12.4182 14.4537 13.0819 14.3733C13.1546 14.3645 13.2254 14.3522 13.2953 14.3362C13.854 14.2083 14.3616 13.9206 14.7538 13.5095C15.2505 12.9889 15.4696 12.1861 15.9078 10.5806Z" stroke="#4B5563" />
+                  <path d="M13.5765 14.7085C13.4236 15.1761 13.1546 15.5991 12.7929 15.9373C12.2564 16.4389 11.429 16.6601 9.77449 17.1027C8.11987 17.5452 7.29257 17.7664 6.57663 17.5998C6.01133 17.4683 5.49781 17.1723 5.10101 16.7495C4.59847 16.2139 4.3768 15.3881 3.93345 13.7366L3.55365 12.3217C3.1103 10.6701 2.88863 9.84437 3.05556 9.12972C3.18737 8.56548 3.48385 8.0529 3.90751 7.65683C4.44407 7.15522 5.27136 6.93395 6.92596 6.49142C7.23899 6.40769 7.5224 6.33189 7.78106 6.26514" stroke="#4B5563" />
+                  <path d="M10.3223 9.50586L13.5766 10.3194" stroke="#4B5563" stroke-linecap="round" />
+                  <path d="M9.50391 11.1372H11.1311" stroke="#4B5563" stroke-linecap="round" />
+                </svg>
+                ,
               };
               return (
                 <button
                   key={id}
                   onClick={() => setActiveTab(id)}
-                  className={`flex-1 py-4 text-sm font-medium capitalize transition-colors flex items-center justify-center gap-2 ${
-                    activeTab === id
-                      ? "text-[#0F47F2] border-b-2 border-[#0F47F2] bg-[#F3F5F7]/30"
-                      : "text-[#8E8E93] hover:text-[#4B5563]"
-                  }`}
+                  className={`flex-1 py-4 text-sm font-medium capitalize transition-colors flex items-center justify-center gap-2 ${activeTab === id
+                    ? "text-[#0F47F2] border-b-2 border-[#0F47F2] bg-[#F3F5F7]/30"
+                    : "text-[#8E8E93] hover:text-[#4B5563]"
+                    }`}
                 >
                   {icons[id]}
                   <span className="sr-only">{id}</span>
@@ -1070,7 +1124,13 @@ export default function JobCandidateProfile({
                             rel="noopener noreferrer"
                             title="LinkedIn"
                           >
-                            <Linkedin className="w-4 h-4 text-black hover:text-[#0A66C2] cursor-pointer transition-colors" />
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M18.75 10C18.75 5.16751 14.8325 1.25 10 1.25C5.16751 1.25 1.25 5.16751 1.25 10C1.25 14.8325 5.16751 18.75 10 18.75C14.8325 18.75 18.75 14.8325 18.75 10Z" fill="#1275B1" />
+                              <path d="M7.88662 6.05759C7.88662 6.64169 7.38031 7.11519 6.75581 7.11519C6.13128 7.11519 5.625 6.64169 5.625 6.05759C5.625 5.4735 6.13128 5 6.75581 5C7.38031 5 7.88662 5.4735 7.88662 6.05759Z" fill="white" />
+                              <path d="M5.7793 7.89258H7.71228V13.75H5.7793V7.89258Z" fill="white" />
+                              <path d="M10.8256 7.8924H8.89258V13.7498H10.8256C10.8256 13.7498 10.8256 11.9058 10.8256 10.7529C10.8256 10.0608 11.0619 9.36578 12.0047 9.36578C13.0702 9.36578 13.0638 10.2714 13.0588 10.973C13.0523 11.8901 13.0678 12.826 13.0678 13.7498H15.0008V10.6584C14.9845 8.68446 14.4701 7.7749 12.7779 7.7749C11.773 7.7749 11.15 8.23115 10.8256 8.6439V7.8924Z" fill="white" />
+                            </svg>
+
                           </a>
                         )}
                         {premiumData.github_url && (
@@ -1080,7 +1140,17 @@ export default function JobCandidateProfile({
                             rel="noopener noreferrer"
                             title="GitHub"
                           >
-                            <Github className="w-4 h-4 text-black hover:text-[#333] cursor-pointer transition-colors" />
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <g clip-path="url(#clip0_465_8585)">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M10 0C15.523 0 20 4.58993 20 10.2529C20 14.7819 17.138 18.624 13.167 19.981C12.66 20.082 12.48 19.7618 12.48 19.4888C12.48 19.1508 12.492 18.0468 12.492 16.6748C12.492 15.7188 12.172 15.0949 11.813 14.7769C14.04 14.5229 16.38 13.6558 16.38 9.71777C16.38 8.59777 15.992 7.68382 15.35 6.96582C15.454 6.70682 15.797 5.66395 15.252 4.25195C15.252 4.25195 14.414 3.97722 12.505 5.30322C11.706 5.07622 10.85 4.96201 10 4.95801C9.15 4.96201 8.295 5.07622 7.497 5.30322C5.586 3.97722 4.746 4.25195 4.746 4.25195C4.203 5.66395 4.546 6.70682 4.649 6.96582C4.01 7.68382 3.619 8.59777 3.619 9.71777C3.619 13.6458 5.954 14.5262 8.175 14.7852C7.889 15.0412 7.63 15.4928 7.54 16.1558C6.97 16.4178 5.522 16.8712 4.63 15.3042C4.63 15.3042 4.101 14.3191 3.097 14.2471C3.097 14.2471 2.122 14.2341 3.029 14.8701C3.029 14.8701 3.684 15.1851 4.139 16.3701C4.139 16.3701 4.726 18.2001 7.508 17.5801C7.513 18.4371 7.522 19.2448 7.522 19.4888C7.522 19.7598 7.338 20.0769 6.839 19.9819C2.865 18.6269 0 14.7829 0 10.2529C0 4.58993 4.478 0 10 0Z" fill="#FF8D28" />
+                              </g>
+                              <defs>
+                                <clipPath id="clip0_465_8585">
+                                  <rect width="20" height="20" fill="white" />
+                                </clipPath>
+                              </defs>
+                            </svg>
+
                           </a>
                         )}
                         {premiumData.portfolio_url && (
@@ -1090,7 +1160,17 @@ export default function JobCandidateProfile({
                             rel="noopener noreferrer"
                             title="Portfolio"
                           >
-                            <Palette className="w-4 h-4 text-black hover:text-[#0F47F2] cursor-pointer transition-colors" />
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <g clip-path="url(#clip0_465_8596)">
+                                <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM6.65 12.77C6.54 13.07 6.25 13.26 5.95 13.26C5.86 13.26 5.78 13.25 5.69 13.21C4.88 12.91 4.2 12.32 3.77 11.55C2.77 9.75 3.39 7.4 5.14 6.31L7.48 4.86C8.34 4.33 9.35 4.17 10.31 4.42C11.27 4.67 12.08 5.3 12.57 6.18C13.57 7.98 12.95 10.33 11.2 11.42L10.94 11.61C10.6 11.85 10.13 11.77 9.89 11.44C9.65 11.1 9.73 10.63 10.06 10.39L10.37 10.17C11.49 9.47 11.87 8.02 11.26 6.91C10.97 6.39 10.5 6.02 9.94 5.87C9.38 5.72 8.79 5.81 8.28 6.13L5.92 7.59C4.84 8.26 4.46 9.71 5.07 10.83C5.32 11.28 5.72 11.63 6.2 11.81C6.59 11.95 6.79 12.38 6.65 12.77ZM14.92 13.65L12.58 15.1C11.99 15.47 11.33 15.65 10.66 15.65C10.36 15.65 10.05 15.61 9.75 15.53C8.79 15.28 7.98 14.65 7.5 13.77C6.5 11.97 7.12 9.62 8.87 8.53L9.13 8.34C9.47 8.1 9.94 8.18 10.18 8.51C10.42 8.85 10.34 9.32 10.01 9.56L9.7 9.78C8.58 10.48 8.2 11.93 8.81 13.04C9.1 13.56 9.57 13.93 10.13 14.08C10.69 14.23 11.28 14.14 11.79 13.82L14.13 12.37C15.21 11.7 15.59 10.25 14.98 9.13C14.73 8.68 14.33 8.33 13.85 8.15C13.46 8.01 13.26 7.58 13.41 7.19C13.55 6.8 13.99 6.6 14.37 6.75C15.18 7.05 15.86 7.64 16.29 8.41C17.28 10.21 16.67 12.56 14.92 13.65Z" fill="#4B5563" />
+                              </g>
+                              <defs>
+                                <clipPath id="clip0_465_8596">
+                                  <rect width="20" height="20" fill="white" />
+                                </clipPath>
+                              </defs>
+                            </svg>
+
                           </a>
                         )}
                         {premiumData.twitter_url && (
@@ -1100,7 +1180,9 @@ export default function JobCandidateProfile({
                             rel="noopener noreferrer"
                             title="Twitter"
                           >
-                            <Globe className="w-4 h-4 text-black hover:text-[#1DA1F2] cursor-pointer transition-colors" />
+                            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50">
+                              <path d="M 11 4 C 7.134 4 4 7.134 4 11 L 4 39 C 4 42.866 7.134 46 11 46 L 39 46 C 42.866 46 46 42.866 46 39 L 46 11 C 46 7.134 42.866 4 39 4 L 11 4 z M 13.085938 13 L 21.023438 13 L 26.660156 21.009766 L 33.5 13 L 36 13 L 27.789062 22.613281 L 37.914062 37 L 29.978516 37 L 23.4375 27.707031 L 15.5 37 L 13 37 L 22.308594 26.103516 L 13.085938 13 z M 16.914062 15 L 31.021484 35 L 34.085938 35 L 19.978516 15 L 16.914062 15 z"></path>
+                            </svg>
                           </a>
                         )}
                         <button
@@ -1130,9 +1212,17 @@ export default function JobCandidateProfile({
                 {/* ── Résumé ── */}
                 {(cand.resume_url || premiumData.resume_url) && (
                   <div>
-                    <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
-                      RESUME
-                    </h4>
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
+                        RESUME
+                      </h4>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.66602 7.3335L14.666 1.3335M14.666 1.3335H11.1035M14.666 1.3335V4.896" stroke="#4B5563" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M14.6673 8.00016C14.6673 11.1428 14.6673 12.7142 13.691 13.6905C12.7147 14.6668 11.1433 14.6668 8.00065 14.6668C4.85795 14.6668 3.2866 14.6668 2.3103 13.6905C1.33398 12.7142 1.33398 11.1428 1.33398 8.00016C1.33398 4.85746 1.33398 3.28612 2.3103 2.30981C3.2866 1.3335 4.85795 1.3335 8.00065 1.3335" stroke="#4B5563" stroke-linecap="round" />
+                      </svg>
+
+                    </div>
+
                     <a
                       href={cand.resume_url || premiumData.resume_url}
                       target="_blank"
@@ -1140,12 +1230,18 @@ export default function JobCandidateProfile({
                       className="border border-[#E5E7EB] rounded-lg p-3 bg-white flex items-center justify-between group cursor-pointer hover:border-[#0F47F2] transition"
                     >
                       <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-[#8E8E93]" />
+                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 48 48">
+                          <path fill="#2196f3" d="M37,45H11c-1.657,0-3-1.343-3-3V6c0-1.657,1.343-3,3-3h19l10,10v29C40,43.657,38.657,45,37,45z"></path><path fill="#bbdefb" d="M40 13L30 13 30 3z"></path><path fill="#1565c0" d="M30 13L40 23 40 13z"></path><path fill="#e3f2fd" d="M15 23H33V25H15zM15 27H33V29H15zM15 31H33V33H15zM15 35H25V37H15z"></path>
+                        </svg>
                         <span className="font-bold text-xs text-black line-clamp-1 truncate w-40">
                           {fullName.replace(/\s+/g, "_")}_resume.pdf
                         </span>
                       </div>
-                      <Download className="w-4 h-4 text-[#0F47F2]" />
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 10C2 11.8856 2 12.8284 2.58579 13.4142C3.17157 14 4.11438 14 6 14H10C11.8856 14 12.8284 14 13.4142 13.4142C14 12.8284 14 11.8856 14 10" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M8.00065 2V10.6667M8.00065 10.6667L10.6673 7.75M8.00065 10.6667L5.33398 7.75" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+
                     </a>
                   </div>
                 )}
@@ -1170,16 +1266,16 @@ export default function JobCandidateProfile({
                       const duration =
                         exp.start_date && (exp.end_date || exp.is_current)
                           ? Math.max(
-                              1,
-                              Math.round(
-                                ((exp.is_current
-                                  ? new Date()
-                                  : new Date(exp.end_date)
-                                ).getTime() -
-                                  new Date(exp.start_date).getTime()) /
-                                  (1000 * 60 * 60 * 24 * 365),
-                              ),
-                            )
+                            1,
+                            Math.round(
+                              ((exp.is_current
+                                ? new Date()
+                                : new Date(exp.end_date)
+                              ).getTime() -
+                                new Date(exp.start_date).getTime()) /
+                              (1000 * 60 * 60 * 24 * 365),
+                            ),
+                          )
                           : null;
 
                       return (
@@ -1446,11 +1542,10 @@ export default function JobCandidateProfile({
                                     ? "Hide Transcript"
                                     : "View Transcript"}
                                   <ChevronDown
-                                    className={`w-3.5 h-3.5 transition-transform ${
-                                      showTranscript === call.id
-                                        ? "rotate-180"
-                                        : ""
-                                    }`}
+                                    className={`w-3.5 h-3.5 transition-transform ${showTranscript === call.id
+                                      ? "rotate-180"
+                                      : ""
+                                      }`}
                                   />
                                 </button>
                                 {showTranscript === call.id && (
@@ -1498,9 +1593,8 @@ export default function JobCandidateProfile({
                               </div>
                             </div>
                             <ChevronDown
-                              className={`w-5 h-5 text-[#4B5563] transition-transform ${
-                                isExpanded ? "rotate-180" : ""
-                              }`}
+                              className={`w-5 h-5 text-[#4B5563] transition-transform ${isExpanded ? "rotate-180" : ""
+                                }`}
                             />
                           </div>
                         )}
@@ -1531,98 +1625,97 @@ export default function JobCandidateProfile({
             </div>
           </div>
         )}
-      {/* FEEDBACK MODAL (Archive / Move) */}
-      {showFeedbackModal && pendingAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-blue-600" />
-                {pendingAction.type === "archive" && "Archive Candidate"}
-                {pendingAction.type === "unarchive" && "Unarchive Candidate"}
-                {pendingAction.type === "move" &&
-                  `Move to ${pendingAction.targetStageName || "Next Stage"}`}
-              </h3>
-              <button
-                onClick={() => {
-                  setShowFeedbackModal(false);
-                  setPendingAction(null);
-                  setFeedbackComment("");
-                }}
-                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        {/* FEEDBACK MODAL (Archive / Move) */}
+        {showFeedbackModal && pendingAction && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-blue-600" />
+                  {pendingAction.type === "archive" && "Archive Candidate"}
+                  {pendingAction.type === "unarchive" && "Unarchive Candidate"}
+                  {pendingAction.type === "move" &&
+                    `Move to ${pendingAction.targetStageName || "Next Stage"}`}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowFeedbackModal(false);
+                    setPendingAction(null);
+                    setFeedbackComment("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-            <div className="p-6 space-y-4">
-              <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-lg text-sm font-medium border border-blue-100">
-                You are about to {pendingAction.type}{" "}
-                {pendingAction.applicationIds.length} candidate(s):
-                <div className="mt-2 text-blue-600 font-normal text-xs bg-white/60 p-2 rounded border border-blue-100/50">
-                  {pendingAction.candidateNames?.join(", ")}
+              <div className="p-6 space-y-4">
+                <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-lg text-sm font-medium border border-blue-100">
+                  You are about to {pendingAction.type}{" "}
+                  {pendingAction.applicationIds.length} candidate(s):
+                  <div className="mt-2 text-blue-600 font-normal text-xs bg-white/60 p-2 rounded border border-blue-100/50">
+                    {pendingAction.candidateNames?.join(", ")}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Feedback / Reason <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-sm bg-gray-50/50 focus:bg-white"
+                    rows={4}
+                    placeholder="Please provide a reason or feedback for this action..."
+                    value={feedbackComment}
+                    onChange={(e) => setFeedbackComment(e.target.value)}
+                    autoFocus
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    This comment will be added to the candidate's history.
+                  </p>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Feedback / Reason <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-sm bg-gray-50/50 focus:bg-white"
-                  rows={4}
-                  placeholder="Please provide a reason or feedback for this action..."
-                  value={feedbackComment}
-                  onChange={(e) => setFeedbackComment(e.target.value)}
-                  autoFocus
-                />
-                <p className="mt-2 text-xs text-gray-500">
-                  This comment will be added to the candidate's history.
-                </p>
-              </div>
-            </div>
-
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowFeedbackModal(false);
-                  setPendingAction(null);
-                  setFeedbackComment("");
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleFeedbackSubmit}
-                disabled={!feedbackComment.trim()}
-                className={`flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm
-                  ${
-                    !feedbackComment.trim()
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowFeedbackModal(false);
+                    setPendingAction(null);
+                    setFeedbackComment("");
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleFeedbackSubmit}
+                  disabled={!feedbackComment.trim()}
+                  className={`flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm
+                  ${!feedbackComment.trim()
                       ? "bg-gray-300 cursor-not-allowed"
                       : pendingAction.type === "archive"
                         ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
                         : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
-                  }`}
-              >
-                {pendingAction.type === "archive" ? (
-                  <Archive className="w-4 h-4" />
-                ) : (
-                  <Check className="w-4 h-4" />
-                )}
-                Confirm {pendingAction.type === "archive" ? "Archive" : "Action"}
-              </button>
+                    }`}
+                >
+                  {pendingAction.type === "archive" ? (
+                    <Archive className="w-4 h-4" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                  Confirm {pendingAction.type === "archive" ? "Archive" : "Action"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Call Candidate Modal */}
-      <CallCandidateModal
-        isOpen={!!callModalCandidate}
-        onClose={() => setCallModalCandidate(null)}
-        candidate={callModalCandidate}
-      />
+        {/* Call Candidate Modal */}
+        <CallCandidateModal
+          isOpen={!!callModalCandidate}
+          onClose={() => setCallModalCandidate(null)}
+          candidate={callModalCandidate}
+        />
 
       </div>
     </div>
