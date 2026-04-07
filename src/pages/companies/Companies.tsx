@@ -57,6 +57,51 @@ const PlayIcon = () => (
     </svg>
 );
 
+const TotalCompaniesIcon = () => (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" strokeOpacity="0.2" strokeWidth="0.5" />
+        <path d="M28.6667 28.6665H12" stroke="#0F47F2" strokeLinecap="round" />
+        <path d="M27.8336 28.6667V15.3333C27.8336 13.762 27.8336 12.9763 27.3455 12.4882C26.8573 12 26.0717 12 24.5002 12H22.8336C21.2622 12 20.4766 12 19.9884 12.4882C19.5955 12.8811 19.5188 13.4669 19.5039 14.5" stroke="#0F47F2" />
+        <path d="M22.8335 28.6667V17.8333C22.8335 16.262 22.8335 15.4763 22.3453 14.9882C21.8572 14.5 21.0715 14.5 19.5002 14.5H16.1668C14.5955 14.5 13.8098 14.5 13.3217 14.9882C12.8335 15.4763 12.8335 16.262 12.8335 17.8333V28.6667" stroke="#0F47F2" />
+        <path d="M17.8335 28.6665V26.1665" stroke="#0F47F2" strokeLinecap="round" />
+        <path d="M15.3335 17H20.3335" stroke="#0F47F2" strokeLinecap="round" />
+        <path d="M15.3335 19.5H20.3335" stroke="#0F47F2" strokeLinecap="round" />
+        <path d="M15.3335 22H20.3335" stroke="#0F47F2" strokeLinecap="round" />
+    </svg>
+);
+
+const ActiveCompaniesIcon = () => (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" strokeOpacity="0.2" strokeWidth="0.5" />
+        <path d="M28.6667 28.6665H12" stroke="#0F47F2" strokeLinecap="round" />
+        <path d="M27.8336 28.6667V15.3333C27.8336 13.762 27.8336 12.9763 27.3455 12.4882C26.8573 12 26.0717 12 24.5002 12H22.8336C21.2622 12 20.4766 12 19.9884 12.4882C19.5955 12.8811 19.5188 13.4669 19.5039 14.5" stroke="#0F47F2" />
+        <path d="M22.8335 28.6667V17.8333C22.8335 16.262 22.8335 15.4763 22.3453 14.9882C21.8572 14.5 21.0715 14.5 19.5002 14.5H16.1668C14.5955 14.5 13.8098 14.5 13.3217 14.9882C12.8335 15.4763 12.8335 16.262 12.8335 17.8333V28.6667" stroke="#0F47F2" />
+        <path d="M17.8335 28.6665V26.1665" stroke="#0F47F2" strokeLinecap="round" />
+        <path d="M15.3335 17H20.3335" stroke="#0F47F2" strokeLinecap="round" />
+        <path d="M15.3335 19.5H20.3335" stroke="#0F47F2" strokeLinecap="round" />
+        <path d="M15.3335 22H20.3335" stroke="#0F47F2" strokeLinecap="round" />
+        <circle cx="28" cy="12" r="2.75" fill="#14AE5C" stroke="white" strokeWidth="0.5" />
+    </svg>
+);
+
+const TotalOpenJobsIcon = () => (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" strokeOpacity="0.2" strokeWidth="0.5" />
+        <path d="M20 22.5L20 23.75" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12.5 19.167L12.6274 21.553C12.7643 24.5645 12.8327 26.0702 13.799 26.9936C14.7654 27.917 16.2726 27.917 19.2872 27.917H20.7128C23.7274 27.917 25.2346 27.917 26.201 26.9936C27.1673 26.0702 27.2357 24.5645 27.3726 21.553L27.5 19.167" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12.3726 18.7025C13.7887 21.3954 16.9826 22.5 19.9999 22.5C23.0173 22.5 26.2112 21.3954 27.6273 18.7025C28.3032 17.4171 27.7914 15 26.1266 15H13.8733C12.2084 15 11.6966 17.4171 12.3726 18.7025Z" stroke="#0F47F2" />
+        <path d="M23.3332 15.0002L23.2596 14.7426C22.8929 13.4592 22.7096 12.8176 22.2731 12.4505C21.8366 12.0835 21.2568 12.0835 20.0973 12.0835H19.9024C18.7428 12.0835 18.1631 12.0835 17.7266 12.4505C17.2901 12.8176 17.1068 13.4592 16.7401 14.7426L16.6665 15.0002" stroke="#0F47F2" />
+    </svg>
+);
+
+const ImmediateActionsIcon = () => (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" strokeOpacity="0.2" strokeWidth="0.5" />
+        <path d="M18.8923 28.1051L11.8952 21.108C11.2732 20.486 11.2732 19.5142 11.8952 18.8923L18.8923 11.8952C19.5142 11.2732 20.486 11.2732 21.108 11.8952L28.1051 18.8923C28.7271 19.5142 28.7271 20.486 28.1051 21.108L21.108 28.1051C20.486 28.7271 19.4754 28.7271 18.8923 28.1051Z" fill="#FFCC00" />
+        <path d="M19.0479 23.4016C19.0479 23.285 19.0867 23.1683 19.1256 23.0517C19.1645 22.9351 19.2422 22.8574 19.32 22.7796C19.3977 22.7019 19.5143 22.6241 19.6309 22.5852C19.7476 22.5464 19.8642 22.5075 20.0197 22.5075C20.1752 22.5075 20.2918 22.5464 20.4084 22.5852C20.525 22.6241 20.6416 22.7019 20.7194 22.7796C20.7971 22.8574 20.8749 22.9351 20.9137 23.0517C20.9526 23.1683 20.9915 23.285 20.9915 23.4016C20.9915 23.5182 20.9526 23.6348 20.9137 23.7514C20.8749 23.868 20.7971 23.9458 20.7194 24.0235C20.6416 24.1013 20.525 24.179 20.4084 24.2179C20.2918 24.2568 20.1752 24.2956 20.0197 24.2956C19.8642 24.2956 19.7476 24.2568 19.6309 24.2179C19.5143 24.179 19.4366 24.1013 19.32 24.0235C19.2422 23.9458 19.1645 23.868 19.1256 23.7514C19.0867 23.6348 19.0479 23.5571 19.0479 23.4016ZM20.6805 21.6134H19.2811L19.0867 15.7437H20.8749L20.6805 21.6134Z" fill="white" />
+    </svg>
+);
+
 const PauseIcon = () => (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g clipPath="url(#clip0_519_5988)">
@@ -490,7 +535,7 @@ export default function Companies() {
         }
     };
 
-    const workspaceJobs = useMemo(() => 
+    const workspaceJobs = useMemo(() =>
         allJobs.filter(j => j.workspace_details?.id === selectedWorkspace?.id),
         [allJobs, selectedWorkspace?.id]
     );
@@ -651,11 +696,18 @@ export default function Companies() {
                                             {stat.value}
                                         </span>
 
+                                        <div className="flex items-center gap-2">
+                                            {stat.id === "cs-1" && <TotalCompaniesIcon />}
+                                            {stat.id === "cs-2" && <ActiveCompaniesIcon />}
+                                            {stat.id === "cs-3" && <TotalOpenJobsIcon />}
+                                            {stat.id === "cs-4" && <ImmediateActionsIcon />}
+
                                         {stat.subText && (
                                             <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FFF7D6] text-[#92400E]">
                                                 ⚠️ {stat.subText}
                                             </span>
                                         )}
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -698,7 +750,20 @@ export default function Companies() {
                                     ))}
                                 </div>
                                 <button className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs" title="Feature Coming Soon" disabled>
-                                    <LayoutGrid className="w-4 h-4 " /> Grid View
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g clip-path="url(#clip0_263_2492)">
+                                            <path d="M6.00016 14.6668H10.0002C13.3335 14.6668 14.6668 13.3335 14.6668 10.0002V6.00016C14.6668 2.66683 13.3335 1.3335 10.0002 1.3335H6.00016C2.66683 1.3335 1.3335 2.66683 1.3335 6.00016V10.0002C1.3335 13.3335 2.66683 14.6668 6.00016 14.6668Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M8 1.3335V14.6668" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M1.3335 6.3335H8.00016" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M8 9.66699H14.6667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                        </g>
+                                        <defs>
+                                            <clipPath id="clip0_263_2492">
+                                                <rect width="16" height="16" fill="white" />
+                                            </clipPath>
+                                        </defs>
+                                    </svg>
+                                    Grid View
                                 </button>
                             </div>
 
@@ -731,7 +796,11 @@ export default function Companies() {
                                         className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] hover:text-black transition-colors"
                                         title="Export Workspaces CSV"
                                     >
-                                        <DownloadCloud className="w-4 h-4 text-[#4B5563]" /> Export CSV
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M11.6519 6.00737C11.6569 6.00735 11.6618 6.00734 11.6668 6.00734C13.3237 6.00734 14.6668 7.35295 14.6668 9.01284C14.6668 10.5599 13.5001 11.8339 12.0002 12M11.6519 6.00737C11.6618 5.89737 11.6668 5.78597 11.6668 5.67339C11.6668 3.64463 10.0252 2 8.00016 2C6.08232 2 4.50838 3.47511 4.34711 5.35461M11.6519 6.00737C11.5837 6.76506 11.2859 7.4564 10.8287 8.01101M4.34711 5.35461C2.65615 5.51582 1.3335 6.94261 1.3335 8.6789C1.3335 10.2945 2.47867 11.6421 4.00016 11.9515M4.34711 5.35461C4.45233 5.34458 4.55898 5.33945 4.66683 5.33945C5.41738 5.33945 6.10999 5.58796 6.66715 6.00734" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M8.00016 8.6665L8.00016 13.9998M8.00016 8.6665C7.53334 8.6665 6.66118 9.99604 6.3335 10.3332M8.00016 8.6665C8.46698 8.6665 9.33914 9.99604 9.66683 10.3332" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        Export CSV
                                     </button>
 
                                     {/* Date Picker Mock */}
@@ -740,7 +809,13 @@ export default function Companies() {
                                         title="Feature Coming Soon"
                                         disabled
                                     >
-                                        <Calendar className="w-4 h-4 text-[#AEAEB2]" /> 24 Feb, 2026
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="#374151" stroke-linecap="round" />
+                                            <path d="M1.6665 8.16216C1.6665 5.25729 1.6665 3.80486 2.50125 2.90243C3.336 2 4.6795 2 7.3665 2H8.63317C11.3202 2 12.6637 2 13.4984 2.90243C14.3332 3.80486 14.3332 5.25729 14.3332 8.16216V8.5045C14.3332 11.4094 14.3332 12.8618 13.4984 13.7642C12.6637 14.6667 11.3202 14.6667 8.63317 14.6667H7.3665C4.6795 14.6667 3.336 14.6667 2.50125 13.7642C1.6665 12.8618 1.6665 11.4094 1.6665 8.5045V8.16216Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M4 5.3335H12" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        24 Feb, 2026
                                     </button>
 
                                     {/* Add Company Split Button */}
@@ -1112,11 +1187,10 @@ export default function Companies() {
                                             </p>
                                             <div className="flex items-center gap-4">
                                                 <button
-                                                    className={`py-1.5 px-3 text-xs font-semibold rounded-md transition-colors ${
-                                                        action.priority_level === 'high'
-                                                            ? 'bg-[#E7EDFF] text-[#0F47F2] hover:bg-[#D7E3FF]'
-                                                            : 'bg-[#FFF7D6] text-[#D97706] hover:bg-[#FDE68A]'
-                                                    }`}
+                                                    className={`py-1.5 px-3 text-xs font-semibold rounded-md transition-colors ${action.priority_level === 'high'
+                                                        ? 'bg-[#E7EDFF] text-[#0F47F2] hover:bg-[#D7E3FF]'
+                                                        : 'bg-[#FFF7D6] text-[#D97706] hover:bg-[#FDE68A]'
+                                                        }`}
                                                 >
                                                     {action.action_button_label}
                                                 </button>
@@ -1146,11 +1220,10 @@ export default function Companies() {
                                             <button
                                                 key={opt}
                                                 onClick={() => setSidebarActivityView(opt)}
-                                                className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
-                                                    sidebarActivityView === opt
-                                                        ? 'text-[#0F47F2] bg-[#E7EDFF]'
-                                                        : 'text-[#4B5563] border border-[#E5E7EB] bg-white hover:bg-gray-50'
-                                                }`}
+                                                className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${sidebarActivityView === opt
+                                                    ? 'text-[#0F47F2] bg-[#E7EDFF]'
+                                                    : 'text-[#4B5563] border border-[#E5E7EB] bg-white hover:bg-gray-50'
+                                                    }`}
                                             >
                                                 {opt}
                                             </button>
@@ -1194,9 +1267,8 @@ export default function Companies() {
                                                 {group.items.map((item) => (
                                                     <div key={item.id} className="flex items-start justify-between pb-3 border-b border-[#F3F5F7] mb-2">
                                                         <div className="flex items-start gap-2">
-                                                            <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 shrink-0 ${
-                                                                item.color === 'green' ? 'bg-[#DEF7EC]' : 'bg-[#E7EDFF]'
-                                                            }`}>
+                                                            <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 shrink-0 ${item.color === 'green' ? 'bg-[#DEF7EC]' : 'bg-[#E7EDFF]'
+                                                                }`}>
                                                                 {item.activity_type === 'hire' ? (
                                                                     <UserCheck className="w-3 h-3 text-[#069855]" />
                                                                 ) : (
