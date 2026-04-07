@@ -2183,12 +2183,16 @@ export default function JobPipelineDashboard({
                                       }
                                       const rect = e.currentTarget.getBoundingClientRect();
                                       const menuWidth = 192;
-                                      const menuHeight = 144;
+                                      const menuHeight = 240;
                                       const gap = 8;
                                       const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
-                                      const top = openUp
-                                        ? Math.max(8, rect.top - menuHeight - gap)
+                                      const preferredTop = openUp
+                                        ? rect.top - menuHeight - gap
                                         : rect.bottom + gap;
+                                      const top = Math.min(
+                                        Math.max(8, preferredTop),
+                                        Math.max(8, window.innerHeight - menuHeight - 8)
+                                      );
                                       let left = rect.right - menuWidth;
                                       if (left < 8) left = 8;
                                       if (left + menuWidth > window.innerWidth - 8) {
@@ -2768,12 +2772,16 @@ export default function JobPipelineDashboard({
                                       }
                                       const rect = e.currentTarget.getBoundingClientRect();
                                       const menuWidth = 192;
-                                      const menuHeight = 108;
+                                      const menuHeight = 240;
                                       const gap = 8;
                                       const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
-                                      const top = openUp
-                                        ? Math.max(8, rect.top - menuHeight - gap)
+                                      const preferredTop = openUp
+                                        ? rect.top - menuHeight - gap
                                         : rect.bottom + gap;
+                                      const top = Math.min(
+                                        Math.max(8, preferredTop),
+                                        Math.max(8, window.innerHeight - menuHeight - 8)
+                                      );
                                       let left = rect.right - menuWidth;
                                       if (left < 8) left = 8;
                                       if (left + menuWidth > window.innerWidth - 8) {
