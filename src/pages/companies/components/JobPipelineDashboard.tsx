@@ -2733,7 +2733,7 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td
-                              className="sticky right-0 z-30 bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]"
+                              className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex justify-end items-center gap-2">
@@ -2758,7 +2758,7 @@ export default function JobPipelineDashboard({
                                   {getPrimaryMoveLabel(item)}
                                 </button>
 
-                                <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
+                                <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
