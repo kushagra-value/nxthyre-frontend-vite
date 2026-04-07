@@ -591,7 +591,7 @@ const JobListing: React.FC<JobListingProps> = ({
                     </div>
                 </div>
 
-                <div className="overflow-x-auto overflow-y-hidden">
+                <div className="overflow-x-auto overflow-y-visible">
                     <table className="w-full text-left border-collapse">
                         <colgroup>
                             <col style={{ width: '3%' }} />  {/* Checkbox */}
@@ -675,7 +675,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     >{job.title}</span>
                                                     {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
                                                 </div>
-                                                <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                                <div className="flex items-center gap-1.5 overflow-x-auto overflow-y-visible whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                                                     {/* add a copy button here and line it up with job id */}
                                                     <span
                                                         className="flex items-center gap-1 px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap cursor-pointer hover:bg-[#E0E9FF] transition-colors"
@@ -719,8 +719,9 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                         {/* Pipeline Stages */}
                                         <td className="px-4 py-3">
-                                            <div className="flex gap-1.5 items-center overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                                {stages.length > 0 ? stages.map((item: any, idx: number) => {
+                                            <div className="overflow-x-auto overflow-y-visible whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                                <div className="flex gap-1.5 items-center min-w-max">
+                                                    {stages.length > 0 ? stages.map((item: any, idx: number) => {
                                                     const stageArchivedCount = item.archived_count || 0;
                                                     const palette = stageColors[idx % stageColors.length];
                                                     return (
@@ -742,6 +743,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 }) : (
                                                     <span className="text-xs text-[#8E8E93]">--</span>
                                                 )}
+                                                </div>
                                             </div>
                                         </td>
 
