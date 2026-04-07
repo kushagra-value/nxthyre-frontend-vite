@@ -8,6 +8,7 @@ const options = [
   { value: 'virtual', label: 'Virtual Interview' },
   { value: 'background', label: 'Background Verification' },
   { value: 'mock', label: 'Mock Call' },
+  { value: 'hired', label: 'Hired' },
 ];
 
 interface StageTypeDropdownProps {

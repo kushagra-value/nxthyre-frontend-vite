@@ -19,6 +19,7 @@ export default function AddNewStageForm({ onClose, onStageCreated, pipelineId: p
   const [calendarInvite, setCalendarInvite] = useState(false);
   const isBackgroundVerification = stageType === 'background';
   const isMockCall = stageType === 'mock';
+  const isHired = stageType === 'hired';
   const [loading, setLoading] = useState(false);
 
 
@@ -69,6 +70,8 @@ export default function AddNewStageForm({ onClose, onStageCreated, pipelineId: p
         if (documentRequired.panCard) payload.required_documents.push("PAN_CARD");
       } else if (isMockCall) {
         payload.stage_type = "MOCK_CALL";
+      } else if (isHired) {
+        payload.stage_type = "HIRED";
       } else {
         const stageTypeMapping: Record<string, string> = {
           'face-to-face': 'FACE_TO_FACE_INTERVIEW',
@@ -253,7 +256,7 @@ export default function AddNewStageForm({ onClose, onStageCreated, pipelineId: p
           </>
         )}
 
-        {!isBackgroundVerification && !isMockCall && (
+        {!isBackgroundVerification && !isMockCall && !isHired && (
           <>
             <div className="mb-10 flex items-center justify-between">
               <div>
