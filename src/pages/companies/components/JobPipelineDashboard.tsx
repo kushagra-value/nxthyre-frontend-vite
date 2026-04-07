@@ -2728,18 +2728,7 @@ export default function JobPipelineDashboard({
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex justify-end items-center gap-2">
-                                <button
-                                  onClick={() => {
-                                    openFeedbackModal({
-                                      type: "archive",
-                                      applicationIds: [item.id],
-                                    });
-                                  }}
-                                  className="px-3 py-1.5 rounded-md text-xs font-medium text-[#DC2626] bg-[#FEE2E2] hover:bg-[#FECACA] transition-colors"
-                                  title="Move candidate to archive"
-                                >
-                                  Archive
-                                </button>
+                                
                                 <button
                                   onClick={() => {
                                     const nextStage = getNextStageForItem(item);
@@ -2851,7 +2840,7 @@ export default function JobPipelineDashboard({
                                           });
                                           setMenuOpenId(null);
                                         }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
                                          Archive
                                       </button>
@@ -2871,7 +2860,7 @@ export default function JobPipelineDashboard({
                                           });
                                           setMenuOpenId(null);
                                         }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#0F47F2] hover:bg-[#E7EDFF] flex items-center gap-2"
+                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
                                         {getPrimaryMoveLabel(item)}
                                       </button>
