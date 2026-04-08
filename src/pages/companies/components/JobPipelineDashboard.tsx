@@ -1791,11 +1791,20 @@ export default function JobPipelineDashboard({
                   </>
                 ) : (
                   <>
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7.16699 0.5V13.8333" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                      <path d="M0.5 5.5H7.16667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                      <path d="M7.16699 8.8335H13.8337" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g clip-path="url(#clip0_360_5915)">
+                        <path d="M5.99967 14.6668H9.99967C13.333 14.6668 14.6663 13.3335 14.6663 10.0002V6.00016C14.6663 2.66683 13.333 1.3335 9.99967 1.3335H5.99967C2.66634 1.3335 1.33301 2.66683 1.33301 6.00016V10.0002C1.33301 13.3335 2.66634 14.6668 5.99967 14.6668Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M8 1.3335V14.6668" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M1.33301 6.3335H7.99967" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M8 9.66699H14.6667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_360_5915">
+                          <rect width="16" height="16" fill="white" />
+                        </clipPath>
+                      </defs>
                     </svg>
+
                     Kanban
                   </>
                 )}
@@ -2384,21 +2393,21 @@ export default function JobPipelineDashboard({
               </div>
             </div>
           ) : (
-            <div className="overflow-x-hidden overflow-y-visible mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl">
-              <table className="w-full table-fixed text-left border-collapse">
+            <div className="overflow-x-auto overflow-y-visible mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl">
+              <table className="w-full min-w-[1480px] table-fixed text-left border-collapse">
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: "2%" }} /> {/* checkbox */}
                   <col style={{ width: "25%" }} /> {/* name & headline */}
-                  <col style={{ width: "6%" }} /> {/* ai score */}
-                  <col style={{ width: "8%" }} /> {/* location */}
+                  <col style={{ width: "7%" }} /> {/* ai score */}
+                  <col style={{ width: "11%" }} /> {/* location */}
                   <col style={{ width: "5%" }} /> {/* exp */}
                   <col style={{ width: "6%" }} /> {/* ctc */}
-                  <col style={{ width: "7%" }} /> {/* expected ctc */}
-                  <col style={{ width: "7%" }} /> {/* notice period */}
-                  <col style={{ width: "9%" }} /> {/* stage */}
-                  <col style={{ width: "9%" }} /> {/* attention */}
-                  <col style={{ width: "16%" }} /> {/* actions */}
+                  <col style={{ width: "8%" }} /> {/* expected ctc */}
+                  <col style={{ width: "8%" }} /> {/* notice period */}
+                  <col style={{ width: "8%" }} /> {/* stage */}
+                  <col style={{ width: "8%" }} /> {/* attention */}
+                  <col style={{ width: "12%" }} /> {/* actions */}
                 </colgroup>
 
                 <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
@@ -2432,7 +2441,7 @@ export default function JobPipelineDashboard({
                         </div>
                       </th>
                     ))}
-                    <th className="px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">
+                    <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">
                       Actions
                     </th>
                   </tr>
@@ -2474,7 +2483,7 @@ export default function JobPipelineDashboard({
                         <td className="px-4 py-5">
                           <div className="h-5 bg-gray-200 rounded-full w-16" />
                         </td>
-                        <td className="px-4 py-5">
+                        <td className="sticky right-0 z-10 bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]">
                           <div className="flex gap-2 justify-end">
                             <div className="w-8 h-8 bg-gray-200 rounded-full" />
                             <div className="w-8 h-8 bg-gray-200 rounded-full" />
@@ -2571,11 +2580,11 @@ export default function JobPipelineDashboard({
                                   onSelectCandidate?.(item, candidates, index)
                                 }
                               >
-                                <div className="max-h-20 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                  <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition break-words whitespace-normal">
+                                <div>
+                                  <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition truncate">
                                     {cand.full_name || "--"}
                                   </div>
-                                  <div className="text-xs text-[#727272] break-words whitespace-normal">
+                                  <div className="text-xs text-[#727272] truncate">
                                     {cand.headline || "--"}
                                   </div>
                                 </div>
@@ -2606,42 +2615,42 @@ export default function JobPipelineDashboard({
                                 </div>
                               </div>
                             </td>
-                            <td className="px-4 py-5 text-sm text-[#4B5563]">
-                              <div className="break-words whitespace-normal">
+                            <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
+                              <div className="truncate" title={cand.location || "--"}>
                                 {cand.location || "--"}
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563]">
-                              <div className="break-words whitespace-normal">
+                              <div className="whitespace-nowrap">
                                 {expYears}
                               </div>
                             </td>
-                            <td className="px-4 py-5 text-sm text-[#4B5563]">
+                            <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               {ctc}
                             </td>
-                            <td className="px-4 py-5 text-sm text-[#4B5563]">
+                            <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               {expectedCtc}
                             </td>
-                            <td className="px-4 py-5 text-sm text-[#4B5563]">
+                            <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               {noticePeriod}
                             </td>
-                            <td className="px-4 py-5">
+                            <td className="px-4 py-5 whitespace-nowrap">
                               <div>
-                                <div className="text-[#6155F5] text-sm font-medium">
+                                <div className="text-[#6155F5] text-sm font-medium whitespace-nowrap truncate" title={item.current_stage?.name || "--"}>
                                   {item.current_stage?.name || "--"}
                                 </div>
                               </div>
                             </td>
-                            <td className="px-4 py-5">
-                              <div className="break-words whitespace-normal">
+                            <td className="px-4 py-5 whitespace-nowrap">
+                              <div className="whitespace-nowrap">
                                 {attentionTag ? (
                                   <span
                                     className="inline-block text-xs font-medium px-3 py-0.5 rounded-full"
                                     style={{
                                       backgroundColor:
-                                        attentionTag.color,
+                                        attentionTag.color === "red" ? "#FEE9E7" : attentionTag.color === "blue" ? "#EDE9FE" : "#D1FAE5",
                                       color:
-                                        "#fff"
+                                      attentionTag.color === "red" ? "#FF383C" : attentionTag.color === "blue" ? "#6366F1" : "#059669",
                                     }}
                                   >
                                     {attentionTag.text}
@@ -2654,11 +2663,11 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td
-                              className="px-4 py-5"
+                              className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex justify-end items-center gap-2">
-                                
+
                                 <button
                                   onClick={() => {
                                     const nextStage = getNextStageForItem(item);
@@ -2673,13 +2682,13 @@ export default function JobPipelineDashboard({
                                       targetStageName: nextStage.name,
                                     });
                                   }}
-                                  className="px-3 py-1.5 rounded-md text-xs font-medium text-white bg-[#0F47F2] hover:bg-[#0D3ECF] transition-colors"
+                                  className="h-8 min-w-[88px] px-3 rounded-md text-xs font-medium text-white bg-[#0F47F2] hover:bg-[#0D3ECF] transition-colors whitespace-nowrap"
                                   title={getPrimaryMoveLabel(item)}
                                 >
                                   {getPrimaryMoveLabel(item)}
                                 </button>
 
-                                <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
+                                <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -2689,12 +2698,16 @@ export default function JobPipelineDashboard({
                                       }
                                       const rect = e.currentTarget.getBoundingClientRect();
                                       const menuWidth = 192;
-                                      const menuHeight = 108;
+                                      const menuHeight = 240;
                                       const gap = 8;
                                       const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
-                                      const top = openUp
-                                        ? Math.max(8, rect.top - menuHeight - gap)
+                                      const preferredTop = openUp
+                                        ? rect.top - menuHeight - gap
                                         : rect.bottom + gap;
+                                      const top = Math.min(
+                                        Math.max(8, preferredTop),
+                                        Math.max(8, window.innerHeight - menuHeight - 8)
+                                      );
                                       let left = rect.right - menuWidth;
                                       if (left < 8) left = 8;
                                       if (left + menuWidth > window.innerWidth - 8) {
@@ -2711,7 +2724,7 @@ export default function JobPipelineDashboard({
 
                                   {menuOpenId === item.id && (
                                     <div
-                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
                                       style={{ top: menuPos.top, left: menuPos.left }}
                                     >
                                       <button
@@ -2738,7 +2751,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Call
+                                        Call
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -2749,7 +2762,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Edit Details
+                                        Edit Details
                                       </button>
                                       <button
                                         onClick={async (e) => {
@@ -2759,7 +2772,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Copy Mail ID
+                                        Copy Mail ID
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -2772,7 +2785,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Archive
+                                        Archive
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -2803,7 +2816,7 @@ export default function JobPipelineDashboard({
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
-                                         Shift to Stage
+                                        Shift to Stage
                                       </button>
                                       <div className="h-px bg-[#F3F5F7] my-1" />
                                       <button
@@ -2821,7 +2834,7 @@ export default function JobPipelineDashboard({
                                       >
                                         Share Profile
                                       </button>
-                                      
+
                                     </div>
                                   )}
                                 </div>
@@ -2866,12 +2879,12 @@ export default function JobPipelineDashboard({
                                     disabled={isDisabled}
                                   />
                                 </td>
-                                <td className="px-4 py-5">
+                                <td className="px-4 py-5 whitespace-nowrap">
                                   <div className="flex flex-col">
-                                    <div className="font-medium text-[#8E8E93]">
+                                    <div className="font-medium text-[#8E8E93] truncate" title={cand.full_name || "--"}>
                                       {cand.full_name || "--"}
                                     </div>
-                                    <div className="text-xs text-[#AEAEB2]">
+                                    <div className="text-xs text-[#AEAEB2] truncate" title={cand.headline || "--"}>
                                       {cand.headline || "--"}
                                     </div>
                                     {(item as any).archive_reason && (
@@ -2889,8 +2902,8 @@ export default function JobPipelineDashboard({
                                     --%
                                   </div>
                                 </td>
-                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">
-                                  {cand.location || "--"}
+                                <td className="px-4 py-5 text-sm text-[#AEAEB2] whitespace-nowrap">
+                                  <span className="truncate block" title={cand.location || "--"}>{cand.location || "--"}</span>
                                 </td>
                                 <td className="px-4 py-5 text-sm text-[#AEAEB2]">
                                   {cand.total_experience != null
@@ -2911,17 +2924,17 @@ export default function JobPipelineDashboard({
                                 <td className="px-4 py-5 text-sm text-[#AEAEB2]">
                                   --
                                 </td>
-                                <td className="px-4 py-5">
+                                <td className="px-4 py-5 whitespace-nowrap">
                                   <span className="text-[10px] px-2 py-0.5 bg-gray-200 text-gray-500 rounded-full font-bold">
                                     ARCHIVED
                                   </span>
                                 </td>
-                                <td className="px-4 py-5">
+                                <td className="px-4 py-5 whitespace-nowrap">
                                   <span className="text-[10px] text-[#AEAEB2]">
                                     --
                                   </span>
                                 </td>
-                                <td className="px-4 py-5">
+                                <td className="sticky right-0 z-20 bg-[#F9FAFB] px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]">
                                   <div className="flex justify-end gap-2">
                                     <button
                                       onClick={async () => {
