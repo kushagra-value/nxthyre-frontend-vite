@@ -90,7 +90,7 @@ export default function JobPipeline({
       // Log the candidate response from /candidates/Uuid API endpoint
       if (response.data?.candidate?.id) {
         const canRes = await apiClient.get(
-          `/candidates/${response.data.candidate.id}/${jobId}`,
+          `/candidates/${response.data.candidate.id}/?job_id=${jobId}`,
         );
         console.log("Candidate Uuid API response:", canRes.data);
       }
