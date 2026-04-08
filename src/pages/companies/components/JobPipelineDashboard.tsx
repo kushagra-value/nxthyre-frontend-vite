@@ -2028,13 +2028,16 @@ export default function JobPipelineDashboard({
                     onDrop={(e) => handleDrop(e, stage.slug)}
                   >
                     <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between shrink-0">
-                      <h3 className="text-sm font-bold text-[#4B5563] capitalize">
-                        {stage.name}
-                      </h3>
-                      <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">
-                        {activeColumnCandidates.length +
-                          archivedColumnCandidates.length}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: stageBarColors[stages.filter(s => s.slug !== 'archives').indexOf(stage) % stageBarColors.length] }} />
+                        <h3 className="text-sm font-bold text-[#4B5563] capitalize">{stage.name}</h3>
+                        <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">
+                          {activeColumnCandidates.length + archivedColumnCandidates.length}
+                        </span>
+                      </div>
+                      <button className="p-1 hover:bg-gray-100 rounded-md transition-colors" title="Stage options">
+                        <MoreHorizontal className="w-4 h-4 text-[#8E8E93] rotate-90" />
+                      </button>
                     </div>
 
                     <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar pb-24">
@@ -2050,19 +2053,15 @@ export default function JobPipelineDashboard({
                           selectionType === "ARCHIVED" ||
                           (selectionStage && selectionStage !== stage.slug);
 
-                        // Extract headline and company (attempt to split if "at" present)
                         let headline = cand.headline || "--";
                         let companyName = cand.experience_summary?.title || "--";
-
-                        // If companyName seems to be a job title, it might be better to show it if headline doesn't have it.
-                        // Based on the image: "Product Designer" (headline/title), "Google" (company).
 
                         return (
                           <div
                             key={item.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e, item.id)}
-                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30 transition-all flex flex-col gap-4 relative ${isDisabled ? "opacity-60" : ""}`}
+                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30 transition-all flex flex-col gap-3 relative ${isDisabled ? "opacity-60" : ""}`}
                           >
                             <div className="flex justify-between items-start">
                               <div className="flex gap-3">
@@ -2076,10 +2075,10 @@ export default function JobPipelineDashboard({
                                     onClick={(e) => e.stopPropagation()}
                                   />
                                 </div>
-                                <div className="flex flex-col">
-                                  <div className="flex items-center gap-2">
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5">
                                     <h4
-                                      className="font-semibold text-[17px] text-[#1C1C1E] line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2"
+                                      className="font-semibold text-[15px] text-[#1C1C1E] line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2"
                                       onClick={() =>
                                         onSelectCandidate?.(
                                           item,
@@ -2090,24 +2089,46 @@ export default function JobPipelineDashboard({
                                     >
                                       {cand.full_name || "--"}
                                     </h4>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setCandidateEditing(item);
-                                        setShowCandidateEditModal(true);
-                                      }}
-                                      className="p-1 hover:bg-gray-100 rounded-md transition-colors"
-                                      title="Edit details"
-                                    >
-                                      <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
-                                    </button>
+                                    <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (menuOpenId === item.id) { setMenuOpenId(null); return; }
+                                          const rect = e.currentTarget.getBoundingClientRect();
+                                          const mW = 192, mH = 260, gap = 8;
+                                          const openUp = rect.bottom + mH + gap > window.innerHeight;
+                                          const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
+                                          const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
+                                          let left = rect.right - mW;
+                                          if (left < 8) left = 8;
+                                          if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
+                                          setMenuPos({ top, left });
+                                          setMenuOpenId(item.id);
+                                        }}
+                                        className="p-0.5 hover:bg-gray-100 rounded-md transition-colors"
+                                        title="Options"
+                                      >
+                                        <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                                      </button>
+                                      {menuOpenId === item.id && (
+                                        <div
+                                          className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                                          style={{ top: menuPos.top, left: menuPos.left }}
+                                        >
+                                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [] }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"><Phone className="w-4 h-4" /> Call Candidate</button>
+                                          <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"><Pencil className="w-4 h-4" /> Edit Details</button>
+                                          <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"><Copy className="w-4 h-4" /> Copy Mail ID</button>
+                                          <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
+                                          <button onClick={(e) => { e.stopPropagation(); setShiftStageItem(item); setShiftStageTargetId(null); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">Shift to Stage</button>
+                                          <div className="h-px bg-[#F3F5F7] my-1" />
+                                          <button onClick={(e) => { e.stopPropagation(); navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, { state: { shareOption: "full_profile", resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "" } }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"><Share2 className="w-4 h-4" /> Share Profile</button>
+                                          <button onClick={(e) => { e.stopPropagation(); openFeedbackModal({ type: "archive", applicationIds: [item.id] }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"><Trash2 className="w-4 h-4" /> Move to Archive</button>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                  <p className="text-[14px] text-[#8E8E93] line-clamp-1 mt-0.5">
-                                    {headline}
-                                  </p>
-                                  {/* <p className="text-[15px] font-medium text-[#4B5563] line-clamp-1 mt-1">
-                                    {companyName}
-                                  </p> */}
+                                  <p className="text-[13px] text-[#8E8E93] line-clamp-1 mt-0.5">{headline}</p>
+                                  <p className="text-[13px] font-medium text-[#4B5563] line-clamp-1">{companyName}</p>
                                 </div>
                               </div>
 
@@ -2135,115 +2156,24 @@ export default function JobPipelineDashboard({
                             </div>
 
                             <div className="flex justify-between items-center mt-auto">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCallModalCandidate({
-                                      id: cand.id,
-                                      name: cand.full_name,
-                                      avatarInitials: cand.full_name?.substring(0, 2).toUpperCase(),
-                                      headline: cand.headline,
-                                      phone: cand.premium_data?.phone || "+91 98765 43210",
-                                      experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"),
-                                      expectedCtc: cand.expected_ctc || "--",
-                                      location: cand.location || "--",
-                                      noticePeriod: cand.notice_period_summary || "--",
-                                      callAttention: item.job_score?.call_attention || [],
-                                    });
-                                  }}
-                                  className="w-9 h-9 flex items-center justify-center bg-[#E3E1FF] text-[#6155F5] rounded-full hover:bg-[#D5D2FF] transition-colors"
-                                  title="Call"
-                                >
-                                  <Phone className="w-4 h-4" />
-                                </button>
-                                <button
-                                  className="w-9 h-9 flex items-center justify-center bg-[#FFF2E6] text-[#FF8D28] rounded-full hover:bg-[#FFE8D4] transition-colors"
-                                  title="Email"
-                                >
-                                  <Mail className="w-4 h-4" />
-                                </button>
-
-                                <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (menuOpenId === item.id) {
-                                        setMenuOpenId(null);
-                                        return;
-                                      }
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      const menuWidth = 192;
-                                      const menuHeight = 144;
-                                      const gap = 8;
-                                      const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
-                                      const top = openUp
-                                        ? Math.max(8, rect.top - menuHeight - gap)
-                                        : rect.bottom + gap;
-                                      let left = rect.right - menuWidth;
-                                      if (left < 8) left = 8;
-                                      if (left + menuWidth > window.innerWidth - 8) {
-                                        left = window.innerWidth - menuWidth - 8;
-                                      }
-                                      setMenuPos({ top, left });
-                                      setMenuOpenId(item.id);
-                                    }}
-                                    className="w-9 h-9 flex items-center justify-center bg-[#F3F5F7] text-[#8E8E93] rounded-full hover:bg-gray-200 transition-colors"
-                                    title="Options"
-                                  >
-                                    <MoreHorizontal className="w-4 h-4" />
-                                  </button>
-
-                                  {menuOpenId === item.id && (
-                                    <div
-                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-bottom-2 duration-200"
-                                      style={{ top: menuPos.top, left: menuPos.left }}
-                                    >
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, {
-                                            state: {
-                                              shareOption: "full_profile",
-                                              resumeUrl: cand.premium_data?.resume_url || cand.resume_url || ""
-                                            }
-                                          });
-                                          setMenuOpenId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                                      >
-                                        <Share2 className="w-4 h-4" /> Share Profile
-                                      </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setCandidateEditing(item);
-                                          setShowCandidateEditModal(true);
-                                          setMenuOpenId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                                      >
-                                        <Pencil className="w-4 h-4" /> Edit Details
-                                      </button>
-                                      <div className="h-px bg-[#F3F5F7] my-1" />
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          openFeedbackModal({
-                                            type: "archive",
-                                            applicationIds: [item.id],
-                                          });
-                                          setMenuOpenId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"
-                                      >
-                                        <Trash2 className="w-4 h-4" /> Move to Archive
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
+                                  {cand.total_experience != null
+                                    ? `${cand.total_experience} yrs`
+                                    : cand.experience_years
+                                      ? cand.experience_years.replace(/\s*exp$/i, "")
+                                      : "--"}
+                                </span>
+                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F3E8FF] text-[#7C3AED]">
+                                  {cand.notice_period_summary || "--"}
+                                </span>
+                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FFE4E6] text-[#E11D48]">
+                                  {cand.current_salary_lpa
+                                    ? `${cand.current_salary_lpa} LPA`
+                                    : "--"}
+                                </span>
                               </div>
-                              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
                                 <span className="text-[11px] font-bold text-[#8E8E93]">
                                   {formatMovedDate(item.status_tags)}
