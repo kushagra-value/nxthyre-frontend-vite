@@ -1049,16 +1049,14 @@ export default function JobCandidateProfile({
             Questions to Ask
           </h3>
           <div className="flex flex-col gap-4 text-sm font-medium text-slate-700">
-            {candidate.job_score &&
-            candidate.job_score.call_attention.length > 0 ? (
+            {jobScoreObj?.call_attention &&
+            jobScoreObj.call_attention.length > 0 ? (
               <ul className="list-disc pl-5 space-y-3 marker:text-teal-500">
-                {candidate.job_score.call_attention.map(
-                  (question: any, index: any) => (
-                    <li key={index} className="pl-1 leading-relaxed">
-                      {question}
-                    </li>
-                  ),
-                )}
+                {jobScoreObj.call_attention.map((question: any, index: any) => (
+                  <li key={index} className="pl-1 leading-relaxed">
+                    {question}
+                  </li>
+                ))}
               </ul>
             ) : (
               <p className="italic text-slate-500 text-sm">
