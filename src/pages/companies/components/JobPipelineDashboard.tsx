@@ -535,10 +535,19 @@ export default function JobPipelineDashboard({
   const [shiftStageItem, setShiftStageItem] = useState<CandidateListItem | null>(null);
   const [shiftStageTargetId, setShiftStageTargetId] = useState<number | null>(null);
 
+  // Kanban Stage Menu State
+  const [stageMenuOpenId, setStageMenuOpenId] = useState<number | null>(null);
+  const stageMenuRef = useRef<HTMLDivElement>(null);
+  const [stageMenuPos, setStageMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [visibleArchives, setVisibleArchives] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpenId(null);
+      }
+      if (stageMenuRef.current && !stageMenuRef.current.contains(event.target as Node)) {
+        setStageMenuOpenId(null);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -2125,9 +2134,77 @@ export default function JobPipelineDashboard({
                           {activeColumnCandidates.length + archivedColumnCandidates.length}
                         </span>
                       </div>
-                      <button className="p-1 hover:bg-gray-100 rounded-md transition-colors" title="Stage options">
-                        <MoreHorizontal className="w-4 h-4 text-[#8E8E93] rotate-90" />
-                      </button>
+                      <div className={`relative ${stageMenuOpenId === stage.id ? "z-50" : ""}`} ref={stageMenuOpenId === stage.id ? stageMenuRef : null}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (stageMenuOpenId === stage.id) {
+                              setStageMenuOpenId(null);
+                              return;
+                            }
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const mW = 192, mH = 120, gap = 8;
+                            const openUp = rect.bottom + mH + gap > window.innerHeight;
+                            const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
+                            const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
+                            let left = rect.right - mW;
+                            if (left < 8) left = 8;
+                            if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
+                            setStageMenuPos({ top, left });
+                            setStageMenuOpenId(stage.id);
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                          title="Stage options"
+                        >
+                          <MoreHorizontal className="w-4 h-4 text-[#8E8E93] rotate-90" />
+                        </button>
+
+                        {stageMenuOpenId === stage.id && (
+                          <div
+                            className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                            style={{ top: stageMenuPos.top, left: stageMenuPos.left }}
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                showToast.info("Delete Stage feature coming soon");
+                                setStageMenuOpenId(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                            >
+                              Delete Stage
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                showToast.info("Shift Stage feature coming soon");
+                                setStageMenuOpenId(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                            >
+                              Shift Stage
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setVisibleArchives((prev) => {
+                                  const newSet = new Set(prev);
+                                  if (newSet.has(stage.slug)) {
+                                    newSet.delete(stage.slug);
+                                  } else {
+                                    newSet.add(stage.slug);
+                                  }
+                                  return newSet;
+                                });
+                                setStageMenuOpenId(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                            >
+                              {visibleArchives.has(stage.slug) ? "Hide" : "Show"} Archived Candidates
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar pb-24">
@@ -2274,7 +2351,7 @@ export default function JobPipelineDashboard({
                       })}
 
                       {/* Archives Section */}
-                      {archivedColumnCandidates.length > 0 && (
+                      {archivedColumnCandidates.length > 0 && visibleArchives.has(stage.slug) && (
                         <div className="mt-6">
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-px bg-[#E5E7EB] flex-1"></div>
