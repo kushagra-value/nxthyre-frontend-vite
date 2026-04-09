@@ -50,6 +50,7 @@ import CompanyInfoTab from "./CompanyInfoTab";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import NaukbotTab from "./NaukbotTab";
 import LinkedinBotTab from "./LinkedinBotTab";
+import InboundTab from "./InboundTab";
 import AddNewStageForm from "../../pipelines/AddNewStageForm";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
@@ -1734,7 +1735,7 @@ export default function JobPipelineDashboard({
       {/* ═══════════════════════════════════════════════════════
           Stage Filter Pills & Pipeline Content
          ═══════════════════════════════════════════════════════ */}
-      {(activeTab === "pipeline" || activeTab === "inbound") && (
+      {activeTab === "pipeline" && (
         <>
           {isKanbanView ? (
             /* ═══════════ KANBAN VIEW TOOLBAR ═══════════ */
@@ -3190,6 +3191,7 @@ export default function JobPipelineDashboard({
 
       {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
       {activeTab === "linkedinbot" && <LinkedinBotTab />}
+      {activeTab === "inbound" && <InboundTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
 
       {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal
