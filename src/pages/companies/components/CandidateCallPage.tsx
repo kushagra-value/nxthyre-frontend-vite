@@ -15,6 +15,7 @@ import {
   MessageSquare,
   PhoneCall,
   PhoneIncoming,
+  Phone,
   RotateCcw,
   FileText,
 } from "lucide-react";
@@ -532,6 +533,10 @@ export default function CandidateCallPage() {
             </div>
 
             <h1 className="text-xl md:text-2xl font-semibold mb-1 text-center">{candidate.name}</h1>
+            <div className="text-white text-sm md:text-base font-medium mb-2 flex items-center justify-center gap-1.5 opacity-90">
+              <Phone className="w-3.5 h-3.5" />
+              <span>{candidate.phone || "No phone provided"}</span>
+            </div>
             <p className="text-blue-200 text-xs md:text-sm mb-3 text-center">{candidate.headline}</p>
 
             {/* Candidate Info */}
