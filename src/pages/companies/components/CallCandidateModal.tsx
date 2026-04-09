@@ -214,8 +214,8 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 md:p-6">
+      <div className="bg-white w-full max-w-2xl max-h-[95vh] md:max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
         {/* BLUE HEADER */}
         <div className="bg-[#1D4ED8] p-8 pb-10 relative flex flex-col items-center justify-center">
           <button
@@ -263,7 +263,7 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
         </div>
 
         {/* MODAL CONTENT */}
-        <div className="p-8">
+        <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar">
           {step === "select" ? (
             <div className="flex flex-col items-center animate-in fade-in duration-300">
               <h3 className="text-slate-700 text-lg mb-2 font-semibold">
@@ -356,7 +356,7 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
           ) : (
             /* step === "noAnswer" */
             <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="flex-1 overflow-y-auto max-h-[50vh] pr-2 custom-scrollbar">
+              <div className="flex-1 pr-2">
                 <div className="mb-6">
                   <h3 className="text-slate-800 font-medium mb-3">
                     Mark A Reason

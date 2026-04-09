@@ -499,9 +499,9 @@ export default function CandidateCallPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
       {/* LEFT COLUMN */}
-      <div className="w-[45%] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-hidden p-8">
+      <div className="w-[35%] lg:w-[40%] xl:w-[45%] min-w-[340px] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-y-auto custom-scrollbar p-6 md:p-8 shrink-0">
         {/* Visual Audio Rings */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none fixed">
           <div className="w-[800px] h-[800px] rounded-full border border-white/20"></div>
           <div className="absolute w-[600px] h-[600px] rounded-full border border-white/20"></div>
           <div className="absolute w-[400px] h-[400px] rounded-full border border-white/20"></div>
@@ -518,7 +518,7 @@ export default function CandidateCallPage() {
 
         {isManual ? (
           /* ─── MANUAL CALL LEFT PANEL ─── */
-          <div className="z-10 flex flex-col items-center">
+          <div className="z-10 flex flex-col items-center w-full max-w-sm">
             <div className="relative mb-6">
               <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] text-4xl font-semibold shadow-2xl">
                 {candidate.avatarInitials}
@@ -528,11 +528,11 @@ export default function CandidateCallPage() {
               )}
             </div>
 
-            <h1 className="text-3xl font-semibold mb-2">{candidate.name}</h1>
-            <p className="text-blue-200 text-sm mb-4">{candidate.headline}</p>
+            <h1 className="text-2xl md:text-3xl font-semibold mb-2 text-center">{candidate.name}</h1>
+            <p className="text-blue-200 text-sm mb-4 text-center">{candidate.headline}</p>
 
             {/* Candidate Info */}
-            <div className="bg-white/10 rounded-xl p-4 mb-6 w-full max-w-xs grid grid-cols-2 gap-3 text-xs">
+            <div className="bg-white/10 rounded-xl p-4 mb-6 w-full grid grid-cols-2 gap-3 text-xs">
               <div>
                 <span className="text-white/50 block">CURRENT CTC</span>
                 <span className="font-semibold">{candidate.currentCtc}</span>
@@ -558,29 +558,29 @@ export default function CandidateCallPage() {
 
             {!manualCallConnected ? (
               /* Pre-connection: outcome buttons */
-              <div className="flex flex-col items-center gap-4 w-full max-w-xs">
+              <div className="flex flex-col items-center gap-4 w-full">
                 {/* Call on Nxthyre button */}
                 <button
                   onClick={() => {
                     navigate(`/call/${candidate.id}/${jobId}?mode=platform`, { state: { candidate } });
                   }}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-white/30 bg-white/10 text-white font-semibold text-sm hover:bg-white/20 transition-colors backdrop-blur-sm"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/30 bg-white/10 text-white font-semibold text-sm hover:bg-white/20 transition-colors backdrop-blur-sm"
                 >
                   <PhoneCall className="w-4 h-4" />
-                  <span className="text-[#22C55E] font-bold text-xs">nxt</span>{" "}
+                  <span className="text-[#22C55E] font-bold text-xs uppercase">nxt</span>{" "}
                   Call on Nxthyre
                 </button>
 
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]"></span>
+                <div className="flex items-center gap-2 mt-4">
+                  <span className="w-2 h-2 rounded-full bg-[#22C55E]"></span>
                   <span className="text-[#22C55E] text-sm font-bold uppercase tracking-wider">ON MANUAL CALL</span>
                 </div>
 
-                <p className="text-white/70 text-sm mt-2 mb-4">Did Candidate Picked Call?</p>
+                <p className="text-white text-[15px] mt-1 mb-2">Did Candidate Picked Call?</p>
 
                 {/* Outcome buttons row 1 */}
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {["Not Picked up", "Number Busy", "Wrong Number"].map((reason) => (
+                <div className="flex gap-3 justify-center mb-2 w-full">
+                  {["Not Picked up", "Number Busy"].map((reason) => (
                     <button
                       key={reason}
                       onClick={async () => {
@@ -591,7 +591,7 @@ export default function CandidateCallPage() {
                         });
                         navigate(-1);
                       }}
-                      className="px-4 py-2 rounded-full text-xs font-semibold border border-white/30 bg-white/10 text-white hover:bg-white/20 transition-colors"
+                      className="px-5 py-2 rounded-full text-[13px] font-medium border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors"
                     >
                       {reason}
                     </button>
@@ -599,18 +599,35 @@ export default function CandidateCallPage() {
                 </div>
 
                 {/* Outcome buttons row 2 */}
-                <div className="flex gap-2 justify-center">
+                <div className="flex justify-center mb-4 w-full">
+                  <button
+                    onClick={async () => {
+                      await saveCallLog({
+                        candidate_id: candidate.id,
+                        reason: "Wrong Number",
+                        call_mode: "manual",
+                      });
+                      navigate(-1);
+                    }}
+                    className="px-5 py-2 rounded-full text-[13px] font-medium border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors"
+                  >
+                    Wrong Number
+                  </button>
+                </div>
+
+                {/* Outcome buttons row 3 */}
+                <div className="flex gap-3 justify-center w-full mt-2">
                   <button
                     onClick={() => setManualCallConnected(true)}
-                    className="px-5 py-2 rounded-full text-xs font-bold bg-[#22C55E] text-white hover:bg-[#16A34A] transition-colors shadow-lg shadow-green-500/30"
+                    className="px-5 py-2.5 rounded-full text-[13px] font-bold bg-[#22C55E] text-white hover:bg-[#16A34A] transition-colors shadow-lg shadow-green-500/30 flex items-center gap-2"
                   >
-                    <span className="flex items-center gap-1.5"><PhoneIncoming className="w-3.5 h-3.5" /> Picked Up</span>
+                    <PhoneIncoming className="w-4 h-4" /> Picked Up
                   </button>
                   <button
                     onClick={() => navigate(-1)}
-                    className="px-5 py-2 rounded-full text-xs font-bold border border-white/30 bg-white/10 text-white hover:bg-white/20 transition-colors"
+                    className="px-5 py-2.5 rounded-full text-[13px] font-bold border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors flex items-center gap-2"
                   >
-                    <span className="flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Call Back again</span>
+                    <RotateCcw className="w-4 h-4" /> Call Back again
                   </button>
                 </div>
               </div>
