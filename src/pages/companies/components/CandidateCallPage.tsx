@@ -584,12 +584,17 @@ export default function CandidateCallPage() {
                     <button
                       key={reason}
                       onClick={async () => {
-                        await saveCallLog({
-                          candidate_id: candidate.id,
-                          reason,
-                          call_mode: "manual",
-                        });
-                        navigate(-1);
+                        try {
+                          await saveCallLog({
+                            candidate_id: candidate.id,
+                            reason,
+                            call_mode: "manual",
+                          });
+                        } catch (err) {
+                          console.error("Failed to save manual call log:", err);
+                        } finally {
+                          navigate(-1);
+                        }
                       }}
                       className="px-5 py-2 rounded-full text-[13px] font-medium border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors"
                     >
@@ -602,12 +607,17 @@ export default function CandidateCallPage() {
                 <div className="flex justify-center mb-4 w-full">
                   <button
                     onClick={async () => {
-                      await saveCallLog({
-                        candidate_id: candidate.id,
-                        reason: "Wrong Number",
-                        call_mode: "manual",
-                      });
-                      navigate(-1);
+                      try {
+                        await saveCallLog({
+                          candidate_id: candidate.id,
+                          reason: "Wrong Number",
+                          call_mode: "manual",
+                        });
+                      } catch (err) {
+                        console.error("Failed to save manual call log:", err);
+                      } finally {
+                        navigate(-1);
+                      }
                     }}
                     className="px-5 py-2 rounded-full text-[13px] font-medium border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors"
                   >
@@ -1257,51 +1267,53 @@ export default function CandidateCallPage() {
         )}
         </div>
         {/* Fixed Footer for Save */}
-        <div className="w-full shrink-0 border-t border-slate-100 p-6 bg-white flex items-center gap-4 z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+        <div className="w-full shrink-0 border-t border-slate-100 py-3 px-6 bg-white flex flex-col justify-center z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
           {isManual ? (
-            <>
-              <div className="flex-1 flex items-center gap-2">
-                <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">⚡ Quick Notes</span>
-                {tags.map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => toggleTag(tag)}
-                    className={`px-3 py-1 rounded-full text-[10px] font-semibold border transition-all ${activeTags.includes(tag) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
-                  >
-                    {tag === "Interested" ? "✅ " : tag === "Follow Up" ? "🔴 " : tag === "CTC Mismatch" ? "💰 " : tag === "Strong fit" ? "⭐ " : ""}
-                    {tag}
-                  </button>
-                ))}
+            <div className="flex flex-col gap-3 w-full">
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                  📝 QUICK NOTES
+                </span>
+                <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
+                  {tags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all flex items-center gap-1.5 ${activeTags.includes(tag) ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
+                    >
+                      {tag === "Interested" ? <span className="text-green-500">✅</span> : tag === "Follow Up" ? <span className="text-red-500">⏰</span> : tag === "CTC Mismatch" ? <span>💰</span> : tag === "Strong fit" ? <span className="text-yellow-500">⭐</span> : null}
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add key notes while on the call..."
-                className="flex-1 h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:border-blue-500"
-              />
-              <button
-                onClick={handleSaveNotes}
-                disabled={isSaving}
-                className="px-5 py-2.5 bg-[#22C55E] text-white font-bold text-sm rounded-lg hover:bg-[#16A34A] transition-colors shadow-sm disabled:opacity-50"
-              >
-                💾 Save
-              </button>
-              <button
-                onClick={handleSaveNotes}
-                disabled={isSaving}
-                className="px-5 py-2.5 bg-[#DC2626] text-white font-bold text-sm rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50"
-              >
-                {isSaving ? "Saving..." : "Save Notes & Checklist"}
-              </button>
-            </>
+              <div className="flex items-center gap-3 w-full">
+                <input
+                  type="text"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add key notes while on the call..."
+                  className="flex-1 h-10 bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
+                />
+                <button
+                  onClick={handleSaveNotes}
+                  disabled={isSaving}
+                  className="h-10 px-6 bg-[#1D4ED8] text-white font-semibold text-sm rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2 shrink-0"
+                >
+                  💾 Save
+                </button>
+              </div>
+            </div>
           ) : (
-            <button
-              onClick={handleSaveNotes}
-              disabled={isSaving}
-              className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50"
-            >
-              {isSaving ? "Saving..." : "Save Call Wrap-up Data"}
-            </button>
+            <div className="flex items-center w-full">
+              <button
+                onClick={handleSaveNotes}
+                disabled={isSaving}
+                className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save Call Wrap-up Data"}
+              </button>
+            </div>
           )}
         </div>
         </div>
