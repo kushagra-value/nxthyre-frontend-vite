@@ -3190,7 +3190,7 @@ export default function JobPipelineDashboard({
       )}
 
       {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
-      {activeTab === "linkedinbot" && <LinkedinBotTab />}
+      {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} />}
       {activeTab === "inbound" && <InboundTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
 
       {/* ═══════════════════════════════════════════════════════
