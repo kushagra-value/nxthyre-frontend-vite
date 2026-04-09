@@ -6,7 +6,11 @@ import { showToast } from "../../../utils/toast";
 
 interface InboundTabProps {
   jobId: number | null;
-  onSelectCandidate?: (candidate: any) => void;
+  onSelectCandidate?: (
+    candidate: any,
+    allCandidates?: any[],
+    index?: number
+  ) => void;
 }
 
 export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps) {
@@ -153,13 +157,15 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
                  <tr>
                    <td colSpan={9} className="px-6 py-12 text-center text-[#8E8E93]">No candidates found.</td>
                  </tr>
-               ) : candidates.map((item) => {
+               ) : (() => {
+                 const inboundCandidatesMapped = candidates.map(c => ({ id: null, candidate: { ...c, application_type: "inbound" }, application_type: "inbound" }));
+                 return candidates.map((item, index) => {
                   const scoreRaw = item.job_score?.candidate_match_score?.score?.replace("%", "") || "0";
                   const score = parseInt(scoreRaw, 10);
                   const scoreColor = score >= 80 ? "#00C8B3" : score >= 60 ? "#F59E0B" : "#EA580C";
                   
                   return (
-                  <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => onSelectCandidate && onSelectCandidate({ id: null, candidate: { ...item, application_type: "inbound" } })}>
+                  <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => onSelectCandidate && onSelectCandidate(inboundCandidatesMapped[index], inboundCandidatesMapped, index)}>
                     <td className="px-6 py-6 border-transparent" onClick={(e) => e.stopPropagation()}>
                       <input 
                         type="checkbox" 
@@ -211,7 +217,9 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
                       </div>
                     </td>
                   </tr>
-               )})}
+                 );
+                 });
+                })()}
             </tbody>
           </table>
         </div>

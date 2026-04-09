@@ -87,13 +87,21 @@ export default function JobPipeline({
         const response = await apiClient.get(
           `/candidates/${candidateItem.candidate.id}/?job_id=${jobId}`,
         );
+        const inboundCand = response.data.candidate || {};
         // Inject properties so JobCandidateProfile handles it correctly without a pipeline
         const enrichedData = {
           ...response.data,
           id: null,
+          application_type: "inbound", // to keep it trackable
+          contextual_details: {
+            job_score_obj: inboundCand.job_score || {},
+          },
           candidate: {
-            ...response.data.candidate,
+            ...inboundCand,
             application_type: "inbound", // this triggers the "Candidate Status" UI block
+            current_salary_lpa: inboundCand.current_salary,
+            expected_ctc: inboundCand.expected_ctc,
+            notice_period_summary: inboundCand.notice_period_days != null ? `${inboundCand.notice_period_days} Days` : undefined
           },
         };
         setSelectedCandidate(enrichedData);
