@@ -78,21 +78,39 @@ export default function JobPipeline({
     setCurrentCandidateIndex(-1);
   }, [jobId, fetchStages]);
 
-  // Fetch full candidate details from the application endpoint
-  const fetchCandidateDetails = useCallback(async (applicationId: number) => {
+  // Fetch full candidate details from the application endpoint or candidates endpoint
+  const fetchCandidateDetails = useCallback(async (candidateItem: any) => {
     setLoadingCandidate(true);
     try {
-      const response = await apiClient.get(
-        `/jobs/applications/${applicationId}/`,
-      );
-      setSelectedCandidate(response.data);
-
-      // Log the candidate response from /candidates/Uuid API endpoint
-      if (response.data?.candidate?.id) {
-        const canRes = await apiClient.get(
-          `/candidates/${response.data.candidate.id}/?job_id=${jobId}`,
+      if (candidateItem.application_type === "inbound") {
+        // Fetch full profile from candidates UUID endpoint since inbound candidates have no job application yet
+        const response = await apiClient.get(
+          `/candidates/${candidateItem.candidate.id}/?job_id=${jobId}`,
         );
-        console.log("Candidate Uuid API response:", canRes.data);
+        // Inject properties so JobCandidateProfile handles it correctly without a pipeline
+        const enrichedData = {
+          ...response.data,
+          id: null,
+          candidate: {
+            ...response.data.candidate,
+            application_type: "inbound", // this triggers the "Candidate Status" UI block
+          },
+        };
+        setSelectedCandidate(enrichedData);
+      } else {
+        // Normal pipeline flow
+        const response = await apiClient.get(
+          `/jobs/applications/${candidateItem.id}/`,
+        );
+        setSelectedCandidate(response.data);
+
+        // Log the candidate response from /candidates/Uuid API endpoint
+        if (response.data?.candidate?.id) {
+          const canRes = await apiClient.get(
+            `/candidates/${response.data.candidate.id}/?job_id=${jobId}`,
+          );
+          console.log("Candidate Uuid API response:", canRes.data);
+        }
       }
     } catch (error) {
       console.error("Error fetching candidate details:", error);
@@ -100,7 +118,7 @@ export default function JobPipeline({
     } finally {
       setLoadingCandidate(false);
     }
-  }, []);
+  }, [jobId]);
 
   const handleSelectCandidate = (
     candidateListItem: any,
@@ -114,8 +132,8 @@ export default function JobPipeline({
     if (index !== undefined) {
       setCurrentCandidateIndex(index);
     }
-    // Fetch full details using the application id
-    fetchCandidateDetails(candidateListItem.id);
+    // Fetch full details using the application object
+    fetchCandidateDetails(candidateListItem);
   };
 
   const handleNavigatePrev = () => {
@@ -123,7 +141,7 @@ export default function JobPipeline({
       const prevIndex = currentCandidateIndex - 1;
       const prevCandidate = candidateList[prevIndex];
       setCurrentCandidateIndex(prevIndex);
-      fetchCandidateDetails(prevCandidate.id);
+      fetchCandidateDetails(prevCandidate);
     }
   };
 
@@ -135,7 +153,7 @@ export default function JobPipeline({
       const nextIndex = currentCandidateIndex + 1;
       const nextCandidate = candidateList[nextIndex];
       setCurrentCandidateIndex(nextIndex);
-      fetchCandidateDetails(nextCandidate.id);
+      fetchCandidateDetails(nextCandidate);
     }
   };
 
