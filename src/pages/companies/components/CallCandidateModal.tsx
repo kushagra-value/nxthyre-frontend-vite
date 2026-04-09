@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Calendar, Clock, Phone } from "lucide-react";
+import { X, Calendar, Clock, Phone, PhoneCall, PhoneOff, Loader2 } from "lucide-react";
 import {
   saveCallLog,
   scheduleFollowUp,
+  initiateCall,
+  getCallStatus,
 } from "../../../services/jobPipelineDashboardService";
 
 export interface CallCandidateData {
@@ -43,25 +45,115 @@ const QUICK_SLOTS = [
   "04:30 PM",
 ];
 
+type ModalStep = "select" | "connecting" | "noAnswer";
+
 const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   isOpen,
   onClose,
   candidate,
   jobId,
 }) => {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<ModalStep>("select");
   const navigate = useNavigate();
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [connectingDots, setConnectingDots] = useState(0);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const dotsRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const callInitiatedRef = useRef(false);
+
+  // Reset state when modal opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setStep("select");
+      setSelectedReason(null);
+      setSelectedDate("");
+      setSelectedTime("");
+      setNote("");
+      setIsSaving(false);
+      callInitiatedRef.current = false;
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      if (dotsRef.current) clearInterval(dotsRef.current);
+    }
+  }, [isOpen]);
+
+  // Connecting dots animation
+  useEffect(() => {
+    if (step === "connecting") {
+      dotsRef.current = setInterval(() => {
+        setConnectingDots((d) => (d + 1) % 4);
+      }, 500);
+    } else {
+      if (dotsRef.current) clearInterval(dotsRef.current);
+    }
+    return () => {
+      if (dotsRef.current) clearInterval(dotsRef.current);
+    };
+  }, [step]);
 
   if (!isOpen || !candidate) return null;
 
-  const handleCallNow = () => {
+  const handleCallOnPlatform = async () => {
+    if (callInitiatedRef.current) return;
+    callInitiatedRef.current = true;
+    setStep("connecting");
+
+    try {
+      // Initiate the Plivo call
+      await initiateCall({ phone_numbers: [candidate.phone] });
+
+      // Start polling call status
+      let pollCount = 0;
+      const maxPolls = 20; // ~60 seconds of polling
+
+      pollingRef.current = setInterval(async () => {
+        pollCount++;
+        try {
+          const status = await getCallStatus();
+
+          if (status.status === "answered" || status.event === "answer") {
+            // Call was answered — navigate to calling page
+            if (pollingRef.current) clearInterval(pollingRef.current);
+            navigate(`/call/${candidate.id}/${jobId}?mode=platform`, {
+              state: { candidate },
+            });
+          } else if (
+            status.status === "completed" ||
+            status.event === "hangup" ||
+            status.event === "hangup_by_user" ||
+            status.status === "not_answered" ||
+            status.status === "busy" ||
+            status.status === "failed" ||
+            status.event === "no_answer"
+          ) {
+            // Call was not answered — show No Answer step
+            if (pollingRef.current) clearInterval(pollingRef.current);
+            setStep("noAnswer");
+          }
+        } catch (err) {
+          console.error("Status poll error:", err);
+        }
+
+        if (pollCount >= maxPolls) {
+          // Timeout — treat as no answer
+          if (pollingRef.current) clearInterval(pollingRef.current);
+          setStep("noAnswer");
+        }
+      }, 3000);
+    } catch (err) {
+      console.error("Failed to initiate call:", err);
+      setStep("noAnswer");
+    }
+  };
+
+  const handleManualCall = () => {
     if (candidate)
-      navigate(`/call/${candidate.id}/${jobId}`, { state: { candidate } });
+      navigate(`/call/${candidate.id}/${jobId}?mode=manual`, {
+        state: { candidate },
+      });
   };
 
   const handleLogOnly = async () => {
@@ -72,15 +164,13 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
         candidate_id: candidate.id,
         reason: selectedReason || undefined,
         note: note || undefined,
+        call_mode: "platform",
       });
     } catch (err) {
       console.error("Failed to save call log:", err);
     } finally {
       setIsSaving(false);
       onClose();
-      setStep(1);
-      setSelectedReason(null);
-      setNote("");
     }
   };
 
@@ -114,21 +204,25 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
     } finally {
       setIsSaving(false);
       onClose();
-      setStep(1);
-      setSelectedReason(null);
-      setSelectedDate("");
-      setSelectedTime("");
-      setNote("");
     }
   };
 
+  const handleCancelConnecting = () => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    callInitiatedRef.current = false;
+    setStep("select");
+  };
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 md:p-6">
+      <div className="bg-white w-full max-w-2xl max-h-[95vh] md:max-h-[90vh] rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
         {/* BLUE HEADER */}
         <div className="bg-[#1D4ED8] p-8 pb-10 relative flex flex-col items-center justify-center">
           <button
-            onClick={onClose}
+            onClick={() => {
+              if (step === "connecting") handleCancelConnecting();
+              onClose();
+            }}
             className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
@@ -138,8 +232,11 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
             <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] text-3xl font-semibold shadow-lg">
               {candidate.avatarInitials}
             </div>
-            {step === 2 && (
+            {step === "noAnswer" && (
               <div className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-[#1D4ED8]"></div>
+            )}
+            {step === "connecting" && (
+              <div className="absolute -inset-2 rounded-full border-2 border-white/40 animate-ping"></div>
             )}
           </div>
 
@@ -151,32 +248,58 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
             {candidate.phone}
           </p>
 
-          {step === 2 && (
+          {step === "noAnswer" && (
             <div className="mt-4 px-4 py-1 bg-white text-red-500 text-xs font-bold rounded-full uppercase tracking-wider">
               No Answer
+            </div>
+          )}
+
+          {step === "connecting" && (
+            <div className="mt-4 px-4 py-1.5 bg-white/20 text-white text-xs font-bold rounded-full uppercase tracking-wider flex items-center gap-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              Connecting{".".repeat(connectingDots)}
             </div>
           )}
         </div>
 
         {/* MODAL CONTENT */}
-        <div className="p-8">
-          {step === 1 ? (
+        <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar">
+          {step === "select" ? (
             <div className="flex flex-col items-center animate-in fade-in duration-300">
-              <h3 className="text-slate-700 text-lg mb-6">
-                Ready to call this candidate?
+              <h3 className="text-slate-700 text-lg mb-2 font-semibold">
+                How would you like to call?
               </h3>
+              <p className="text-slate-400 text-sm mb-6">
+                Choose your preferred method to connect with this candidate
+              </p>
+
               <div className="flex gap-4 mb-10 w-full justify-center">
+                {/* Call on Platform */}
                 <button
-                  onClick={onClose}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                  onClick={handleCallOnPlatform}
+                  className="flex-1 max-w-[220px] flex flex-col items-center gap-3 px-6 py-5 rounded-xl border-2 border-[#1D4ED8] bg-[#1D4ED8]/5 text-[#1D4ED8] font-medium hover:bg-[#1D4ED8] hover:text-white transition-all group"
                 >
-                  <X className="w-4 h-4" /> Cancel
+                  <div className="w-12 h-12 rounded-full bg-[#1D4ED8]/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+                    <PhoneCall className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold">Call on Platform</span>
+                  <span className="text-[11px] opacity-70 text-center leading-tight">
+                    Call via Nxthyre with recording & AI
+                  </span>
                 </button>
+
+                {/* Manual Call */}
                 <button
-                  onClick={handleCallNow}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#22C55E] text-white font-medium hover:bg-[#16A34A] transition-colors shadow-lg shadow-green-200"
+                  onClick={handleManualCall}
+                  className="flex-1 max-w-[220px] flex flex-col items-center gap-3 px-6 py-5 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-700 font-medium hover:border-[#22C55E] hover:bg-[#22C55E]/5 hover:text-[#16A34A] transition-all group"
                 >
-                  <Phone className="w-4 h-4" /> Call Now
+                  <div className="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-[#22C55E]/10 flex items-center justify-center transition-colors">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold">Manual Call</span>
+                  <span className="text-[11px] opacity-70 text-center leading-tight">
+                    Dial from your phone manually
+                  </span>
                 </button>
               </div>
 
@@ -209,9 +332,31 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
                 </div>
               </div>
             </div>
+          ) : step === "connecting" ? (
+            <div className="flex flex-col items-center animate-in fade-in duration-300 py-6">
+              <div className="relative mb-8">
+                <div className="w-20 h-20 rounded-full bg-[#1D4ED8]/10 flex items-center justify-center">
+                  <PhoneCall className="w-8 h-8 text-[#1D4ED8] animate-pulse" />
+                </div>
+                <div className="absolute inset-0 rounded-full border-2 border-[#1D4ED8]/20 animate-ping" />
+              </div>
+              <h3 className="text-slate-700 text-lg font-semibold mb-2">
+                Calling {candidate.name}...
+              </h3>
+              <p className="text-slate-400 text-sm mb-8">
+                Waiting for the candidate to pick up the phone
+              </p>
+              <button
+                onClick={handleCancelConnecting}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors shadow-lg shadow-red-200"
+              >
+                <PhoneOff className="w-4 h-4" /> Cancel Call
+              </button>
+            </div>
           ) : (
+            /* step === "noAnswer" */
             <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="flex-1 overflow-y-auto max-h-[50vh] pr-2 custom-scrollbar">
+              <div className="flex-1 pr-2">
                 <div className="mb-6">
                   <h3 className="text-slate-800 font-medium mb-3">
                     Mark A Reason

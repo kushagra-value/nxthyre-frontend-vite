@@ -118,6 +118,7 @@ export interface CallLogPayload {
   tags?: string[];
   checklist_data?: Record<string, boolean>;
   skills_data?: Record<string, boolean>;
+  call_mode?: "platform" | "manual";
 }
 
 export interface CallLogResponse {
