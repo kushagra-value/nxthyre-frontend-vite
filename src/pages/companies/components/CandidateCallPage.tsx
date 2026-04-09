@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
   Mic,
   MicOff,
@@ -9,10 +9,13 @@ import {
   CheckCircle2,
   ChevronLeft,
   Eye,
-  Check,
   X,
   FastForward,
   MessageSquare,
+  PhoneCall,
+  PhoneIncoming,
+  RotateCcw,
+  FileText,
 } from "lucide-react";
 import {
   initiateCall,
@@ -61,12 +64,19 @@ export default function CandidateCallPage() {
   const { candidateId, jobId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const callMode = (searchParams.get("mode") || "platform") as "platform" | "manual";
+  const isManual = callMode === "manual";
 
   const incomingCandidate = location.state
     ?.candidate as CandidateCallParams | null;
   const [candidate, setCandidate] = useState<CandidateCallParams | null>(
     incomingCandidate,
   );
+
+  // Manual call states
+  const [manualCallConnected, setManualCallConnected] = useState(false);
+  const [manualActiveTab, setManualActiveTab] = useState<"resume" | "roleQuestions">("resume");
 
   // console.log("Candidate we are about to call:", candidate);
 
@@ -147,6 +157,7 @@ export default function CandidateCallPage() {
 
   // ─── Register Plivo Browser SDK (WebRTC) ─────────────
   useEffect(() => {
+    if (isManual) return; // Skip Plivo SDK for manual calls
     let cancelled = false;
 
     (async () => {
@@ -241,6 +252,7 @@ export default function CandidateCallPage() {
 
   // ─── Initiate Call on Mount ──────────────────────────
   useEffect(() => {
+    if (isManual) return; // Skip call initiation for manual calls
     if (!candidate?.phone) return;
 
     let cancelled = false;
@@ -486,7 +498,7 @@ export default function CandidateCallPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
-      {/* LEFT COLUMN: ACTIVE CALL UX */}
+      {/* LEFT COLUMN */}
       <div className="w-[45%] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-hidden p-8">
         {/* Visual Audio Rings */}
         <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
@@ -504,128 +516,287 @@ export default function CandidateCallPage() {
           <ChevronLeft className="w-5 h-5" /> Back
         </button>
 
-        {/* Profile Center View */}
-        <div className="z-10 flex flex-col items-center mt-[-3rem]">
-          <div className="relative mb-6">
-            <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] text-4xl font-semibold shadow-2xl">
-              {candidate.avatarInitials}
-            </div>
-            {callState !== "completed" && (
-              <div className="absolute top-2 right-2 w-5 h-5 bg-red-500 rounded-full border-2 border-[#1D4ED8]"></div>
-            )}
-          </div>
-
-          <h1 className="text-3xl font-semibold mb-2">{candidate.name}</h1>
-          <p className="text-blue-200 text-sm mb-6">{candidate.headline}</p>
-
-          {/* Timer */}
-          <div className="text-4xl font-light tracking-widest mb-3">
-            {formatTime(seconds)}
-          </div>
-          <div
-            className={`text-xs tracking-[0.2em] uppercase font-bold flex items-center gap-2 ${statusColor}`}
-          >
-            {callState !== "completed" && callState !== "error" && (
-              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse"></span>
-            )}
-            {statusLabel}
-          </div>
-        </div>
-
-        {/* Call Controls */}
-        <div className="z-10 mt-16 flex items-center gap-8">
-          <div className="flex flex-col items-center gap-2">
-            <button
-              onClick={handleToggleRecording}
-              disabled={!callUuid || callState === "completed"}
-              className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 ${isRecording ? "bg-red-500 text-white" : "bg-white/20 hover:bg-white/30"}`}
-            >
-              <div className="w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
-                <div
-                  className={`w-1.5 h-1.5 rounded-full ${isRecording ? "bg-white animate-pulse" : "bg-white"}`}
-                ></div>
+        {isManual ? (
+          /* ─── MANUAL CALL LEFT PANEL ─── */
+          <div className="z-10 flex flex-col items-center">
+            <div className="relative mb-6">
+              <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] text-4xl font-semibold shadow-2xl">
+                {candidate.avatarInitials}
               </div>
-            </button>
-            <span className="text-xs text-blue-200 uppercase tracking-widest font-semibold">
-              {isRecording ? "Stop Rec" : "Record"}
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-2">
-            <button
-              // onClick={handleToggleHold}
-              disabled={callState === "completed"}
-              className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 ${isPaused ? "bg-white text-[#1D4ED8]" : "bg-white/20 text-white hover:bg-white/30"}`}
-            >
-              {isPaused ? (
-                <Play className="w-5 h-5 fill-current" />
-              ) : (
-                <Pause className="w-5 h-5 fill-current" />
+              {manualCallConnected && (
+                <div className="absolute top-2 right-2 w-5 h-5 bg-red-500 rounded-full border-2 border-[#1D4ED8]"></div>
               )}
-            </button>
-            <span className="text-xs text-blue-200 uppercase tracking-widest font-semibold">
-              Hold
-            </span>
-          </div>
+            </div>
 
-          <div className="flex flex-col items-center gap-2">
-            <button
-              onClick={handleMuteToggle}
-              disabled={callState === "completed"}
-              className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 ${isMuted ? "bg-white text-[#1D4ED8]" : "bg-white/20 text-white hover:bg-white/30"}`}
-            >
-              {isMuted ? (
-                <MicOff className="w-5 h-5" />
-              ) : (
-                <Mic className="w-5 h-5" />
-              )}
-            </button>
-            <span className="text-xs text-blue-200 uppercase tracking-widest font-semibold">
-              Mute
-            </span>
-          </div>
-        </div>
+            <h1 className="text-3xl font-semibold mb-2">{candidate.name}</h1>
+            <p className="text-blue-200 text-sm mb-4">{candidate.headline}</p>
 
-        {/* End Call */}
-        <div className="z-10 mt-12 flex flex-col items-center gap-3">
-          <button
-            onClick={handleEndCall}
-            disabled={!callUuid || callState === "completed" || isEndingCall}
-            className="w-16 h-16 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
-          >
-            <PhoneOff className="w-6 h-6" />
-          </button>
-          <span className="text-xs text-white uppercase tracking-widest font-semibold">
-            {isEndingCall ? "Ending..." : "End Call"}
-          </span>
-        </div>
+            {/* Candidate Info */}
+            <div className="bg-white/10 rounded-xl p-4 mb-6 w-full max-w-xs grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-white/50 block">CURRENT CTC</span>
+                <span className="font-semibold">{candidate.currentCtc}</span>
+              </div>
+              <div>
+                <span className="text-white/50 block">EXPECTED</span>
+                <span className="font-semibold">{candidate.expectedCtc}</span>
+              </div>
+              <div>
+                <span className="text-white/50 block">NOTICE</span>
+                <span className="font-semibold">{candidate.noticePeriod}</span>
+              </div>
+              <div>
+                <span className="text-white/50 block">AI SCORE</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#22C55E] rounded-full" style={{ width: "84%" }}></div>
+                  </div>
+                  <span className="font-semibold">84%</span>
+                </div>
+              </div>
+            </div>
+
+            {!manualCallConnected ? (
+              /* Pre-connection: outcome buttons */
+              <div className="flex flex-col items-center gap-4 w-full max-w-xs">
+                {/* Call on Nxthyre button */}
+                <button
+                  onClick={() => {
+                    navigate(`/call/${candidate.id}/${jobId}?mode=platform`, { state: { candidate } });
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-white/30 bg-white/10 text-white font-semibold text-sm hover:bg-white/20 transition-colors backdrop-blur-sm"
+                >
+                  <PhoneCall className="w-4 h-4" />
+                  <span className="text-[#22C55E] font-bold text-xs">nxt</span>{" "}
+                  Call on Nxthyre
+                </button>
+
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]"></span>
+                  <span className="text-[#22C55E] text-sm font-bold uppercase tracking-wider">ON MANUAL CALL</span>
+                </div>
+
+                <p className="text-white/70 text-sm mt-2 mb-4">Did Candidate Picked Call?</p>
+
+                {/* Outcome buttons row 1 */}
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {["Not Picked up", "Number Busy", "Wrong Number"].map((reason) => (
+                    <button
+                      key={reason}
+                      onClick={async () => {
+                        await saveCallLog({
+                          candidate_id: candidate.id,
+                          reason,
+                          call_mode: "manual",
+                        });
+                        navigate(-1);
+                      }}
+                      className="px-4 py-2 rounded-full text-xs font-semibold border border-white/30 bg-white/10 text-white hover:bg-white/20 transition-colors"
+                    >
+                      {reason}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Outcome buttons row 2 */}
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={() => setManualCallConnected(true)}
+                    className="px-5 py-2 rounded-full text-xs font-bold bg-[#22C55E] text-white hover:bg-[#16A34A] transition-colors shadow-lg shadow-green-500/30"
+                  >
+                    <span className="flex items-center gap-1.5"><PhoneIncoming className="w-3.5 h-3.5" /> Picked Up</span>
+                  </button>
+                  <button
+                    onClick={() => navigate(-1)}
+                    className="px-5 py-2 rounded-full text-xs font-bold border border-white/30 bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    <span className="flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Call Back again</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Post-connection: timer + end call */
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-4xl font-light tracking-widest mb-1">
+                  {formatTime(seconds)}
+                </div>
+                <div className="text-xs tracking-[0.2em] uppercase font-bold flex items-center gap-2 text-[#22C55E]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse"></span>
+                  CONNECTED (MANUAL)
+                </div>
+                <button
+                  onClick={() => {
+                    setManualCallConnected(false);
+                    setIsPaused(true);
+                  }}
+                  className="mt-6 w-16 h-16 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95"
+                >
+                  <PhoneOff className="w-6 h-6" />
+                </button>
+                <span className="text-xs text-white uppercase tracking-widest font-semibold">
+                  End Call
+                </span>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ─── PLATFORM CALL LEFT PANEL (original) ─── */
+          <>
+            {/* Profile Center View */}
+            <div className="z-10 flex flex-col items-center mt-[-3rem]">
+              <div className="relative mb-6">
+                <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] text-4xl font-semibold shadow-2xl">
+                  {candidate.avatarInitials}
+                </div>
+                {callState !== "completed" && (
+                  <div className="absolute top-2 right-2 w-5 h-5 bg-red-500 rounded-full border-2 border-[#1D4ED8]"></div>
+                )}
+              </div>
+
+              <h1 className="text-3xl font-semibold mb-2">{candidate.name}</h1>
+              <p className="text-blue-200 text-sm mb-6">{candidate.headline}</p>
+
+              {/* Timer */}
+              <div className="text-4xl font-light tracking-widest mb-3">
+                {formatTime(seconds)}
+              </div>
+              <div
+                className={`text-xs tracking-[0.2em] uppercase font-bold flex items-center gap-2 ${statusColor}`}
+              >
+                {callState !== "completed" && callState !== "error" && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse"></span>
+                )}
+                {statusLabel}
+              </div>
+            </div>
+
+            {/* Call Controls */}
+            <div className="z-10 mt-16 flex items-center gap-8">
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={handleToggleRecording}
+                  disabled={!callUuid || callState === "completed"}
+                  className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 ${isRecording ? "bg-red-500 text-white" : "bg-white/20 hover:bg-white/30"}`}
+                >
+                  <div className="w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${isRecording ? "bg-white animate-pulse" : "bg-white"}`}
+                    ></div>
+                  </div>
+                </button>
+                <span className="text-xs text-blue-200 uppercase tracking-widest font-semibold">
+                  {isRecording ? "Stop Rec" : "Record"}
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  disabled={callState === "completed"}
+                  className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 ${isPaused ? "bg-white text-[#1D4ED8]" : "bg-white/20 text-white hover:bg-white/30"}`}
+                >
+                  {isPaused ? (
+                    <Play className="w-5 h-5 fill-current" />
+                  ) : (
+                    <Pause className="w-5 h-5 fill-current" />
+                  )}
+                </button>
+                <span className="text-xs text-blue-200 uppercase tracking-widest font-semibold">
+                  Hold
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={handleMuteToggle}
+                  disabled={callState === "completed"}
+                  className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 ${isMuted ? "bg-white text-[#1D4ED8]" : "bg-white/20 text-white hover:bg-white/30"}`}
+                >
+                  {isMuted ? (
+                    <MicOff className="w-5 h-5" />
+                  ) : (
+                    <Mic className="w-5 h-5" />
+                  )}
+                </button>
+                <span className="text-xs text-blue-200 uppercase tracking-widest font-semibold">
+                  Mute
+                </span>
+              </div>
+            </div>
+
+            {/* End Call */}
+            <div className="z-10 mt-12 flex flex-col items-center gap-3">
+              <button
+                onClick={handleEndCall}
+                disabled={!callUuid || callState === "completed" || isEndingCall}
+                className="w-16 h-16 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
+              >
+                <PhoneOff className="w-6 h-6" />
+              </button>
+              <span className="text-xs text-white uppercase tracking-widest font-semibold">
+                {isEndingCall ? "Ending..." : "End Call"}
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* RIGHT COLUMN: RECRUITER ASSISTANT PANEL */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-white shadow-xl shadow-slate-200">
+      <div className={`flex-1 flex ${isManual && manualCallConnected ? "flex-row" : "flex-col"} h-full overflow-hidden bg-white shadow-xl shadow-slate-200`}>
+        {/* Main content area */}
+        <div className={`flex flex-col ${isManual && manualCallConnected ? "flex-1 min-w-0" : "h-full"} overflow-hidden`}>
         {/* Header & Candidate Summary Strip */}
         <div className="bg-white border-b border-slate-200 shrink-0">
           <div className="h-[80px] flex items-center justify-between px-8">
             <div className="flex items-center gap-4 text-lg font-medium text-slate-800">
               <span className="text-slate-400">
-                {callState === "completed"
-                  ? "Call ended —"
-                  : "Call in progress —"}
+                {isManual
+                  ? manualCallConnected ? "Call in progress —" : "Manual call —"
+                  : callState === "completed"
+                    ? "Call ended —"
+                    : "Call in progress —"}
               </span>
               <span className="text-blue-600 font-bold">{candidate.name}</span>
-              {callState !== "completed" && (
+              {((isManual && manualCallConnected) || (!isManual && callState !== "completed")) && (
                 <span className="bg-green-100 text-green-700 text-xs px-2.5 py-0.5 rounded-full font-bold tracking-widest flex items-center gap-1.5 uppercase shadow-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                   Live
                 </span>
               )}
             </div>
-            <button className="text-sm font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-4 py-1.5 rounded-lg flex items-center gap-2 hover:bg-blue-100 transition-colors">
-              <Eye className="w-4 h-4" /> View Profile
-            </button>
+            {!isManual && (
+              <span className="text-xs text-slate-400 font-medium">
+                {candidate.headline}
+              </span>
+            )}
           </div>
-          {/* New Tab Navigation */}
+          {/* Tab Navigation */}
           <div className="flex px-8 gap-8 border-t border-slate-100 bg-slate-50/50">
+            {isManual ? (
+              /* Manual mode tabs: Candidate Resume | Role Questions */
+              <>
+                {(["resume", "roleQuestions"] as const).map((tab) => {
+                  const labels = {
+                    resume: "Candidate Resume",
+                    roleQuestions: "Role Questions",
+                  };
+                  const isActive = manualActiveTab === tab;
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setManualActiveTab(tab)}
+                      className={`py-4 font-semibold text-sm relative transition-colors ${isActive ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                    >
+                      {labels[tab]}
+                      {isActive && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </>
+            ) : (
+              /* Platform mode tabs (original) */
+              <>
             {["roleQuestions", "transcript", "quickNotes"].map((tab) => {
               const labels = {
                 roleQuestions: "Role Questions (AI)",
@@ -646,10 +817,109 @@ export default function CandidateCallPage() {
                 </button>
               );
             })}
+              </>
+            )}
           </div>
         </div>
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar bg-slate-50/30">
+          {/* MANUAL MODE TABS */}
+          {isManual && manualActiveTab === "resume" && (
+            <div className="flex flex-col h-full max-w-4xl mx-auto">
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50/50">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Candidate Resume View</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {candidate.name} · {candidate.headline}
+                    </p>
+                  </div>
+                  <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="h-[60vh] bg-white">
+                  {(candidate as any).resume_url ? (
+                    <iframe
+                      src={(candidate as any).resume_url}
+                      className="w-full h-full border-0"
+                      title="Candidate Resume"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-slate-400">
+                      <div className="text-center">
+                        <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                        <p className="font-medium">No resume uploaded</p>
+                        <p className="text-sm mt-1">Resume will appear here when available</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isManual && manualActiveTab === "roleQuestions" && (
+            <div className="flex flex-col gap-5 max-w-4xl mx-auto">
+              <div className="mb-2">
+                <h2 className="text-lg font-bold text-slate-800">Role Questions</h2>
+                <p className="text-slate-500 text-sm">
+                  Suggested questions to evaluate {candidate.headline} skills.
+                </p>
+              </div>
+              {roleQuestions.map((q, idx) => (
+                <div
+                  key={q.id}
+                  className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-all hover:shadow-md"
+                >
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex gap-4 items-start">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
+                        {idx + 1}
+                      </div>
+                      <div>
+                        <h3 className="text-slate-800 font-semibold mb-1.5 leading-snug">
+                          {q.question_text}
+                        </h3>
+                        <p className="text-slate-500 text-sm italic bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                          {q.ideal_answer_concept}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-px bg-slate-100 my-1"></div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleEvaluateQuestion(q.id, "skipped")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                      >
+                        <FastForward className="w-3.5 h-3.5" /> Skip
+                      </button>
+                    </div>
+                    {q.ai_score_percentage !== null && (
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Score</span>
+                        <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500" style={{ width: `${q.ai_score_percentage}%` }}></div>
+                        </div>
+                        <span className="text-sm font-bold text-blue-700">{q.ai_score_percentage}%</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {roleQuestions.length === 0 && (
+                <div className="text-center p-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
+                  Generating questions with Gemini...
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* PLATFORM MODE TABS */}
+          {!isManual && (
+          <>
           {/* TAB 1: ROLE QUESTIONS */}
           {activeTab === "roleQuestions" && (
             <div className="flex flex-col gap-5 max-w-4xl mx-auto">
@@ -966,40 +1236,121 @@ export default function CandidateCallPage() {
               </div>
             </div>
           )}
+        </>
+        )}
         </div>
         {/* Fixed Footer for Save */}
-        <div className="w-full shrink-0 border-t border-slate-100 p-6 bg-white flex justify-start z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-          <button
-            onClick={handleSaveNotes}
-            disabled={isSaving}
-            className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50"
-          >
-            {isSaving ? "Saving..." : "Save Call Wrap-up Data"}
-          </button>
+        <div className="w-full shrink-0 border-t border-slate-100 p-6 bg-white flex items-center gap-4 z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+          {isManual ? (
+            <>
+              <div className="flex-1 flex items-center gap-2">
+                <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">⚡ Quick Notes</span>
+                {tags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => toggleTag(tag)}
+                    className={`px-3 py-1 rounded-full text-[10px] font-semibold border transition-all ${activeTags.includes(tag) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
+                  >
+                    {tag === "Interested" ? "✅ " : tag === "Follow Up" ? "🔴 " : tag === "CTC Mismatch" ? "💰 " : tag === "Strong fit" ? "⭐ " : ""}
+                    {tag}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add key notes while on the call..."
+                className="flex-1 h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:border-blue-500"
+              />
+              <button
+                onClick={handleSaveNotes}
+                disabled={isSaving}
+                className="px-5 py-2.5 bg-[#22C55E] text-white font-bold text-sm rounded-lg hover:bg-[#16A34A] transition-colors shadow-sm disabled:opacity-50"
+              >
+                💾 Save
+              </button>
+              <button
+                onClick={handleSaveNotes}
+                disabled={isSaving}
+                className="px-5 py-2.5 bg-[#DC2626] text-white font-bold text-sm rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save Notes & Checklist"}
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={handleSaveNotes}
+              disabled={isSaving}
+              className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50"
+            >
+              {isSaving ? "Saving..." : "Save Call Wrap-up Data"}
+            </button>
+          )}
         </div>
+        </div>
+        {/* RIGHT SIDEBAR for manual mode */}
+        {isManual && manualCallConnected && (
+          <div className="w-[280px] shrink-0 border-l border-slate-200 bg-white overflow-y-auto">
+            {/* Candidate Header */}
+            <div className="p-5 border-b border-slate-100">
+              <div className="flex items-center justify-between mb-1">
+                <h4 className="text-slate-800 font-bold text-sm">{candidate.name}</h4>
+                <div className="w-10 h-10 rounded-full border-[3px] border-[#00C8B3] flex items-center justify-center">
+                  <span className="text-[#00C8B3] font-black text-[10px]">84%</span>
+                </div>
+              </div>
+              <p className="text-slate-400 text-xs">{candidate.headline}</p>
+            </div>
+
+            {/* Profile Info */}
+            <div className="p-5 border-b border-slate-100">
+              <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest mb-4">PROFILE INFO</h5>
+              <div className="flex flex-col gap-3 text-xs">
+                <div className="flex justify-between"><span className="text-slate-400">Current CTC</span><span className="text-slate-700 font-bold">{candidate.currentCtc}</span></div>
+                <div className="flex justify-between"><span className="text-slate-400">Expected CTC</span><span className="text-slate-700 font-bold">{candidate.expectedCtc}</span></div>
+                <div className="flex justify-between"><span className="text-slate-400">Notice Period</span><span className="text-slate-700 font-bold">{candidate.noticePeriod}</span></div>
+                <div className="flex justify-between"><span className="text-slate-400">Location</span><span className="text-slate-700 font-bold">{candidate.location}</span></div>
+                <div className="flex justify-between"><span className="text-slate-400">Experience</span><span className="text-slate-700 font-bold">{candidate.experience}</span></div>
+              </div>
+            </div>
+
+            {/* Skill Assessment */}
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest">SKILL ASSESSMENT</h5>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: "20%" }}></div>
+                  </div>
+                  <span className="text-xs text-slate-400 font-medium">1/5</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 text-xs">
+                {[
+                  { name: "Figma / Design Tools", score: "3/5", checked: true, color: "bg-blue-600" },
+                  { name: "Hi-fi wireframing", score: null, checked: true, color: "bg-red-500" },
+                  { name: "Auto layout & constraints", score: null, checked: true, color: "bg-red-500" },
+                  { name: "Hug / Fill / Fixed sizing", score: null, checked: true, color: "bg-yellow-500" },
+                  { name: "Prototyping & interactions", score: null, checked: false, color: "bg-slate-200" },
+                  { name: "Variables & tokens", score: null, checked: false, color: "bg-slate-200" },
+                ].map((skill) => (
+                  <label key={skill.name} className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={skill.checked}
+                      readOnly
+                      className={`w-4 h-4 rounded border-slate-300 ${skill.checked ? "accent-blue-600" : ""}`}
+                    />
+                    <span className={`w-1.5 h-1.5 rounded-full ${skill.color}`}></span>
+                    <span className={`flex-1 ${skill.checked ? "text-slate-700" : "text-slate-400"}`}>{skill.name}</span>
+                    {skill.score && <span className="text-slate-400 font-medium">{skill.score}</span>}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-    // {/* Call Attention Questions */}
-    // <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">
-    //   <h3 className="text-xs font-bold text-teal-500 mb-6 font-semibold uppercase tracking-widest">
-    //     Questions to Ask
-    //   </h3>
-    //   <div className="flex flex-col gap-4 text-sm font-medium text-slate-700">
-    //     {candidate.callAttention &&
-    //     candidate.callAttention.length > 0 ? (
-    //       <ul className="list-disc pl-5 space-y-3 marker:text-teal-500">
-    //         {candidate.callAttention.map((question, index) => (
-    //           <li key={index} className="pl-1 leading-relaxed">
-    //             {question}
-    //           </li>
-    //         ))}
-    //       </ul>
-    //     ) : (
-    //       <p className="italic text-slate-500 text-sm">
-    //         No specific questions prepared for this candidate.
-    //       </p>
-    //     )}
-    //   </div>
-    // </div>
   );
 }
