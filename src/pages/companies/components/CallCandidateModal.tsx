@@ -26,6 +26,9 @@ interface CallCandidateModalProps {
   onClose: () => void;
   candidate: CallCandidateData | null;
   jobId?: number | null;
+  initialStep?: ModalStep;
+  initialReason?: string;
+  callMode?: "platform" | "manual";
 }
 
 const REASONS = [
@@ -52,10 +55,13 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   onClose,
   candidate,
   jobId,
+  initialStep = "select",
+  initialReason = null,
+  callMode = "platform",
 }) => {
-  const [step, setStep] = useState<ModalStep>("select");
+  const [step, setStep] = useState<ModalStep>(initialStep);
   const navigate = useNavigate();
-  const [selectedReason, setSelectedReason] = useState<string | null>(null);
+  const [selectedReason, setSelectedReason] = useState<string | null>(initialReason);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [note, setNote] = useState<string>("");
@@ -77,8 +83,11 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
       callInitiatedRef.current = false;
       if (pollingRef.current) clearInterval(pollingRef.current);
       if (dotsRef.current) clearInterval(dotsRef.current);
+    } else {
+      setStep(initialStep);
+      setSelectedReason(initialReason);
     }
-  }, [isOpen]);
+  }, [isOpen, initialStep, initialReason]);
 
   // Connecting dots animation
   useEffect(() => {
@@ -164,7 +173,7 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
         candidate_id: candidate.id,
         reason: selectedReason || undefined,
         note: note || undefined,
-        call_mode: "platform",
+        call_mode: callMode,
       });
     } catch (err) {
       console.error("Failed to save call log:", err);
@@ -198,6 +207,8 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
         note: note || undefined,
         scheduled_date: selectedDate,
         scheduled_time: timeForApi,
+        // Assuming backend takes call_mode here too or it doesn't matter
+        // call_mode: callMode, 
       });
     } catch (err) {
       console.error("Failed to schedule follow-up:", err);

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import CallCandidateModal from "./CallCandidateModal";
 import {
   Mic,
   MicOff,
@@ -14,6 +15,7 @@ import {
   MessageSquare,
   PhoneCall,
   PhoneIncoming,
+  Phone,
   RotateCcw,
   FileText,
 } from "lucide-react";
@@ -138,6 +140,8 @@ export default function CandidateCallPage() {
       return newMuted;
     });
   };
+
+  const [followUpReason, setFollowUpReason] = useState<string | null>(null);
 
   // Load candidate fallback if direct link
   useEffect(() => {
@@ -529,6 +533,10 @@ export default function CandidateCallPage() {
             </div>
 
             <h1 className="text-xl md:text-2xl font-semibold mb-1 text-center">{candidate.name}</h1>
+            <div className="text-white text-sm md:text-base font-medium mb-2 flex items-center justify-center gap-1.5 opacity-90">
+              <Phone className="w-3.5 h-3.5" />
+              <span>{candidate.phone || "No phone provided"}</span>
+            </div>
             <p className="text-blue-200 text-xs md:text-sm mb-3 text-center">{candidate.headline}</p>
 
             {/* Candidate Info */}
@@ -583,19 +591,7 @@ export default function CandidateCallPage() {
                   {["Not Picked up", "Number Busy"].map((reason) => (
                     <button
                       key={reason}
-                      onClick={async () => {
-                        try {
-                          await saveCallLog({
-                            candidate_id: candidate.id,
-                            reason,
-                            call_mode: "manual",
-                          });
-                        } catch (err) {
-                          console.error("Failed to save manual call log:", err);
-                        } finally {
-                          navigate(-1);
-                        }
-                      }}
+                      onClick={() => setFollowUpReason(reason)}
                       className="px-4 py-1.5 rounded-full text-[12px] font-medium border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors"
                     >
                       {reason}
@@ -606,19 +602,7 @@ export default function CandidateCallPage() {
                 {/* Outcome buttons row 2 */}
                 <div className="flex justify-center mb-3 w-full">
                   <button
-                    onClick={async () => {
-                      try {
-                        await saveCallLog({
-                          candidate_id: candidate.id,
-                          reason: "Wrong Number",
-                          call_mode: "manual",
-                        });
-                      } catch (err) {
-                        console.error("Failed to save manual call log:", err);
-                      } finally {
-                        navigate(-1);
-                      }
-                    }}
+                    onClick={() => setFollowUpReason("Wrong Number")}
                     className="px-4 py-1.5 rounded-full text-[12px] font-medium border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors"
                   >
                     Wrong Number
@@ -1380,6 +1364,19 @@ export default function CandidateCallPage() {
           </div>
         )}
       </div>
+      
+      {/* Follow Up Modal Overlay for Manual Call Failures */}
+      {followUpReason && (
+        <CallCandidateModal
+          isOpen={!!followUpReason}
+          onClose={() => navigate(-1)} // Navigate cleanly back to pipeline board after follow up
+          candidate={candidate}
+          jobId={jobId ? parseInt(jobId, 10) : undefined}
+          initialStep="noAnswer"
+          initialReason={followUpReason}
+          callMode="manual"
+        />
+      )}
     </div>
   );
 }
