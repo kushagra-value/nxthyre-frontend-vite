@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, ArrowRight, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus } from "lucide-react";
 import apiClient from "../../../services/api";
+import { candidateService } from "../../../services/candidateService";
+import { showToast } from "../../../utils/toast";
 
 interface InboundTabProps {
   jobId: number | null;
@@ -88,8 +90,31 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
             />
           </div>
           <div className="flex items-center gap-3">
-             <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30">
               <SlidersHorizontal className="w-4 h-4" /> Filters
+            </button>
+            <div className="w-px h-6 bg-[#E5E7EB] mx-1"></div>
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="currentColor" strokeLinecap="round" />
+                <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Share Pipeline
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30">
+              <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Export CSV
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="currentColor" strokeLinecap="round" />
+                <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}
             </button>
           </div>
         </div>
@@ -116,6 +141,7 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Expected CTC</th>
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Notice Period</th>
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">Source</th>
+                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
@@ -133,7 +159,7 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
                   const scoreColor = score >= 80 ? "#00C8B3" : score >= 60 ? "#F59E0B" : "#EA580C";
                   
                   return (
-                  <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => onSelectCandidate && onSelectCandidate(item)}>
+                  <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => onSelectCandidate && onSelectCandidate({ id: null, candidate: { ...item, application_type: "inbound" } })}>
                     <td className="px-6 py-6 border-transparent" onClick={(e) => e.stopPropagation()}>
                       <input 
                         type="checkbox" 
@@ -162,6 +188,27 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
                     <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent">{item.notice_period_summary || "-"}</td>
                     <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center">
                        {item.source?.source?.replace("_", " ") || "-"}
+                    </td>
+                    <td className="px-6 py-6 border-transparent">
+                      <div className="flex justify-end gap-3 z-10 flex-row">
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              if (jobId) {
+                                await candidateService.saveToPipeline(jobId, item.id);
+                                showToast.success("Candidate added to pipeline");
+                                fetchInboundCandidates(currentPage);
+                              }
+                            } catch (err) {
+                              showToast.error("Failed to add candidate to pipeline");
+                            }
+                          }}
+                          className="flex items-center gap-2 bg-[#E7EDFF] text-[#0F47F2] px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-[#D5E1FF] transition whitespace-nowrap"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Shortlist
+                        </button>
+                      </div>
                     </td>
                   </tr>
                )})}
