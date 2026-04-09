@@ -82,7 +82,7 @@ export default function JobPipeline({
   const fetchCandidateDetails = useCallback(async (candidateItem: any) => {
     setLoadingCandidate(true);
     try {
-      if (candidateItem.application_type === "inbound") {
+      if (candidateItem.candidate?.application_type === "inbound" || candidateItem.application_type === "inbound") {
         // Fetch full profile from candidates UUID endpoint since inbound candidates have no job application yet
         const response = await apiClient.get(
           `/candidates/${candidateItem.candidate.id}/?job_id=${jobId}`,
