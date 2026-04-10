@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check, ArrowUpRight } from "lucide-react";
+import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check, ArrowUpRight, Zap } from "lucide-react";
 import { naukbotService, NaukbotCandidate, NaukbotCandidateSummary } from "../../../services/naukbotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
@@ -180,22 +180,15 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     }
   };
 
-  const handleToggleSourcing = async () => {
+  const handleTriggerSourcing = async () => {
     if (!jobId || toggleLoading) return;
     setToggleLoading(true);
     try {
-      if (sourcingEnabled) {
-        await naukbotService.deactivateNaukbotJob(jobId);
-        setSourcingEnabled(false);
-        toast.success("Naukbot sourcing deactivated");
-      } else {
-        await naukbotService.activateNaukbotJob(jobId);
-        setSourcingEnabled(true);
-        toast.success("Naukbot sourcing activated");
-      }
+      await naukbotService.triggerNaukbotJob(jobId);
+      toast.success("Job triggered for Naukbot sourcing successfully");
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to update sourcing status");
+      toast.error(error.message || "Failed to trigger Naukbot sourcing");
     } finally {
       setToggleLoading(false);
     }
@@ -254,24 +247,13 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
               <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">New</span>
             </div>
             <div className="flex flex-col items-end border-l border-[#8193FE] pl-8">
-              {sourcingEnabled ? (
-                <div 
-                  onClick={handleToggleSourcing}
-                  className={`flex items-center gap-2 bg-white rounded-full p-[2px] pr-3 mb-1 cursor-pointer ${toggleLoading ? 'opacity-50' : ''}`}
-                >
-                  <div className="w-6 h-6 bg-[#4F68FC] rounded-full flex items-center justify-center"></div>
-                  <span className="text-[11px] font-bold text-[#4F68FC]">ON</span>
-                </div>
-              ) : (
-                <div 
-                  onClick={handleToggleSourcing}
-                  className={`flex items-center gap-2 bg-white rounded-full p-[2px] pl-3 mb-1 cursor-pointer border border-[#E5E7EB] ${toggleLoading ? 'opacity-50' : ''}`}
-                >
-                  <span className="text-[11px] font-bold text-[#8E8E93]">OFF</span>
-                  <div className="w-6 h-6 bg-[#AEAEB2] rounded-full flex items-center justify-center"></div>
-                </div>
-              )}
-              <span className="text-[10px] text-[#E0E7FF] font-medium">Sourcing Candidates</span>
+              <button 
+                onClick={handleTriggerSourcing}
+                disabled={toggleLoading}
+                className={`flex items-center gap-2 bg-white text-[#4F68FC] rounded-lg px-4 py-2 mb-1 cursor-pointer font-bold text-sm shadow-sm hover:bg-gray-50 transition-colors ${toggleLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Zap className="w-4 h-4 fill-[#4F68FC]" /> {toggleLoading ? 'Triggering...' : 'Trigger Sourcing'}
+              </button>
             </div>
           </div>
         </div>

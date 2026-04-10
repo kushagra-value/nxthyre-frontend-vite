@@ -182,6 +182,15 @@ class NaukbotService {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to deactivate job for Naukri Bot");
     }
   }
+
+  async triggerNaukbotJob(job_id: number): Promise<any> {
+    try {
+      const response = await apiClient.post(`/candidates/naukri-bot/trigger/${job_id}/`, {});
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to trigger Naukri Bot job");
+    }
+  }
 }
 
 export const naukbotService = new NaukbotService();

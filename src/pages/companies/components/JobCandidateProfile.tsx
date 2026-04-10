@@ -853,196 +853,225 @@ export default function JobCandidateProfile({
                     - Uses current_stage_details from API as requested
                     - Each stage is fixed width (no shrinking) + clean connectors
                 */}
-        <div className="bg-white rounded-xl p-8 shadow-sm">
-          <h3 className="text-xs font-medium text-[#4B5563] mb-8">
-            CURRENT STAGE{" "}
-            <span className="text-[#0F47F2] ml-4 font-bold uppercase">
-              {currentStageName}
-            </span>
-          </h3>
-
-          <div className=" overflow-y-auto pb-8 scrollbar-hide">
-            <div className="flex items-center min-w-max">
-              {stages
-                .filter((s) => s.slug !== "archives")
-                .map((stage, i, filteredStages) => {
-                  const currentStageIndex = stages.findIndex(
-                    (s) => s.slug === currentStageSlug,
-                  );
-                  const isCompleted = i < currentStageIndex;
-                  const isActive = i === currentStageIndex;
-
-                  return (
-                    <div
-                      key={stage.id}
-                      className="flex items-center flex-shrink-0"
-                    >
-                      <div className="flex flex-col items-left">
-                        <div className="relative group">
-                          {isCompleted ? (
-                            <div className="flex items-center justify-left">
-                              <div className="relative flex flex-col items-center">
-                                <svg
-                                  width="40"
-                                  height="40"
-                                  viewBox="0 0 58 58"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="w-10 h-10"
-                                >
-                                  <path
-                                    d="M23.6391 9.40147C25.0017 8.24019 25.683 7.65957 26.3954 7.31908C28.0431 6.53154 29.9586 6.53154 31.6063 7.31908C32.3187 7.65957 32.9999 8.24019 34.3627 9.40147C34.905 9.86366 35.1762 10.0948 35.4659 10.2889C36.1298 10.7339 36.8753 11.0427 37.6593 11.1975C38.0015 11.265 38.3565 11.2934 39.067 11.35C40.8517 11.4924 41.7439 11.5637 42.4885 11.8266C44.2104 12.4348 45.5649 13.7893 46.1732 15.5112C46.4361 16.2557 46.5072 17.1481 46.6498 18.9328C46.7063 19.6431 46.7346 19.9983 46.8022 20.3403C46.9569 21.1244 47.2658 21.87 47.7109 22.5339C47.905 22.8235 48.136 23.0947 48.5983 23.637C49.7595 24.9997 50.3402 25.6812 50.6808 26.3934C51.4681 28.0411 51.4681 29.9565 50.6808 31.6042C50.3402 32.3166 49.7595 32.9979 48.5983 34.3606C48.136 34.9029 47.905 35.1741 47.7109 35.4638C47.2658 36.1277 46.9569 36.8732 46.8022 37.6574C46.7346 37.9994 46.7063 38.3547 46.6498 39.0649C46.5072 40.8496 46.4361 41.7419 46.1732 42.4864C45.5649 44.2083 44.2104 45.5628 42.4885 46.1711C41.7439 46.4341 40.8517 46.5051 39.067 46.6477C38.3565 46.7042 38.0015 46.7328 37.6593 46.8002C36.8753 46.9551 36.1298 47.2637 35.4659 47.7088C35.1762 47.9029 34.905 48.1339 34.3627 48.5962C32.9999 49.7575 32.3187 50.3382 31.6063 50.6787C29.9586 51.466 28.0431 51.466 26.3954 50.6787C25.683 50.3382 25.0017 49.7575 23.6391 48.5962C23.0967 48.1339 22.8255 47.9029 22.5359 47.7088C21.872 47.2637 21.1265 46.9551 20.3424 46.8002C20.0003 46.7328 19.6452 46.7042 18.9348 46.6477C17.1501 46.5051 16.2577 46.4341 15.5133 46.1711C13.7913 45.5628 12.4369 44.2083 11.8287 42.4864C11.5657 41.7419 11.4945 40.8496 11.3521 39.0649C11.2954 38.3547 11.2671 37.9994 11.1995 37.6574C11.0447 36.8732 10.7359 36.1277 10.2909 35.4638C10.0968 35.1741 9.86571 34.9029 9.40352 34.3606C8.24224 32.9979 7.66162 32.3166 7.32111 31.6042C6.53359 29.9565 6.53359 28.0411 7.32111 26.3934C7.66162 25.6809 8.24224 24.9997 9.40352 23.637C9.86571 23.0947 10.0968 22.8235 10.2909 22.5339C10.7359 21.87 11.0447 21.1244 11.1995 20.3403C11.2671 19.9983 11.2954 19.6431 11.3521 18.9328C11.4945 17.1481 11.5657 16.2557 11.8287 15.5112C12.4369 13.7893 13.7913 12.4348 15.5133 11.8266C16.2577 11.5637 17.1501 11.4924 18.9348 11.35C19.6452 11.2934 20.0003 11.265 20.3424 11.1975C21.1265 11.0427 21.872 10.7339 22.5359 10.2889C22.8255 10.0948 23.0967 9.86366 23.6391 9.40147Z"
-                                    fill="#14AE5C"
-                                  />
-                                  <path
-                                    d="M20.541 30.2083L25.3743 35.0416L37.4577 22.9583"
-                                    stroke="white"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                  />
-                                </svg>
-                                <span
-                                  className={`absolute top-10 text-[8px] font-semibold text-left max-w-[88px] text-nowrap leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#8E8E93]"}`}
-                                >
-                                  {stage.name}
-                                </span>
-                              </div>
-
-                              {i < filteredStages.length - 1 && (
-                                <div className="w-12 h-[2px] bg-[#E5E7EB]">
-                                  {isCompleted && (
-                                    <div className="h-full bg-[#009951]" />
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center">
-                              <div className="relative flex flex-col items-center">
-                                <div
-                                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors
-                                                            ${isActive ? "bg-[#0F47F2] text-white" : "bg-[#E5E7EB] text-[#8E8E93]"}`}
-                                >
-                                  {i + 1}
-                                </div>
-                                <span
-                                  className={`absolute top-10 text-[8px] font-semibold text-left max-w-[88px] text-nowrap leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#8E8E93]"}`}
-                                >
-                                  {stage.name}
-                                </span>
-                              </div>
-                              {i < filteredStages.length - 1 && (
-                                <div className="w-12 h-[2px] bg-[#E5E7EB]">
-                                  {isCompleted && (
-                                    <div className="h-full bg-[#009951]" />
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Connector line */}
-                    </div>
-                  );
-                })}
+        {cand.application_type === "inbound" ? (
+          <div className="bg-white rounded-xl p-8 shadow-sm flex items-center justify-between">
+            <div>
+              <h3 className="text-xs font-bold text-[#4B5563] mb-2 uppercase tracking-wider">
+                Candidate Status
+              </h3>
+              <p className="text-sm font-medium text-[#8E8E93]">
+                This candidate was found via Inbound Search and is not yet added to the pipeline.
+              </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-3 relative">
             <button
-              onClick={() => setShowStageMenu(!showStageMenu)}
-              className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md"
+               onClick={async () => {
+                 if (!jobId || !cand.id) return;
+                 try {
+                   const shortlistStage = stages?.find((s) => s.name.toLowerCase().includes("shortlist"));
+                   await candidateService.saveToPipeline(jobId, cand.id, shortlistStage?.id);
+                   showToast.success("Candidate shortlisted and added to pipeline");
+                   goBack();
+                 } catch (err) {
+                   showToast.error("Failed to add candidate to pipeline");
+                 }
+               }}
+               className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md whitespace-nowrap"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12"
-                  stroke="white"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-              Move to Stage
+               Shortlist (Add to Pipeline)
             </button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl p-8 shadow-sm">
+            <h3 className="text-xs font-medium text-[#4B5563] mb-8">
+              CURRENT STAGE{" "}
+              <span className="text-[#0F47F2] ml-4 font-bold uppercase">
+                {currentStageName}
+              </span>
+            </h3>
 
-            {showStageMenu && (
-              <div className="absolute top-14 left-0 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-2">
+            <div className=" overflow-y-auto pb-8 scrollbar-hide">
+              <div className="flex items-center min-w-max">
                 {stages
                   .filter((s) => s.slug !== "archives")
-                  .map((s) => (
-                    <button
-                      key={s.id}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700 block"
-                      onClick={() => {
-                        setShowStageMenu(false);
-                        openFeedbackModal({
-                          type: "move",
-                          applicationIds: [applicationId],
-                          targetStageId: s.id,
-                          targetStageName: s.name,
-                        });
-                      }}
-                    >
-                      {s.name}
-                    </button>
-                  ))}
-              </div>
-            )}
+                  .map((stage, i, filteredStages) => {
+                    const currentStageIndex = stages.findIndex(
+                      (s) => s.slug === currentStageSlug,
+                    );
+                    const isCompleted = i < currentStageIndex;
+                    const isActive = i === currentStageIndex;
 
-            <button
-              onClick={() =>
-                openFeedbackModal({
-                  type: "archive",
-                  applicationIds: [applicationId],
-                })
-              }
-              className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#FEE9E7] transition"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+                    return (
+                      <div
+                        key={stage.id}
+                        className="flex items-center flex-shrink-0"
+                      >
+                        <div className="flex flex-col items-left">
+                          <div className="relative group">
+                            {isCompleted ? (
+                              <div className="flex items-center justify-left">
+                                <div className="relative flex flex-col items-center">
+                                  <svg
+                                    width="40"
+                                    height="40"
+                                    viewBox="0 0 58 58"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-10 h-10"
+                                  >
+                                    <path
+                                      d="M23.6391 9.40147C25.0017 8.24019 25.683 7.65957 26.3954 7.31908C28.0431 6.53154 29.9586 6.53154 31.6063 7.31908C32.3187 7.65957 32.9999 8.24019 34.3627 9.40147C34.905 9.86366 35.1762 10.0948 35.4659 10.2889C36.1298 10.7339 36.8753 11.0427 37.6593 11.1975C38.0015 11.265 38.3565 11.2934 39.067 11.35C40.8517 11.4924 41.7439 11.5637 42.4885 11.8266C44.2104 12.4348 45.5649 13.7893 46.1732 15.5112C46.4361 16.2557 46.5072 17.1481 46.6498 18.9328C46.7063 19.6431 46.7346 19.9983 46.8022 20.3403C46.9569 21.1244 47.2658 21.87 47.7109 22.5339C47.905 22.8235 48.136 23.0947 48.5983 23.637C49.7595 24.9997 50.3402 25.6812 50.6808 26.3934C51.4681 28.0411 51.4681 29.9565 50.6808 31.6042C50.3402 32.3166 49.7595 32.9979 48.5983 34.3606C48.136 34.9029 47.905 35.1741 47.7109 35.4638C47.2658 36.1277 46.9569 36.8732 46.8022 37.6574C46.7346 37.9994 46.7063 38.3547 46.6498 39.0649C46.5072 40.8496 46.4361 41.7419 46.1732 42.4864C45.5649 44.2083 44.2104 45.5628 42.4885 46.1711C41.7439 46.4341 40.8517 46.5051 39.067 46.6477C38.3565 46.7042 38.0015 46.7328 37.6593 46.8002C36.8753 46.9551 36.1298 47.2637 35.4659 47.7088C35.1762 47.9029 34.905 48.1339 34.3627 48.5962C32.9999 49.7575 32.3187 50.3382 31.6063 50.6787C29.9586 51.466 28.0431 51.466 26.3954 50.6787C25.683 50.3382 25.0017 49.7575 23.6391 48.5962C23.0967 48.1339 22.8255 47.9029 22.5359 47.7088C21.872 47.2637 21.1265 46.9551 20.3424 46.8002C20.0003 46.7328 19.6452 46.7042 18.9348 46.6477C17.1501 46.5051 16.2577 46.4341 15.5133 46.1711C13.7913 45.5628 12.4369 44.2083 11.8287 42.4864C11.5657 41.7419 11.4945 40.8496 11.3521 39.0649C11.2954 38.3547 11.2671 37.9994 11.1995 37.6574C11.0447 36.8732 10.7359 36.1277 10.2909 35.4638C10.0968 35.1741 9.86571 34.9029 9.40352 34.3606C8.24224 32.9979 7.66162 32.3166 7.32111 31.6042C6.53359 29.9565 6.53359 28.0411 7.32111 26.3934C7.66162 25.6809 8.24224 24.9997 9.40352 23.637C9.86571 23.0947 10.0968 22.8235 10.2909 22.5339C10.7359 21.87 11.0447 21.1244 11.1995 20.3403C11.2671 19.9983 11.2954 19.6431 11.3521 18.9328C11.4945 17.1481 11.5657 16.2557 11.8287 15.5112C12.4369 13.7893 13.7913 12.4348 15.5133 11.8266C16.2577 11.5637 17.1501 11.4924 18.9348 11.35C19.6452 11.2934 20.0003 11.265 20.3424 11.1975C21.1265 11.0427 21.872 10.7339 22.5359 10.2889C22.8255 10.0948 23.0967 9.86366 23.6391 9.40147Z"
+                                      fill="#14AE5C"
+                                    />
+                                    <path
+                                      d="M20.541 30.2083L25.3743 35.0416L37.4577 22.9583"
+                                      stroke="white"
+                                      stroke-width="2"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                    />
+                                  </svg>
+                                  <span
+                                    className={`absolute top-10 text-[8px] font-semibold text-left max-w-[88px] text-nowrap leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#8E8E93]"}`}
+                                  >
+                                    {stage.name}
+                                  </span>
+                                </div>
+
+                                {i < filteredStages.length - 1 && (
+                                  <div className="w-12 h-[2px] bg-[#E5E7EB]">
+                                    {isCompleted && (
+                                      <div className="h-full bg-[#009951]" />
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-center">
+                                <div className="relative flex flex-col items-center">
+                                  <div
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors
+                                                              ${isActive ? "bg-[#0F47F2] text-white" : "bg-[#E5E7EB] text-[#8E8E93]"}`}
+                                  >
+                                    {i + 1}
+                                  </div>
+                                  <span
+                                    className={`absolute top-10 text-[8px] font-semibold text-left max-w-[88px] text-nowrap leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#8E8E93]"}`}
+                                  >
+                                    {stage.name}
+                                  </span>
+                                </div>
+                                {i < filteredStages.length - 1 && (
+                                  <div className="w-12 h-[2px] bg-[#E5E7EB]">
+                                    {isCompleted && (
+                                      <div className="h-full bg-[#009951]" />
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Connector line */}
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 relative">
+              <button
+                onClick={() => setShowStageMenu(!showStageMenu)}
+                className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md"
               >
-                <path
-                  d="M6.11328 2.66683C6.38783 1.89004 7.12868 1.3335 7.99948 1.3335C8.87028 1.3335 9.61115 1.89004 9.88568 2.66683"
-                  stroke="#FF383C"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M13.6674 4H2.33398"
-                  stroke="#FF383C"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M12.5545 5.6665L12.2478 10.2659C12.1298 12.0358 12.0708 12.9208 11.4942 13.4603C10.9175 13.9998 10.0306 13.9998 8.25669 13.9998H7.74116C5.96726 13.9998 5.08033 13.9998 4.50365 13.4603C3.92699 12.9208 3.86799 12.0358 3.74999 10.2659L3.44336 5.6665"
-                  stroke="#FF383C"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M6.33398 7.3335L6.66732 10.6668"
-                  stroke="#FF383C"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M9.66732 7.3335L9.33398 10.6668"
-                  stroke="#FF383C"
-                  stroke-linecap="round"
-                />
-              </svg>
-              Move to Archive
-            </button>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12"
+                    stroke="white"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                Move to Stage
+              </button>
+
+              {showStageMenu && (
+                <div className="absolute top-14 left-0 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-2">
+                  {stages
+                    .filter((s) => s.slug !== "archives")
+                    .map((s) => (
+                      <button
+                        key={s.id}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700 block"
+                        onClick={() => {
+                          setShowStageMenu(false);
+                          openFeedbackModal({
+                            type: "move",
+                            applicationIds: [applicationId],
+                            targetStageId: s.id,
+                            targetStageName: s.name,
+                          });
+                        }}
+                      >
+                        {s.name}
+                      </button>
+                    ))}
+                </div>
+              )}
+
+              <button
+                onClick={() =>
+                  openFeedbackModal({
+                    type: "archive",
+                    applicationIds: [applicationId],
+                  })
+                }
+                className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#FEE9E7] transition"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M6.11328 2.66683C6.38783 1.89004 7.12868 1.3335 7.99948 1.3335C8.87028 1.3335 9.61115 1.89004 9.88568 2.66683"
+                    stroke="#FF383C"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M13.6674 4H2.33398"
+                    stroke="#FF383C"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M12.5545 5.6665L12.2478 10.2659C12.1298 12.0358 12.0708 12.9208 11.4942 13.4603C10.9175 13.9998 10.0306 13.9998 8.25669 13.9998H7.74116C5.96726 13.9998 5.08033 13.9998 4.50365 13.4603C3.92699 12.9208 3.86799 12.0358 3.74999 10.2659L3.44336 5.6665"
+                    stroke="#FF383C"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M6.33398 7.3335L6.66732 10.6668"
+                    stroke="#FF383C"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M9.66732 7.3335L9.33398 10.6668"
+                    stroke="#FF383C"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                Move to Archive
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Call Attention Questions */}
         <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">

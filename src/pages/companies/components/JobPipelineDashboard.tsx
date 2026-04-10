@@ -50,6 +50,7 @@ import CompanyInfoTab from "./CompanyInfoTab";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import NaukbotTab from "./NaukbotTab";
 import LinkedinBotTab from "./LinkedinBotTab";
+import InboundTab from "./InboundTab";
 import AddNewStageForm from "../../pipelines/AddNewStageForm";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
@@ -535,10 +536,19 @@ export default function JobPipelineDashboard({
   const [shiftStageItem, setShiftStageItem] = useState<CandidateListItem | null>(null);
   const [shiftStageTargetId, setShiftStageTargetId] = useState<number | null>(null);
 
+  // Kanban Stage Menu State
+  const [stageMenuOpenId, setStageMenuOpenId] = useState<number | null>(null);
+  const stageMenuRef = useRef<HTMLDivElement>(null);
+  const [stageMenuPos, setStageMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [visibleArchives, setVisibleArchives] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpenId(null);
+      }
+      if (stageMenuRef.current && !stageMenuRef.current.contains(event.target as Node)) {
+        setStageMenuOpenId(null);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -1725,12 +1735,114 @@ export default function JobPipelineDashboard({
       {/* ═══════════════════════════════════════════════════════
           Stage Filter Pills & Pipeline Content
          ═══════════════════════════════════════════════════════ */}
-      {(activeTab === "pipeline" || activeTab === "inbound") && (
+      {activeTab === "pipeline" && (
         <>
-          <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
-            <div className="flex items-center gap-2 flex-wrap">
-              {!isKanbanView && (
-                <>
+          {isKanbanView ? (
+            /* ═══════════ KANBAN VIEW TOOLBAR ═══════════ */
+            <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
+              <div className="relative w-[240px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                <input
+                  type="text"
+                  placeholder="Search for Candidates"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
+                />
+                {suggestions.length > 0 && (
+                  <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                    {suggestions.map((sug) => (
+                      <div
+                        key={sug.id}
+                        className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
+                        onClick={() => handleSuggestionSelect(sug)}
+                      >
+                        {sug.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Share Pipeline */}
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
+                    window.open(url, "_blank");
+                  }}
+                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
+                  title="Share Pipeline"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clipPath="url(#clip0_360_5904)">
+                      <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="currentColor" strokeLinecap="round" />
+                      <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_360_5904">
+                        <rect width="16" height="16" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                </button>
+                {/* Export CSV */}
+                <button
+                  onClick={() => {
+                    if (selectedIds.size === 0) {
+                      showToast.error("Please select at least one candidate to export");
+                      return;
+                    }
+                    setShowExportDialog(true);
+                  }}
+                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors"
+                  title="Export CSV"
+                >
+                  <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {/* Calendar / Date */}
+                <button
+                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors"
+                  title={new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                  disabled
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="currentColor" strokeLinecap="round" />
+                    <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M4 5.3335H12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {/* Table View toggle */}
+                <button
+                  onClick={() => {
+                    setActiveStageSlug(null);
+                    setIsKanbanView(false);
+                  }}
+                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:text-[#414141] transition-colors"
+                  title="Table View"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.33398 8.3335V5.00016C3.33398 4.07969 4.08018 3.3335 5.00065 3.3335H15.0007C15.9212 3.3335 16.6673 4.07969 16.6673 5.00016V8.3335M3.33398 8.3335V12.5002M3.33398 8.3335H7.50065M16.6673 8.3335V12.5002M16.6673 8.3335H12.5007M3.33398 12.5002V15.0002C3.33398 15.9207 4.08018 16.6668 5.00065 16.6668H7.50065M3.33398 12.5002H7.50065M7.50065 8.3335V12.5002M7.50065 8.3335H12.5007M16.6673 12.5002V15.0002C16.6673 15.9207 15.9212 16.6668 15.0007 16.6668H12.5007M16.6673 12.5002H12.5007M12.5007 8.3335V12.5002M7.50065 16.6668V12.5002M7.50065 16.6668H12.5007M7.50065 12.5002H12.5007M12.5007 16.6668V12.5002M8.33398 5.8335H11.6673" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {/* + Add Stage */}
+                <button
+                  onClick={() => setShowAddStageForm(true)}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-[#0F47F2] text-white rounded-lg hover:bg-[#0D3ECF] transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Stage
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* ═══════════ TABLE VIEW TOOLBAR ═══════════ */
+            <>
+              {/* Stage pills row */}
+              <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
+                <div className="flex items-center gap-2 flex-wrap">
                   <button
                     onClick={() => setActiveStageSlug(null)}
                     className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
@@ -1760,43 +1872,27 @@ export default function JobPipelineDashboard({
                         {stage.name} ({stage.candidate_count})
                       </button>
                     ))}
-                </>
-              )}
-            </div>
+                </div>
 
-            <div className="flex items-center gap-2">
-              {!isKanbanView && (
-                <button
-                  onClick={() => setShowAddStageForm(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-full hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add Stage
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  if (!isKanbanView) {
-                    setActiveStageSlug(null);
-                  }
-                  setIsKanbanView(!isKanbanView);
-                }}
-                className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
-              >
-                {isKanbanView ? (
-                  <>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3.33398 8.3335V5.00016C3.33398 4.07969 4.08018 3.3335 5.00065 3.3335H15.0007C15.9212 3.3335 16.6673 4.07969 16.6673 5.00016V8.3335M3.33398 8.3335V12.5002M3.33398 8.3335H7.50065M16.6673 8.3335V12.5002M16.6673 8.3335H12.5007M3.33398 12.5002V15.0002C3.33398 15.9207 4.08018 16.6668 5.00065 16.6668H7.50065M3.33398 12.5002H7.50065M7.50065 8.3335V12.5002M7.50065 8.3335H12.5007M16.6673 12.5002V15.0002C16.6673 15.9207 15.9212 16.6668 15.0007 16.6668H12.5007M16.6673 12.5002H12.5007M12.5007 8.3335V12.5002M7.50065 16.6668V12.5002M7.50065 16.6668H12.5007M7.50065 12.5002H12.5007M12.5007 16.6668V12.5002M8.33398 5.8335H11.6673" stroke="#464455" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    Table View
-                  </>
-                ) : (
-                  <>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowAddStageForm(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-full hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Stage
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsKanbanView(true);
+                    }}
+                    className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
+                  >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <g clip-path="url(#clip0_360_5915)">
-                        <path d="M5.99967 14.6668H9.99967C13.333 14.6668 14.6663 13.3335 14.6663 10.0002V6.00016C14.6663 2.66683 13.333 1.3335 9.99967 1.3335H5.99967C2.66634 1.3335 1.33301 2.66683 1.33301 6.00016V10.0002C1.33301 13.3335 2.66634 14.6668 5.99967 14.6668Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M8 1.3335V14.6668" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M1.33301 6.3335H7.99967" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M8 9.66699H14.6667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                      <g clipPath="url(#clip0_360_5915)">
+                        <path d="M5.99967 14.6668H9.99967C13.333 14.6668 14.6663 13.3335 14.6663 10.0002V6.00016C14.6663 2.66683 13.333 1.3335 9.99967 1.3335H5.99967C2.66634 1.3335 1.33301 2.66683 1.33301 6.00016V10.0002C1.33301 13.3335 2.66634 14.6668 5.99967 14.6668Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M8 1.3335V14.6668" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M1.33301 6.3335H7.99967" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M8 9.66699H14.6667" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
                       </g>
                       <defs>
                         <clipPath id="clip0_360_5915">
@@ -1804,111 +1900,106 @@ export default function JobPipelineDashboard({
                         </clipPath>
                       </defs>
                     </svg>
-
                     Kanban
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════
-          Toolbar: Search + Actions
-         ═══════════════════════════════════════════════════════ */}
-          <div className="mx-8 flex flex-wrap items-center justify-between bg-white p-4 border border-b-0 border-[#E5E7EB]">
-            <div className="flex items-center gap-3">
-              <div className="relative w-[240px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-                <input
-                  type="text"
-                  placeholder="Search for Candidates"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
-                />
-                {suggestions.length > 0 && (
-                  <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
-                    {suggestions.map((sug) => (
-                      <div
-                        key={sug.id}
-                        className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
-                        onClick={() => handleSuggestionSelect(sug)}
-                      >
-                        {sug.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  </button>
+                </div>
               </div>
-              <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 2H14" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M5.33301 6H10.6663" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M2 10H14" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M5.33301 14H10.6663" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                Filters
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
-                  window.open(url, "_blank");
-                }}
-                className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <g clip-path="url(#clip0_360_5904)">
-                    <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="#374151" stroke-linecap="round" />
-                    <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_360_5904">
-                      <rect width="16" height="16" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
-                Share Pipeline
-              </button>
-              <button
-                onClick={() => {
-                  if (selectedIds.size === 0) {
-                    showToast.error(
-                      "Please select at least one candidate to export",
-                    );
-                    return;
-                  }
-                  setShowExportDialog(true);
-                }}
-                className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-              >
-                <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                Export CSV
-              </button>
-              <button
-                className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                title="Feature Coming Soon"
-                disabled
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="#374151" stroke-linecap="round" />
-                  <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M4 5.3335H12" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                {" "}
-                {new Date().toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
-              </button>
-            </div>
-          </div>
+
+              {/* Search + Actions row */}
+              <div className="mx-8 flex flex-wrap items-center justify-between bg-white p-4 border border-b-0 border-[#E5E7EB]">
+                <div className="flex items-center gap-3">
+                  <div className="relative w-[240px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                    <input
+                      type="text"
+                      placeholder="Search for Candidates"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
+                    />
+                    {suggestions.length > 0 && (
+                      <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                        {suggestions.map((sug) => (
+                          <div
+                            key={sug.id}
+                            className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
+                            onClick={() => handleSuggestionSelect(sug)}
+                          >
+                            {sug.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M2 2H14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M5.33301 6H10.6663" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M2 10H14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M5.33301 14H10.6663" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Filters
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
+                      window.open(url, "_blank");
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g clipPath="url(#clip0_360_5904_tbl)">
+                        <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="#374151" strokeLinecap="round" />
+                        <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_360_5904_tbl">
+                          <rect width="16" height="16" fill="white" />
+                        </clipPath>
+                      </defs>
+                    </svg>
+                    Share Pipeline
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (selectedIds.size === 0) {
+                        showToast.error("Please select at least one candidate to export");
+                        return;
+                      }
+                      setShowExportDialog(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                  >
+                    <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Export CSV
+                  </button>
+                  <button
+                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                    title="Feature Coming Soon"
+                    disabled
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="#374151" strokeLinecap="round" />
+                      <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M4 5.3335H12" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {" "}
+                    {new Date().toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* ═══════════════════════════════════════════════════════
           Bulk Action Bar
@@ -2037,13 +2128,84 @@ export default function JobPipelineDashboard({
                     onDrop={(e) => handleDrop(e, stage.slug)}
                   >
                     <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between shrink-0">
-                      <h3 className="text-sm font-bold text-[#4B5563] capitalize">
-                        {stage.name}
-                      </h3>
-                      <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">
-                        {activeColumnCandidates.length +
-                          archivedColumnCandidates.length}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: stageBarColors[stages.filter(s => s.slug !== 'archives').indexOf(stage) % stageBarColors.length] }} />
+                        <h3 className="text-sm font-bold text-[#4B5563] capitalize">{stage.name}</h3>
+                        <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">
+                          {activeColumnCandidates.length + archivedColumnCandidates.length}
+                        </span>
+                      </div>
+                      <div className={`relative ${stageMenuOpenId === stage.id ? "z-50" : ""}`} ref={stageMenuOpenId === stage.id ? stageMenuRef : null}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (stageMenuOpenId === stage.id) {
+                              setStageMenuOpenId(null);
+                              return;
+                            }
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const mW = 192, mH = 120, gap = 8;
+                            const openUp = rect.bottom + mH + gap > window.innerHeight;
+                            const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
+                            const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
+                            let left = rect.right - mW;
+                            if (left < 8) left = 8;
+                            if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
+                            setStageMenuPos({ top, left });
+                            setStageMenuOpenId(stage.id);
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                          title="Stage options"
+                        >
+                          <MoreHorizontal className="w-4 h-4 text-[#8E8E93] rotate-90" />
+                        </button>
+
+                        {stageMenuOpenId === stage.id && (
+                          <div
+                            className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                            style={{ top: stageMenuPos.top, left: stageMenuPos.left }}
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                showToast.info("Delete Stage feature coming soon");
+                                setStageMenuOpenId(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                            >
+                              Delete Stage
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                showToast.info("Shift Stage feature coming soon");
+                                setStageMenuOpenId(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                            >
+                              Shift Stage
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setVisibleArchives((prev) => {
+                                  const newSet = new Set(prev);
+                                  if (newSet.has(stage.slug)) {
+                                    newSet.delete(stage.slug);
+                                  } else {
+                                    newSet.add(stage.slug);
+                                  }
+                                  return newSet;
+                                });
+                                setStageMenuOpenId(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                            >
+                              {visibleArchives.has(stage.slug) ? "Hide" : "Show"} Archived Candidates
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar pb-24">
@@ -2059,19 +2221,15 @@ export default function JobPipelineDashboard({
                           selectionType === "ARCHIVED" ||
                           (selectionStage && selectionStage !== stage.slug);
 
-                        // Extract headline and company (attempt to split if "at" present)
                         let headline = cand.headline || "--";
                         let companyName = cand.experience_summary?.title || "--";
-
-                        // If companyName seems to be a job title, it might be better to show it if headline doesn't have it.
-                        // Based on the image: "Product Designer" (headline/title), "Google" (company).
 
                         return (
                           <div
                             key={item.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e, item.id)}
-                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30 transition-all flex flex-col gap-4 relative ${isDisabled ? "opacity-60" : ""}`}
+                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30 transition-all flex flex-col gap-3 relative ${isDisabled ? "opacity-60" : ""}`}
                           >
                             <div className="flex justify-between items-start">
                               <div className="flex gap-3">
@@ -2085,10 +2243,10 @@ export default function JobPipelineDashboard({
                                     onClick={(e) => e.stopPropagation()}
                                   />
                                 </div>
-                                <div className="flex flex-col">
-                                  <div className="flex items-center gap-2">
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5">
                                     <h4
-                                      className="font-semibold text-[17px] text-[#1C1C1E] line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2"
+                                      className="font-semibold text-[15px] text-[#1C1C1E] line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2"
                                       onClick={() =>
                                         onSelectCandidate?.(
                                           item,
@@ -2099,24 +2257,45 @@ export default function JobPipelineDashboard({
                                     >
                                       {cand.full_name || "--"}
                                     </h4>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setCandidateEditing(item);
-                                        setShowCandidateEditModal(true);
-                                      }}
-                                      className="p-1 hover:bg-gray-100 rounded-md transition-colors"
-                                      title="Edit details"
-                                    >
-                                      <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
-                                    </button>
+                                    <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (menuOpenId === item.id) { setMenuOpenId(null); return; }
+                                          const rect = e.currentTarget.getBoundingClientRect();
+                                          const mW = 192, mH = 260, gap = 8;
+                                          const openUp = rect.bottom + mH + gap > window.innerHeight;
+                                          const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
+                                          const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
+                                          let left = rect.right - mW;
+                                          if (left < 8) left = 8;
+                                          if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
+                                          setMenuPos({ top, left });
+                                          setMenuOpenId(item.id);
+                                        }}
+                                        className="p-0.5 hover:bg-gray-100 rounded-md transition-colors"
+                                        title="Options"
+                                      >
+                                        <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                                      </button>
+                                      {menuOpenId === item.id && (
+                                        <div
+                                          className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                                          style={{ top: menuPos.top, left: menuPos.left }}
+                                        >
+                                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
+                                          <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
+                                          <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
+                                          <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
+                                          <button onClick={(e) => { e.stopPropagation(); setShiftStageItem(item); setShiftStageTargetId(null); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">Shift to Stage</button>
+                                          <button onClick={(e) => { e.stopPropagation(); navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, { state: { shareOption: "full_profile", resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "" } }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Share Profile</button>
+                                          <button onClick={(e) => { e.stopPropagation(); openFeedbackModal({ type: "archive", applicationIds: [item.id] }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Move to Archive</button>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                  <p className="text-[14px] text-[#8E8E93] line-clamp-1 mt-0.5">
-                                    {headline}
-                                  </p>
-                                  {/* <p className="text-[15px] font-medium text-[#4B5563] line-clamp-1 mt-1">
-                                    {companyName}
-                                  </p> */}
+                                  <p className="text-[13px] text-[#8E8E93] line-clamp-1 mt-0.5">{headline}</p>
+                                  <p className="text-[13px] font-medium text-[#4B5563] line-clamp-1">{companyName}</p>
                                 </div>
                               </div>
 
@@ -2144,120 +2323,24 @@ export default function JobPipelineDashboard({
                             </div>
 
                             <div className="flex justify-between items-center mt-auto">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCallModalCandidate({
-                                      id: cand.id,
-                                      name: cand.full_name,
-                                      avatarInitials: cand.full_name?.substring(0, 2).toUpperCase(),
-                                      headline: cand.headline,
-                                      phone: cand.premium_data?.phone || "+91 98765 43210",
-                                      experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"),
-                                      expectedCtc: cand.expected_ctc || "--",
-                                      location: cand.location || "--",
-                                      noticePeriod: cand.notice_period_summary || "--",
-                                      callAttention: item.job_score?.call_attention || [],
-                                      resumeUrl: cand.premium_data?.resume_url,
-                                    });
-                                  }}
-                                  className="w-9 h-9 flex items-center justify-center bg-[#E3E1FF] text-[#6155F5] rounded-full hover:bg-[#D5D2FF] transition-colors"
-                                  title="Call"
-                                >
-                                  <Phone className="w-4 h-4" />
-                                </button>
-                                <button
-                                  className="w-9 h-9 flex items-center justify-center bg-[#FFF2E6] text-[#FF8D28] rounded-full hover:bg-[#FFE8D4] transition-colors"
-                                  title="Email"
-                                >
-                                  <Mail className="w-4 h-4" />
-                                </button>
-
-                                <div className="relative" ref={menuOpenId === item.id ? menuRef : null}>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (menuOpenId === item.id) {
-                                        setMenuOpenId(null);
-                                        return;
-                                      }
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      const menuWidth = 192;
-                                      const menuHeight = 240;
-                                      const gap = 8;
-                                      const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
-                                      const preferredTop = openUp
-                                        ? rect.top - menuHeight - gap
-                                        : rect.bottom + gap;
-                                      const top = Math.min(
-                                        Math.max(8, preferredTop),
-                                        Math.max(8, window.innerHeight - menuHeight - 8)
-                                      );
-                                      let left = rect.right - menuWidth;
-                                      if (left < 8) left = 8;
-                                      if (left + menuWidth > window.innerWidth - 8) {
-                                        left = window.innerWidth - menuWidth - 8;
-                                      }
-                                      setMenuPos({ top, left });
-                                      setMenuOpenId(item.id);
-                                    }}
-                                    className="w-9 h-9 flex items-center justify-center bg-[#F3F5F7] text-[#8E8E93] rounded-full hover:bg-gray-200 transition-colors"
-                                    title="Options"
-                                  >
-                                    <MoreHorizontal className="w-4 h-4" />
-                                  </button>
-
-                                  {menuOpenId === item.id && (
-                                    <div
-                                      className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-bottom-2 duration-200"
-                                      style={{ top: menuPos.top, left: menuPos.left }}
-                                    >
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, {
-                                            state: {
-                                              shareOption: "full_profile",
-                                              resumeUrl: cand.premium_data?.resume_url || cand.resume_url || ""
-                                            }
-                                          });
-                                          setMenuOpenId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                                      >
-                                        <Share2 className="w-4 h-4" /> Share Profile
-                                      </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setCandidateEditing(item);
-                                          setShowCandidateEditModal(true);
-                                          setMenuOpenId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                                      >
-                                        <Pencil className="w-4 h-4" /> Edit Details
-                                      </button>
-                                      <div className="h-px bg-[#F3F5F7] my-1" />
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          openFeedbackModal({
-                                            type: "archive",
-                                            applicationIds: [item.id],
-                                          });
-                                          setMenuOpenId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"
-                                      >
-                                        <Trash2 className="w-4 h-4" /> Move to Archive
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
+                                  {cand.total_experience != null
+                                    ? `${cand.total_experience} yrs`
+                                    : cand.experience_years
+                                      ? cand.experience_years.replace(/\s*exp$/i, "")
+                                      : "--"}
+                                </span>
+                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F3E8FF] text-[#7C3AED]">
+                                  {cand.notice_period_summary || "--"}
+                                </span>
+                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FFE4E6] text-[#E11D48]">
+                                  {cand.expected_ctc
+                                    ? `${cand.expected_ctc} LPA`
+                                    : "--"}
+                                </span>
                               </div>
-                              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
                                 <span className="text-[11px] font-bold text-[#8E8E93]">
                                   {formatMovedDate(item.status_tags)}
@@ -2269,7 +2352,7 @@ export default function JobPipelineDashboard({
                       })}
 
                       {/* Archives Section */}
-                      {archivedColumnCandidates.length > 0 && (
+                      {archivedColumnCandidates.length > 0 && visibleArchives.has(stage.slug) && (
                         <div className="mt-6">
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-px bg-[#E5E7EB] flex-1"></div>
@@ -2725,7 +2808,7 @@ export default function JobPipelineDashboard({
                                       backgroundColor:
                                         attentionTag.color === "red" ? "#FEE9E7" : attentionTag.color === "blue" ? "#EDE9FE" : "#D1FAE5",
                                       color:
-                                      attentionTag.color === "red" ? "#FF383C" : attentionTag.color === "blue" ? "#6366F1" : "#059669",
+                                        attentionTag.color === "red" ? "#FF383C" : attentionTag.color === "blue" ? "#6366F1" : "#059669",
                                     }}
                                   >
                                     {attentionTag.text}
@@ -3108,7 +3191,8 @@ export default function JobPipelineDashboard({
       )}
 
       {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
-      {activeTab === "linkedinbot" && <LinkedinBotTab />}
+      {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} />}
+      {activeTab === "inbound" && <InboundTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
 
       {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal
