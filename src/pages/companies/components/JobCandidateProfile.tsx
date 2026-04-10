@@ -25,8 +25,11 @@ import {
   X,
   Archive,
   Share2,
+  Send,
+  User,
+  MessageSquareText,
 } from "lucide-react";
-import candidateService from "../../../services/candidateService";
+import candidateService, { Note } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
 import apiClient from "../../../services/api";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
@@ -145,6 +148,12 @@ export default function JobCandidateProfile({
   const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
   const [editedMatchDesc, setEditedMatchDesc] = useState("");
   const [isSavingMatchDesc, setIsSavingMatchDesc] = useState(false);
+
+  // ── Notes State ──────────────────────────────────────────
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [notesView, setNotesView] = useState<"my" | "community">("my");
+  const [newComment, setNewComment] = useState("");
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false);
 
   const openFeedbackModal = (action: {
     type: "archive" | "unarchive" | "move";
@@ -284,6 +293,49 @@ export default function JobCandidateProfile({
       })
       .finally(() => setLoadingCalls(false));
   }, [cand.id, activeTab]);
+
+  // ── Fetch Notes ──────────────────────────────────────────
+  useEffect(() => {
+    if (!cand.id || activeTab !== "notes") return;
+    fetchNotes();
+  }, [cand.id, activeTab]);
+
+  const fetchNotes = async () => {
+    try {
+      setIsLoadingNotes(true);
+      const fetchedNotes = await candidateService.getCandidateNotes(cand.id);
+      setNotes(fetchedNotes);
+    } catch (error) {
+      console.error("Failed to fetch notes:", error);
+    } finally {
+      setIsLoadingNotes(false);
+    }
+  };
+
+  const handleAddNote = async () => {
+    if (!newComment.trim() || !cand.id) return;
+    try {
+      setIsLoadingNotes(true);
+      const payload =
+        notesView === "my"
+          ? { teamNotes: newComment }
+          : { communityNotes: newComment, is_community_note: true };
+
+      await candidateService.postCandidateNote(cand.id, payload);
+      setNewComment("");
+      await fetchNotes(); // Refresh list
+    } catch (error) {
+      console.error("Failed to add note:", error);
+      showToast.error("Failed to add note");
+    } finally {
+      setIsLoadingNotes(false);
+    }
+  };
+
+  const displayedNotes =
+    notesView === "my"
+      ? notes.filter((note) => note.is_team_note && !note.is_community_note)
+      : notes.filter((note) => note.is_team_note && note.is_community_note);
 
   // ── Call tab helpers ─────────────────────────────────────
 
@@ -1895,17 +1947,94 @@ export default function JobCandidateProfile({
             )}
 
             {activeTab === "notes" && (
-              <div>
-                <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
-                  NOTES
-                </h4>
-                <textarea
-                  className="w-full h-40 border border-[#E5E7EB] rounded-xl p-4 text-sm focus:outline-none focus:border-[#0F47F2] placeholder-[#AEAEB2]"
-                  placeholder="Add a private note about this candidate..."
-                />
-                <button className="mt-4 w-full bg-[#0F47F2] text-white py-2.5 rounded-lg text-sm font-bold shadow-sm">
-                  Save Note
-                </button>
+              <div className="flex flex-col h-full">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] tracking-wider">
+                    NOTES
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-[#AEAEB2] font-semibold uppercase">Community</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={notesView === "community"}
+                        onChange={(e) =>
+                          setNotesView(e.target.checked ? "community" : "my")
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-[#0F47F2]"></div>
+                      <div className="absolute left-[2px] top-[2px] w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto space-y-4 max-h-[400px] mb-4 pr-2 hide-scrollbar">
+                  {isLoadingNotes ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0F47F2]"></div>
+                    </div>
+                  ) : displayedNotes.length > 0 ? (
+                    displayedNotes.map((note) => (
+                      <div
+                        key={note.noteId}
+                        className="bg-[#F8FAFC] rounded-xl p-4 border border-[#E5E7EB]"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-[#EEF1FF] rounded-full flex items-center justify-center text-[#0F47F2]">
+                              <User className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-black">
+                                {note.postedBy?.userName || note.postedBy?.email || "Unknown"}
+                              </p>
+                              <p className="text-[10px] text-[#AEAEB2]">
+                                {note.organisation?.orgName || "Company"}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-[10px] text-[#AEAEB2]">
+                            {new Date(note.posted_at).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#4B5563] leading-relaxed">
+                          {note.content}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-[#AEAEB2] text-center py-8">
+                      No {notesView === "my" ? "team" : "community"} notes found.
+                    </p>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAddNote();
+                      }
+                    }}
+                    className="w-full h-24 border border-[#E5E7EB] rounded-xl p-4 pr-12 text-sm focus:outline-none focus:border-[#0F47F2] placeholder-[#AEAEB2] resize-none"
+                    placeholder={`Type your ${notesView === "my" ? "team" : "community"} note...`}
+                  />
+                  <button
+                    onClick={handleAddNote}
+                    disabled={!newComment.trim() || isLoadingNotes}
+                    className="absolute bottom-3 right-3 p-2 bg-[#0F47F2] text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
 
