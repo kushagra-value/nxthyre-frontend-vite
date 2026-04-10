@@ -727,6 +727,7 @@ export default function JobCandidateProfile({
                           location: location || "--",
                           noticePeriod: noticePeriod,
                           callAttention: jobScoreObj?.call_attention || [],
+                          resumeUrl: premiumData.resume_url || undefined,
                         });
                       }}
                       className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition"

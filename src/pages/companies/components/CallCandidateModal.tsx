@@ -19,6 +19,7 @@ export interface CallCandidateData {
   location: string;
   noticePeriod: string;
   callAttention?: string[];
+  resumeUrl?: string;
 }
 
 interface CallCandidateModalProps {

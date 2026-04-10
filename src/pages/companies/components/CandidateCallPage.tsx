@@ -47,6 +47,7 @@ interface CandidateCallParams {
   experience: string;
   phone?: string;
   callAttention?: string[];
+  resumeUrl?: string;
 }
 
 const DUMMY_FALLBACK: CandidateCallParams = {
@@ -58,7 +59,8 @@ const DUMMY_FALLBACK: CandidateCallParams = {
   expectedCtc: "--",
   noticePeriod: "--",
   location: "--",
-  experience: "--",
+  experience: "0 yrs",
+  resumeUrl: "",
 };
 
 export default function CandidateCallPage() {
@@ -850,9 +852,9 @@ export default function CandidateCallPage() {
                   </button>
                 </div>
                 <div className="h-[60vh] bg-white">
-                  {(candidate as any).resume_url ? (
+                  {candidate.resumeUrl ? (
                     <iframe
-                      src={(candidate as any).resume_url}
+                      src={candidate.resumeUrl}
                       className="w-full h-full border-0"
                       title="Candidate Resume"
                     />
