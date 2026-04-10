@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, SlidersHorizontal, X, ArrowRight, ArrowLeft, Zap, Copy, Trash2 } from "lucide-react";
+import { Search, SlidersHorizontal, X, ArrowRight, ArrowLeft, Zap, Copy, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { linkedinBotService, LinkedinBotCandidate, LinkedinBotCandidateSummary } from "../../../services/linkedinBotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
@@ -92,6 +92,35 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
     } finally {
       setToggleLoading(false);
     }
+  };
+
+  const handleSort = (column: string) => {
+    if (sortBy === `${column}_desc`) {
+      setSortBy(`${column}_asc`);
+    } else {
+      setSortBy(`${column}_desc`);
+    }
+  };
+
+  const renderSortableHeader = (label: string, column: string, align: 'left' | 'center' | 'right' = 'left') => {
+    const isSorted = sortBy.startsWith(column);
+    const isAsc = sortBy === `${column}_asc`;
+    return (
+      <th 
+        key={column}
+        className={`group px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap cursor-pointer hover:bg-[#F9FAFB] hover:text-[#4B5563] transition-colors select-none ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`}
+        onClick={() => handleSort(column)}
+      >
+        <div className={`flex items-center gap-1 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : ''}`}>
+          {label}
+          {isSorted ? (
+            isAsc ? <ArrowUp className="w-3.5 h-3.5 text-[#0F47F2]" /> : <ArrowDown className="w-3.5 h-3.5 text-[#0F47F2]" />
+          ) : (
+            <ArrowDown className="w-3.5 h-3.5 text-[#AEAEB2] opacity-0 group-hover:opacity-100 transition-opacity" />
+          )}
+        </div>
+      </th>
+    );
   };
 
   const getPageNumbers = () => {
@@ -196,6 +225,9 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
               <option value="newest">Newest</option>
               <option value="experience_desc">Experience ↓</option>
               <option value="ctc_desc">CTC ↓</option>
+              {!["ai_score_desc", "ai_score_asc", "newest", "experience_desc", "ctc_desc"].includes(sortBy) && (
+                <option value={sortBy} className="hidden">Sorted by Header</option>
+              )}
             </select>
           </div>
         </div>
@@ -214,14 +246,14 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
                     className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
                   />
                 </th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Candidate</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">AI Score</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Location</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Exp</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">CTC</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Expected CTC</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Notice Period</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">Skills Match</th>
+                {renderSortableHeader('Candidate', 'name')}
+                {renderSortableHeader('AI Score', 'ai_score', 'center')}
+                {renderSortableHeader('Location', 'location')}
+                {renderSortableHeader('Exp', 'experience')}
+                {renderSortableHeader('CTC', 'ctc')}
+                {renderSortableHeader('Expected CTC', 'expected_ctc')}
+                {renderSortableHeader('Notice Period', 'notice_period')}
+                {renderSortableHeader('Skills Match', 'skills_match', 'center')}
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-right">Actions</th>
               </tr>
             </thead>
@@ -261,7 +293,7 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
                         </div>
                     </td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.location || "--"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.experience_years ? `${item.experience_years} Years` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.experience_years ? `${Number(item.experience_years).toFixed(1)} Years` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent">{item.notice_period || "--"}</td>
