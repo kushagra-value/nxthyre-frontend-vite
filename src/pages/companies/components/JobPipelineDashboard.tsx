@@ -2159,6 +2159,7 @@ export default function JobPipelineDashboard({
                                       location: cand.location || "--",
                                       noticePeriod: cand.notice_period_summary || "--",
                                       callAttention: item.job_score?.call_attention || [],
+                                      resumeUrl: cand.premium_data?.resume_url,
                                     });
                                   }}
                                   className="w-9 h-9 flex items-center justify-center bg-[#E3E1FF] text-[#6155F5] rounded-full hover:bg-[#D5D2FF] transition-colors"
@@ -2820,6 +2821,7 @@ export default function JobPipelineDashboard({
                                             location: cand.location || "--",
                                             noticePeriod: noticePeriod,
                                             callAttention: callAttention,
+                                            resumeUrl: cand.premium_data?.resume_url,
                                           });
                                           setMenuOpenId(null);
                                         }}
