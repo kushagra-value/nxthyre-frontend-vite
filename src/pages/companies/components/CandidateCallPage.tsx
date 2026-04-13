@@ -852,13 +852,50 @@ export default function CandidateCallPage() {
                   </button>
                 </div>
                 <div className="h-[60vh] bg-white">
-                  {candidate.resumeUrl ? (
-                    <iframe
-                      src={candidate.resumeUrl}
-                      className="w-full h-full border-0"
-                      title="Candidate Resume"
-                    />
-                  ) : (
+                  {candidate.resumeUrl ? (() => {
+                    const url = candidate.resumeUrl;
+                    const ext = url.split(".").pop()?.toLowerCase() || "";
+                    const isPdf = ext === "pdf";
+                    const isDocViewerSupported = ["docx", "doc", "txt", "rtf"].includes(ext);
+                    const viewerUrl = isDocViewerSupported
+                      ? `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`
+                      : url;
+
+                    if (isPdf) {
+                      return (
+                        <embed
+                          src={url}
+                          type="application/pdf"
+                          className="w-full h-full border-0"
+                        />
+                      );
+                    }
+                    if (isDocViewerSupported) {
+                      return (
+                        <iframe
+                          src={viewerUrl}
+                          className="w-full h-full border-0"
+                          title="Candidate Resume"
+                        />
+                      );
+                    }
+                    return (
+                      <div className="flex items-center justify-center h-full text-slate-400">
+                        <div className="text-center">
+                          <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                          <p className="font-medium">Resume format not supported for inline viewing</p>
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline text-sm mt-2 inline-block"
+                          >
+                            Download or open in a new tab
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })() : (
                     <div className="flex items-center justify-center h-full text-slate-400">
                       <div className="text-center">
                         <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
