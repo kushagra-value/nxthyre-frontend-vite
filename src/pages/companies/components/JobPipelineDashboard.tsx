@@ -2742,9 +2742,24 @@ export default function JobPipelineDashboard({
                               : "--";
 
                         // CTC
-                        const ctc = cand.current_salary_lpa
-                          ? `${cand.current_salary_lpa}`
-                          : "--";
+                        
+
+                          const ctcText =
+                          cand.current_salary_lpa ||
+                          (cand.current_salary_lpa != null
+                            ? `${cand.current_salary_lpa}`
+                            : "--");
+
+                          const ctcDisplay = (
+                          <span className="flex flex-col items-start gap-1">
+                            {ctcText}
+                            {cand.current_take_home && (
+                              <span className="text-[#8E8E93] text-[10px] font-normal italic">
+                                (fixed: cand.current_take_home)
+                              </span>
+                            )}
+                          </span>
+                        );
 
                         // Expected CTC
                         const expectedCtc = cand.expected_ctc
@@ -2858,7 +2873,7 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
-                              {ctc}
+                              {ctcDisplay}
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               {expectedCtc}
