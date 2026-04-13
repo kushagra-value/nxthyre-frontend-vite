@@ -2760,10 +2760,10 @@ export default function JobPipelineDashboard({
 
                         // Notice period display for table/UI
                         const noticePeriodDisplay = (
-                          <span>
+                          <span className="flex flex-col items-start gap-1">
                             {noticePeriodText}
                             {cand.last_working_day && (
-                              <span className="ml-1 text-[#8E8E93] text-[10px] font-normal italic">
+                              <span className="text-[#8E8E93] text-[10px] font-normal italic">
                                 (LWD: {formatDate(cand.last_working_day)})
                               </span>
                             )}
