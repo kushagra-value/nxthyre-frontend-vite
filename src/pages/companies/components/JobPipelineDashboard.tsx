@@ -1082,19 +1082,30 @@ export default function JobPipelineDashboard({
       // Robust extraction for numeric CTC/expected
       const extractNum = (val: any) => {
         if (val == null) return "";
-        return val.toString().replace(/ LPA$/i, "").trim();
+        const match = val.toString().match(/[\d.]+/);
+        return match ? match[0] : "";
       };
 
+      let noticePeriodDays = cand.notice_period_days?.toString() || "";
+      if (!noticePeriodDays && cand.notice_period_summary) {
+        if (cand.notice_period_summary.toLowerCase().includes("immediate")) {
+          noticePeriodDays = "0";
+        } else {
+          const match = cand.notice_period_summary.match(/\d+/);
+          if (match) noticePeriodDays = match[0];
+        }
+      }
+
       setCandidateEditForm({
-        notice_period_days: cand.notice_period_days?.toString() || "",
+        notice_period_days: noticePeriodDays,
         current_ctc_lpa: extractNum(
           cand.current_salary_lpa || (cand as any).current_salary,
         ),
         expected_ctc_lpa: extractNum(cand.expected_ctc),
-        current_take_home: cand.current_take_home?.toString() || "",
+        current_take_home: extractNum(cand.current_take_home),
         last_working_day: cand.last_working_day || "",
         location: cand.location || "",
-        exp: (cand.total_experience ?? (cand.experience_years ? parseFloat(cand.experience_years) : "")).toString(),
+        exp: extractNum(cand.total_experience ?? cand.experience_years),
       });
     }
   }, [showCandidateEditModal, candidateEditing]);
