@@ -198,8 +198,9 @@ export default function Companies() {
     const [jobPagination, setJobPagination] = useState<JobsApiResponse["pagination"] | null>(null);
     const [jobCurrentPage, setJobCurrentPage] = useState(1);
     const [jobPageSize] = useState(10);
-    const [createdAfter] = useState<string | undefined>(undefined);
-    const [createdBefore] = useState<string | undefined>(undefined);
+    const [createdAfter, setCreatedAfter] = useState<string | undefined>(undefined);
+    const [createdBefore, setCreatedBefore] = useState<string | undefined>(undefined);
+    const [jobDateFilterLabel, setJobDateFilterLabel] = useState("Today");
     const [jobsLoading, setJobsLoading] = useState(false);
 
     // Track pending rehydration IDs from sessionStorage
@@ -625,6 +626,13 @@ export default function Companies() {
                 jobPagination={jobPagination}
                 jobCurrentPage={jobCurrentPage}
                 setJobCurrentPage={setJobCurrentPage}
+                jobDateFilterLabel={jobDateFilterLabel}
+                onJobDateFilterApply={(payload) => {
+                    setCreatedAfter(payload.createdAfter);
+                    setCreatedBefore(payload.createdBefore);
+                    setJobDateFilterLabel(payload.label);
+                    setJobCurrentPage(1);
+                }}
                 activeJobFilter={activeJobFilter}
                 setActiveJobFilter={setActiveJobFilter}
                 jobSearchQuery={jobSearchQuery}

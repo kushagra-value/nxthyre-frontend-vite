@@ -36,6 +36,7 @@ import { showToast as toastUtil } from "../../../utils/toast";
 import CreateJobRoleModal from "../../candidates/components/CreateJobRoleModal";
 import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoDrawer from "./CompanyInfoDrawer";
+import JobDateRangeFilter from "./JobDateRangeFilter";
 
 interface JobListingProps {
     selectedWorkspace: MyWorkspace;
@@ -47,6 +48,12 @@ interface JobListingProps {
     jobPagination: JobsApiResponse["pagination"] | null;
     jobCurrentPage: number;
     setJobCurrentPage: (page: number) => void;
+    jobDateFilterLabel: string;
+    onJobDateFilterApply: (payload: {
+        label: string;
+        createdAfter?: string;
+        createdBefore?: string;
+    }) => void;
     activeJobFilter: "All" | "Active" | "Paused" | "Inactive" | "Draft";
     setActiveJobFilter: (filter: "All" | "Active" | "Paused" | "Inactive" | "Draft") => void;
     jobSearchQuery: string;
@@ -82,6 +89,8 @@ const JobListing: React.FC<JobListingProps> = ({
     jobPagination,
     jobCurrentPage,
     setJobCurrentPage,
+    jobDateFilterLabel,
+    onJobDateFilterApply,
     activeJobFilter,
     setActiveJobFilter,
     jobSearchQuery,
@@ -650,19 +659,10 @@ const JobListing: React.FC<JobListingProps> = ({
                             Export CSV
                         </button>
 
-                        <button
-                            disabled
-                            title="Feature coming Soon"
-                            className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
-                        >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                <path d="M6.66667 11.3332L6.66666 8.89798C6.66666 8.77014 6.5755 8.6665 6.46305 8.6665H6M9.08644 11.3332L9.98945 8.89928C10.0317 8.78547 9.94189 8.6665 9.81379 8.6665H8.66667" stroke="#374151" stroke-linecap="round" />
-                                <path d="M1.6665 8.16216C1.6665 5.25729 1.6665 3.80486 2.50125 2.90243C3.336 2 4.6795 2 7.3665 2H8.63317C11.3202 2 12.6637 2 13.4984 2.90243C14.3332 3.80486 14.3332 5.25729 14.3332 8.16216V8.5045C14.3332 11.4094 14.3332 12.8618 13.4984 13.7642C12.6637 14.6667 11.3202 14.6667 8.63317 14.6667H7.3665C4.6795 14.6667 3.336 14.6667 2.50125 13.7642C1.6665 12.8618 1.6665 11.4094 1.6665 8.5045V8.16216Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                <path d="M4 5.3335H12" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                            {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </button>
+                        <JobDateRangeFilter
+                            valueLabel={jobDateFilterLabel}
+                            onApply={onJobDateFilterApply}
+                        />
                     </div>
                 </div>
 
