@@ -2925,6 +2925,7 @@ export default function JobPipelineDashboard({
                                 </div>
                               </div>
                             </td>
+                            <td className="px-4 py-5 whitespace-nowrap">
                                 <div className="whitespace-nowrap">
                                   {callAttention && callAttention.length > 0 ? (
                                     (() => {
