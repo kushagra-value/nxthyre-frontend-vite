@@ -2406,6 +2406,7 @@ export default function JobPipelineDashboard({
                                   <p className="text-[13px] text-[#8E8E93] line-clamp-1 mt-0.5">{headline}</p>
                                   <p className="text-[13px] font-medium text-[#4B5563] line-clamp-1">{companyName}</p>
                                   {(() => {
+                                    const attentionTag = item.status_tags?.find((t) => t.text);
                                     const pill = getAttentionPill(item, attentionTag);
                                     if (!pill) return null;
                                     const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
@@ -3250,6 +3251,7 @@ export default function JobPipelineDashboard({
                                 <td className="px-4 py-5 whitespace-nowrap">
                                   <div className="whitespace-nowrap">
                                     {(() => {
+                                      const attentionTag = item.status_tags?.find((t) => t.text);
                                       const pill = getAttentionPill(item, attentionTag);
                                       if (!pill) return <span className="text-[10px] text-[#AEAEB2]">--</span>;
                                       const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
