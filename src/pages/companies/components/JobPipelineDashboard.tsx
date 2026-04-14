@@ -4180,11 +4180,11 @@ export default function JobPipelineDashboard({
       )}
 
       {/* Edit Stage Details - Full Screen Overlay */}
-      {stageToEdit && jobId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[1001] flex">
+      {stageToEdit && jobId !== null && jobId !== undefined && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[11000] flex">
           <div className="ml-auto min-w-[400px]">
             <AddNewStageForm
-              pipelineId={jobId}
+              pipelineId={Number(jobId)}
               stageId={stageToEdit.id}
               isEditMode
               onClose={() => setStageToEdit(null)}
@@ -4210,7 +4210,7 @@ export default function JobPipelineDashboard({
 
       {/* Delete Stage Confirmation Modal */}
       {stageToDelete && (
-        <div className="fixed inset-0 bg-black/50 z-[1002] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 z-[11001] flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="px-6 py-5 border-b border-[#E5E7EB]">
               <h3 className="text-lg font-semibold text-[#111827]">Delete Stage</h3>
