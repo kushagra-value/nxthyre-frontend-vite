@@ -1838,22 +1838,22 @@ export default function JobPipelineDashboard({
             {
               key: "pipeline" as const,
               label: "Pipeline",
-              count: totalPipelineCandidates,
+              count: jobDetails?.pipeline_candidate_count ?? 0,
             },
             {
               key: "naukbot" as const,
               label: "Naukbot",
-              count: jobDetails?.invites_sent ?? 0,
+              count: jobDetails?.naukri_bot_candidates_count ?? 0,
             },
             {
               key: "inbound" as const,
               label: "Inbound",
-              count: jobDetails?.inbound_count ?? 0,
+              count: jobDetails?.inbound_candidates_count ?? 0,
             },
             {
               key: "linkedinbot" as const,
               label: "LinkedIn Bot",
-              count: 12,
+              count: jobDetails?.linkedin_bot_candidates_count ?? 0,
             },
           ].map((tab) => (
             <button

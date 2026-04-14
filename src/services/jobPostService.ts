@@ -40,6 +40,9 @@ export interface Job {
   invites_sent: number;
   total_applied: number;
   total_replied: number;
+  inbound_candidates_count?: number;
+  naukri_bot_candidates_count?: number;
+  linkedin_bot_candidates_count?: number;
   job_description_markdown: string;
   ai_jd: string;
   technical_competencies: string[];
