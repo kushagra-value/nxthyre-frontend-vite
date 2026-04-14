@@ -269,6 +269,44 @@ const formatMovedDate = (statusTags?: { text: string; color: string }[]): string
   return `${Math.max(0, diffInDays)}d`;
 };
 
+const getAttentionPill = (item: CandidateListItem, attentionTag?: { text: string; color: string }) => {
+  // 1. Follow-up Priority
+  if (item.next_follow_up) {
+    const { scheduled_date, scheduled_time } = item.next_follow_up;
+    return {
+      text: `Follow Up Scheduled on ${scheduled_date} ${scheduled_time}`,
+      color: "blue"
+    };
+  }
+
+  // 2. Manual Call Priority
+  if (item.latest_manual_call_status) {
+    const status = item.latest_manual_call_status;
+    const daysAgo = formatTimeAgo(item.latest_manual_call_at || "");
+    
+    if (status === "completed") {
+      return { text: `Called ${daysAgo} ago`, color: "blue" };
+    }
+    
+    // busy, not_picked_up, wrong_number
+    let label = status.replace(/_/g, " ");
+    if (label === "not picked up") label = "Not Picked Up";
+    else if (label === "wrong number") label = "Wrong Number";
+    else if (label === "busy") label = "Busy";
+    else label = label.charAt(0).toUpperCase() + label.slice(1);
+
+    return { text: `${label} ${daysAgo} ago`, color: "red" };
+  }
+
+  // 3. Fallback
+  if (attentionTag) {
+    return { text: attentionTag.text, color: attentionTag.color };
+  }
+
+  return null;
+};
+
+
 const workApproachLabel: Record<string, string> = {
   ONSITE: "Onsite",
   REMOTE: "Remote",
