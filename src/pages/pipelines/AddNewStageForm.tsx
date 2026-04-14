@@ -1,5 +1,5 @@
 // components/AddNewStageForm.tsx
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import StageTypeDropdown from './StageTypeDropdown';
 import apiClient from '../../services/api';
 import { showToast } from '../../utils/toast';
@@ -9,9 +9,17 @@ interface AddNewStageFormProps {
   onClose: () => void;
   onStageCreated?: () => void;
   pipelineId?: string | number;
+  stageId?: number | string;
+  isEditMode?: boolean;
 }
 
-export default function AddNewStageForm({ onClose, onStageCreated, pipelineId: propPipelineId }: AddNewStageFormProps) {
+export default function AddNewStageForm({ 
+  onClose, 
+  onStageCreated, 
+  pipelineId: propPipelineId,
+  stageId,
+  isEditMode = false
+}: AddNewStageFormProps) {
   const { pipelineId: paramPipelineId } = useParams<{ pipelineId: string }>();
   const pipelineId = propPipelineId || paramPipelineId;
   const [stageName, setStageName] = useState('F2F1');
@@ -21,6 +29,7 @@ export default function AddNewStageForm({ onClose, onStageCreated, pipelineId: p
   const isMockCall = stageType === 'mock';
   const isHired = stageType === 'hired';
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
 
 
 
@@ -38,6 +47,60 @@ export default function AddNewStageForm({ onClose, onStageCreated, pipelineId: p
     experienceLetters: true,
     panCard: true
   });
+
+  const reverseStageTypeMapping: Record<string, string> = {
+    'FACE_TO_FACE_INTERVIEW': 'face-to-face',
+    'VIRTUAL_INTERVIEW': 'virtual',
+    'EXTERNAL_PLATFORM_INTERVIEW': 'external',
+    'BACKGROUND_VERIFICATION': 'background',
+    'MOCK_CALL': 'mock',
+    'HIRED': 'hired'
+  };
+
+  useEffect(() => {
+    if (isEditMode && stageId && pipelineId) {
+      setFetching(true);
+      apiClient.get(`/jobs/roles/${pipelineId}/custom-stages/${stageId}/`)
+        .then(res => {
+          const data = res.data;
+          setStageName(data.name || '');
+          if (data.stage_type) {
+            setStageType(reverseStageTypeMapping[data.stage_type] || 'face-to-face');
+          }
+
+          if (data.stage_type === "BACKGROUND_VERIFICATION") {
+            setCalendarInvite(!!data.enable_document_reminders);
+            const docs = data.required_documents || [];
+            setDocumentRequired({
+              idProof: docs.includes("ID_PROOF"),
+              marksheets_10th_12th: docs.includes("MARKSHEETS_10TH_12TH"),
+              collegeTranscript: docs.includes("COLLEGE_TRANSCRIPT"),
+              experienceLetters: docs.includes("EXPERIENCE_LETTERS"),
+              panCard: docs.includes("PAN_CARD")
+            });
+          } else {
+            setCalendarInvite(!!data.enable_calendar_invite);
+            setReminders({
+              panel24h: !!data.notify_panel_24h_before,
+              candidate48h: !!data.notify_candidate_48h_before,
+              hr30min: !!data.notify_hr_30min_before,
+            });
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching stage details:", error);
+          showToast.error("Failed to load stage details");
+        })
+        .finally(() => {
+          setFetching(false);
+        });
+    } else {
+       // Reset string states on open. Could use better approach based on deps. 
+       if (!isEditMode) {
+          setStageName("F2F1");
+       }
+    }
+  }, [isEditMode, stageId, pipelineId]);
 
   const handleCreateStage = async () => {
     if (!stageName.trim()) {
@@ -85,26 +148,43 @@ export default function AddNewStageForm({ onClose, onStageCreated, pipelineId: p
         payload.notify_candidate_48h_before = reminders.candidate48h;
         payload.notify_hr_30min_before = reminders.hr30min;
       }
-      await apiClient.post(`/jobs/roles/${pipelineId}/custom-stages/`, payload);
 
-      showToast.success(`Stage "${stageName}" created successfully`);
+      if (isEditMode && stageId) {
+        await apiClient.patch(`/jobs/roles/${pipelineId}/custom-stages/${stageId}/`, payload);
+        showToast.success(`Stage "${stageName}" updated successfully`);
+      } else {
+        await apiClient.post(`/jobs/roles/${pipelineId}/custom-stages/`, payload);
+        showToast.success(`Stage "${stageName}" created successfully`);
+      }
+
       onStageCreated?.();        // Refresh stages in parent
       onClose();                 // Close the form
     } catch (error: any) {
-      const msg = error.response?.data?.detail || error.response?.data?.name?.[0] || "Failed to create stage";
+      const msg = error.response?.data?.detail || error.response?.data?.name?.[0] || `Failed to ${isEditMode ? 'update' : 'create'} stage`;
       showToast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
+  if (fetching) {
+    return (
+      <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl flex items-center justify-center font-['Gellix',_sans-serif] z-[1000]">
+        <div className="text-center">
+            <div className="w-8 h-8 border-4 border-[#0F47F2] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-[#4B5563]">Loading stage details...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="fixed inset-y-0 right-0 w-[563px] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto font-['Gellix',_sans-serif]">
+    <div className="fixed inset-y-0 right-0 w-[563px] z-[1000] bg-[#F5F9FB] rounded-l-3xl shadow-2xl overflow-y-auto font-['Gellix',_sans-serif]">
       <div className="p-8 pt-10 pb-32 relative min-h-full">
 
         {/* Header */}
         <h3 className="text-2xl font-medium text-[#4B5563] mb-10">
-          Add New Stage
+          {isEditMode ? 'Edit Stage Details' : 'Add New Stage'}
         </h3>
 
         {/* Stage Name */}
@@ -374,7 +454,7 @@ export default function AddNewStageForm({ onClose, onStageCreated, pipelineId: p
               : 'bg-[#0F47F2] hover:bg-blue-700'
               }`}
           >
-            {loading ? 'Creating...' : 'Create Stage'}
+            {loading ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Stage')}
           </button>
         </div>
       </div>

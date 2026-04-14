@@ -372,6 +372,11 @@ export default function JobPipelineDashboard({
     "ACTIVE" | "ARCHIVED" | null
   >(null);
 
+  // ── Stage Actions Modal State ──
+  const [stageToDelete, setStageToDelete] = useState<Stage | null>(null);
+  const [stageToEdit, setStageToEdit] = useState<Stage | null>(null);
+
+
   // ── Feedback Modal State ──
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackComment, setFeedbackComment] = useState("");
@@ -1474,6 +1479,35 @@ export default function JobPipelineDashboard({
     return pages;
   };
 
+  const handleDeleteStage = async () => {
+    if (!jobId || !stageToDelete) return;
+    try {
+      await apiClient.delete(
+        `/jobs/roles/${jobId}/custom-stages/${stageToDelete.id}/`
+      );
+      showToast.success("Stage deleted successfully");
+      setStageToDelete(null);
+
+      // Refresh pipeline
+      const currentLimit = isKanbanView ? 1000 : pageSize;
+      const currentStage = isKanbanView ? null : activeStageSlug;
+      fetchCandidates(
+        jobId,
+        currentStage,
+        currentPage,
+        searchQuery,
+        currentLimit
+      );
+      fetchStages(jobId);
+      fetchArchivedCandidates(jobId);
+    } catch (error: any) {
+      console.error("Delete stage error:", error);
+      showToast.error(
+        error.response?.data?.detail || "Failed to delete stage"
+      );
+    }
+  };
+
   // ── Requisition Info Handlers ────────────────────────────────
 
   const handleRequisitionInfo = async (jId: number) => {
@@ -2233,10 +2267,20 @@ export default function JobPipelineDashboard({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                showToast.info("Delete Stage feature coming soon");
+                                setStageToEdit(stage);
                                 setStageMenuOpenId(null);
                               }}
                               className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                            >
+                              Edit Stage Details
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStageToDelete(stage);
+                                setStageMenuOpenId(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-[#FEE2E2] flex items-center gap-2"
                             >
                               Delete Stage
                             </button>
