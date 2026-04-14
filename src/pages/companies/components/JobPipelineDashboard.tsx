@@ -290,9 +290,9 @@ const getAttentionPill = (item: CandidateListItem, attentionTag?: { text: string
     
     // busy, not_picked_up, wrong_number
     let label = status.replace(/_/g, " ");
-    if (label === "not picked up") label = "Not Picked Up";
+    if (label === "not picked up") label = "Call not picked up";
     else if (label === "wrong number") label = "Wrong Number";
-    else if (label === "busy") label = "Busy";
+    else if (label === "busy") label = "Call line busy";
     else label = label.charAt(0).toUpperCase() + label.slice(1);
 
     return { text: `${label} ${daysAgo} ago`, color: "red" };
