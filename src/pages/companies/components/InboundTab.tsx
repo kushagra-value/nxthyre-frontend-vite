@@ -19,6 +19,7 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [sortBy, setSortBy] = useState("ai_score_desc");
   const pageSize = 10;
   
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
@@ -29,7 +30,7 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
       fetchInboundCandidates(currentPage);
     }, 500);
     return () => clearTimeout(timeoutId);
-  }, [jobId, currentPage, searchQuery]);
+  }, [jobId, currentPage, searchQuery, sortBy]);
 
   const fetchInboundCandidates = async (page: number) => {
     try {
@@ -37,6 +38,7 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
       const payload: any = {
         job_id: jobId?.toString(),
         tab: "inbound",
+        sort_by: sortBy,
       };
       if (searchQuery.trim()) {
         payload.text_query = searchQuery.trim();
