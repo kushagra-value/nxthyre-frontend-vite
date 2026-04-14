@@ -404,6 +404,15 @@ export default function JobPipelineDashboard({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const [searchQuery, setSearchQuery] = useState("");
+  const [showDateFilter, setShowDateFilter] = useState(false);
+  const [datePreset, setDatePreset] = useState<
+    "today" | "last_week" | "last_month" | "custom"
+  >("today");
+  const [createdAfter, setCreatedAfter] = useState<string | undefined>(undefined);
+  const [createdBefore, setCreatedBefore] = useState<string | undefined>(undefined);
+  const [customFromDate, setCustomFromDate] = useState("");
+  const [customToDate, setCustomToDate] = useState("");
+  const dateFilterRef = useRef<HTMLDivElement | null>(null);
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
@@ -546,6 +555,82 @@ export default function JobPipelineDashboard({
       return 0;
     });
   };
+
+  const formatLocalDate = (date: Date) => {
+    const y = date.getFullYear();
+    const m = `${date.getMonth() + 1}`.padStart(2, "0");
+    const d = `${date.getDate()}`.padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  const applyDatePreset = (
+    preset: "today" | "last_week" | "last_month" | "custom",
+  ) => {
+    const now = new Date();
+    setDatePreset(preset);
+
+    if (preset === "custom") {
+      return;
+    }
+
+    if (preset === "today") {
+      const today = formatLocalDate(now);
+      setCreatedAfter(today);
+      setCreatedBefore(today);
+      setShowDateFilter(false);
+      return;
+    }
+
+    if (preset === "last_week") {
+      const from = new Date(now);
+      from.setDate(now.getDate() - 6);
+      setCreatedAfter(formatLocalDate(from));
+      setCreatedBefore(formatLocalDate(now));
+      setShowDateFilter(false);
+      return;
+    }
+
+    const from = new Date(now);
+    from.setDate(now.getDate() - 29);
+    setCreatedAfter(formatLocalDate(from));
+    setCreatedBefore(formatLocalDate(now));
+    setShowDateFilter(false);
+  };
+
+  const applyCustomDateRange = () => {
+    if (!customFromDate || !customToDate) {
+      showToast.error("Please select both from and to dates");
+      return;
+    }
+    if (customFromDate > customToDate) {
+      showToast.error("From date cannot be after to date");
+      return;
+    }
+    setDatePreset("custom");
+    setCreatedAfter(customFromDate);
+    setCreatedBefore(customToDate);
+    setShowDateFilter(false);
+  };
+
+  useEffect(() => {
+    // Default range = Today so initial state and first API call stay consistent.
+    applyDatePreset("today");
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showDateFilter &&
+        dateFilterRef.current &&
+        !dateFilterRef.current.contains(event.target as Node)
+      ) {
+        setShowDateFilter(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showDateFilter]);
 
   // Primary list for active candidates
   let combinedCands = candidates;
@@ -1039,6 +1124,8 @@ export default function JobPipelineDashboard({
         url += `&page=${page}&page_size=${limit}`;
         if (search.trim())
           url += `&search=${encodeURIComponent(search.trim())}`;
+        if (createdAfter) url += `&created_after=${createdAfter}`;
+        if (createdBefore) url += `&created_before=${createdBefore}`;
 
         const response = await apiClient.get(url);
         const data = response.data;
@@ -1063,7 +1150,7 @@ export default function JobPipelineDashboard({
         setLoadingCandidates(false);
       }
     },
-    [],
+    [createdAfter, createdBefore],
   );
 
   useEffect(() => {
@@ -1081,6 +1168,8 @@ export default function JobPipelineDashboard({
     searchQuery,
     fetchCandidates,
     fetchArchivedCandidates,
+    createdAfter,
+    createdBefore,
   ]);
 
   useEffect(() => {
@@ -1946,18 +2035,74 @@ export default function JobPipelineDashboard({
                   </svg>
                 </button>
                 {/* Calendar / Date */}
-                <button
-                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors"
-                  title={new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}
-                  disabled
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="currentColor" strokeLinecap="round" />
-                    <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M4 5.3335H12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                <div className="relative" ref={dateFilterRef}>
+                  <button
+                    onClick={() => setShowDateFilter((prev) => !prev)}
+                    className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors"
+                    title="Filter by date"
+                  >
+                    <Calendar className="w-4 h-4" />
+                  </button>
+                  {showDateFilter && (
+                    <div className="absolute right-0 top-11 z-[120] w-[340px] bg-white border border-[#E5E7EB] rounded-xl shadow-xl p-4">
+                      <div className="grid grid-cols-1 gap-2">
+                        {[
+                          { key: "today", label: "Today" },
+                          { key: "last_week", label: "Last Week" },
+                          { key: "last_month", label: "Last Month" },
+                          { key: "custom", label: "Custom Date" },
+                        ].map((item) => (
+                          <button
+                            key={item.key}
+                            onClick={() =>
+                              applyDatePreset(
+                                item.key as "today" | "last_week" | "last_month" | "custom",
+                              )
+                            }
+                            className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                              datePreset === item.key
+                                ? "text-[#0F47F2] bg-[#E7EDFF]"
+                                : "text-[#4B5563] hover:bg-[#F3F5F7]"
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {datePreset === "custom" && (
+                        <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs text-[#8E8E93] mb-1">From</label>
+                              <input
+                                type="date"
+                                value={customFromDate}
+                                onChange={(e) => setCustomFromDate(e.target.value)}
+                                className="w-full h-9 px-2 border border-[#D1D1D6] rounded-lg text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-[#8E8E93] mb-1">To</label>
+                              <input
+                                type="date"
+                                value={customToDate}
+                                onChange={(e) => setCustomToDate(e.target.value)}
+                                className="w-full h-9 px-2 border border-[#D1D1D6] rounded-lg text-sm"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            onClick={applyCustomDateRange}
+                            className="mt-3 w-full py-2 rounded-lg bg-[#0F47F2] text-white text-sm font-medium hover:bg-[#0D3ECF]"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {/* Table View toggle */}
                 <button
                   onClick={() => {
@@ -2121,24 +2266,78 @@ export default function JobPipelineDashboard({
                     </svg>
                     Export CSV
                   </button>
-                  <button
-                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                    title="Feature Coming Soon"
-                    disabled
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="#374151" strokeLinecap="round" />
-                      <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M4 5.3335H12" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {" "}
-                    {new Date().toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
-                  </button>
+                  <div className="relative" ref={dateFilterRef}>
+                    <button
+                      onClick={() => setShowDateFilter((prev) => !prev)}
+                      className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                      title="Filter by date"
+                    >
+                      <Calendar className="w-4 h-4" />
+                      {datePreset === "today" && "Today"}
+                      {datePreset === "last_week" && "Last Week"}
+                      {datePreset === "last_month" && "Last Month"}
+                      {datePreset === "custom" && "Custom Date"}
+                    </button>
+                    {showDateFilter && (
+                      <div className="absolute right-0 top-11 z-[120] w-[340px] bg-white border border-[#E5E7EB] rounded-xl shadow-xl p-4">
+                        <div className="grid grid-cols-1 gap-2">
+                          {[
+                            { key: "today", label: "Today" },
+                            { key: "last_week", label: "Last Week" },
+                            { key: "last_month", label: "Last Month" },
+                            { key: "custom", label: "Custom Date" },
+                          ].map((item) => (
+                            <button
+                              key={item.key}
+                              onClick={() =>
+                                applyDatePreset(
+                                  item.key as "today" | "last_week" | "last_month" | "custom",
+                                )
+                              }
+                              className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                                datePreset === item.key
+                                  ? "text-[#0F47F2] bg-[#E7EDFF]"
+                                  : "text-[#4B5563] hover:bg-[#F3F5F7]"
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {datePreset === "custom" && (
+                          <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-xs text-[#8E8E93] mb-1">From</label>
+                                <input
+                                  type="date"
+                                  value={customFromDate}
+                                  onChange={(e) => setCustomFromDate(e.target.value)}
+                                  className="w-full h-9 px-2 border border-[#D1D1D6] rounded-lg text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs text-[#8E8E93] mb-1">To</label>
+                                <input
+                                  type="date"
+                                  value={customToDate}
+                                  onChange={(e) => setCustomToDate(e.target.value)}
+                                  className="w-full h-9 px-2 border border-[#D1D1D6] rounded-lg text-sm"
+                                />
+                              </div>
+                            </div>
+                            <button
+                              onClick={applyCustomDateRange}
+                              className="mt-3 w-full py-2 rounded-lg bg-[#0F47F2] text-white text-sm font-medium hover:bg-[#0D3ECF]"
+                            >
+                              Apply
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </>
