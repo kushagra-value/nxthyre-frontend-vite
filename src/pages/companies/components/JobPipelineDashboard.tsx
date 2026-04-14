@@ -4179,6 +4179,65 @@ export default function JobPipelineDashboard({
         </div>
       )}
 
+      {/* Edit Stage Details - Full Screen Overlay */}
+      {stageToEdit && jobId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[1001] flex">
+          <div className="ml-auto min-w-[400px]">
+            <AddNewStageForm
+              pipelineId={jobId}
+              stageId={stageToEdit.id}
+              isEditMode
+              onClose={() => setStageToEdit(null)}
+              onStageCreated={() => {
+                setStageToEdit(null);
+                showToast.success("Stage updated successfully!");
+                const currentLimit = isKanbanView ? 1000 : pageSize;
+                const currentStage = isKanbanView ? null : activeStageSlug;
+                fetchCandidates(
+                  jobId,
+                  currentStage,
+                  currentPage,
+                  searchQuery,
+                  currentLimit
+                );
+                fetchStages(jobId);
+                fetchArchivedCandidates(jobId);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Stage Confirmation Modal */}
+      {stageToDelete && (
+        <div className="fixed inset-0 bg-black/50 z-[1002] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+            <div className="px-6 py-5 border-b border-[#E5E7EB]">
+              <h3 className="text-lg font-semibold text-[#111827]">Delete Stage</h3>
+              <p className="text-sm text-[#6B7280] mt-2">
+                Are you sure you want to delete
+                <span className="font-medium text-[#111827]"> {stageToDelete.name}</span>?
+                This action cannot be undone.
+              </p>
+            </div>
+            <div className="px-6 py-4 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setStageToDelete(null)}
+                className="px-4 py-2 text-sm font-medium text-[#4B5563] border border-[#D1D5DB] rounded-lg hover:bg-[#F9FAFB]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteStage}
+                className="px-4 py-2 text-sm font-medium text-white bg-[#DC2626] rounded-lg hover:bg-[#B91C1C]"
+              >
+                Delete Stage
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Export Format Selection Modal */}
       {showExportDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1001]">
