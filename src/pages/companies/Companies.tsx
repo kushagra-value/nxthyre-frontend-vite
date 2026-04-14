@@ -200,7 +200,7 @@ export default function Companies() {
     const [jobPageSize] = useState(10);
     const [createdAfter, setCreatedAfter] = useState<string | undefined>(undefined);
     const [createdBefore, setCreatedBefore] = useState<string | undefined>(undefined);
-    const [jobDateFilterLabel, setJobDateFilterLabel] = useState("Today");
+    const [jobDateFilterLabel, setJobDateFilterLabel] = useState("Date Filter");
     const [jobsLoading, setJobsLoading] = useState(false);
 
     // Track pending rehydration IDs from sessionStorage
@@ -627,10 +627,17 @@ export default function Companies() {
                 jobCurrentPage={jobCurrentPage}
                 setJobCurrentPage={setJobCurrentPage}
                 jobDateFilterLabel={jobDateFilterLabel}
+                isJobDateFilterApplied={!!createdAfter || !!createdBefore}
                 onJobDateFilterApply={(payload) => {
                     setCreatedAfter(payload.createdAfter);
                     setCreatedBefore(payload.createdBefore);
                     setJobDateFilterLabel(payload.label);
+                    setJobCurrentPage(1);
+                }}
+                onClearJobDateFilter={() => {
+                    setCreatedAfter(undefined);
+                    setCreatedBefore(undefined);
+                    setJobDateFilterLabel("Date Filter");
                     setJobCurrentPage(1);
                 }}
                 activeJobFilter={activeJobFilter}

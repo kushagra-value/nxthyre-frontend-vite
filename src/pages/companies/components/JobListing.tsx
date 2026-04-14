@@ -49,11 +49,13 @@ interface JobListingProps {
     jobCurrentPage: number;
     setJobCurrentPage: (page: number) => void;
     jobDateFilterLabel: string;
+    isJobDateFilterApplied: boolean;
     onJobDateFilterApply: (payload: {
         label: string;
         createdAfter?: string;
         createdBefore?: string;
     }) => void;
+    onClearJobDateFilter: () => void;
     activeJobFilter: "All" | "Active" | "Paused" | "Inactive" | "Draft";
     setActiveJobFilter: (filter: "All" | "Active" | "Paused" | "Inactive" | "Draft") => void;
     jobSearchQuery: string;
@@ -90,7 +92,9 @@ const JobListing: React.FC<JobListingProps> = ({
     jobCurrentPage,
     setJobCurrentPage,
     jobDateFilterLabel,
+    isJobDateFilterApplied,
     onJobDateFilterApply,
+    onClearJobDateFilter,
     activeJobFilter,
     setActiveJobFilter,
     jobSearchQuery,
@@ -661,7 +665,9 @@ const JobListing: React.FC<JobListingProps> = ({
 
                         <JobDateRangeFilter
                             valueLabel={jobDateFilterLabel}
+                            isFilterApplied={isJobDateFilterApplied}
                             onApply={onJobDateFilterApply}
+                            onClear={onClearJobDateFilter}
                         />
                     </div>
                 </div>

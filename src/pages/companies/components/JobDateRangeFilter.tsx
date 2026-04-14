@@ -1,15 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 type Preset = "Today" | "Last Week" | "Last Month" | "Custom Date";
 
 interface JobDateRangeFilterProps {
   valueLabel: string;
+  isFilterApplied: boolean;
   onApply: (payload: {
     label: string;
     createdAfter?: string;
     createdBefore?: string;
   }) => void;
+  onClear: () => void;
 }
 
 const formatAsApiDate = (date: Date) => {
@@ -22,7 +24,12 @@ const formatAsApiDate = (date: Date) => {
 const formatAsLabelDate = (date: Date) =>
   date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
-const JobDateRangeFilter: React.FC<JobDateRangeFilterProps> = ({ valueLabel, onApply }) => {
+const JobDateRangeFilter: React.FC<JobDateRangeFilterProps> = ({
+  valueLabel,
+  isFilterApplied,
+  onApply,
+  onClear,
+}) => {
   const [open, setOpen] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<Preset>("Today");
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -125,6 +132,19 @@ const JobDateRangeFilter: React.FC<JobDateRangeFilterProps> = ({ valueLabel, onA
         <div
           className={`absolute right-0 top-full mt-2 bg-white rounded-[10px] shadow-[0_8px_40px_rgba(0,0,0,0.12)] overflow-hidden z-[10020] ${selectedPreset === "Custom Date" ? "w-[620px]" : "w-[220px]"}`}
         >
+          {isFilterApplied && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClear();
+                setOpen(false);
+              }}
+              className="absolute top-2 left-2 p-1 rounded-md hover:bg-[#F3F5F7] text-[#6B7280] z-10"
+              title="Clear date filter"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
           <div className="flex">
             <div className={`${selectedPreset === "Custom Date" ? "w-[190px] border-r border-[#D1D1D6]" : "w-full"} p-3`}>
               <div className="flex flex-col gap-1">
