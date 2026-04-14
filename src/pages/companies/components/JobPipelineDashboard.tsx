@@ -173,6 +173,12 @@ interface CandidateListItem {
   };
   time_added?: string;
   auto_pilot?: boolean;
+  latest_manual_call_status?: string | null;
+  latest_manual_call_at?: string | null;
+  next_follow_up?: {
+    scheduled_date: string;
+    scheduled_time: string;
+  } | null;
 }
 
 // ─── Props ─────────────────────────────────────────────────────
@@ -2361,32 +2367,23 @@ export default function JobPipelineDashboard({
                                   </div>
                                   <p className="text-[13px] text-[#8E8E93] line-clamp-1 mt-0.5">{headline}</p>
                                   <p className="text-[13px] font-medium text-[#4B5563] line-clamp-1">{companyName}</p>
-                                  {item.job_score?.call_attention && item.job_score.call_attention.length > 0 && (
-                                    <div className="mt-1">
-                                      {(() => {
-                                        const latest = item.job_score.call_attention[0];
-                                        const t = latest.toUpperCase();
-                                        let bgColor = "#EDE9FE";
-                                        let textColor = "#6366F1";
-                                        if (t.includes("RED FLAGS") || t.includes("NOT PICKED UP") || t.includes("WRONG NUMBER") || t.includes("BUSY")) {
-                                          bgColor = "#FEE9E7";
-                                          textColor = "#FF383C";
-                                        } else if (t.includes("PROBE")) {
-                                          bgColor = "#FFF7D6";
-                                          textColor = "#F59E0B";
-                                        }
-                                        return (
-                                          <span
-                                            className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full truncate max-w-full"
-                                            style={{ backgroundColor: bgColor, color: textColor }}
-                                            title={latest}
-                                          >
-                                            {latest}
-                                          </span>
-                                        );
-                                      })()}
-                                    </div>
-                                  )}
+                                  {(() => {
+                                    const pill = getAttentionPill(item, attentionTag);
+                                    if (!pill) return null;
+                                    const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
+                                    const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                                    return (
+                                      <div className="mt-1">
+                                        <span
+                                          className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full truncate max-w-full"
+                                          style={{ backgroundColor: bgColor, color: textColor }}
+                                          title={pill.text}
+                                        >
+                                          {pill.text}
+                                        </span>
+                                      </div>
+                                    );
+                                  })()}
                                 </div>
                               </div>
 
@@ -2927,34 +2924,21 @@ export default function JobPipelineDashboard({
                             </td>
                             <td className="px-4 py-5 whitespace-nowrap">
                                 <div className="whitespace-nowrap">
-                                  {callAttention && callAttention.length > 0 ? (
-                                    (() => {
-                                      const latest = callAttention[0];
-                                      const t = latest.toUpperCase();
-                                      let bgColor = "#EDE9FE"; // Default blue
-                                      let textColor = "#6366F1";
-                                      
-                                      if (t.includes("RED FLAGS") || t.includes("NOT PICKED UP") || t.includes("WRONG NUMBER") || t.includes("BUSY")) {
-                                        bgColor = "#FEE9E7";
-                                        textColor = "#FF383C";
-                                      } else if (t.includes("PROBE")) {
-                                        bgColor = "#FFF7D6";
-                                        textColor = "#F59E0B";
-                                      }
-
-                                      return (
-                                        <span
-                                          className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
-                                          style={{ backgroundColor: bgColor, color: textColor }}
-                                          title={latest}
-                                        >
-                                          {latest}
-                                        </span>
-                                      );
-                                    })()
-                                  ) : (
-                                    <span className="text-xs text-[#8E8E93]">--</span>
-                                  )}
+                                  {(() => {
+                                    const pill = getAttentionPill(item, attentionTag);
+                                    if (!pill) return <span className="text-xs text-[#8E8E93]">--</span>;
+                                    const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
+                                    const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                                    return (
+                                      <span
+                                        className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
+                                        style={{ backgroundColor: bgColor, color: textColor }}
+                                        title={pill.text}
+                                      >
+                                        {pill.text}
+                                      </span>
+                                    );
+                                  })()}
                                 </div>
                             </td>
                             <td
@@ -3227,32 +3211,21 @@ export default function JobPipelineDashboard({
                                 </td>
                                 <td className="px-4 py-5 whitespace-nowrap">
                                   <div className="whitespace-nowrap">
-                                    {item.job_score?.call_attention && item.job_score.call_attention.length > 0 ? (
-                                      (() => {
-                                        const latest = item.job_score.call_attention[0];
-                                        const t = latest.toUpperCase();
-                                        let bgColor = "#EDE9FE";
-                                        let textColor = "#6366F1";
-                                        if (t.includes("RED FLAGS") || t.includes("NOT PICKED UP") || t.includes("WRONG NUMBER") || t.includes("BUSY")) {
-                                          bgColor = "#FEE9E7";
-                                          textColor = "#FF383C";
-                                        } else if (t.includes("PROBE")) {
-                                          bgColor = "#FFF7D6";
-                                          textColor = "#F59E0B";
-                                        }
-                                        return (
-                                          <span
-                                            className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
-                                            style={{ backgroundColor: bgColor, color: textColor }}
-                                            title={latest}
-                                          >
-                                            {latest}
-                                          </span>
-                                        );
-                                      })()
-                                    ) : (
-                                      <span className="text-[10px] text-[#AEAEB2]">--</span>
-                                    )}
+                                    {(() => {
+                                      const pill = getAttentionPill(item, attentionTag);
+                                      if (!pill) return <span className="text-[10px] text-[#AEAEB2]">--</span>;
+                                      const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
+                                      const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                                      return (
+                                        <span
+                                          className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
+                                          style={{ backgroundColor: bgColor, color: textColor }}
+                                          title={pill.text}
+                                        >
+                                          {pill.text}
+                                        </span>
+                                      );
+                                    })()}
                                   </div>
                                 </td>
                                 <td className="sticky right-0 z-20 bg-[#F9FAFB] px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]">
