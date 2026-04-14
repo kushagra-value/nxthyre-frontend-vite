@@ -2766,7 +2766,7 @@ export default function JobPipelineDashboard({
                             {ctcText}
                             {cand.current_take_home && (
                               <span className="text-[#8E8E93] text-[10px] font-normal italic">
-                                (fixed: cand.current_take_home)
+                                (fixed: {cand.current_take_home})
                               </span>
                             )}
                           </span>
