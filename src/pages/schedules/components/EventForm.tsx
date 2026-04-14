@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X, ChevronDown, Search } from 'lucide-react';
 import apiClient from '../../../services/api';
 import { organizationService, MyWorkspace } from '../../../services/organizationService';
-import { jobPostService, Job } from '../../../services/jobPostService';
+import { jobPostService, AllRoleOption } from '../../../services/jobPostService';
 import { scheduleService } from '../../../services/scheduleService';
 import { candidateService, PipelineStage } from '../../../services/candidateService';
 
@@ -144,7 +144,7 @@ export const EventForm = ({
   // ── Company & Job state ──
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
   const [workspacesLoading, setWorkspacesLoading] = useState(false);
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [allJobs, setAllJobs] = useState<AllRoleOption[]>([]);
   const [jobsLoading, setJobsLoading] = useState(false);
 
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
@@ -229,7 +229,7 @@ export const EventForm = ({
     const fetchCategories = async () => {
       setJobsLoading(true);
       try {
-        const jobs = await jobPostService.getJobs();
+        const jobs = await jobPostService.getAllRoles();
         setAllJobs(jobs);
       } catch (error) {
         console.error('Failed to fetch jobs', error);
@@ -242,7 +242,7 @@ export const EventForm = ({
 
   // ── Filtered jobs based on selected company ──
   const filteredJobs = selectedCompanyId
-    ? allJobs.filter((j) => j.workspace_details?.id === Number(selectedCompanyId))
+    ? allJobs.filter((j) => j.workspace_id === Number(selectedCompanyId))
     : allJobs;
 
   // Reset job selection when company changes (but not on initial mount with initialCompanyId)

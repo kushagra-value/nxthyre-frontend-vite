@@ -6,7 +6,7 @@ import {
     CompanyResearchData,
     WorkspaceStatsCount
 } from "../../services/organizationService";
-import { jobPostService, Job } from "../../services/jobPostService";
+import { jobPostService, Job, JobsApiResponse } from "../../services/jobPostService";
 import dashboardService, {
     SidebarData,
     SidebarImmediateAction,
@@ -193,6 +193,13 @@ export default function Companies() {
     const [selectedWorkspace, setSelectedWorkspace] = useState<MyWorkspace | null>(null);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [allJobs, setAllJobs] = useState<Job[]>([]);
+    const [jobsStatsCount, setJobsStatsCount] = useState<JobsApiResponse["stats_count"] | null>(null);
+    const [jobStatusCounts, setJobStatusCounts] = useState<JobsApiResponse["status_counts"] | null>(null);
+    const [jobPagination, setJobPagination] = useState<JobsApiResponse["pagination"] | null>(null);
+    const [jobCurrentPage, setJobCurrentPage] = useState(1);
+    const [jobPageSize] = useState(10);
+    const [createdAfter] = useState<string | undefined>(undefined);
+    const [createdBefore] = useState<string | undefined>(undefined);
     const [jobsLoading, setJobsLoading] = useState(false);
 
     // Track pending rehydration IDs from sessionStorage
@@ -302,8 +309,19 @@ export default function Companies() {
     const fetchJobs = async () => {
         setJobsLoading(true);
         try {
-            const data = await jobPostService.getJobs();
-            if (isMounted.current) setAllJobs(data);
+            const response = await jobPostService.getPaginatedRoles({
+                page: jobCurrentPage,
+                page_size: jobPageSize,
+                workspace_id: selectedWorkspace?.id,
+                created_after: createdAfter,
+                created_before: createdBefore,
+            });
+            if (isMounted.current) {
+                setAllJobs(response.jobs || []);
+                setJobsStatsCount(response.stats_count || null);
+                setJobStatusCounts(response.status_counts || null);
+                setJobPagination(response.pagination || null);
+            }
         } catch (error) {
             console.error("Failed to fetch jobs", error);
         } finally {
@@ -314,10 +332,15 @@ export default function Companies() {
     useEffect(() => {
         if (isAuthenticated) {
             fetchWorkspaces();
-            fetchJobs();
             fetchSidebar();
         }
     }, [isAuthenticated]);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchJobs();
+        }
+    }, [isAuthenticated, selectedWorkspace?.id, jobCurrentPage, jobPageSize, createdAfter, createdBefore]);
 
     const fetchSidebar = async () => {
         setSidebarLoading(true);
@@ -343,14 +366,24 @@ export default function Companies() {
     }, [workspaces, pendingWsId]);
 
     useEffect(() => {
-        if (allJobs.length > 0 && pendingJobId && selectedWorkspace && !selectedJob) {
-            const job = allJobs.find(j => j.id === pendingJobId);
-            if (job) {
-                setSelectedJob(job);
-            }
+        if (!pendingJobId || !selectedWorkspace || selectedJob) return;
+        const job = allJobs.find(j => j.id === pendingJobId);
+        if (job) {
+            setSelectedJob(job);
             setPendingJobId(null);
+            return;
         }
-    }, [allJobs, pendingJobId, selectedWorkspace]);
+        jobPostService.getJob(pendingJobId)
+            .then((fetchedJob) => {
+                if (fetchedJob.workspace_details?.id === selectedWorkspace.id && isMounted.current) {
+                    setSelectedJob(fetchedJob);
+                }
+            })
+            .catch(() => { })
+            .finally(() => {
+                if (isMounted.current) setPendingJobId(null);
+            });
+    }, [allJobs, pendingJobId, selectedWorkspace, selectedJob]);
 
     const allRows = useMemo((): CompanyTableRow[] => {
         if (workspaces.length === 0) return companyTableRows;
@@ -532,13 +565,11 @@ export default function Companies() {
             setSelectedJob(null);
             setActiveJobFilter("All");
             setJobSearchQuery("");
+            setJobCurrentPage(1);
         }
     };
 
-    const workspaceJobs = useMemo(() =>
-        allJobs.filter(j => j.workspace_details?.id === selectedWorkspace?.id),
-        [allJobs, selectedWorkspace?.id]
-    );
+    const workspaceJobs = useMemo(() => allJobs, [allJobs]);
 
     const filteredWorkspaceJobs = useMemo(() => workspaceJobs.filter(j => {
         const matchesSearch = j.title.toLowerCase().includes(jobSearchQuery.toLowerCase());
@@ -580,6 +611,11 @@ export default function Companies() {
                 }}
                 logos={logos}
                 workspaceJobs={workspaceJobs}
+                jobsStatsCount={jobsStatsCount}
+                jobStatusCounts={jobStatusCounts}
+                jobPagination={jobPagination}
+                jobCurrentPage={jobCurrentPage}
+                setJobCurrentPage={setJobCurrentPage}
                 activeJobFilter={activeJobFilter}
                 setActiveJobFilter={setActiveJobFilter}
                 jobSearchQuery={jobSearchQuery}

@@ -380,7 +380,7 @@ export default function CandidatesPool({ initialJobId }: CandidatesPoolProps) {
     };
     const handleEditJobRole = async (jobId: number) => {
         try {
-            const jobs = await jobPostService.getJobs(); const j = jobs.find((x: any) => x.id === jobId);
+            const jobs = await jobPostService.getAllRoles(); const j = jobs.find((x: any) => x.id === jobId);
             if (j) { setEditingJobId(j.id); setShowEditJobRole(true); } else showToast.error("Job not found");
         } catch { showToast.error("Failed to fetch job details"); }
     };

@@ -8,7 +8,7 @@ import TodaysSidebar from './components/TodaysSidebar';
 import { EventForm } from './components/EventForm';
 import ScheduleEventModal from '../dashboard/components/ScheduleEventModal';
 import { organizationService, MyWorkspace } from '../../services/organizationService';
-import { jobPostService, Job } from '../../services/jobPostService';
+import { jobPostService, AllRoleOption } from '../../services/jobPostService';
 import type { ScheduleEventAPI } from '../../services/dashboardService';
 import type { ScheduleEvent } from './components/ScheduleWeekGrid';
 import type { CalendarDayActivity } from './components/ScheduleCalendarWidget';
@@ -79,17 +79,17 @@ export default function SchedulePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [allJobs, setAllJobs] = useState<AllRoleOption[]>([]);
 
   // ── 1. Fetch workspaces and jobs ──
   useEffect(() => {
     organizationService.getMyWorkspacesData().then(data => setWorkspaces(data.workspaces || [])).catch(console.error);
-    jobPostService.getJobs().then(jobs => setAllJobs(jobs)).catch(console.error);
+    jobPostService.getAllRoles().then(jobs => setAllJobs(jobs)).catch(console.error);
   }, []);
 
   const companyOptions = useMemo(() => workspaces.map(ws => ({ id: String(ws.id), name: ws.name })), [workspaces]);
   const jobOptions = useMemo(() => {
-    const filtered = selectedCompany !== 'all' ? allJobs.filter(j => j.workspace_details?.id === Number(selectedCompany)) : allJobs;
+    const filtered = selectedCompany !== 'all' ? allJobs.filter(j => j.workspace_id === Number(selectedCompany)) : allJobs;
     return filtered.map(job => ({ id: String(job.id), name: job.title }));
   }, [allJobs, selectedCompany]);
 

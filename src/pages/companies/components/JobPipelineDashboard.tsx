@@ -3295,7 +3295,7 @@ export default function JobPipelineDashboard({
                                 <td className="px-4 py-5 whitespace-nowrap">
                                   <div className="whitespace-nowrap">
                                     {(() => {
-                                      const attentionTag = item.status_tags?.find((t) => t.text);
+                                      const attentionTag = item.status_tags?.find((t: { text: any; }) => t.text);
                                       const pill = getAttentionPill(item, attentionTag);
                                       if (!pill) return <span className="text-[10px] text-[#AEAEB2]">--</span>;
                                       const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";

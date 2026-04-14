@@ -76,16 +76,16 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const jobs = await jobPostService.getJobs();
+        const jobs = await jobPostService.getAllRoles();
         const mappedCategories: CategoryItem[] = jobs.map((job) => ({
           id: job.id,
           name: job.title,
-          count: job.inbound_count || 0,
-          status: job.status,
-          visibility: job.visibility,
-          invitesSent: job.invites_sent || 0,
-          totalReplied: job.total_replied || 0,
-          totalApplied: job.total_applied || 0,
+          count: 0,
+          status: "ACTIVE",
+          visibility: "PRIVATE",
+          invitesSent: 0,
+          totalReplied: 0,
+          totalApplied: 0,
         }));
         setCategories(mappedCategories);
       } catch (error) {

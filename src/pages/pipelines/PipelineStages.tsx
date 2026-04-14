@@ -734,12 +734,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
     const fetchCategories = async () => {
       setLoadingCategories(true);
       try {
-        const jobs = await jobPostService.getJobs();
+        const jobs = await jobPostService.getAllRoles();
         const mappedCategories: Category[] = jobs.map((job) => ({
           id: job.id,
           name: job.title,
-          count: job.pipeline_candidate_count || 0,
-          jobrole_company: job.jobrole_company,
+          count: 0,
+          jobrole_company: "--",
         }));
         setCategories(mappedCategories);
         if (mappedCategories.length > 0) {

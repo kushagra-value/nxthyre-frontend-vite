@@ -97,6 +97,24 @@ export interface JobsApiResponse {
   stats_count: JobsStatsCount;
   status_counts: JobsStatusCounts;
   jobs: Job[];
+  pagination: {
+    showing: string;
+    total_jobs_count_in_workspace: number;
+  };
+}
+
+export interface JobsRolesQueryParams {
+  page?: number;
+  page_size?: number;
+  workspace_id?: number;
+  created_after?: string;
+  created_before?: string;
+}
+
+export interface AllRoleOption {
+  id: number;
+  title: string;
+  workspace_id?: number;
 }
 
 export interface SearchedCandidateItem {
@@ -187,35 +205,81 @@ export interface JobNote {
 }
 
 class JobPostService {
-  async getJobs(): Promise<Job[]> {
+  private getDefaultStatsCount(): JobsStatsCount {
+    return {
+      total_jobs: 0,
+      total_candidates: 0,
+      in_pipeline: 0,
+      shortlisted: 0,
+      interview_this_week: 0,
+      hired: 0,
+      need_action: 0,
+      shortlisted_across_jobs: 0,
+    };
+  }
+
+  private getDefaultStatusCounts(totalJobs = 0): JobsStatusCounts {
+    return {
+      all: totalJobs,
+      active: 0,
+      paused: 0,
+      inactive: 0,
+    };
+  }
+
+  private getDefaultPagination(totalJobs = 0): JobsApiResponse["pagination"] {
+    return {
+      showing: totalJobs > 0 ? `1-${totalJobs} of ${totalJobs} jobs` : "0-0 of 0 jobs",
+      total_jobs_count_in_workspace: totalJobs,
+    };
+  }
+
+  private normalizeJobsApiResponse(data: any): JobsApiResponse {
+    if (Array.isArray(data)) {
+      return {
+        stats_count: this.getDefaultStatsCount(),
+        status_counts: this.getDefaultStatusCounts(data.length),
+        jobs: data,
+        pagination: this.getDefaultPagination(data.length),
+      };
+    }
+
+    const jobs = data.jobs || data.roles || data.results || data.data || [];
+    return {
+      stats_count: data.stats_count || this.getDefaultStatsCount(),
+      status_counts: data.status_counts || this.getDefaultStatusCounts(Array.isArray(jobs) ? jobs.length : 0),
+      jobs,
+      pagination: data.pagination || this.getDefaultPagination(Array.isArray(jobs) ? jobs.length : 0),
+    };
+  }
+
+  async getPaginatedRoles(params: JobsRolesQueryParams = {}): Promise<JobsApiResponse> {
     try {
-      const response = await apiClient.get("/jobs/roles/");
-      if (Array.isArray(response.data)) {
-        return response.data;
-      }
-      return response.data.jobs || response.data.roles || response.data.results || response.data.data || [];
+      const response = await apiClient.get("/jobs/roles/", { params });
+      return this.normalizeJobsApiResponse(response.data);
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch jobs");
     }
   }
 
+  async getJobs(): Promise<Job[]> {
+    const response = await this.getPaginatedRoles();
+    return response.jobs;
+  }
+
   async getJobsWithStats(): Promise<JobsApiResponse> {
+    return this.getPaginatedRoles();
+  }
+
+  async getAllRoles(): Promise<AllRoleOption[]> {
     try {
-      const response = await apiClient.get("/jobs/roles/");
+      const response = await apiClient.get("/jobs/all-roles/");
       if (Array.isArray(response.data)) {
-        return {
-          stats_count: { total_jobs: 0, total_candidates: 0, in_pipeline: 0, shortlisted: 0, interview_this_week: 0, hired: 0, need_action: 0, shortlisted_across_jobs: 0 },
-          status_counts: { all: response.data.length, active: 0, paused: 0, inactive: 0 },
-          jobs: response.data,
-        };
+        return response.data;
       }
-      return {
-        stats_count: response.data.stats_count || { total_jobs: 0, total_candidates: 0, in_pipeline: 0, shortlisted: 0, interview_this_week: 0, hired: 0, need_action: 0, shortlisted_across_jobs: 0 },
-        status_counts: response.data.status_counts || { all: 0, active: 0, paused: 0, inactive: 0 },
-        jobs: response.data.jobs || response.data.roles || response.data.results || response.data.data || [],
-      };
+      return response.data?.results || response.data?.data || [];
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch jobs");
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch all roles");
     }
   }
 

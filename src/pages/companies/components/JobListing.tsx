@@ -31,7 +31,7 @@ import {
     MessageSquare,
 } from "lucide-react";
 import { MyWorkspace } from "../../../services/organizationService";
-import { Job, jobPostService } from "../../../services/jobPostService";
+import { Job, JobsApiResponse, jobPostService } from "../../../services/jobPostService";
 import { showToast as toastUtil } from "../../../utils/toast";
 import CreateJobRoleModal from "../../candidates/components/CreateJobRoleModal";
 import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
@@ -42,6 +42,11 @@ interface JobListingProps {
     setSelectedWorkspace: (ws: MyWorkspace | null) => void;
     logos: Record<string, string | null>;
     workspaceJobs: Job[];
+    jobsStatsCount: JobsApiResponse["stats_count"] | null;
+    jobStatusCounts: JobsApiResponse["status_counts"] | null;
+    jobPagination: JobsApiResponse["pagination"] | null;
+    jobCurrentPage: number;
+    setJobCurrentPage: (page: number) => void;
     activeJobFilter: "All" | "Active" | "Paused" | "Inactive" | "Draft";
     setActiveJobFilter: (filter: "All" | "Active" | "Paused" | "Inactive" | "Draft") => void;
     jobSearchQuery: string;
@@ -72,6 +77,11 @@ const JobListing: React.FC<JobListingProps> = ({
     setSelectedWorkspace,
     logos,
     workspaceJobs,
+    jobsStatsCount,
+    jobStatusCounts,
+    jobPagination,
+    jobCurrentPage,
+    setJobCurrentPage,
     activeJobFilter,
     setActiveJobFilter,
     jobSearchQuery,
@@ -94,14 +104,12 @@ const JobListing: React.FC<JobListingProps> = ({
     setInfoWorkspaceNull,
     onJobSelect,
 }) => {
-    // ── Pagination state ──
     const ITEMS_PER_PAGE = 10;
-    const [currentPage, setCurrentPage] = useState(1);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
-    // Reset pagination when filter or search changes
+    // Reset to first server page when local filters change.
     useEffect(() => {
-        setCurrentPage(1);
+        setJobCurrentPage(1);
     }, [activeJobFilter, jobSearchQuery]);
 
     const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
@@ -238,12 +246,12 @@ const JobListing: React.FC<JobListingProps> = ({
                 direction = direction === 'asc' ? 'desc' : 'asc';
             } else {
                 setSortConfig(null);
-                setCurrentPage(1);
+                setJobCurrentPage(1);
                 return;
             }
         }
         setSortConfig({ key, direction });
-        setCurrentPage(1);
+        setJobCurrentPage(1);
     };
 
     const SortIcon = ({ columnKey }: { columnKey: string }) => {
@@ -253,13 +261,11 @@ const JobListing: React.FC<JobListingProps> = ({
             : <ArrowDown className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />;
     };
 
-    const totalPages = Math.max(1, Math.ceil(sortedJobs.length / ITEMS_PER_PAGE));
-    const paginatedJobs = sortedJobs.slice(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
-    );
-    const startIdx = (currentPage - 1) * ITEMS_PER_PAGE + 1;
-    const endIdx = Math.min(currentPage * ITEMS_PER_PAGE, sortedJobs.length);
+    const totalJobsForPagination = jobPagination?.total_jobs_count_in_workspace ?? sortedJobs.length;
+    const totalPages = Math.max(1, Math.ceil(totalJobsForPagination / ITEMS_PER_PAGE));
+    const paginatedJobs = sortedJobs;
+    const startIdx = sortedJobs.length > 0 ? (jobCurrentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+    const endIdx = Math.min((jobCurrentPage - 1) * ITEMS_PER_PAGE + sortedJobs.length, totalJobsForPagination);
 
     // ── Share pipeline handler ──
     const handleSharePipeline = () => {
@@ -275,11 +281,11 @@ const JobListing: React.FC<JobListingProps> = ({
             for (let i = 1; i <= totalPages; i++) pages.push(i);
         } else {
             pages.push(1);
-            if (currentPage > 3) pages.push('...');
-            const start = Math.max(2, currentPage - 1);
-            const end = Math.min(totalPages - 1, currentPage + 1);
+            if (jobCurrentPage > 3) pages.push('...');
+            const start = Math.max(2, jobCurrentPage - 1);
+            const end = Math.min(totalPages - 1, jobCurrentPage + 1);
             for (let i = start; i <= end; i++) pages.push(i);
-            if (currentPage < totalPages - 2) pages.push('...');
+            if (jobCurrentPage < totalPages - 2) pages.push('...');
             pages.push(totalPages);
         }
         return pages;
@@ -479,7 +485,7 @@ const JobListing: React.FC<JobListingProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
                 {[
                     {
-                        label: "Total Jobs", value: selectedWorkspace.jobs_count ?? workspaceJobs.length, trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        label: "Total Jobs", value: jobsStatsCount?.total_jobs ?? selectedWorkspace.jobs_count ?? workspaceJobs.length, trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
                             <path d="M20 22.5L20 23.75" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
                             <path d="M12.5 19.1665L12.6274 21.5526C12.7643 24.564 12.8327 26.0697 13.799 26.9931C14.7654 27.9165 16.2726 27.9165 19.2872 27.9165H20.7128C23.7274 27.9165 25.2346 27.9165 26.201 26.9931C27.1673 26.0697 27.2357 24.564 27.3726 21.5526L27.5 19.1665" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
@@ -488,7 +494,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         </svg>
                     },
                     {
-                        label: "Total Candidates", value: selectedWorkspace.candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        label: "Total Candidates", value: jobsStatsCount?.total_candidates ?? selectedWorkspace.candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
                             <path d="M17.8333 18.6667C19.6743 18.6667 21.1667 17.1743 21.1667 15.3333C21.1667 13.4924 19.6743 12 17.8333 12C15.9924 12 14.5 13.4924 14.5 15.3333C14.5 17.1743 15.9924 18.6667 17.8333 18.6667Z" stroke="#0F47F2" />
                             <path d="M22.833 17.8335C24.2138 17.8335 25.333 16.7142 25.333 15.3335C25.333 13.9528 24.2138 12.8335 22.833 12.8335" stroke="#0F47F2" stroke-linecap="round" />
@@ -497,7 +503,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         </svg>
                     },
                     {
-                        label: "In Pipeline", value: workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        label: "In Pipeline", value: jobsStatsCount?.in_pipeline ?? workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
                             <path d="M14.167 16.6665C15.5477 16.6665 16.667 15.5472 16.667 14.1665C16.667 12.7858 15.5477 11.6665 14.167 11.6665C12.7863 11.6665 11.667 12.7858 11.667 14.1665C11.667 15.5472 12.7863 16.6665 14.167 16.6665Z" stroke="#0F47F2" />
                             <path d="M25.833 28.3335C27.2137 28.3335 28.333 27.2142 28.333 25.8335C28.333 24.4528 27.2137 23.3335 25.833 23.3335C24.4523 23.3335 23.333 24.4528 23.333 25.8335C23.333 27.2142 24.4523 28.3335 25.833 28.3335Z" stroke="#0F47F2" />
@@ -505,7 +511,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         </svg>
                     },
                     {
-                        label: "Shortlisted", value: selectedWorkspace.shortlisted_candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: shortlistedTrend, trendColor: shortlistedColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        label: "Shortlisted", value: jobsStatsCount?.shortlisted ?? selectedWorkspace.shortlisted_candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: shortlistedTrend, trendColor: shortlistedColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
                             <path d="M20.0003 18.3332C21.8413 18.3332 23.3337 16.8408 23.3337 14.9998C23.3337 13.1589 21.8413 11.6665 20.0003 11.6665C18.1594 11.6665 16.667 13.1589 16.667 14.9998C16.667 16.8408 18.1594 18.3332 20.0003 18.3332Z" stroke="#0F47F2" />
                             <path d="M24.1663 28.3332C26.0073 28.3332 27.4997 26.8408 27.4997 24.9998C27.4997 23.1589 26.0073 21.6665 24.1663 21.6665C22.3254 21.6665 20.833 23.1589 20.833 24.9998C20.833 26.8408 22.3254 28.3332 24.1663 28.3332Z" stroke="#0F47F2" />
@@ -514,7 +520,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         </svg>
                     },
                     {
-                        label: "Interview this week", value: workspaceJobs.reduce((acc, j) => acc + (j.interview_this_week || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        label: "Interview this week", value: jobsStatsCount?.interview_this_week ?? workspaceJobs.reduce((acc, j) => acc + (j.interview_this_week || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
                             <path d="M11.667 20.0002C11.667 16.8575 11.667 15.2861 12.6433 14.3098C13.6196 13.3335 15.191 13.3335 18.3337 13.3335H21.667C24.8097 13.3335 26.3811 13.3335 27.3573 14.3098C28.3337 15.2861 28.3337 16.8575 28.3337 20.0002V21.6668C28.3337 24.8095 28.3337 26.3809 27.3573 27.3572C26.3811 28.3335 24.8097 28.3335 21.667 28.3335H18.3337C15.191 28.3335 13.6196 28.3335 12.6433 27.3572C11.667 26.3809 11.667 24.8095 11.667 21.6668V20.0002Z" stroke="#0F47F2" />
                             <path d="M15.833 13.3335V12.0835" stroke="#0F47F2" stroke-linecap="round" />
@@ -529,7 +535,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         </svg>
                     },
                     {
-                        label: "Hired", value: selectedWorkspace.hired_candidates_in_workspace_count ?? 0, trend: hiredTrend, trendColor: hiredColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        label: "Hired", value: jobsStatsCount?.hired ?? selectedWorkspace.hired_candidates_in_workspace_count ?? 0, trend: hiredTrend, trendColor: hiredColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
                             <path d="M20 20C21.3807 20 22.5 18.8807 22.5 17.5C22.5 16.1193 21.3807 15 20 15C18.6193 15 17.5 16.1193 17.5 17.5C17.5 18.8807 18.6193 20 20 20Z" stroke="#0F47F2" />
                             <path d="M20.0003 28.3332C24.6027 28.3332 28.3337 24.6022 28.3337 19.9998C28.3337 15.3975 24.6027 11.6665 20.0003 11.6665C15.398 11.6665 11.667 15.3975 11.667 19.9998C11.667 24.6022 15.398 28.3332 20.0003 28.3332Z" stroke="#0F47F2" />
@@ -557,10 +563,10 @@ const JobListing: React.FC<JobListingProps> = ({
                     <div className="flex items-center gap-2">
                         {(["All", "Active", "Paused", "Inactive", "Draft"] as const).map((filter) => {
                             let count = 0;
-                            if (filter === "All") count = workspaceJobs.length;
-                            else if (filter === "Active") count = workspaceJobs.filter(j => j.status === "ACTIVE").length;
-                            else if (filter === "Paused") count = workspaceJobs.filter(j => j.status === "PAUSED").length;
-                            else if (filter === "Inactive") count = workspaceJobs.filter(j => j.status === "INACTIVE").length;
+                            if (filter === "All") count = jobStatusCounts?.all ?? workspaceJobs.length;
+                            else if (filter === "Active") count = jobStatusCounts?.active ?? workspaceJobs.filter(j => j.status === "ACTIVE").length;
+                            else if (filter === "Paused") count = jobStatusCounts?.paused ?? workspaceJobs.filter(j => j.status === "PAUSED").length;
+                            else if (filter === "Inactive") count = jobStatusCounts?.inactive ?? workspaceJobs.filter(j => j.status === "INACTIVE").length;
                             else if (filter === "Draft") count = workspaceJobs.filter(j => j.pyjamahr_status === "DRAFT").length;
 
                             return (
@@ -995,15 +1001,15 @@ const JobListing: React.FC<JobListingProps> = ({
                 <div className="px-5 py-4 flex items-center justify-between border-t border-[#D1D1D6]">
                     <div className="text-[13px] text-[#8E8E93]">
                         {filteredWorkspaceJobs.length > 0
-                            ? `Showing ${startIdx}-${endIdx} of ${sortedJobs.length} companies`
+                            ? (jobPagination?.showing || `Showing ${startIdx}-${endIdx} of ${totalJobsForPagination} jobs`)
                             : 'No jobs to display'}
                     </div>
                     {totalPages > 1 && (
                         <div className="flex items-center gap-1.5">
                             <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                                className={`w-[32px] h-[32px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${currentPage === 1 ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'}`}
+                                onClick={() => setJobCurrentPage(Math.max(1, jobCurrentPage - 1))}
+                                disabled={jobCurrentPage === 1}
+                                className={`w-[32px] h-[32px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${jobCurrentPage === 1 ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'}`}
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
@@ -1013,8 +1019,8 @@ const JobListing: React.FC<JobListingProps> = ({
                                 ) : (
                                     <button
                                         key={page}
-                                        onClick={() => setCurrentPage(page as number)}
-                                        className={`w-[32px] h-[32px] text-sm font-medium rounded-[8px] transition-colors ${currentPage === page
+                                        onClick={() => setJobCurrentPage(page as number)}
+                                        className={`w-[32px] h-[32px] text-sm font-medium rounded-[8px] transition-colors ${jobCurrentPage === page
                                             ? 'bg-[#0F47F2] text-white'
                                             : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-gray-50'}`}
                                     >
@@ -1023,9 +1029,9 @@ const JobListing: React.FC<JobListingProps> = ({
                                 )
                             ))}
                             <button
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={currentPage === totalPages}
-                                className={`w-[32px] h-[32px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${currentPage === totalPages ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'}`}
+                                onClick={() => setJobCurrentPage(Math.min(totalPages, jobCurrentPage + 1))}
+                                disabled={jobCurrentPage === totalPages}
+                                className={`w-[32px] h-[32px] border border-[#E5E7EB] rounded-[8px] text-sm flex items-center justify-center transition-colors ${jobCurrentPage === totalPages ? 'text-[#D1D1D6] cursor-not-allowed' : 'text-[#6B7280] hover:bg-gray-50'}`}
                             >
                                 <ChevronRight className="w-4 h-4" />
                             </button>

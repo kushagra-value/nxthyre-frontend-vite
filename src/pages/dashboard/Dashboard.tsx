@@ -25,7 +25,7 @@ import dashboardService, {
   AgendaResponse,
   DailyActivitiesResponse,
 } from '../../services/dashboardService';
-import { jobPostService, Job } from '../../services/jobPostService';
+import { jobPostService, AllRoleOption } from '../../services/jobPostService';
 import organizationService from '../../services/organizationService';
 import type { DiscoverWorkspace } from '../../services/organizationService';
 import {
@@ -206,7 +206,7 @@ export default function Dashboard() {
   const [showTalentMatchDateDropdown, setShowTalentMatchDateDropdown] = useState(false);
 
   // Talent Matches Job Filter
-  const [talentMatchJobs, setTalentMatchJobs] = useState<Job[]>([]);
+  const [talentMatchJobs, setTalentMatchJobs] = useState<AllRoleOption[]>([]);
   const [talentMatchSelectedJob, setTalentMatchSelectedJob] = useState<{ id: number | null, title: string }>({ id: null, title: 'All Jobs' });
   const [showTalentMatchJobDropdown, setShowTalentMatchJobDropdown] = useState(false);
   const talentMatchJobDropdownRef = useRef<HTMLDivElement>(null);
@@ -338,7 +338,7 @@ export default function Dashboard() {
     if (!isAuthenticated) return;
     const loadJobs = async () => {
       try {
-        const jobs = await jobPostService.getJobs();
+        const jobs = await jobPostService.getAllRoles();
         setTalentMatchJobs(jobs);
       } catch (err) {
         console.error('Failed to fetch jobs for filter:', err);

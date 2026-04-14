@@ -282,7 +282,7 @@ export default function CandidateSearch() {
       try {
         const [wsData, jobsData] = await Promise.all([
           organizationService.getMyWorkspacesData().catch(() => ({ workspaces: [] })),
-          jobPostService.getJobs().catch(() => [])
+          jobPostService.getAllRoles().catch(() => [])
         ]);
 
         if (cancelled) return;
