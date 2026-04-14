@@ -30,15 +30,16 @@ interface CallCandidateModalProps {
   initialStep?: ModalStep;
   initialReason?: string;
   callMode?: "platform" | "manual";
+  initialNote?: string;
+  initialTags?: string[];
 }
 
 const REASONS = [
-  "Didn't pick up",
-  "Call Later",
+  "Not Picked up",
   "Number Busy",
   "Wrong Number",
-  "Messaged instead",
-  "Not Interested",
+  "Completed",
+  "Failed",
 ];
 
 const QUICK_SLOTS = [
@@ -59,13 +60,16 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   initialStep = "select",
   initialReason = null,
   callMode = "platform",
+  initialNote = "",
+  initialTags = [],
 }) => {
   const [step, setStep] = useState<ModalStep>(initialStep);
   const navigate = useNavigate();
   const [selectedReason, setSelectedReason] = useState<string | null>(initialReason);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
-  const [note, setNote] = useState<string>("");
+  const [note, setNote] = useState<string>(initialNote);
+  const [quickNotes, setQuickNotes] = useState<string[]>(initialTags);
   const [isSaving, setIsSaving] = useState(false);
   const [connectingDots, setConnectingDots] = useState(0);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -80,6 +84,7 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
       setSelectedDate("");
       setSelectedTime("");
       setNote("");
+      setQuickNotes([]);
       setIsSaving(false);
       callInitiatedRef.current = false;
       if (pollingRef.current) clearInterval(pollingRef.current);
@@ -87,8 +92,10 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
     } else {
       setStep(initialStep);
       setSelectedReason(initialReason);
+      setNote(initialNote);
+      setQuickNotes(initialTags);
     }
-  }, [isOpen, initialStep, initialReason]);
+  }, [isOpen, initialStep, initialReason, initialNote, initialTags]);
 
   // Connecting dots animation
   useEffect(() => {
@@ -166,15 +173,29 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
       });
   };
 
+  const getMappedStatus = (reason: string | null) => {
+    switch (reason) {
+      case "Not Picked up": return "not_picked_up";
+      case "Wrong Number": return "wrong_number";
+      case "Number Busy": return "busy";
+      case "Completed": return "completed";
+      case "Failed": return "failed";
+      default: return undefined;
+    }
+  };
+
   const handleLogOnly = async () => {
     if (!candidate) return;
     setIsSaving(true);
     try {
       await saveCallLog({
         candidate_id: candidate.id,
+        phone_number: candidate.phone,
+        call_mode: callMode,
+        call_status: getMappedStatus(selectedReason) || "completed",
         reason: selectedReason || undefined,
         note: note || undefined,
-        call_mode: callMode,
+        checklist_data: { quick_notes_selected: quickNotes }
       });
     } catch (err) {
       console.error("Failed to save call log:", err);
@@ -204,12 +225,14 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
 
       await scheduleFollowUp({
         candidate_id: candidate.id,
+        phone_number: candidate.phone,
+        call_mode: callMode,
+        call_status: getMappedStatus(selectedReason) || "completed",
         reason: selectedReason || undefined,
         note: note || undefined,
         scheduled_date: selectedDate,
         scheduled_time: timeForApi,
-        // Assuming backend takes call_mode here too or it doesn't matter
-        // call_mode: callMode, 
+        checklist_data: { quick_notes_selected: quickNotes }
       });
     } catch (err) {
       console.error("Failed to schedule follow-up:", err);
@@ -314,6 +337,32 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
                   </span>
                 </button>
               </div>
+
+              {candidate.callAttention && candidate.callAttention.length > 0 && (
+                <div className="w-full mb-6 flex flex-col gap-2">
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Recruiter Insights</p>
+                  <div className="flex flex-col gap-1.5">
+                    {candidate.callAttention.map((item, idx) => {
+                      const t = item.toUpperCase();
+                      let icon = "💡";
+                      let style = "bg-blue-50 text-blue-700 border-blue-100";
+                      if (t.includes("RED FLAGS") || t.includes("NOT PICKED UP") || t.includes("WRONG NUMBER") || t.includes("BUSY")) {
+                        icon = "⚠️";
+                        style = "bg-red-50 text-red-700 border-red-100";
+                      } else if (t.includes("PROBE")) {
+                        icon = "🔍";
+                        style = "bg-amber-50 text-amber-700 border-amber-100";
+                      }
+                      return (
+                        <div key={idx} className={`flex items-start gap-2 p-2 rounded-lg border text-xs ${style}`}>
+                          <span className="shrink-0">{icon}</span>
+                          <span>{item}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="bg-slate-50 rounded-xl p-6 w-full grid grid-cols-2 gap-y-6 gap-x-4 border border-slate-100">
                 <div>

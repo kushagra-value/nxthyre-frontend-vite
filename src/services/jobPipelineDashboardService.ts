@@ -89,12 +89,16 @@ export interface CallHistoryEntry {
 
 export interface ScheduleFollowUpPayload {
   candidate_id: string;
+  phone_number?: string;
+  call_mode?: "platform" | "manual";
+  call_status?: string;
   reason?: string;
   note?: string;
   scheduled_date: string; // "YYYY-MM-DD"
   scheduled_time: string; // "HH:MM:SS" or "HH:MM"
   duration_seconds?: number;
   tags?: string[];
+  checklist_data?: Record<string, any>;
   call_log_id?: number;
 }
 
@@ -112,11 +116,13 @@ export interface ScheduleFollowUpResponse {
 export interface CallLogPayload {
   call_uuid?: string;
   candidate_id: string;
+  phone_number?: string;
   reason?: string;
+  call_status?: string;
   note?: string;
   duration_seconds?: number;
   tags?: string[];
-  checklist_data?: Record<string, boolean>;
+  checklist_data?: Record<string, any>;
   skills_data?: Record<string, boolean>;
   call_mode?: "platform" | "manual";
 }

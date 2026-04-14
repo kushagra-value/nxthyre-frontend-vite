@@ -7,6 +7,7 @@ interface PriorityCardProps {
   status: string;
   statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' | 'green';
   isDone?: boolean;
+  latestCallNote?: string | null;
   onClick?: () => void;
 }
 
@@ -19,7 +20,7 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
   green: { bg: 'bg-[#E7F9F0]', text: 'text-[#00B69B]' },
 };
 
-export default function PriorityCard({ name, role, company, daysAgo, status, statusColor, isDone, onClick }: PriorityCardProps) {
+export default function PriorityCard({ name, role, company, daysAgo, status, statusColor, isDone, latestCallNote, onClick }: PriorityCardProps) {
   const colors = isDone ? statusStyles.green : (statusStyles[statusColor] || statusStyles.grey);
   // const status = split the status string by "-" and store the first one 
   const status_tag = status.split("-")[0];
@@ -56,6 +57,12 @@ export default function PriorityCard({ name, role, company, daysAgo, status, sta
           )}
         </div>
       </div>
+      {latestCallNote && (
+        <div className="bg-slate-50 border border-slate-100 rounded p-2 text-[10px] text-slate-500 italic flex items-start gap-1">
+          <span className="text-slate-400">💬</span>
+          <span className="leading-tight">{latestCallNote}</span>
+        </div>
+      )}
     </div>
   );
 }

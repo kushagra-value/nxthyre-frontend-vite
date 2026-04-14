@@ -588,9 +588,9 @@ export default function CandidateCallPage() {
 
                 <p className="text-white text-[13px] md:text-[14px] mt-1 mb-1">Did Candidate Picked Call?</p>
 
-                {/* Outcome buttons row 1 */}
-                <div className="flex gap-2 justify-center mb-1 w-full">
-                  {["Not Picked up", "Number Busy"].map((reason) => (
+                {/* Outcome buttons */}
+                <div className="flex gap-2 justify-center mb-1 w-full flex-wrap">
+                  {["Not Picked up", "Number Busy", "Wrong Number", "Completed", "Failed"].map((reason) => (
                     <button
                       key={reason}
                       onClick={() => setFollowUpReason(reason)}
@@ -599,16 +599,6 @@ export default function CandidateCallPage() {
                       {reason}
                     </button>
                   ))}
-                </div>
-
-                {/* Outcome buttons row 2 */}
-                <div className="flex justify-center mb-3 w-full">
-                  <button
-                    onClick={() => setFollowUpReason("Wrong Number")}
-                    className="px-4 py-1.5 rounded-full text-[12px] font-medium border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors"
-                  >
-                    Wrong Number
-                  </button>
                 </div>
 
                 {/* Outcome buttons row 3 */}
@@ -1413,6 +1403,8 @@ export default function CandidateCallPage() {
           jobId={jobId ? parseInt(jobId, 10) : undefined}
           initialStep="noAnswer"
           initialReason={followUpReason}
+          initialNote={notes}
+          initialTags={activeTags}
           callMode="manual"
         />
       )}
