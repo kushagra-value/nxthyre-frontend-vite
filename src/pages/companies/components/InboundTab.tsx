@@ -19,7 +19,7 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [sortBy, setSortBy] = useState("ai_score_desc");
+  const [sortBy, setSortBy] = useState("score_desc");
   const pageSize = 10;
   
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
