@@ -337,9 +337,18 @@ export default function Companies() {
     }, [isAuthenticated]);
 
     useEffect(() => {
-        if (isAuthenticated) {
-            fetchJobs();
+        if (!isAuthenticated) return;
+
+        // Fetch workspace-scoped jobs only after a workspace is selected.
+        if (!selectedWorkspace?.id) {
+            setAllJobs([]);
+            setJobsStatsCount(null);
+            setJobStatusCounts(null);
+            setJobPagination(null);
+            return;
         }
+
+        fetchJobs();
     }, [isAuthenticated, selectedWorkspace?.id, jobCurrentPage, jobPageSize, createdAfter, createdBefore]);
 
     const fetchSidebar = async () => {
