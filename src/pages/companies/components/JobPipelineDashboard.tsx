@@ -98,6 +98,8 @@ interface CandidateListItem {
     resume_url?: string;
     current_salary_lpa: string | null;
     expected_ctc?: string | null;
+    current_take_home?: number | null;
+    last_working_day?: string | null;
     last_active_at?: string | null;
     application_type?: string;
     time_applied?: string | null;
@@ -348,6 +350,10 @@ export default function JobPipelineDashboard({
     notice_period_days: "",
     current_ctc_lpa: "",
     expected_ctc_lpa: "",
+    current_take_home: "",
+    last_working_day: "",
+    location: "",
+    exp: "",
   });
 
   // ── Pagination & search
@@ -1076,15 +1082,30 @@ export default function JobPipelineDashboard({
       // Robust extraction for numeric CTC/expected
       const extractNum = (val: any) => {
         if (val == null) return "";
-        return val.toString().replace(/ LPA$/i, "").trim();
+        const match = val.toString().match(/[\d.]+/);
+        return match ? match[0] : "";
       };
 
+      let noticePeriodDays = cand.notice_period_days?.toString() || "";
+      if (!noticePeriodDays && cand.notice_period_summary) {
+        if (cand.notice_period_summary.toLowerCase().includes("immediate")) {
+          noticePeriodDays = "0";
+        } else {
+          const match = cand.notice_period_summary.match(/\d+/);
+          if (match) noticePeriodDays = match[0];
+        }
+      }
+
       setCandidateEditForm({
-        notice_period_days: cand.notice_period_days?.toString() || "",
+        notice_period_days: noticePeriodDays,
         current_ctc_lpa: extractNum(
           cand.current_salary_lpa || (cand as any).current_salary,
         ),
         expected_ctc_lpa: extractNum(cand.expected_ctc),
+        current_take_home: extractNum(cand.current_take_home),
+        last_working_day: cand.last_working_day || "",
+        location: cand.location || "",
+        exp: extractNum(cand.total_experience ?? cand.experience_years),
       });
     }
   }, [showCandidateEditModal, candidateEditing]);
@@ -1095,6 +1116,10 @@ export default function JobPipelineDashboard({
         notice_period_days: "",
         current_ctc_lpa: "",
         expected_ctc_lpa: "",
+        current_take_home: "",
+        last_working_day: "",
+        location: "",
+        exp: "",
       });
     }
   }, [showCandidateEditModal]);
@@ -1132,7 +1157,35 @@ export default function JobPipelineDashboard({
         showToast.error("Expected CTC must be a non-negative number");
         valid = false;
       } else {
-        payload.expected_ctc = lpa;
+        payload.expected_ctc = lpa.toString();
+      }
+    }
+
+    if (candidateEditForm.current_take_home !== "") {
+      const val = parseFloat(candidateEditForm.current_take_home);
+      if (isNaN(val) || val < 0) {
+        showToast.error("Current take home must be a non-negative number");
+        valid = false;
+      } else {
+        payload.current_take_home = val;
+      }
+    }
+
+    if (candidateEditForm.last_working_day !== "") {
+      payload.last_working_day = candidateEditForm.last_working_day;
+    }
+
+    if (candidateEditForm.location !== "") {
+      payload.location = candidateEditForm.location.trim();
+    }
+
+    if (candidateEditForm.exp !== "") {
+      const val = parseFloat(candidateEditForm.exp);
+      if (isNaN(val) || val < 0) {
+        showToast.error("Experience must be a non-negative number");
+        valid = false;
+      } else {
+        payload.exp = val;
       }
     }
 
@@ -1166,11 +1219,23 @@ export default function JobPipelineDashboard({
               updatedCand.current_salary_lpa = lpaStr;
             }
             if (payload.expected_ctc !== undefined) {
+              const lpaVal = parseFloat(payload.expected_ctc);
               const lpaStr =
-                payload.expected_ctc % 1 === 0
-                  ? `${payload.expected_ctc}`
-                  : payload.expected_ctc.toFixed(1);
+                lpaVal % 1 === 0 ? `${lpaVal}` : lpaVal.toFixed(1);
               updatedCand.expected_ctc = lpaStr;
+            }
+            if (payload.current_take_home !== undefined) {
+              updatedCand.current_take_home = payload.current_take_home;
+            }
+            if (payload.last_working_day !== undefined) {
+              updatedCand.last_working_day = payload.last_working_day;
+            }
+            if (payload.location !== undefined) {
+              updatedCand.location = payload.location;
+            }
+            if (payload.exp !== undefined) {
+              updatedCand.total_experience = payload.exp;
+              updatedCand.experience_years = `${payload.exp} years`;
             }
             return { ...c, candidate: updatedCand };
           }
@@ -2331,8 +2396,16 @@ export default function JobPipelineDashboard({
                                       ? cand.experience_years.replace(/\s*exp$/i, "")
                                       : "--"}
                                 </span>
-                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F3E8FF] text-[#7C3AED]">
+                                <span
+                                  className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F3E8FF] text-[#7C3AED]"
+                                  title={cand.last_working_day ? `Last Working Day: ${formatDate(cand.last_working_day)}` : ""}
+                                >
                                   {cand.notice_period_summary || "--"}
+                                  {cand.last_working_day && (
+                                    <span className="ml-1 opacity-80 text-[10px] font-normal italic">
+                                      ({formatDate(cand.last_working_day)})
+                                    </span>
+                                  )}
                                 </span>
                                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FFE4E6] text-[#E11D48]">
                                   {cand.expected_ctc
@@ -2680,21 +2753,48 @@ export default function JobPipelineDashboard({
                               : "--";
 
                         // CTC
-                        const ctc = cand.current_salary_lpa
-                          ? `${cand.current_salary_lpa}`
-                          : "--";
+                        
+
+                          const ctcText =
+                          cand.current_salary_lpa ||
+                          (cand.current_salary_lpa != null
+                            ? `${cand.current_salary_lpa}`
+                            : "--");
+
+                          const ctcDisplay = (
+                          <span className="flex flex-col items-start gap-1">
+                            {ctcText}
+                            {cand.current_take_home && (
+                              <span className="text-[#8E8E93] text-[10px] font-normal italic">
+                                (fixed: {cand.current_take_home})
+                              </span>
+                            )}
+                          </span>
+                        );
 
                         // Expected CTC
                         const expectedCtc = cand.expected_ctc
                           ? `${cand.expected_ctc} LPA`
                           : "--";
 
-                        // Notice period
-                        const noticePeriod =
+                        // Notice period string for logic/modals
+                        const noticePeriodText =
                           cand.notice_period_summary ||
                           (cand.notice_period_days != null
                             ? `${cand.notice_period_days} Days`
                             : "--");
+
+                        // Notice period display for table/UI
+                        const noticePeriodDisplay = (
+                          <span className="flex flex-col items-start gap-1">
+                            {noticePeriodText}
+                            {cand.last_working_day && (
+                              <span className="text-[#8E8E93] text-[10px] font-normal italic">
+                                (LWD: {formatDate(cand.last_working_day)})
+                              </span>
+                            )}
+                          </span>
+                        );
 
                         // Attention tag from status_tags
                         const attentionTag = item.status_tags?.find(
@@ -2784,13 +2884,13 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
-                              {ctc}
+                              {ctcDisplay}
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               {expectedCtc}
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
-                              {noticePeriod}
+                              {noticePeriodDisplay}
                             </td>
                             <td className="px-4 py-5 whitespace-nowrap">
                               <div>
@@ -2902,7 +3002,7 @@ export default function JobPipelineDashboard({
                                             experience: expYears,
                                             expectedCtc: expectedCtc,
                                             location: cand.location || "--",
-                                            noticePeriod: noticePeriod,
+                                            noticePeriod: noticePeriodText,
                                             callAttention: callAttention,
                                             resumeUrl: cand.premium_data?.resume_url || "",
                                           });
@@ -4200,6 +4300,25 @@ export default function JobPipelineDashboard({
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Current Take Home (LPA)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={candidateEditForm.current_take_home}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          current_take_home: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 12"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
                       Notice Period (Days)
                     </label>
                     <input
@@ -4214,6 +4333,58 @@ export default function JobPipelineDashboard({
                         })
                       }
                       placeholder="e.g. 30"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Experience (Years)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={candidateEditForm.exp}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          exp: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 4.5"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Last Working Day
+                    </label>
+                    <input
+                      type="date"
+                      value={candidateEditForm.last_working_day}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          last_working_day: e.target.value,
+                        })
+                      }
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 col-span-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      value={candidateEditForm.location}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          location: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. Bengaluru"
                       className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
                     />
                   </div>
