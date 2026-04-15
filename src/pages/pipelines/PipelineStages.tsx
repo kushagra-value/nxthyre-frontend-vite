@@ -63,6 +63,7 @@ import TemplateSelector from "../../components/common/TemplateSelector";
 import toast from "react-hot-toast";
 
 import { useNavigate } from "react-router-dom";
+import { SkeletonWrapper } from "react-skeletonify";
 
 // Define interfaces for API responses
 interface Stage {
@@ -2491,17 +2492,16 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 {loadingStages ? (
                   <div className="space-y-3">
                     {Array.from({ length: 7 }, (_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center space-x-3 px-3 py-3 rounded-lg animate-pulse"
-                      >
-                        <div className="w-4 h-4 bg-gray-200 rounded" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-5 bg-gray-200 rounded w-40" />
-                          <div className="h-3 bg-gray-200 rounded w-60" />
+                      <SkeletonWrapper loading={true} key={i}>
+                        <div className="flex items-center space-x-3 px-3 py-3 rounded-lg">
+                          <div className="w-4 h-4 bg-gray-200 rounded" />
+                          <div className="flex-1 space-y-2">
+                            <div className="h-5 bg-gray-200 rounded w-40" />
+                            <div className="h-3 bg-gray-200 rounded w-60" />
+                          </div>
+                          <div className="h-4 w-4 bg-gray-200 rounded-full" />
                         </div>
-                        <div className="h-4 w-4 bg-gray-200 rounded-full" />
-                      </div>
+                      </SkeletonWrapper>
                     ))}
                   </div>
                 ) : stagesError ? (
@@ -3261,16 +3261,18 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                 {loadingCandidates ? (
                   <div className="space-y-4 p-4">
                     {Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className="animate-pulse">
-                        <div className="flex items-center space-x-4 p-4 border rounded-lg">
-                          <div className="w-4 h-4 bg-gray-200 rounded" />
-                          <div className="w-14 h-14 bg-gray-200 rounded-full" />
-                          <div className="flex-1 space-y-3">
-                            <div className="h-5 bg-gray-200 rounded w-48" />
-                            <div className="h-4 bg-gray-200 rounded w-64" />
+                      <SkeletonWrapper loading={true} key={i}>
+                        <div>
+                          <div className="flex items-center space-x-4 p-4 border rounded-lg">
+                            <div className="w-4 h-4 bg-gray-200 rounded" />
+                            <div className="w-14 h-14 bg-gray-200 rounded-full" />
+                            <div className="flex-1 space-y-3">
+                              <div className="h-5 bg-gray-200 rounded w-48" />
+                              <div className="h-4 bg-gray-200 rounded w-64" />
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </SkeletonWrapper>
                     ))}
                   </div>
                 ) : displayedCandidates.length === 0 ? (

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
 import StatCard from './components/StatCard';
+import { SkeletonWrapper } from "react-skeletonify";
 import PriorityCard from './components/PriorityCard';
 import TalentMatchCard from './components/TalentMatchCard';
 import CalendarWidget from './components/CalendarWidget';
@@ -849,32 +850,31 @@ export default function Dashboard() {
           {/* Stat Cards from API or fallback */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {loading
-              ? // Skeleton stat cards
-              [...Array(4)].map((_, i) => (
-                <div
-                  key={`stat-skel-${i}`}
-                  className="bg-white rounded-xl animate-pulse"
-                  style={{ padding: '20px', gap: '8px', border: '0.5px solid #D1D1D6' }}
-                >
-                  <div className="flex justify-between items-center w-full mb-2">
-                    <div className="w-10 h-10 rounded-lg bg-gray-200" />
-                    <div className="w-20 h-4 rounded bg-gray-200" />
+              ? [...Array(4)].map((_, i) => (
+                  <div key={`stat-skel-${i}`}>
+                    <SkeletonWrapper loading={true}>
+                      <StatCard
+                        icon={iconMap["users"]}
+                        label="Loading..."
+                        value="1000+"
+                        trend="+0%"
+                        trendText="loading..."
+                        dateText="Today"
+                      />
+                    </SkeletonWrapper>
                   </div>
-                  <div className="w-16 h-3 rounded bg-gray-200 mb-1" />
-                  <div className="w-12 h-8 rounded bg-gray-200" />
-                </div>
-              ))
+                ))
               : dynamicStatCards.map((stat) => (
-                <StatCard
-                  key={stat.id}
-                  icon={iconMap[stat.iconType]}
-                  label={stat.label}
-                  value={stat.value}
-                  trend={stat.trend}
-                  trendText={stat.trendText}
-                  dateText={stat.dateText}
-                />
-              ))}
+                  <StatCard
+                    key={stat.id}
+                    icon={iconMap[stat.iconType]}
+                    label={stat.label}
+                    value={stat.value}
+                    trend={stat.trend}
+                    trendText={stat.trendText}
+                    dateText={stat.dateText}
+                  />
+                ))}
           </div>
 
           {/* Priority Actions from new API */}
@@ -1001,18 +1001,20 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {priorityLoading
                 ? [...Array(3)].map((_, i) => (
-                  <div key={`col-skel-${i}`} className="bg-[#F3F5F7] rounded-xl p-2.5 animate-pulse min-h-[200px]">
-                    <div className="flex items-center justify-between px-1 py-1 mb-2">
-                      <div className="w-20 h-4 rounded bg-gray-200" />
-                      <div className="w-12 h-4 rounded bg-gray-200" />
-                    </div>
-                    {[...Array(2)].map((_, j) => (
-                      <div key={j} className="bg-white rounded-lg p-3 mb-2">
-                        <div className="w-24 h-3 rounded bg-gray-200 mb-2" />
-                        <div className="w-32 h-3 rounded bg-gray-200 mb-2" />
-                        <div className="w-16 h-3 rounded bg-gray-200" />
+                  <div key={`col-skel-${i}`} className="bg-[#F3F5F7] rounded-xl p-2.5 min-h-[200px]">
+                    <SkeletonWrapper loading={true}>
+                      <div className="flex items-center justify-between px-1 py-1 mb-2">
+                        <div className="w-20 h-4 rounded bg-gray-100" />
+                        <div className="w-12 h-4 rounded bg-gray-100" />
                       </div>
-                    ))}
+                      {[...Array(2)].map((_, j) => (
+                        <div key={j} className="bg-white rounded-lg p-3 mb-2">
+                          <div className="w-24 h-3 rounded bg-gray-100 mb-2" />
+                          <div className="w-32 h-3 rounded bg-gray-100 mb-2" />
+                          <div className="w-16 h-3 rounded bg-gray-100" />
+                        </div>
+                      ))}
+                    </SkeletonWrapper>
                   </div>
                 ))
                 : dynamicPriorityColumns.map((column, colIndex) => {
@@ -1173,12 +1175,16 @@ export default function Dashboard() {
             <div className="flex flex-col gap-5">
               {talentMatchesLoading
                 ? [...Array(3)].map((_, i) => (
-                  <div key={`tm-skel-${i}`} className="bg-white p-5 rounded-[10px] flex items-center justify-between animate-pulse" style={{ border: '1px solid #D1D1D6' }}>
-                    <div className="flex flex-col gap-2">
-                      <div className="w-32 h-4 rounded bg-gray-200" />
-                      <div className="w-48 h-3 rounded bg-gray-200" />
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div key={`tm-skel-${i}`} className="bg-white p-5 rounded-[10px]" style={{ border: '1px solid #D1D1D6' }}>
+                    <SkeletonWrapper loading={true}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-2">
+                          <div className="w-32 h-4 rounded bg-gray-100" />
+                          <div className="w-48 h-3 rounded bg-gray-100" />
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-gray-100" />
+                      </div>
+                    </SkeletonWrapper>
                   </div>
                 ))
                 : dynamicTalentMatches.length > 0 ? (

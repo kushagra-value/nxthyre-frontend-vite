@@ -21,6 +21,7 @@ import CandidateCallPage from "./pages/companies/components/CandidateCallPage";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import ShareCandidateListPage from "./pages/pipelines/ShareCandidateListPage";
 import ProjectSkeletonCard from "./components/skeletons/ProjectSkeletonCard";
+import { SkeletonWrapper } from "react-skeletonify";
 import { organizationService } from "./services/organizationService";
 import { User } from "./types/auth";
 import { showToast } from "./utils/toast";
@@ -328,10 +329,12 @@ function MainApp() {
     if (inviteAuthLoading || claiming) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-10 animate-pulse">
-            <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-8"></div>
-            <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-6"></div>
-          </div>
+          <SkeletonWrapper loading={true}>
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-10">
+              <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-8"></div>
+              <div className="h-8 bg-gray-100 rounded w-3/4 mx-auto mb-6"></div>
+            </div>
+          </SkeletonWrapper>
         </div>
       );
     }
@@ -382,15 +385,17 @@ function MainApp() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="sticky top-0 bg-white shadow-sm z-40 animate-pulse">
-          <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
-            <div className="h-10 bg-gray-200 rounded-lg w-64"></div>
-            <div className="flex items-center gap-8">
-              <div className="h-12 bg-gray-200 rounded-lg w-96"></div>
-              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+        <SkeletonWrapper loading={true}>
+          <div className="sticky top-0 bg-white shadow-sm z-40">
+            <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+              <div className="h-10 bg-gray-100 rounded-lg w-64"></div>
+              <div className="flex items-center gap-8">
+                <div className="h-12 bg-gray-100 rounded-lg w-96"></div>
+                <div className="h-10 w-10 bg-gray-100 rounded-full"></div>
+              </div>
             </div>
           </div>
-        </div>
+        </SkeletonWrapper>
         <div className="container mx-auto py-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
@@ -585,12 +590,16 @@ function MainApp() {
   );
 }
 
+import SkeletonProvider from "./components/skeletons/SkeletonProvider";
+
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <MainApp />
-      </BrowserRouter>
-    </AuthProvider>
+    <SkeletonProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <MainApp />
+        </BrowserRouter>
+      </AuthProvider>
+    </SkeletonProvider>
   );
 }

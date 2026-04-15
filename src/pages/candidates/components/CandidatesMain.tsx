@@ -41,6 +41,7 @@ import ShareableProfile from "../../profileShare/ShareableProfile";
 
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { SkeletonWrapper } from "react-skeletonify";
 
 interface CandidatesMainProps {
   activeTab: string;
@@ -1391,50 +1392,52 @@ const CandidatesMain: React.FC<CandidatesMainProps> = ({
         <>
           {Array.from({ length: candidatesPerPage }, (_, index) => (
             <div key={index} className="rounded-lg border border-gray-200 p-4">
-              <div className="pt-5 animate-pulse">
-                <div className="flex px-4 items-center space-x-3">
-                  <div className="w-4 h-4 bg-gray-200 rounded" />
-                  <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
-                    <div className="w-14 h-14 bg-gray-200 rounded-full flex-shrink-0" />
-                    <div className="flex-1 min-w-0 space-y-3">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="h-6 bg-gray-200 rounded w-64" />{" "}
-                        {/* Name + possible badge */}
-                        <div className="h-5 bg-gray-200 rounded w-32" />{" "}
-                        {/* Location */}
+              <SkeletonWrapper loading={true}>
+                <div className="pt-5">
+                  <div className="flex px-4 items-center space-x-3">
+                    <div className="w-4 h-4 bg-gray-200 rounded" />
+                    <div className="border-b border-[#E2E2E2] flex items-center space-x-3 pb-5 w-full">
+                      <div className="w-14 h-14 bg-gray-200 rounded-full flex-shrink-0" />
+                      <div className="flex-1 min-w-0 space-y-3">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="h-6 bg-gray-200 rounded w-64" />{" "}
+                          {/* Name + possible badge */}
+                          <div className="h-5 bg-gray-200 rounded w-32" />{" "}
+                          {/* Location */}
+                        </div>
+                        <div className="h-4 bg-gray-200 rounded w-full" />{" "}
+                        {/* Headline */}
+                        <div className="h-4 bg-gray-200 rounded w-4/5" />{" "}
+                        {/* Headline continuation or active text */}
                       </div>
-                      <div className="h-4 bg-gray-200 rounded w-full" />{" "}
-                      {/* Headline */}
-                      <div className="h-4 bg-gray-200 rounded w-4/5" />{" "}
-                      {/* Headline continuation or active text */}
                     </div>
                   </div>
-                </div>
 
-                <div className="pt-5 pl-12 flex space-x-12 gap-2">
-                  {Array.from({ length: 4 }, (_, j) => (
-                    <div key={j} className="flex flex-col space-y-1">
-                      <div className="h-3 bg-gray-200 rounded w-24" />{" "}
-                      {/* Label */}
-                      <div className="h-5 bg-gray-200 rounded w-32" />{" "}
-                      {/* Value */}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="p-3 pl-12 mt-5 bg-gray-100 flex items-center justify-between rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    {Array.from({ length: 7 }, (_, j) => (
-                      <div
-                        key={j}
-                        className="w-10 h-10 bg-gray-200 rounded-full"
-                      />
+                  <div className="pt-5 pl-12 flex space-x-12 gap-2">
+                    {Array.from({ length: 4 }, (_, j) => (
+                      <div key={j} className="flex flex-col space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-24" />{" "}
+                        {/* Label */}
+                        <div className="h-5 bg-gray-200 rounded w-32" />{" "}
+                        {/* Value */}
+                      </div>
                     ))}
                   </div>
-                  <div className="h-10 bg-gray-200 rounded-md w-64" />{" "}
-                  {/* Save to Pipeline button + dropdown */}
+
+                  <div className="p-3 pl-12 mt-5 bg-gray-100 flex items-center justify-between rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      {Array.from({ length: 7 }, (_, j) => (
+                        <div
+                          key={j}
+                          className="w-10 h-10 bg-gray-200 rounded-full"
+                        />
+                      ))}
+                    </div>
+                    <div className="h-10 bg-gray-200 rounded-md w-64" />{" "}
+                    {/* Save to Pipeline button + dropdown */}
+                  </div>
                 </div>
-              </div>
+              </SkeletonWrapper>
             </div>
           ))}
         </>

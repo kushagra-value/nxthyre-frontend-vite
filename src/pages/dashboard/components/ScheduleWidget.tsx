@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { ScheduleEventAPI } from '../../../services/dashboardService';
+import { SkeletonWrapper } from "react-skeletonify";
 
 const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; badgeBg: string; badgeText: string }> = {
   grey: {
@@ -104,18 +105,20 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
 
           {isLoading ? (
             [...Array(3)].map((_, i) => (
-              <div key={`sched-skel-${i}`} className="flex items-center gap-2 relative animate-pulse">
-                <div className="w-[60px] h-4 rounded bg-gray-200 shrink-0" />
-                <div className="w-2 h-2 rounded-full bg-gray-300 shrink-0 relative z-10" />
-                <div className="flex-1 rounded-md p-2.5 bg-gray-100 flex flex-col gap-2">
-                  <div className="w-16 h-3 rounded bg-gray-200" />
-                  <div className="flex items-center justify-between">
-                    <div className="w-24 h-4 rounded bg-gray-200" />
-                    <div className="w-12 h-4 rounded bg-gray-200" />
+              <SkeletonWrapper loading={true} key={`sched-skel-${i}`}>
+                <div className="flex items-center gap-2 relative">
+                  <div className="w-[60px] h-4 rounded bg-gray-200 shrink-0" />
+                  <div className="w-2 h-2 rounded-full bg-gray-300 shrink-0 relative z-10" />
+                  <div className="flex-1 rounded-md p-2.5 bg-gray-100 flex flex-col gap-2">
+                    <div className="w-16 h-3 rounded bg-gray-200" />
+                    <div className="flex items-center justify-between">
+                      <div className="w-24 h-4 rounded bg-gray-200" />
+                      <div className="w-12 h-4 rounded bg-gray-200" />
+                    </div>
+                    <div className="w-32 h-3 rounded bg-gray-200" />
                   </div>
-                  <div className="w-32 h-3 rounded bg-gray-200" />
                 </div>
-              </div>
+              </SkeletonWrapper>
             ))
           ) : events.length === 0 ? (
             <div className="flex items-center justify-center py-8 text-sm text-[#8E8E93]">

@@ -7,6 +7,7 @@ import apiClient from "../../../services/api";
 import CallCandidateModal, {
   CallCandidateData,
 } from "../../companies/components/CallCandidateModal";
+import { SkeletonWrapper } from "react-skeletonify";
 
 interface ActionReviewModalProps {
   isOpen?: boolean;
@@ -425,46 +426,48 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
             style={{ padding: "20px 24px 0 24px" }}
           >
             {isLoading ? (
-              <div className="animate-pulse">
-                <div className="flex items-start justify-between mb-5">
-                  <div className="flex flex-col gap-2">
-                    <div className="w-40 h-6 rounded bg-gray-200" />
-                    <div className="w-60 h-4 rounded bg-gray-200" />
+              <SkeletonWrapper loading={true}>
+                <div>
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="flex flex-col gap-2">
+                      <div className="w-40 h-6 rounded bg-gray-200" />
+                      <div className="w-60 h-4 rounded bg-gray-200" />
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-gray-200" />
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-gray-200" />
-                </div>
-                <div className="flex gap-4 mb-5">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex flex-col gap-2 w-28">
-                      <div className="w-16 h-3 rounded bg-gray-200" />
-                      <div className="w-12 h-5 rounded bg-gray-200" />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-4 mb-5 pb-5 border-b border-[#AEAEB2]">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex flex-col gap-2 w-28">
-                      <div className="w-16 h-3 rounded bg-gray-200" />
-                      <div className="w-12 h-5 rounded bg-gray-200" />
-                    </div>
-                  ))}
-                </div>
-                <div className="mb-5">
-                  <div className="w-32 h-4 rounded bg-gray-200 mb-4" />
-                  <div className="flex flex-wrap gap-2">
-                    {[...Array(5)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="w-20 h-8 rounded-full bg-gray-200"
-                      />
+                  <div className="flex gap-4 mb-5">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="flex flex-col gap-2 w-28">
+                        <div className="w-16 h-3 rounded bg-gray-200" />
+                        <div className="w-12 h-5 rounded bg-gray-200" />
+                      </div>
                     ))}
                   </div>
+                  <div className="flex gap-4 mb-5 pb-5 border-b border-[#AEAEB2]">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="flex flex-col gap-2 w-28">
+                        <div className="w-16 h-3 rounded bg-gray-200" />
+                        <div className="w-12 h-5 rounded bg-gray-200" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mb-5">
+                    <div className="w-32 h-4 rounded bg-gray-200 mb-4" />
+                    <div className="flex flex-wrap gap-2">
+                      {[...Array(5)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-20 h-8 rounded-full bg-gray-200"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-5">
+                    <div className="w-24 h-4 rounded bg-gray-200 mb-3" />
+                    <div className="w-full h-20 rounded-lg bg-gray-200" />
+                  </div>
                 </div>
-                <div className="mb-5">
-                  <div className="w-24 h-4 rounded bg-gray-200 mb-3" />
-                  <div className="w-full h-20 rounded-lg bg-gray-200" />
-                </div>
-              </div>
+              </SkeletonWrapper>
             ) : (
               <>
                 {/* ── Candidate Name + Job Role · Workspace + Match % ── */}
