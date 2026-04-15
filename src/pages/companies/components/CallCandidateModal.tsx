@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { X, Calendar, Clock, Phone, PhoneCall, PhoneOff, Loader2 } from "lucide-react";
 import {
   saveCallLog,
@@ -64,7 +63,6 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   initialTags = [],
 }) => {
   const [step, setStep] = useState<ModalStep>(initialStep);
-  const navigate = useNavigate();
   const [selectedReason, setSelectedReason] = useState<string | null>(initialReason);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -113,6 +111,23 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
 
   if (!isOpen || !candidate) return null;
 
+  // ─── Navigate to call page immediately ──────────────────
+  // React Router v7 wraps navigate() in React.startTransition, which
+  // causes the heavy dashboard to defer unmounting for minutes.
+  // Using window.location.href bypasses this for instant navigation.
+  const navigateToCallPage = (
+    mode: "platform" | "manual",
+    extraState: { callState?: string; callUuid?: string } = {}
+  ) => {
+    if (!candidate) return;
+    // Persist candidate data for the call page to pick up
+    sessionStorage.setItem(
+      "_nxthyre_call_state",
+      JSON.stringify({ candidate, ...extraState })
+    );
+    window.location.href = `/call/${candidate.id}/${jobId}?mode=${mode}`;
+  };
+
   const handleCallOnPlatform = async () => {
     if (callInitiatedRef.current) return;
     callInitiatedRef.current = true;
@@ -134,8 +149,12 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
           if (status.status === "answered" || status.event === "answer") {
             // Call was answered — navigate to calling page
             if (pollingRef.current) clearInterval(pollingRef.current);
-            navigate(`/call/${candidate.id}/${jobId}?mode=platform`, {
-              state: { candidate },
+            // Close modal first to trigger any immediate UI cleanup
+            onClose();
+            // Pass the call_uuid and state so CandidateCallPage doesn't re-initiate
+            navigateToCallPage("platform", {
+              callState: "answered",
+              callUuid: status.call_uuid || undefined,
             });
           } else if (
             status.status === "completed" ||
@@ -159,7 +178,7 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
           if (pollingRef.current) clearInterval(pollingRef.current);
           setStep("noAnswer");
         }
-      }, 3000);
+      }, 1500); // Reduced from 3000ms to 1500ms for faster detection
     } catch (err) {
       console.error("Failed to initiate call:", err);
       setStep("noAnswer");
@@ -167,10 +186,7 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   };
 
   const handleManualCall = () => {
-    if (candidate)
-      navigate(`/call/${candidate.id}/${jobId}?mode=manual`, {
-        state: { candidate },
-      });
+    navigateToCallPage("manual");
   };
 
   const getMappedStatus = (reason: string | null) => {

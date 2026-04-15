@@ -72,27 +72,47 @@ export default function CandidateCallPage() {
   const callMode = (searchParams.get("mode") || "platform") as "platform" | "manual";
   const isManual = callMode === "manual";
 
-  const incomingCandidate = location.state
-    ?.candidate as CandidateCallParams | null;
+  // Read from location.state OR sessionStorage fallback
+  const sessionData = (() => {
+    try {
+      const stored = sessionStorage.getItem("_nxthyre_call_state");
+      if (stored) {
+        // Don't remove yet, we might need it for re-renders during init
+        return JSON.parse(stored);
+      }
+    } catch {}
+    return null;
+  })();
+
+  const incomingCandidate = location.state?.candidate || sessionData?.candidate || null;
   const [candidate, setCandidate] = useState<CandidateCallParams | null>(
     incomingCandidate,
   );
 
+  // Initialize call state from session if available
+  const initialCallState = sessionData?.callState || (isManual ? "idle" : "initiating");
+  const initialCallUuid = sessionData?.callUuid || null;
+
   // Manual call states
   const [manualCallConnected, setManualCallConnected] = useState(false);
   const [manualActiveTab, setManualActiveTab] = useState<"resume" | "roleQuestions">("resume");
-
-  // console.log("Candidate we are about to call:", candidate);
 
   // Call States
   const [seconds, setSeconds] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [callUuid, setCallUuid] = useState<string | null>(null);
-  const [callState, setCallState] = useState<string>("initiating"); // initiating | dialing | answered | completed | error
+  const [callUuid, setCallUuid] = useState<string | null>(initialCallUuid);
+  const [callState, setCallState] = useState<string>(initialCallState);
   const [isSaving, setIsSaving] = useState(false);
   const [isEndingCall, setIsEndingCall] = useState(false);
+
+  // Clear session storage once we've consumed it
+  useEffect(() => {
+    if (sessionData) {
+      sessionStorage.removeItem("_nxthyre_call_state");
+    }
+  }, []);
 
   // Copilot States & Tabs
   const [activeTab, setActiveTab] = useState<
@@ -260,6 +280,12 @@ export default function CandidateCallPage() {
   useEffect(() => {
     if (isManual) return; // Skip call initiation for manual calls
     if (!candidate?.phone) return;
+    
+    // If we've already reached answered state from the modal, don't initiate again
+    if (callState === "answered") {
+      console.log("Call already answered, skipping initiation");
+      return;
+    }
 
     let cancelled = false;
     (async () => {
@@ -283,8 +309,11 @@ export default function CandidateCallPage() {
     };
   }, [candidate?.phone]);
 
-  // ─── Poll Call Status ────────────────────────────────
+  // ─── Poll Call Status (platform mode only) ────────────────────
   useEffect(() => {
+    // Skip polling for manual calls — no active Plivo call to poll
+    if (isManual) return;
+
     if (callState === "completed" || callState === "error") {
       if (pollingRef.current) clearInterval(pollingRef.current);
       return;
@@ -315,12 +344,16 @@ export default function CandidateCallPage() {
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [callState, callUuid]);
+  }, [callState, callUuid, isManual]);
 
   // Timer logic
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
-    if (!isPaused && callState !== "completed") {
+    // For manual mode, only run timer when connected
+    const shouldRun = isManual
+      ? (manualCallConnected && !isPaused)
+      : (!isPaused && callState !== "completed");
+    if (shouldRun) {
       interval = setInterval(() => {
         setSeconds((s) => s + 1);
       }, 1000);
@@ -328,7 +361,7 @@ export default function CandidateCallPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPaused, callState]);
+  }, [isPaused, callState, isManual, manualCallConnected]);
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -516,7 +549,7 @@ export default function CandidateCallPage() {
 
         {/* Back button */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => window.location.href = "/"}
           className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2 z-10"
         >
           <ChevronLeft className="w-5 h-5" /> Back
@@ -572,7 +605,9 @@ export default function CandidateCallPage() {
                 {/* Call on Nxthyre button */}
                 <button
                   onClick={() => {
-                    navigate(`/call/${candidate.id}/${jobId}?mode=platform`, { state: { candidate } });
+                    // Bypass React Router transition for speed
+                    sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate }));
+                    window.location.href = `/call/${candidate.id}/${jobId}?mode=platform`;
                   }}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white font-semibold text-xs hover:bg-white/20 transition-colors backdrop-blur-sm"
                 >
@@ -610,7 +645,7 @@ export default function CandidateCallPage() {
                     <PhoneIncoming className="w-3.5 h-3.5" /> Picked Up
                   </button>
                   <button
-                    onClick={() => navigate(-1)}
+                    onClick={() => window.location.href = "/"}
                     className="px-4 py-2 rounded-full text-[12px] font-bold border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
                   >
                     <RotateCcw className="w-3.5 h-3.5" /> Call Back again
@@ -1398,7 +1433,7 @@ export default function CandidateCallPage() {
       {followUpReason && (
         <CallCandidateModal
           isOpen={!!followUpReason}
-          onClose={() => navigate(-1)} // Navigate cleanly back to pipeline board after follow up
+          onClose={() => window.location.href = "/"} // Navigate cleanly back to pipeline board after follow up
           candidate={candidate}
           jobId={jobId ? parseInt(jobId, 10) : undefined}
           initialStep="noAnswer"
