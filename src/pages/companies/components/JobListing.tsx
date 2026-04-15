@@ -79,6 +79,8 @@ interface JobListingProps {
     companyResearchData: any;
     setInfoWorkspaceNull: () => void;
     onJobSelect?: (job: Job) => void;
+    currentOrdering?: string;
+    onSortChange?: (ordering: string) => void;
 }
 
 const JobListing: React.FC<JobListingProps> = ({
@@ -116,14 +118,21 @@ const JobListing: React.FC<JobListingProps> = ({
     companyResearchData,
     setInfoWorkspaceNull,
     onJobSelect,
+    currentOrdering,
+    onSortChange,
 }) => {
     const ITEMS_PER_PAGE = 10;
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
-    // Reset to first server page when local filters change.
-    useEffect(() => {
-        setJobCurrentPage(1);
-    }, [activeJobFilter, jobSearchQuery]);
+    // Mapping from UI column keys to backend ordering field names
+    const orderingMap: Record<string, string> = {
+        "Job Title": "title",
+        "Candidates": "candidates_count",
+        "Days open": "days_open",
+        "Position": "num_positions",
+        "Budget": "salary_max",
+        "Active Date": "updated_at",
+        "Status": "status",
+    };
 
     const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
@@ -217,68 +226,49 @@ const JobListing: React.FC<JobListingProps> = ({
         }
     };
 
-    const sortedJobs = React.useMemo(() => {
-        if (!sortConfig) return filteredWorkspaceJobs;
-
-        return [...filteredWorkspaceJobs].sort((a, b) => {
-            const getVal = (job: any, key: string) => {
-                const daysOpen = job.days_open || 0; // Replace with real calc if needed
-                const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 0;
-
-                switch (key) {
-                    case "Job Title": return (job.title || "").toLowerCase();
-                    case "Candidates": return job.candidates_count ?? job.total_applied ?? 0;
-                    case "Days open": return daysOpen;
-                    case "Position": return noOfPositions;
-                    case "Budget": return job.salary_max || 0;
-                    case "Active Date": return job.last_active_date ? new Date(job.last_active_date).getTime() : (new Date(job.updated_at).getTime() || 0);
-                    case "Status": return (job.status || "").toLowerCase();
-                    default: return "";
-                }
-            };
-
-            const aVal = getVal(a, sortConfig.key);
-            const bVal = getVal(b, sortConfig.key);
-
-            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }, [filteredWorkspaceJobs, sortConfig]);
-
+    // Sorting is now handled server-side via the `ordering` query param.
+    // handleSort maps UI column keys to backend ordering values and delegates to parent.
     const handleSort = (key: string) => {
-        let direction: 'asc' | 'desc' = 'asc';
-        if (['Candidates', 'Days open', 'Position', 'Budget'].includes(key)) {
-            direction = 'desc'; // fallback intuitive default for numbers
-        } else if (key === 'Active Date') {
-            direction = 'desc'; // newest first
+        const field = orderingMap[key];
+        if (!field || !onSortChange) return;
+
+        const currentField = currentOrdering?.replace(/^-/, "");
+        const isDesc = currentOrdering?.startsWith("-");
+
+        // Columns where descending is the intuitive first click
+        const descFirstColumns = ["Candidates", "Days open", "Position", "Budget", "Active Date"];
+        const defaultDesc = descFirstColumns.includes(key);
+
+        let newOrdering = "";
+        if (currentField !== field) {
+            // First click on this column — set intuitive default direction
+            newOrdering = defaultDesc ? `-${field}` : field;
+        } else if (defaultDesc) {
+            // desc-first toggle: -field → field → clear
+            newOrdering = isDesc ? field : "";
+        } else {
+            // asc-first toggle: field → -field → clear
+            newOrdering = !isDesc ? `-${field}` : "";
         }
 
-        if (sortConfig && sortConfig.key === key) {
-            if (sortConfig.direction === direction) {
-                direction = direction === 'asc' ? 'desc' : 'asc';
-            } else {
-                setSortConfig(null);
-                setJobCurrentPage(1);
-                return;
-            }
-        }
-        setSortConfig({ key, direction });
-        setJobCurrentPage(1);
+        onSortChange(newOrdering);
     };
 
     const SortIcon = ({ columnKey }: { columnKey: string }) => {
-        if (sortConfig?.key !== columnKey) return <ArrowUpDown className="w-3 h-3 ml-1 text-gray-400 group-hover:text-gray-600 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />;
-        return sortConfig.direction === 'asc'
-            ? <ArrowUp className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />
-            : <ArrowDown className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />;
+        const field = orderingMap[columnKey];
+        const currentField = currentOrdering?.replace(/^-/, "");
+        if (currentField !== field) return <ArrowUpDown className="w-3 h-3 ml-1 text-gray-400 group-hover:text-gray-600 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />;
+        return currentOrdering?.startsWith("-")
+            ? <ArrowDown className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />
+            : <ArrowUp className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />;
     };
 
-    const totalJobsForPagination = jobPagination?.total_jobs_count_in_workspace ?? sortedJobs.length;
+    // Jobs are already sorted and filtered server-side, use directly
+    const totalJobsForPagination = jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
     const totalPages = Math.max(1, Math.ceil(totalJobsForPagination / ITEMS_PER_PAGE));
-    const paginatedJobs = sortedJobs;
-    const startIdx = sortedJobs.length > 0 ? (jobCurrentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
-    const endIdx = Math.min((jobCurrentPage - 1) * ITEMS_PER_PAGE + sortedJobs.length, totalJobsForPagination);
+    const paginatedJobs = filteredWorkspaceJobs;
+    const startIdx = filteredWorkspaceJobs.length > 0 ? (jobCurrentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+    const endIdx = Math.min((jobCurrentPage - 1) * ITEMS_PER_PAGE + filteredWorkspaceJobs.length, totalJobsForPagination);
 
     // ── Share pipeline handler ──
     const handleSharePipeline = () => {
@@ -322,15 +312,18 @@ const JobListing: React.FC<JobListingProps> = ({
     const workspaceRating = selectedWorkspace.company_research_data?.overall_rating ?? companyResearchData?.overall_rating ?? null;
     const hasRatingData = workspaceRating !== null && workspaceRating !== undefined;
 
+    // Notes are now included inline in the job response (job.notes).
+    // Seed fetchedNotes from inline data; only override when user edits.
     useEffect(() => {
-        // Fetch notes for currently viewed jobs
-        paginatedJobs.forEach(job => {
-            if (!fetchedNotes[job.id]) {
-                jobPostService.getJobNotes(job.id).then(notes => {
-                    setFetchedNotes(prev => ({ ...prev, [job.id]: notes || [] }));
-                }).catch(() => { });
+        const inlineNotes: Record<number, any[]> = {};
+        paginatedJobs.forEach((job: any) => {
+            if (job.notes && !fetchedNotes[job.id]) {
+                inlineNotes[job.id] = job.notes;
             }
         });
+        if (Object.keys(inlineNotes).length > 0) {
+            setFetchedNotes(prev => ({ ...prev, ...inlineNotes }));
+        }
     }, [paginatedJobs]);
 
     const handleSaveInlineNote = async (jobId: number) => {
@@ -577,15 +570,15 @@ const JobListing: React.FC<JobListingProps> = ({
                         {(["All", "Active", "Paused", "Inactive", "Draft"] as const).map((filter) => {
                             let count = 0;
                             if (filter === "All") count = jobStatusCounts?.all ?? workspaceJobs.length;
-                            else if (filter === "Active") count = jobStatusCounts?.active ?? workspaceJobs.filter(j => j.status === "ACTIVE").length;
-                            else if (filter === "Paused") count = jobStatusCounts?.paused ?? workspaceJobs.filter(j => j.status === "PAUSED").length;
-                            else if (filter === "Inactive") count = jobStatusCounts?.inactive ?? workspaceJobs.filter(j => j.status === "INACTIVE").length;
-                            else if (filter === "Draft") count = workspaceJobs.filter(j => j.pyjamahr_status === "DRAFT").length;
+                            else if (filter === "Active") count = jobStatusCounts?.active ?? 0;
+                            else if (filter === "Paused") count = jobStatusCounts?.paused ?? 0;
+                            else if (filter === "Inactive") count = jobStatusCounts?.inactive ?? 0;
+                            else if (filter === "Draft") count = jobStatusCounts?.draft ?? 0;
 
                             return (
                                 <button
                                     key={filter}
-                                    onClick={() => { setActiveJobFilter(filter); setCurrentPage(1); }}
+                                    onClick={() => { setActiveJobFilter(filter); }}
                                     className={`h-[30px] px-4 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center justify-center
                         ${activeJobFilter === filter
                                             ? 'bg-[#0F47F2] text-white'

@@ -94,6 +94,7 @@ export interface JobsStatusCounts {
   active: number;
   paused: number;
   inactive: number;
+  draft: number;
 }
 
 export interface JobsApiResponse {
@@ -112,6 +113,9 @@ export interface JobsRolesQueryParams {
   workspace_id?: number;
   created_after?: string;
   created_before?: string;
+  status?: string;
+  search?: string;
+  ordering?: string;
 }
 
 export interface AllRoleOption {
@@ -227,6 +231,7 @@ class JobPostService {
       active: 0,
       paused: 0,
       inactive: 0,
+      draft: 0,
     };
   }
 
