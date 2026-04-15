@@ -58,7 +58,6 @@ import { EventForm } from "../../pages/schedules/components/EventForm";
 import { CalendarEvent } from "../../data/mockEvents";
 import { PipelineCandidate } from "../../data/pipelineData";
 import EventPreview from "../../pages/schedules/components/EventPreview";
-import { SkeletonWrapper } from "react-skeletonify";
 
 interface DraggedCandidate {
   candidate: any;
@@ -83,22 +82,20 @@ interface Candidate {
 }
 
 const ProjectSkeletonCard = () => (
-  <SkeletonWrapper loading={true}>
-    <div className="bg-white rounded-[10px] shadow-lg overflow-hidden">
-      <div className="p-4">
-        <div className="h-8 bg-gray-200 rounded-lg mb-6"></div>
-        <div className="h-4 bg-gray-200 rounded w-4/5 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/5 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
-        <div className="flex flex-wrap gap-4 mb-4 w-1/2">
-          <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-          <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-          <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-          <div className="h-6 bg-gray-200 rounded-full w-6"></div>
-        </div>
+  <div className="bg-white rounded-[10px] shadow-lg overflow-hidden animate-pulse">
+    <div className="p-4">
+      <div className="h-8 bg-gray-200 rounded-lg mb-6"></div>
+      <div className="h-4 bg-gray-200 rounded w-4/5 mb-4"></div>
+      <div className="h-4 bg-gray-200 rounded w-1/5 mb-4"></div>
+      <div className="h-4 bg-gray-200 rounded w-2/5 mb-4"></div>
+      <div className="flex flex-wrap gap-4 mb-4 w-1/2">
+        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
+        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
+        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
+        <div className="h-6 bg-gray-200 rounded-full w-6"></div>
       </div>
     </div>
-  </SkeletonWrapper>
+  </div>
 );
 
 interface PipelineSharePageProps {

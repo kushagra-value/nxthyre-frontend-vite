@@ -1,6 +1,5 @@
 import React from 'react';
 import type { DailyActivitiesResponse } from '../../../services/dashboardService';
-import { SkeletonWrapper } from "react-skeletonify";
 
 interface DailyActivitiesModalProps {
     isOpen: boolean;
@@ -66,27 +65,23 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
                     className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <SkeletonWrapper loading={true}>
-                        <div>
-                            <div className="flex flex-col items-start shrink-0" style={{ padding: '15px 24px', gap: 10, borderBottom: '0.5px solid #AEAEB2' }}>
-                                <div className="w-48 h-5 rounded bg-gray-200" />
-                                <div className="w-32 h-4 rounded bg-gray-200" />
+                    <div className="flex flex-col items-start shrink-0 animate-pulse" style={{ padding: '15px 24px', gap: 10, borderBottom: '0.5px solid #AEAEB2' }}>
+                        <div className="w-48 h-5 rounded bg-gray-200" />
+                        <div className="w-32 h-4 rounded bg-gray-200" />
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <div className="bg-gray-50 rounded-lg h-20" />
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="flex items-center gap-3 animate-pulse">
+                                <div className="w-6 h-6 rounded bg-gray-200" />
+                                <div className="flex-1">
+                                    <div className="w-40 h-4 rounded bg-gray-200 mb-1" />
+                                    <div className="w-24 h-3 rounded bg-gray-200" />
+                                </div>
+                                <div className="w-16 h-5 rounded-full bg-gray-200" />
                             </div>
-                            <div className="p-6 space-y-4">
-                                <div className="bg-gray-50 rounded-lg h-20" />
-                                {[...Array(4)].map((_, i) => (
-                                    <div key={i} className="flex items-center gap-3">
-                                        <div className="w-6 h-6 rounded bg-gray-200" />
-                                        <div className="flex-1">
-                                            <div className="w-40 h-4 rounded bg-gray-200 mb-1" />
-                                            <div className="w-24 h-3 rounded bg-gray-200" />
-                                        </div>
-                                        <div className="w-16 h-5 rounded-full bg-gray-200" />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </SkeletonWrapper>
+                        ))}
+                    </div>
                 </div>
             </div>
         );

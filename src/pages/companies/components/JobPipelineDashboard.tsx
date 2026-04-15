@@ -55,7 +55,6 @@ import AddNewStageForm from "../../pipelines/AddNewStageForm";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
 import * as XLSX from "xlsx";
-import { SkeletonWrapper } from "react-skeletonify";
 
 // ─── Interfaces ────────────────────────────────────────────────
 
@@ -1617,9 +1616,7 @@ export default function JobPipelineDashboard({
               <div className="flex items-center gap-3">
                 <h1 className="text-[20px] font-semibold text-black">
                   {loadingJob ? (
-                    <SkeletonWrapper loading={true}>
-                      <span className="inline-block h-5 w-48 bg-gray-200 rounded" />
-                    </SkeletonWrapper>
+                    <span className="inline-block h-5 w-48 bg-gray-200 rounded animate-pulse" />
                   ) : (
                     jobDetails?.title || "--"
                   )}
@@ -1712,16 +1709,14 @@ export default function JobPipelineDashboard({
         {isMetadataExpanded && (
           <div className="mt-4 border border-[#E5E7EB] rounded-2xl p-4 transition-all">
             {loadingJob ? (
-              <SkeletonWrapper loading={true}>
-                <div className="space-y-4">
-                  <div className="h-4 bg-gray-200 rounded w-1/3" />
-                  <div className="grid grid-cols-6 gap-4">
-                    {Array.from({ length: 12 }).map((_, i) => (
-                      <div key={i} className="h-4 bg-gray-200 rounded" />
-                    ))}
-                  </div>
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-1/3" />
+                <div className="grid grid-cols-6 gap-4">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="h-4 bg-gray-200 rounded" />
+                  ))}
                 </div>
-              </SkeletonWrapper>
+              </div>
             ) : jobDetails ? (
               <div className="grid grid-cols-6 gap-x-8 gap-y-6 text-sm">
                 <div>
@@ -2002,12 +1997,12 @@ export default function JobPipelineDashboard({
                   </button>
 
                   {loadingStages
-                    ? <SkeletonWrapper loading={true}><div className="flex items-center gap-2">{Array.from({ length: 5 }).map((_, i) => (
+                    ? Array.from({ length: 5 }).map((_, i) => (
                       <div
                         key={i}
-                        className="w-28 h-8 bg-gray-200 rounded-full"
+                        className="w-28 h-8 bg-gray-200 rounded-full animate-pulse"
                       />
-                    ))}</div></SkeletonWrapper>
+                    ))
                     : stages.filter(s => s.slug !== 'archives').map((stage) => (
                       <button
                         key={stage.id}
@@ -2791,32 +2786,47 @@ export default function JobPipelineDashboard({
                 <tbody className="divide-y divide-[#F3F5F7]">
                   {loadingCandidates ? (
                     Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={`skel-${i}`}>
-                        <td colSpan={11} className="px-4 py-5">
-                          <SkeletonWrapper loading={true}>
-                            <div className="flex items-center justify-between w-full">
-                              <div className="flex items-center gap-4">
-                                <div className="w-4 h-4 bg-gray-200 rounded" />
-                                <div className="space-y-2 w-48">
-                                  <div className="h-4 bg-gray-200 rounded w-32" />
-                                  <div className="h-3 bg-gray-200 rounded w-40" />
-                                </div>
-                                <div className="w-9 h-9 bg-gray-200 rounded-full mx-4" />
-                              </div>
-                              <div className="h-4 bg-gray-200 rounded w-20" />
-                              <div className="h-4 bg-gray-200 rounded w-16" />
-                              <div className="h-4 bg-gray-200 rounded w-16" />
-                              <div className="h-4 bg-gray-200 rounded w-20" />
-                              <div className="h-4 bg-gray-200 rounded w-16" />
-                              <div className="h-4 bg-gray-200 rounded w-24" />
-                              <div className="flex gap-2 justify-end mr-4">
-                                <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                                <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                                <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                                <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                              </div>
-                            </div>
-                          </SkeletonWrapper>
+                      <tr key={`skel-${i}`} className="animate-pulse">
+                        <td className="px-4 py-5">
+                          <div className="w-4 h-4 bg-gray-200 rounded" />
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-32" />
+                            <div className="h-3 bg-gray-200 rounded w-40" />
+                          </div>
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="w-9 h-9 bg-gray-200 rounded-full" />
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="h-4 bg-gray-200 rounded w-20" />
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="h-4 bg-gray-200 rounded w-16" />
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="h-4 bg-gray-200 rounded w-16" />
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="h-4 bg-gray-200 rounded w-20" />
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="h-4 bg-gray-200 rounded w-16" />
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="h-4 bg-gray-200 rounded w-24" />
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="h-5 bg-gray-200 rounded-full w-16" />
+                        </td>
+                        <td className="sticky right-0 z-10 bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]">
+                          <div className="flex gap-2 justify-end">
+                            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                            <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                          </div>
                         </td>
                       </tr>
                     ))

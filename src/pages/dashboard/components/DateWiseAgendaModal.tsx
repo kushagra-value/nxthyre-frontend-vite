@@ -1,6 +1,5 @@
 import React from 'react';
 import type { AgendaResponse } from '../../../services/dashboardService';
-import { SkeletonWrapper } from "react-skeletonify";
 
 interface DateWiseAgendaModalProps {
     isOpen?: boolean;
@@ -19,22 +18,20 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
 
     // Loading state
     const renderLoading = () => (
-        <SkeletonWrapper loading={true}>
-            <div className="p-6 space-y-4 flex-1">
-                <div className="space-y-4">
-                    <div className="flex gap-3">
-                        <div className="flex-1 bg-gray-100 rounded-xl h-32" />
-                        <div className="w-[200px] space-y-2">
-                            <div className="bg-gray-100 rounded-xl h-[60px]" />
-                            <div className="bg-gray-100 rounded-xl h-[60px]" />
-                        </div>
+        <div className="p-6 space-y-4 flex-1">
+            <div className="animate-pulse space-y-4">
+                <div className="flex gap-3">
+                    <div className="flex-1 bg-gray-100 rounded-xl h-32" />
+                    <div className="w-[200px] space-y-2">
+                        <div className="bg-gray-100 rounded-xl h-[60px]" />
+                        <div className="bg-gray-100 rounded-xl h-[60px]" />
                     </div>
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="bg-gray-100 rounded-lg h-16" />
-                    ))}
                 </div>
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-gray-100 rounded-lg h-16" />
+                ))}
             </div>
-        </SkeletonWrapper>
+        </div>
     );
 
     // Empty state

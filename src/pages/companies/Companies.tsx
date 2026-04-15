@@ -35,9 +35,6 @@ import JoinWorkspaceModal from "./components/JoinWorkspaceModal";
 import PendingRequestsModal from "./components/PendingRequestsModal";
 import { showToast } from "../../utils/toast";
 import CompanyInfoDrawer from "./components/CompanyInfoDrawer";
-import { SkeletonWrapper } from "react-skeletonify";
-import StatCard from '../../components/common/StatCard';
-import { CompanyOption, useJobContext } from '../../context/JobContext';
 import JobListing from "./components/JobListing";
 import JobPipeline from "./components/JobPipeline";
 import {
@@ -985,35 +982,26 @@ export default function Companies() {
                                         </thead>
                                         <tbody className="divide-y divide-[#F3F5F7]">
                                             {loading ? (
+                                                // Skeleton rows while loading
                                                 [...Array(5)].map((_, i) => (
-                                                    <tr key={`skel-${i}`}>
+                                                    <tr key={`skel-${i}`} className="animate-pulse">
                                                         <td className="px-6 py-4">
-                                                            <SkeletonWrapper loading={true}>
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-8 h-8 rounded-full bg-gray-100 shrink-0" />
-                                                                    <span className="text-[14px]">Company Name</span>
-                                                                </div>
-                                                            </SkeletonWrapper>
-                                                        </td>
-                                                        <td className="px-6 py-4 text-center"><SkeletonWrapper loading={true}><span>00</span></SkeletonWrapper></td>
-                                                        <td className="px-6 py-4 text-center"><SkeletonWrapper loading={true}><span>00</span></SkeletonWrapper></td>
-                                                        <td className="px-6 py-4 text-center"><SkeletonWrapper loading={true}><span>00</span></SkeletonWrapper></td>
-                                                        <td className="px-6 py-4 text-center"><SkeletonWrapper loading={true}><span>00</span></SkeletonWrapper></td>
-                                                        <td className="px-6 py-4 text-center"><SkeletonWrapper loading={true}><span>12 Jan 2024</span></SkeletonWrapper></td>
-                                                        <td className="px-6 py-4 text-center">
-                                                            <div className="flex justify-center">
-                                                                <SkeletonWrapper loading={true}>
-                                                                    <span className="px-3 py-1 rounded-full text-xs font-medium">Status</span>
-                                                                </SkeletonWrapper>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-gray-200 shrink-0" />
+                                                                <div className="h-4 bg-gray-200 rounded w-32" />
                                                             </div>
                                                         </td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-20 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-5 bg-gray-200 rounded-full w-14 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center">
-                                                            <SkeletonWrapper loading={true}>
-                                                                <div className="flex items-center justify-center gap-2">
-                                                                    <div className="w-6 h-6 rounded-full bg-gray-100" />
-                                                                    <div className="w-6 h-6 rounded-full bg-gray-100" />
-                                                                </div>
-                                                            </SkeletonWrapper>
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <div className="w-6 h-6 bg-gray-200 rounded-full" />
+                                                                <div className="w-6 h-6 bg-gray-200 rounded-full" />
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))
@@ -1227,23 +1215,19 @@ export default function Companies() {
                             </div>
                             <div className="flex flex-col gap-3">
                                 {sidebarLoading ? (
+                                    // Skeleton loading for immediate actions
                                     [...Array(3)].map((_, i) => (
-                                        <div key={`ia-skel-${i}`} className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                            <SkeletonWrapper loading={true}>
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-5 h-5 rounded-full object-contain bg-gray-100" />
-                                                        <p className="text-sm font-semibold text-[#0F47F2]">Company</p>
-                                                    </div>
-                                                </div>
-                                                <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                                    Loading action details here...
-                                                </p>
-                                                <div className="flex items-center gap-4">
-                                                    <button className="py-1.5 px-3 text-xs font-semibold rounded-md bg-[#E7EDFF]">Action</button>
-                                                    <span className="text-xs text-[#AEAEB2] font-medium">1h ago</span>
-                                                </div>
-                                            </SkeletonWrapper>
+                                        <div key={`ia-skel-${i}`} className="p-4 bg-[#F9FAFB] rounded-lg animate-pulse" style={{ border: "0.5px solid #E5E7EB" }}>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="w-24 h-4 rounded bg-gray-200" />
+                                                <div className="w-6 h-6 rounded-full bg-gray-200" />
+                                            </div>
+                                            <div className="w-full h-3 rounded bg-gray-200 mb-2" />
+                                            <div className="w-3/4 h-3 rounded bg-gray-200 mb-4" />
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-24 h-6 rounded bg-gray-200" />
+                                                <div className="w-14 h-3 rounded bg-gray-200" />
+                                            </div>
                                         </div>
                                     ))
                                 ) : sidebarData ? (
@@ -1319,17 +1303,13 @@ export default function Companies() {
                             <div className="flex flex-col gap-4">
                                 {sidebarLoading ? (
                                     [...Array(3)].map((_, i) => (
-                                        <div key={`ra-skel-${i}`} className="flex items-start justify-between pb-3 border-b border-[#F3F5F7] mb-2">
-                                            <SkeletonWrapper loading={true}>
-                                                <div className="flex items-start gap-2">
-                                                    <div className="w-5 h-5 rounded-full bg-[#E7EDFF] mt-0.5 shrink-0" />
-                                                    <div>
-                                                        <p className="text-sm font-medium text-[#0F47F2] mb-0.5">Company Name</p>
-                                                        <p className="text-[13px] text-[#4B5563]">Recent activity detail...</p>
-                                                    </div>
-                                                </div>
-                                                <span className="text-xs text-[#AEAEB2] font-medium mt-1 shrink-0 ml-2">1h ago</span>
-                                            </SkeletonWrapper>
+                                        <div key={`ra-skel-${i}`} className="flex items-start justify-between pb-3 border-b border-[#F3F5F7] animate-pulse">
+                                            <div>
+                                                <div className="w-28 h-4 rounded bg-gray-200 mb-1" />
+                                                <div className="w-40 h-3 rounded bg-gray-200 mb-1" />
+                                                <div className="w-32 h-2 rounded bg-gray-200" />
+                                            </div>
+                                            <div className="w-14 h-3 rounded bg-gray-200 mt-1" />
                                         </div>
                                     ))
                                 ) : sidebarData ? (

@@ -33,7 +33,6 @@ import candidateService, { Note } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
 import apiClient from "../../../services/api";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
-import { SkeletonWrapper } from "react-skeletonify";
 
 import {
   getCandidateCallHistory,
@@ -1911,15 +1910,13 @@ export default function JobCandidateProfile({
                 {loadingActivities ? (
                   <div className="space-y-4">
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <SkeletonWrapper loading={true} key={i}>
-                        <div className="flex gap-3">
-                          <div className="w-2 h-2 bg-gray-200 rounded-full mt-1.5 flex-shrink-0" />
-                          <div className="space-y-1 flex-1">
-                            <div className="h-3 bg-gray-200 rounded w-3/4" />
-                            <div className="h-2.5 bg-gray-200 rounded w-1/2" />
-                          </div>
+                      <div key={i} className="animate-pulse flex gap-3">
+                        <div className="w-2 h-2 bg-gray-200 rounded-full mt-1.5 flex-shrink-0" />
+                        <div className="space-y-1 flex-1">
+                          <div className="h-3 bg-gray-200 rounded w-3/4" />
+                          <div className="h-2.5 bg-gray-200 rounded w-1/2" />
                         </div>
-                      </SkeletonWrapper>
+                      </div>
                     ))}
                   </div>
                 ) : activities.length === 0 ? (
@@ -2047,20 +2044,18 @@ export default function JobCandidateProfile({
                 {loadingCalls ? (
                   <div className="space-y-4 mt-4">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <SkeletonWrapper loading={true} key={i}>
-                        <div>
-                          <div className="h-3 bg-gray-200 rounded w-1/3 mb-3" />
-                          <div className="border border-gray-100 rounded-xl p-5 space-y-3">
-                            <div className="flex gap-3">
-                              <div className="w-10 h-10 bg-gray-200 rounded-full" />
-                              <div className="space-y-2 flex-1">
-                                <div className="h-3 bg-gray-200 rounded w-2/3" />
-                                <div className="h-2.5 bg-gray-200 rounded w-1/3" />
-                              </div>
+                      <div key={i} className="animate-pulse">
+                        <div className="h-3 bg-gray-200 rounded w-1/3 mb-3" />
+                        <div className="border border-gray-100 rounded-xl p-5 space-y-3">
+                          <div className="flex gap-3">
+                            <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                            <div className="space-y-2 flex-1">
+                              <div className="h-3 bg-gray-200 rounded w-2/3" />
+                              <div className="h-2.5 bg-gray-200 rounded w-1/3" />
                             </div>
                           </div>
                         </div>
-                      </SkeletonWrapper>
+                      </div>
                     ))}
                   </div>
                 ) : callHistory.length === 0 ? (

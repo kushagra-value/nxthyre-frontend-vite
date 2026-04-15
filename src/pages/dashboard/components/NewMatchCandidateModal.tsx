@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { NewMatchCandidate } from '../dashboardData';
 import { naukbotService } from '../../../services/naukbotService';
-import CallCandidateModal, { CallCandidateData } from '../../companies/components/CallCandidateModal';
 import NViteModal from '../../companies/components/NViteModal';
+import CallCandidateModal, { CallCandidateData } from '../../companies/components/CallCandidateModal';
 import toast from 'react-hot-toast';
-import { SkeletonWrapper } from "react-skeletonify";
 
 interface NewMatchCandidateModalProps {
     isOpen?: boolean;
@@ -235,33 +234,31 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                 {/* Scrollable */}
                 <div className="flex-1 overflow-y-auto">
                     {isLoading ? (
-                        <SkeletonWrapper loading={true}>
-                            <div className="p-6">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div className="space-y-3">
-                                        <div className="h-6 w-48 bg-gray-200 rounded" />
-                                        <div className="h-4 w-64 bg-gray-100 rounded" />
-                                    </div>
-                                    <div className="h-12 w-12 rounded-full bg-gray-100" />
+                        <div className="p-6 animate-pulse">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="space-y-3">
+                                    <div className="h-6 w-48 bg-gray-200 rounded" />
+                                    <div className="h-4 w-64 bg-gray-100 rounded" />
                                 </div>
-                                <div className="grid grid-cols-3 gap-8 mb-8 pb-8 border-b border-[#AEAEB2]">
-                                    {[...Array(6)].map((_, i) => (
-                                        <div key={i} className="space-y-2">
-                                            <div className="h-3 w-16 bg-gray-100 rounded" />
-                                            <div className="h-4 w-24 bg-gray-200 rounded" />
-                                        </div>
+                                <div className="h-12 w-12 rounded-full bg-gray-100" />
+                            </div>
+                            <div className="grid grid-cols-3 gap-8 mb-8 pb-8 border-b border-[#AEAEB2]">
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="space-y-2">
+                                        <div className="h-3 w-16 bg-gray-100 rounded" />
+                                        <div className="h-4 w-24 bg-gray-200 rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="space-y-4">
+                                <div className="h-4 w-32 bg-gray-100 rounded" />
+                                <div className="flex gap-2">
+                                    {[...Array(4)].map((_, i) => (
+                                        <div key={i} className="h-8 w-20 bg-gray-100 rounded-full" />
                                     ))}
                                 </div>
-                                <div className="space-y-4">
-                                    <div className="h-4 w-32 bg-gray-100 rounded" />
-                                    <div className="flex gap-2">
-                                        {[...Array(4)].map((_, i) => (
-                                            <div key={i} className="h-8 w-20 bg-gray-100 rounded-full" />
-                                        ))}
-                                    </div>
-                                </div>
                             </div>
-                        </SkeletonWrapper>
+                        </div>
                     ) : (
                         <>
                             {/* ─── Candidate Info ─── */}
