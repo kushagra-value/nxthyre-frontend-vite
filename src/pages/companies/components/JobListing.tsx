@@ -263,8 +263,17 @@ const JobListing: React.FC<JobListingProps> = ({
             : <ArrowUp className="w-3 h-3 ml-1 text-[#0F47F2] inline-block" />;
     };
 
-    // Jobs are already sorted and filtered server-side, use directly
-    const totalJobsForPagination = jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
+    // Jobs are already sorted and filtered server-side, use directly.
+    // Use the filtered count from status_counts so pagination matches the active tab.
+    const getFilteredTotal = (): number => {
+        if (activeJobFilter === "All") return jobStatusCounts?.all ?? jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
+        if (activeJobFilter === "Active") return jobStatusCounts?.active ?? filteredWorkspaceJobs.length;
+        if (activeJobFilter === "Paused") return jobStatusCounts?.paused ?? filteredWorkspaceJobs.length;
+        if (activeJobFilter === "Inactive") return jobStatusCounts?.inactive ?? filteredWorkspaceJobs.length;
+        if (activeJobFilter === "Draft") return jobStatusCounts?.draft ?? filteredWorkspaceJobs.length;
+        return jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
+    };
+    const totalJobsForPagination = getFilteredTotal();
     const totalPages = Math.max(1, Math.ceil(totalJobsForPagination / ITEMS_PER_PAGE));
     const paginatedJobs = filteredWorkspaceJobs;
     const startIdx = filteredWorkspaceJobs.length > 0 ? (jobCurrentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
