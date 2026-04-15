@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import {
     organizationService,
@@ -202,6 +202,8 @@ export default function Companies() {
     const [createdBefore, setCreatedBefore] = useState<string | undefined>(undefined);
     const [jobDateFilterLabel, setJobDateFilterLabel] = useState("Date Filter");
     const [jobsLoading, setJobsLoading] = useState(false);
+    const [jobOrdering, setJobOrdering] = useState<string>("");
+    const [debouncedJobSearch, setDebouncedJobSearch] = useState("");
 
     // Track pending rehydration IDs from sessionStorage
     const [pendingWsId, setPendingWsId] = useState<number | null>(() => {
@@ -307,7 +309,7 @@ export default function Companies() {
         }
     };
 
-    const fetchJobs = async () => {
+    const fetchJobs = useCallback(async () => {
         setJobsLoading(true);
         try {
             const response = await jobPostService.getPaginatedRoles({
@@ -316,6 +318,9 @@ export default function Companies() {
                 workspace_id: selectedWorkspace?.id,
                 created_after: createdAfter,
                 created_before: createdBefore,
+                status: activeJobFilter === "All" ? undefined : activeJobFilter.toUpperCase(),
+                search: debouncedJobSearch || undefined,
+                ordering: jobOrdering || undefined,
             });
             if (isMounted.current) {
                 setAllJobs(response.jobs || []);
@@ -328,7 +333,7 @@ export default function Companies() {
         } finally {
             if (isMounted.current) setJobsLoading(false);
         }
-    };
+    }, [jobCurrentPage, jobPageSize, selectedWorkspace?.id, createdAfter, createdBefore, activeJobFilter, debouncedJobSearch, jobOrdering]);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -336,6 +341,19 @@ export default function Companies() {
             fetchSidebar();
         }
     }, [isAuthenticated]);
+
+    // Debounce search input — waits 300ms after user stops typing before triggering API call
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedJobSearch(jobSearchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [jobSearchQuery]);
+
+    // Reset to page 1 when filters/search/sort change (but not when page itself changes)
+    useEffect(() => {
+        setJobCurrentPage(1);
+    }, [activeJobFilter, debouncedJobSearch, jobOrdering]);
 
     useEffect(() => {
         if (!isAuthenticated) return;
@@ -350,7 +368,7 @@ export default function Companies() {
         }
 
         fetchJobs();
-    }, [isAuthenticated, selectedWorkspace?.id, jobCurrentPage, jobPageSize, createdAfter, createdBefore]);
+    }, [isAuthenticated, fetchJobs]);
 
     const fetchSidebar = async () => {
         setSidebarLoading(true);
@@ -581,20 +599,9 @@ export default function Companies() {
 
     const workspaceJobs = useMemo(() => allJobs, [allJobs]);
 
-    const filteredWorkspaceJobs = useMemo(() => workspaceJobs.filter(j => {
-        const matchesSearch = j.title.toLowerCase().includes(jobSearchQuery.toLowerCase());
-        let matchesStatus = true;
-        if (activeJobFilter === "Active") {
-            matchesStatus = j.status === "ACTIVE";
-        } else if (activeJobFilter === "Paused") {
-            matchesStatus = j.status === "PAUSED";
-        } else if (activeJobFilter === "Inactive") {
-            matchesStatus = j.status === "INACTIVE";
-        } else if (activeJobFilter === "Draft") {
-            matchesStatus = j.pyjamahr_status === "DRAFT";
-        }
-        return matchesSearch && matchesStatus;
-    }), [workspaceJobs, jobSearchQuery, activeJobFilter]);
+    // Filtering and sorting are now handled server-side via query params.
+    // The jobs returned from the API are already filtered and sorted.
+    const filteredWorkspaceJobs = workspaceJobs;
 
     // ── Job Pipeline View ──
     if (selectedJob && selectedWorkspace) {
@@ -661,6 +668,8 @@ export default function Companies() {
                 companyResearchData={companyResearchData}
                 setInfoWorkspaceNull={() => setInfoWorkspace(null)}
                 onJobSelect={(job) => setSelectedJob(job)}
+                currentOrdering={jobOrdering}
+                onSortChange={(ordering) => { setJobOrdering(ordering); }}
             />
         );
     }
