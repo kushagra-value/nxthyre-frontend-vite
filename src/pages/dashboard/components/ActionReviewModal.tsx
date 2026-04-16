@@ -175,6 +175,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
         expectedCtc: expectedCTC,
         location,
         noticePeriod,
+        resumeUrl: candidate?.premium_data?.resume_url || candidate?.resume_url || undefined,
       }
     : null;
 
