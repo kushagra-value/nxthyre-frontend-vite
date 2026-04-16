@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { ScheduleEventAPI } from '../../../services/dashboardService';
-import CallCandidateModal, { CallCandidateData } from '../../companies/components/CallCandidateModal';
 
 interface ScheduleEventModalProps {
     isOpen?: boolean;
@@ -16,7 +15,6 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
     initialIndex = 0,
 }) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
-    const [showCallModal, setShowCallModal] = useState(false);
 
     React.useEffect(() => {
         if (isOpen && events.length > 0) {
@@ -34,7 +32,8 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
     const goPrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
     // Construct data for CallCandidateModal
-    const callCandidateData: CallCandidateData = {
+    // Construct data for manual call navigation
+    const callCandidateData = {
         id: details.candidate_id || '',
         name: details.candidate_name,
         avatarInitials: details.candidate_name
@@ -237,7 +236,10 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                             <button
                                 className="flex-1 flex items-center justify-center text-sm font-normal cursor-pointer bg-transparent hover:bg-gray-50 transition-colors"
                                 style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2', lineHeight: '17px' }}
-                                onClick={() => setShowCallModal(true)}
+                                onClick={() => {
+                                    sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callCandidateData }));
+                                    window.location.href = `/call/${callCandidateData.id}/${details.job_id || 0}?mode=manual`;
+                                }}
                             >
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                                     <path d="M14.5 2C14.5 2 16.5 2.5 19 5C21.5 7.5 22 9.5 22 9.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
@@ -251,12 +253,6 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                 </div>
             </div>
 
-            {/* ── Call Candidate Modal ── */}
-            <CallCandidateModal
-                isOpen={showCallModal}
-                onClose={() => setShowCallModal(false)}
-                candidate={callCandidateData}
-            />
         </>
     );
 };

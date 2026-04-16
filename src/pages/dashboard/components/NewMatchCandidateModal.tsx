@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { NewMatchCandidate } from '../dashboardData';
 import { naukbotService } from '../../../services/naukbotService';
 import NViteModal from '../../companies/components/NViteModal';
-import CallCandidateModal, { CallCandidateData } from '../../companies/components/CallCandidateModal';
 import toast from 'react-hot-toast';
 
 interface NewMatchCandidateModalProps {
@@ -38,7 +37,6 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
 }) => {
     const [isSkipping, setIsSkipping] = useState(false);
     const [nviteModal, setNviteModal] = useState(false);
-    const [showCallModal, setShowCallModal] = useState(false);
 
     if (!isOpen || candidates.length === 0) return null;
 
@@ -116,8 +114,8 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
     // match label
     const matchLabel = candidateMatchScore?.label || '';
 
-    // ── Build CallCandidateData ──
-    const callCandidateData: CallCandidateData | null = currentItem ? {
+    // ── Build manual call data ──
+    const callCandidateData = currentItem ? {
         id: candidate?.id || currentItem.id || '',
         name: candidateName,
         avatarInitials: candidateName
@@ -438,7 +436,12 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                         <button
                             className="flex items-center justify-center cursor-pointer bg-transparent text-sm font-normal hover:bg-blue-50 transition-colors"
                             style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2' }}
-                            onClick={() => setShowCallModal(true)}
+                            onClick={() => {
+                                if (callCandidateData) {
+                                    sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callCandidateData }));
+                                    window.location.href = `/call/${callCandidateData.id}/${currentItem?.jobId || 0}?mode=manual`;
+                                }
+                            }}
                         >
                             Call
                         </button>
@@ -480,12 +483,6 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
                 }}
             />
         )}
-        {/* ── Call Candidate Modal ── */}
-        <CallCandidateModal
-            isOpen={showCallModal}
-            onClose={() => setShowCallModal(false)}
-            candidate={callCandidateData}
-        />
         </>
     );
 };

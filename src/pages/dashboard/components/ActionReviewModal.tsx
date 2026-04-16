@@ -4,9 +4,6 @@ import {
   PriorityTab,
 } from "../../../services/dashboardService";
 import apiClient from "../../../services/api";
-import CallCandidateModal, {
-  CallCandidateData,
-} from "../../companies/components/CallCandidateModal";
 
 interface ActionReviewModalProps {
   isOpen?: boolean;
@@ -45,7 +42,6 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
   const [completing, setCompleting] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [movingNext, setMovingNext] = useState(false);
-  const [showCallModal, setShowCallModal] = useState(false);
 
   if (!isOpen) return null;
 
@@ -162,8 +158,8 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
           t.toLowerCase().includes("move to next round"),
       ));
 
-  // ── Build CallCandidateData from candidateData ──
-  const callCandidateData: CallCandidateData | null = currentItem
+  // ── Build manual call data ──
+  const callCandidateData = currentItem
     ? {
         id: currentItem.candidate_id,
         name: candidateName,
@@ -952,7 +948,12 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                     border: "0.5px solid #0F47F2",
                     borderRadius: 5,
                   }}
-                  onClick={() => setShowCallModal(true)}
+                  onClick={() => {
+                    if (callCandidateData && currentItem) {
+                      sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callCandidateData }));
+                      window.location.href = `/call/${callCandidateData.id}/${currentItem.job_role_id || 0}?mode=manual`;
+                    }
+                  }}
                   disabled={completing}
                 >
                   <svg
@@ -1084,13 +1085,6 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
         </div>
       </div>
 
-      {/* ── Call Candidate Modal ── */}
-      <CallCandidateModal
-        isOpen={showCallModal}
-        onClose={() => setShowCallModal(false)}
-        candidate={callCandidateData}
-        jobId={currentItem?.job_role_id || undefined}
-      />
     </>
   );
 };

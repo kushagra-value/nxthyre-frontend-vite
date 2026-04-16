@@ -47,7 +47,7 @@ import {
 import { candidateService } from "../../../services/candidateService";
 import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoTab from "./CompanyInfoTab";
-import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
+
 import NaukbotTab from "./NaukbotTab";
 import LinkedinBotTab from "./LinkedinBotTab";
 import InboundTab from "./InboundTab";
@@ -730,9 +730,7 @@ export default function JobPipelineDashboard({
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
-  // ── Call Modal State
-  const [callModalCandidate, setCallModalCandidate] =
-    useState<CallCandidateData | null>(null);
+
 
   // ── Export helpers
   const downloadFile = (
@@ -2436,7 +2434,7 @@ export default function JobPipelineDashboard({
                                           className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
                                           style={{ top: menuPos.top, left: menuPos.left }}
                                         >
-                                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
+                                          <button onClick={(e) => { e.stopPropagation(); const callData = { id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }; sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData })); setMenuOpenId(null); window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`; }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
                                           <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
                                           <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
                                           <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
@@ -3092,7 +3090,7 @@ export default function JobPipelineDashboard({
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          setCallModalCandidate({
+                                          const callData = {
                                             id: cand.id,
                                             name: cand.full_name || "Unknown",
                                             avatarInitials: cand.full_name
@@ -3109,8 +3107,10 @@ export default function JobPipelineDashboard({
                                             noticePeriod: noticePeriodText,
                                             callAttention: callAttention,
                                             resumeUrl: cand.premium_data?.resume_url || "",
-                                          });
+                                          };
+                                          sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData }));
                                           setMenuOpenId(null);
+                                          window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`;
                                         }}
                                         className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                       >
@@ -4276,13 +4276,6 @@ export default function JobPipelineDashboard({
         </div>
       )}
 
-      {/* Call Candidate Modal */}
-      <CallCandidateModal
-        isOpen={!!callModalCandidate}
-        onClose={() => setCallModalCandidate(null)}
-        candidate={callModalCandidate}
-        jobId={jobId || undefined}
-      />
 
       {/* Candidate Edit Modal */}
       {/* Candidate Edit Modal */}

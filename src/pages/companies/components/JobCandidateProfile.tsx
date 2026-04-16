@@ -32,7 +32,6 @@ import {
 import candidateService, { Note } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
 import apiClient from "../../../services/api";
-import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 
 import {
   getCandidateCallHistory,
@@ -141,8 +140,6 @@ export default function JobCandidateProfile({
     candidateNames?: string[];
   } | null>(null);
   const [showStageMenu, setShowStageMenu] = useState(false);
-  const [callModalCandidate, setCallModalCandidate] =
-    useState<CallCandidateData | null>(null);
 
   // ── Match Description Editing State ──
   const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
@@ -709,7 +706,7 @@ export default function JobCandidateProfile({
                     )}
                     <button
                       onClick={() => {
-                        setCallModalCandidate({
+                        const callData = {
                           id: cand.id,
                           name: fullName,
                           avatarInitials: fullName
@@ -728,7 +725,9 @@ export default function JobCandidateProfile({
                           noticePeriod: noticePeriod,
                           callAttention: jobScoreObj?.call_attention || [],
                           resumeUrl: premiumData.resume_url || undefined,
-                        });
+                        };
+                        sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData }));
+                        window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`;
                       }}
                       className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition"
                     >
@@ -2355,12 +2354,6 @@ export default function JobCandidateProfile({
           </div>
         )}
 
-        {/* Call Candidate Modal */}
-        <CallCandidateModal
-          isOpen={!!callModalCandidate}
-          onClose={() => setCallModalCandidate(null)}
-          candidate={callModalCandidate}
-        />
       </div>
     </div>
   );
