@@ -95,7 +95,7 @@ export default function CandidateCallPage() {
 
   // Manual call states
   const [manualCallConnected, setManualCallConnected] = useState(false);
-  const [manualActiveTab, setManualActiveTab] = useState<"resume" | "roleQuestions">("resume");
+  const [manualActiveTab, setManualActiveTab] = useState<"roleQuestions" | "resume">("roleQuestions");
 
   // Call States
   const [seconds, setSeconds] = useState(0);
@@ -812,10 +812,10 @@ export default function CandidateCallPage() {
             {isManual ? (
               /* Manual mode tabs: Candidate Resume | Role Questions */
               <>
-                {(["resume", "roleQuestions"] as const).map((tab) => {
+                {(["roleQuestions", "resume"] as const).map((tab) => {
                   const labels = {
-                    resume: "Candidate Resume",
                     roleQuestions: "Role Questions",
+                    resume: "Candidate Resume",
                   };
                   const isActive = manualActiveTab === tab;
                   return (
