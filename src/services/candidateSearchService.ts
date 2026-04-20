@@ -71,6 +71,21 @@ export interface V1Candidate {
   source: string | null;
   statusTags: any[];
   dateCreated: string;
+  // NEW: actual designation from candidate's experience profile
+  designation: string | null;
+  // NEW: actual current company from candidate's experience profile
+  currentCompany: string | null;
+  // NEW: current CTC formatted (e.g. "18.5L")
+  currentCtc: string | null;
+  // NEW: expected CTC formatted (e.g. "25-35L")
+  expectedCtc: string | null;
+  // NEW: "Available" or "Occupied"
+  status: string;
+  // NEW: pipeline info when status is Occupied
+  pipelineInfo: {
+    companyName: string;
+    jobTitle: string;
+  } | null;
 }
 
 export interface V1SearchResponse {
@@ -99,6 +114,41 @@ export interface V1MoveToPipelineResponse {
   message: string;
   added_count: number;
   skipped_count: number;
+}
+
+// ── Stats Types ──
+
+export interface V1CandidateStats {
+  totalCandidates: number;
+  totalCandidatesChange: string;
+  totalCandidatesChangeText: string;
+  totalHired: number;
+  totalHiredChange: string;
+  totalHiredChangeText: string;
+  viaNaukbot: number;
+  viaNaukbotChange: string;
+  viaNaukbotChangeText: string;
+  manualUploads: number;
+  manualUploadsChange: string;
+  manualUploadsChangeText: string;
+  others: number;
+  othersChange: string;
+  othersChangeText: string;
+}
+
+// ── Share Types ──
+
+export interface V1ShareRequest {
+  candidate_ids: string[];
+}
+
+export interface V1ShareResponse {
+  message: string;
+  count: number;
+  data: {
+    candidate_id: string;
+    share_url: string;
+  }[];
 }
 
 // ── Service ──
@@ -231,6 +281,40 @@ class CandidateSearchService {
         error.response?.data?.detail ||
           error.response?.data?.error ||
           "Failed to export candidates"
+      );
+    }
+  }
+
+  /**
+   * GET /v1/candidates/stats/
+   * Returns stat card metrics for CandidateSearch header.
+   */
+  async getCandidateStats(): Promise<V1CandidateStats> {
+    try {
+      const response = await apiClient.get("/v1/candidates/stats/");
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail ||
+          error.response?.data?.error ||
+          "Failed to fetch candidate stats"
+      );
+    }
+  }
+
+  /**
+   * POST /v1/candidates/share/
+   * Bulk share candidate profiles.
+   */
+  async shareCandidates(body: V1ShareRequest): Promise<V1ShareResponse> {
+    try {
+      const response = await apiClient.post("/v1/candidates/share/", body);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail ||
+          error.response?.data?.error ||
+          "Failed to share candidates"
       );
     }
   }

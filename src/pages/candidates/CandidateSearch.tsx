@@ -14,7 +14,13 @@ import {
   ArrowUp,
   ArrowDown,
   Loader2,
-  Users
+  Users,
+  Calendar,
+  Upload,
+  Maximize2,
+  Plus,
+  Share2,
+  CheckSquare,
 } from 'lucide-react';
 import CandidateFilterPanel, { FiltersState } from './components/CandidateFilterPanel';
 import candidateSearchService, {
@@ -22,6 +28,7 @@ import candidateSearchService, {
   V1SearchRequest,
   V1Workspace,
   V1Job,
+  V1CandidateStats,
 } from '../../services/candidateSearchService';
 import candidateService from '../../services/candidateService';
 
@@ -70,15 +77,17 @@ const CloudIcon = () => (
 const MapPinIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>;
 const CalendarIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
 
-// ── Stat Card ──
-const StatCard = ({ title, value, change, changeText, positive, icon: Icon }: any) => (
-  <div className="bg-white rounded-[12px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] flex flex-col gap-3 min-w-[240px] flex-1 border border-gray-100">
-    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-50">
-      <Icon />
-    </div>
-    <div className="flex items-center gap-2">
-      <span className={`text-sm font-medium ${positive ? 'text-green-500' : 'text-green-500'}`}>{change}</span>
-      <span className="text-sm text-gray-400">{changeText}</span>
+// ── Stat Card (Redesigned) ──
+const StatCard = ({ title, value, change, changeText, icon: Icon }: any) => (
+  <div className="bg-white rounded-[12px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] flex flex-col gap-3 min-w-[180px] flex-1 border border-gray-100">
+    <div className="flex items-center justify-between">
+      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-50">
+        <Icon />
+      </div>
+      <div className="flex items-center gap-1.5 bg-green-50 px-2.5 py-1 rounded-full">
+        <span className="text-xs font-medium text-green-600">{change}</span>
+        <span className="text-xs text-gray-400">{changeText}</span>
+      </div>
     </div>
     <div>
       <div className="text-sm text-gray-500 mb-1">{title}</div>
@@ -140,7 +149,7 @@ const SORT_OPTIONS: Record<string, string> = {
   experience_asc: 'Exp: Low to High',
 };
 
-const PAGE_LIMIT = 10;
+const PAGE_LIMIT = 15;
 
 // ── Move to Pipeline Modal ──
 interface MoveToPipelineModalProps {
@@ -246,7 +255,7 @@ const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, 
               <div key={c.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900">{c.name}</h3>
-                  <p className="text-xs text-blue-600">{c.jobRole?.title || '—'} {c.client?.name ? `- ${c.client.name}` : ''}</p>
+                  <p className="text-xs text-blue-600">{c.designation || c.jobRole?.title || '—'} {c.currentCompany || c.client?.name ? `- ${c.currentCompany || c.client?.name}` : ''}</p>
                 </div>
                 <div className="flex items-center gap-4 text-xs text-gray-500">
                   {c.experience != null && <span>{c.experience} yrs</span>}
@@ -502,6 +511,9 @@ export default function CandidateSearch() {
   const [workspaces, setWorkspaces] = React.useState<V1Workspace[]>([]);
   const [jobs, setJobs] = React.useState<V1Job[]>([]);
 
+  // ── Stats ──
+  const [stats, setStats] = React.useState<V1CandidateStats | null>(null);
+
   // ── Selection ──
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
 
@@ -533,6 +545,21 @@ export default function CandidateSearch() {
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // ── Fetch stats on mount ──
+  React.useEffect(() => {
+    let cancelled = false;
+    const fetchStats = async () => {
+      try {
+        const data = await candidateSearchService.getCandidateStats();
+        if (!cancelled) setStats(data);
+      } catch (err) {
+        console.error('Failed to fetch candidate stats', err);
+      }
+    };
+    fetchStats();
+    return () => { cancelled = true; };
+  }, []);
 
   // ── Fetch dropdown data on mount ──
   React.useEffect(() => {
@@ -721,6 +748,23 @@ export default function CandidateSearch() {
     }
   };
 
+  const handleShare = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      const res = await candidateSearchService.shareCandidates({
+        candidate_ids: Array.from(selectedIds),
+      });
+      // Copy first share URL to clipboard or show success
+      if (res.data && res.data.length > 0) {
+        const urls = res.data.map(d => d.share_url).join('\n');
+        await navigator.clipboard.writeText(urls);
+        alert(`${res.count} share link(s) copied to clipboard`);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Share failed');
+    }
+  };
+
   const handleActionClick = (id: string) => {
     setActiveMenuId(activeMenuId === id ? null : id);
   };
@@ -732,7 +776,7 @@ export default function CandidateSearch() {
 
   const selectedCandidates = candidates.filter(c => selectedIds.has(c.id));
 
-  // ── Skeleton rows ──
+  // ── Skeleton rows (updated for new 10-column layout) ──
   const SkeletonRow = () => (
     <tr className="animate-pulse">
       <td className="p-4"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
@@ -742,55 +786,51 @@ export default function CandidateSearch() {
       <td className="p-4"><div className="h-4 bg-gray-200 rounded w-12" /></td>
       <td className="p-4"><div className="h-4 bg-gray-200 rounded w-16" /></td>
       <td className="p-4"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-      <td className="p-4"><div className="h-4 bg-gray-200 rounded w-20" /></td>
+      <td className="p-4"><div className="h-4 bg-gray-200 rounded w-16" /></td>
+      <td className="p-4"><div className="h-4 bg-gray-200 rounded w-16" /></td>
       <td className="p-4"><div className="h-4 bg-gray-200 rounded w-24" /></td>
     </tr>
   );
 
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50 h-full custom-scrollbar relative">
-      <div className="max-w-screen-2xl mx-auto p-6 space-y-6">
+      <div className="w-full p-6 space-y-6">
         
         {/* Stat Cards */}
         <div className="flex flex-wrap gap-4">
           <StatCard 
             title="Total Candidates" 
-            value={totalCount > 0 ? totalCount.toLocaleString() : '—'} 
-            change="10%" 
-            changeText="vs last month" 
-            positive={true} 
+            value={stats ? stats.totalCandidates.toLocaleString() : (totalCount > 0 ? totalCount.toLocaleString() : '—')} 
+            change={stats?.totalCandidatesChange || '10%'} 
+            changeText={stats?.totalCandidatesChangeText || 'vs last month'} 
             icon={BriefcaseIcon} 
           />
           <StatCard 
             title="Total Hired" 
-            value="822" 
-            change="+42" 
-            changeText="this month" 
-            positive={true} 
+            value={stats ? stats.totalHired.toLocaleString() : '—'} 
+            change={stats?.totalHiredChange || '+42'} 
+            changeText={stats?.totalHiredChangeText || 'this month'} 
             icon={UserCheckIcon} 
           />
           <StatCard 
             title="Via Naukbot" 
-            value="12048" 
-            change="+42" 
-            changeText="this month" 
-            positive={true} 
+            value={stats ? stats.viaNaukbot.toLocaleString() : '—'} 
+            change={stats?.viaNaukbotChange || '+42'} 
+            changeText={stats?.viaNaukbotChangeText || 'this month'} 
             icon={BotIcon} 
           />
           <StatCard 
             title="Manual Uploads" 
-            value="2341" 
-            change="+25" 
-            changeText="this month" 
-            positive={true} 
+            value={stats ? stats.manualUploads.toLocaleString() : '—'} 
+            change={stats?.manualUploadsChange || '+25'} 
+            changeText={stats?.manualUploadsChangeText || 'this month'} 
             icon={UploadCloudIcon} 
           />
           <StatCard 
             title="Others" 
-            value="830" 
-            change="+25" 
-            changeText="this month" 
-            positive={true} 
+            value={stats ? stats.others.toLocaleString() : '—'} 
+            change={stats?.othersChange || '+25'} 
+            changeText={stats?.othersChangeText || 'this month'} 
             icon={CloudIcon} 
           />
         </div>
@@ -802,7 +842,7 @@ export default function CandidateSearch() {
               <Search className="w-4 h-4 text-gray-400" />
               <input 
                 type="text" 
-                placeholder="Search by name, email, or phone" 
+                placeholder="Search for Candidates, Companies, Skills" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="outline-none text-sm w-full bg-transparent placeholder:text-gray-400"
@@ -841,45 +881,75 @@ export default function CandidateSearch() {
                 optionsData={optionsData}
               />
             </div>
-
-            {/* Selection indicator */}
-            {selectedIds.size > 0 && (
-              <div className="ml-4 flex items-center gap-2 text-sm text-[#0F47F2] font-medium">
-                <Users className="w-4 h-4" />
-                {selectedIds.size} selected
-                <button 
-                  onClick={() => setSelectedIds(new Set())}
-                  className="ml-1 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
           </div>
           
           <div className="flex items-center gap-3 pr-4">
-            {selectedIds.size > 0 && (
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                className="bg-[#0F47F2] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
-              >
-                Move to Pipeline
-              </button>
-            )}
+            {/* Calendar button */}
+            <button 
+              className="w-10 h-10 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50"
+              title="Calendar view"
+            >
+              <Calendar className="w-5 h-5" />
+            </button>
+            {/* Export button */}
             <div className="relative">
               <button 
                 onClick={() => setIsExportOpen(!isExportOpen)}
                 className="w-10 h-10 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50"
+                title="Export"
               >
-                <DownloadCloud className="w-5 h-5" />
+                <Upload className="w-5 h-5" />
               </button>
               <ExportDropdown isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} onExport={handleExport} />
             </div>
+            {/* Grid/Expand button */}
+            <button 
+              className="w-10 h-10 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50"
+              title="Expand view"
+            >
+              <Maximize2 className="w-5 h-5" />
+            </button>
+            {/* Add Candidate button */}
+            <button 
+              className="bg-[#22C55E] hover:bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" /> Add Candidate
+            </button>
           </div>
         </div>
 
+        {/* Bulk Selection Bar */}
+        {selectedIds.size > 0 && (
+          <div className="bg-white border-x border-gray-200 flex items-center gap-4 px-4 py-3 -mt-6">
+            <div className="flex items-center gap-2">
+              <CheckSquare className="w-5 h-5 text-[#0F47F2]" />
+              <span className="text-sm text-gray-700 font-medium">
+                {selectedIds.size} Candidate{selectedIds.size > 1 ? 's' : ''} are selected
+              </span>
+            </div>
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-[#EF4444] hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Move to Pipeline
+            </button>
+            <button 
+              onClick={() => handleExport('xlsx')}
+              className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 transition-colors"
+            >
+              <DownloadCloud className="w-4 h-4" /> Download
+            </button>
+            <button 
+              onClick={handleShare}
+              className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 transition-colors"
+            >
+              <Share2 className="w-4 h-4" /> Share
+            </button>
+          </div>
+        )}
+
         {/* Table */}
-        <div className="bg-white border rounded-b-xl border-t-0 border-gray-200">
+        <div className={`bg-white border rounded-b-xl border-t-0 border-gray-200 ${selectedIds.size > 0 ? '-mt-6' : ''}`}>
           <div className="overflow-x-auto min-h-[500px]">
             <table className="w-full text-left text-sm">
               <thead className="bg-white border-b border-gray-100">
@@ -893,25 +963,24 @@ export default function CandidateSearch() {
                     />
                   </th>
                   <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Candidate</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Role</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Designation</th>
                   <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Location</th>
                   <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 cursor-pointer select-none" onClick={() => handleSort('experience')}>
                     Exp <SortIndicator column="experience" currentSort={sortBy} />
                   </th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Current CTC</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Expected</th>
                   <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Notice</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Source</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 cursor-pointer select-none" onClick={() => handleSort('created_at')}>
-                    Date Added <SortIndicator column="created_at" currentSort={sortBy} />
-                  </th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Status</th>
                   <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
-                  Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
+                  Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
                 ) : candidates.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="p-16 text-center">
+                    <td colSpan={10} className="p-16 text-center">
                       <div className="flex flex-col items-center gap-3 text-gray-400">
                         <Users className="w-12 h-12 stroke-[1.5]" />
                         <div className="text-lg font-medium text-gray-500">No candidates found</div>
@@ -930,38 +999,36 @@ export default function CandidateSearch() {
                           onChange={() => handleSelectCandidate(c.id)}
                         />
                       </td>
+                      {/* CANDIDATE: name + actual company */}
                       <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          {c.avatarUrl ? (
-                            <img src={c.avatarUrl} alt={c.name} className="w-8 h-8 rounded-full object-cover" />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
-                              {c.name?.charAt(0)?.toUpperCase() || '?'}
-                            </div>
-                          )}
-                          <div>
-                            <div className="font-semibold text-gray-900">{c.name || '—'}</div>
-                            <div className="text-xs text-gray-400 mt-0.5">
-                              {c.client?.name || '—'} {c.email ? `• ${c.email}` : ''}
-                            </div>
+                        <div>
+                          <div className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">{c.name || '—'}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            {c.currentCompany || c.client?.name || '—'}
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 font-semibold text-gray-700">{c.jobRole?.title || '—'}</td>
+                      {/* DESIGNATION: actual designation from profile */}
+                      <td className="p-4 font-semibold text-gray-700">{c.designation || c.jobRole?.title || '—'}</td>
+                      {/* LOCATION */}
                       <td className="p-4 text-gray-600">{c.location || '—'}</td>
+                      {/* EXP */}
                       <td className="p-4 text-gray-600">{c.experience != null ? `${c.experience} yrs` : '—'}</td>
+                      {/* CURRENT CTC */}
+                      <td className="p-4 text-gray-600">{c.currentCtc ? `₹${c.currentCtc}` : '—'}</td>
+                      {/* EXPECTED CTC */}
+                      <td className="p-4 font-medium text-green-600">{c.expectedCtc ? `₹${c.expectedCtc}` : '—'}</td>
+                      {/* NOTICE */}
                       <td className="p-4 font-medium text-amber-500">{c.noticePeriod || '—'}</td>
+                      {/* STATUS */}
                       <td className="p-4">
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          c.source === 'Naukbot' ? 'bg-blue-50 text-blue-700' :
-                          c.source === 'Naukri' ? 'bg-indigo-50 text-indigo-700' :
-                          c.source === 'Manual Upload' ? 'bg-green-50 text-green-700' :
-                          'bg-gray-100 text-gray-600'
+                        <span className={`text-sm font-medium ${
+                          (c.status || 'Available') === 'Available' ? 'text-green-600' : 'text-red-500'
                         }`}>
-                          {c.source || '—'}
+                          {c.status || 'Available'}
                         </span>
                       </td>
-                      <td className="p-4 text-gray-500 text-xs">{formatDate(c.dateCreated)}</td>
+                      {/* ACTIONS */}
                       <td className="p-4">
                         <div className="flex items-center gap-2">
                           <button 
@@ -969,9 +1036,9 @@ export default function CandidateSearch() {
                               setSelectedIds(new Set([c.id]));
                               setIsModalOpen(true);
                             }}
-                            className="px-4 py-2 bg-[#0F47F2] text-white text-xs font-semibold rounded-[6px] hover:bg-blue-700 transition-colors whitespace-nowrap"
+                            className="px-4 py-2 bg-[#22C55E] text-white text-xs font-semibold rounded-[6px] hover:bg-green-600 transition-colors whitespace-nowrap"
                           >
-                            Add to Pipeline
+                            Move to Pipeline
                           </button>
                           <div className="relative">
                             <button 
