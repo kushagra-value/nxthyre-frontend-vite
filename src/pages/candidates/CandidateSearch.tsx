@@ -1043,7 +1043,7 @@ export default function CandidateSearch() {
                         </div>
                       </td>
                       {/* DESIGNATION: actual designation from profile */}
-                      <td className="p-4 font-semibold text-gray-700 text-nowrap">{c.designation || c.jobRole?.title || '—'}</td>
+                      <td className="p-4 font-semibold text-gray-700">{c.designation || c.jobRole?.title || '—'}</td>
                       {/* LOCATION */}
                       <td className="p-4 text-gray-600 text-nowrap">{c.location || '—'}</td>
                       {/* EXP */}
