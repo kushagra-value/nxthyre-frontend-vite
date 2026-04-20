@@ -304,6 +304,25 @@ export async function processCallRecording(
   return response.json();
 }
 
+export interface ProcessManualRecordingPayload {
+  call_uuid: string;
+  candidate_id: string;
+  caller_uid?: string;
+  transcript: string;
+  recording_duration?: number;
+}
+
+export async function processManualRecording(
+  payload: ProcessManualRecordingPayload,
+): Promise<any> {
+  const res = await fetch(`${PLIVO_BASE}/recordings/manual/process/`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
 /**
  * Fetches the AI-generated role questions (10 questions) for the candidate.
  */

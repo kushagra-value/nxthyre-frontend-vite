@@ -30,6 +30,7 @@ import {
   getRoleQuestions,
   evaluateRoleQuestion,
   getLiveTranscript,
+  processManualRecording,
   type CallStatus,
   type RoleQuestion,
   type LiveTranscript,
@@ -106,6 +107,13 @@ export default function CandidateCallPage() {
   const [callState, setCallState] = useState<string>(initialCallState);
   const [isSaving, setIsSaving] = useState(false);
   const [isEndingCall, setIsEndingCall] = useState(false);
+
+  // Manual recording states
+  const [isManualRecording, setIsManualRecording] = useState(false);
+  const isManualRecordingRef = useRef(false);
+  const [manualTranscript, setManualTranscript] = useState("");
+  const finalizedTranscriptRef = useRef("");
+  const recognitionRef = useRef<any>(null);
 
   // Clear session storage once we've consumed it
   useEffect(() => {
@@ -448,19 +456,108 @@ export default function CandidateCallPage() {
   //   });
   // };
 
+  const toggleManualRecording = () => {
+    if (isManualRecordingRef.current) {
+      isManualRecordingRef.current = false;
+      setIsManualRecording(false);
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    } else {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Your browser does not support Speech Recognition. Please use Chrome.");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+
+      recognition.onresult = (event: any) => {
+        let interimTranscript = "";
+        let newFinalPart = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            newFinalPart += event.results[i][0].transcript + " ";
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (newFinalPart) {
+          finalizedTranscriptRef.current += newFinalPart;
+        }
+        setManualTranscript(finalizedTranscriptRef.current + interimTranscript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error", event.error);
+        if (event.error === 'not-allowed') {
+          isManualRecordingRef.current = false;
+          setIsManualRecording(false);
+        }
+      };
+
+      recognition.onend = () => {
+        if (isManualRecordingRef.current) {
+          try {
+            recognition.start();
+          } catch (e) {}
+        }
+      };
+
+      try {
+        recognition.start();
+        recognitionRef.current = recognition;
+        isManualRecordingRef.current = true;
+        setIsManualRecording(true);
+      } catch (err) {
+        console.error("Failed to start speech recognition:", err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
   const handleSaveNotes = useCallback(async () => {
     if (!candidate) return;
     setIsSaving(true);
+    let finalCallUuid = callUuid;
     try {
-      await saveCallLog({
-        call_uuid: callUuid || undefined,
+      const callLogRes = await saveCallLog({
+        call_uuid: finalCallUuid || undefined,
         candidate_id: candidate.id,
         note: notes || undefined,
         duration_seconds: seconds,
         tags: activeTags.length > 0 ? activeTags : undefined,
         checklist_data: checklist,
-        // skills_data: skillsChecklist,
+        call_mode: isManual ? "manual" : "platform"
       });
+      
+      finalCallUuid = callLogRes.call_uuid || finalCallUuid;
+      
+      if (isManual && finalCallUuid && finalizedTranscriptRef.current) {
+        try {
+          const fullTranscriptText = finalizedTranscriptRef.current;
+          await processManualRecording({
+            call_uuid: finalCallUuid,
+            candidate_id: candidate.id,
+            transcript: fullTranscriptText,
+            recording_duration: seconds
+          });
+          console.log("Manual recording processed successfully.");
+        } catch(err) {
+          console.error("Failed to process manual recording:", err);
+        }
+      }
+
       alert("Notes and checklist saved successfully!");
     } catch (err) {
       console.error("Failed to save notes:", err);
@@ -475,7 +572,7 @@ export default function CandidateCallPage() {
     seconds,
     activeTags,
     checklist,
-    // skillsChecklist,
+    isManual
   ]);
 
   const toggleTag = (tag: string) => {
@@ -653,7 +750,7 @@ export default function CandidateCallPage() {
                 </div>
               </div>
             ) : (
-              /* Post-connection: timer + end call */
+              /* Post-connection: timer + controls */
               <div className="flex flex-col items-center gap-4">
                 <div className="text-4xl font-light tracking-widest mb-1">
                   {formatTime(seconds)}
@@ -662,18 +759,52 @@ export default function CandidateCallPage() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse"></span>
                   CONNECTED (MANUAL)
                 </div>
-                <button
-                  onClick={() => {
-                    setManualCallConnected(false);
-                    setIsPaused(true);
-                  }}
-                  className="mt-6 w-16 h-16 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95"
-                >
-                  <PhoneOff className="w-6 h-6" />
-                </button>
-                <span className="text-xs text-white uppercase tracking-widest font-semibold">
-                  End Call
-                </span>
+                
+                {/* Manual Call Controls */}
+                <div className="mt-6 flex items-center gap-6">
+                  {/* Record Call Button */}
+                  <div className="flex flex-col items-center gap-2">
+                    <button
+                      onClick={toggleManualRecording}
+                      className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg ${isManualRecording ? "bg-red-500 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}
+                    >
+                      {isManualRecording ? (
+                        <div className="w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                        </div>
+                      ) : (
+                        <Mic className="w-5 h-5" />
+                      )}
+                    </button>
+                    <span className="text-xs text-white uppercase tracking-widest font-semibold">
+                      {isManualRecording ? "Stop Rec" : "Record"}
+                    </span>
+                  </div>
+
+                  {/* End Call Button */}
+                  <div className="flex flex-col items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setManualCallConnected(false);
+                        setIsPaused(true);
+                        if (isManualRecordingRef.current) toggleManualRecording();
+                      }}
+                      className="w-16 h-16 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95"
+                    >
+                      <PhoneOff className="w-6 h-6" />
+                    </button>
+                    <span className="text-xs text-white uppercase tracking-widest font-semibold">
+                      End Call
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Visualizer / Transcript feedback */}
+                {isManualRecording && (
+                  <div className="mt-4 w-full px-4 max-h-24 overflow-y-auto text-xs text-slate-300 italic text-center custom-scrollbar">
+                    {manualTranscript || "Listening..."}
+                  </div>
+                )}
               </div>
             )}
           </div>
