@@ -921,11 +921,11 @@ export default function CandidateSearch() {
                 title="Export"
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7.49935 18.3337H12.4993C16.666 18.3337 18.3327 16.667 18.3327 12.5003V7.50033C18.3327 3.33366 16.666 1.66699 12.4993 1.66699H7.49935C3.33268 1.66699 1.66602 3.33366 1.66602 7.50033V12.5003C1.66602 16.667 3.33268 18.3337 7.49935 18.3337Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M10 1.66699V18.3337" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M1.66602 7.91699H9.99935" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M10 12.084H18.3333" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M13.6998 7.41699C16.6998 7.67533 17.9248 9.21699 17.9248 12.592V12.7003C17.9248 16.4253 16.4331 17.917 12.7081 17.917H7.28307C3.55807 17.917 2.06641 16.4253 2.06641 12.7003V12.592C2.06641 9.24199 3.27474 7.70032 6.22474 7.42532" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M10 12.4999V3.0166" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M12.7918 4.87467L10.0001 2.08301L7.2085 4.87467" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
+
 
               </button>
               <ExportDropdown isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} onExport={handleExport} />
@@ -996,17 +996,17 @@ export default function CandidateSearch() {
                       onChange={handleSelectAll}
                     />
                   </th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Candidate</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Designation</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Location</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 cursor-pointer select-none" onClick={() => handleSort('experience')}>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 text-nowrap">Candidate</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 text-nowrap">Designation</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 text-nowrap">Location</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 cursor-pointer select-none text-nowrap" onClick={() => handleSort('experience')}>
                     Exp <SortIndicator column="experience" currentSort={sortBy} />
                   </th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Current CTC</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Expected</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Notice</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Status</th>
-                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500">Actions</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 text-nowrap">Current CTC</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 text-nowrap">Expected</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 text-nowrap">Notice</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 text-nowrap">Status</th>
+                  <th className="p-4 font-semibold text-[11px] uppercase tracking-wider text-gray-500 text-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -1036,40 +1036,40 @@ export default function CandidateSearch() {
                       {/* CANDIDATE: name + actual company */}
                       <td className="p-4">
                         <div>
-                          <div className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">{c.name || '—'}</div>
+                          <div className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer text-nowrap">{c.name || '—'}</div>
                           <div className="text-xs text-gray-400 mt-0.5">
                             {c.currentCompany || c.client?.name || '—'}
                           </div>
                         </div>
                       </td>
                       {/* DESIGNATION: actual designation from profile */}
-                      <td className="p-4 font-semibold text-gray-700">{c.designation || c.jobRole?.title || '—'}</td>
+                      <td className="p-4 font-semibold text-gray-700 text-nowrap">{c.designation || c.jobRole?.title || '—'}</td>
                       {/* LOCATION */}
-                      <td className="p-4 text-gray-600">{c.location || '—'}</td>
+                      <td className="p-4 text-gray-600 text-nowrap">{c.location || '—'}</td>
                       {/* EXP */}
-                      <td className="p-4 text-gray-600">{c.experience != null ? `${c.experience} yrs` : '—'}</td>
+                      <td className="p-4 text-gray-600 text-nowrap">{c.experience != null ? `${c.experience} yrs` : '—'}</td>
                       {/* CURRENT CTC */}
-                      <td className="p-4 text-gray-600">{c.currentCtc ? `₹${c.currentCtc}` : '—'}</td>
+                      <td className="p-4 text-gray-600 text-nowrap">{c.currentCtc ? `₹${c.currentCtc}` : '—'}</td>
                       {/* EXPECTED CTC */}
-                      <td className="p-4 font-medium text-green-600">{c.expectedCtc ? `₹${c.expectedCtc}` : '—'}</td>
+                      <td className="p-4 font-medium text-green-600 text-nowrap">{c.expectedCtc ? `₹${c.expectedCtc}` : '—'}</td>
                       {/* NOTICE */}
-                      <td className="p-4 font-medium text-amber-500">{c.noticePeriod || '—'}</td>
+                      <td className="p-4 font-medium text-amber-500 text-nowrap">{c.noticePeriod || '—'}</td>
                       {/* STATUS */}
-                      <td className="p-4">
+                      <td className="p-4 text-nowrap">
                         <span className={`text-sm font-medium ${(c.status || 'Available') === 'Available' ? 'text-green-600' : 'text-red-500'
                           }`}>
                           {c.status || 'Available'}
                         </span>
                       </td>
                       {/* ACTIONS */}
-                      <td className="p-4">
+                      <td className="p-4 text-nowrap">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => {
                               setSelectedIds(new Set([c.id]));
                               setIsModalOpen(true);
                             }}
-                            className="px-4 py-2 bg-[#22C55E] text-white text-xs font-semibold rounded-[6px] hover:bg-green-600 transition-colors whitespace-nowrap"
+                            className="px-4 py-2 bg-[#0F47F2] text-white text-xs font-semibold rounded-[6px] hover:bg-green-600 transition-colors whitespace-nowrap"
                           >
                             Move to Pipeline
                           </button>
