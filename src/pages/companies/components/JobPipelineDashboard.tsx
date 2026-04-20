@@ -55,7 +55,8 @@ import AddNewStageForm from "../../pipelines/AddNewStageForm";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
 import * as XLSX from "xlsx";
-
+import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } from "./PipelineFilterPanel";
+import DateRangeFilter from "./DateRangeFilter";
 // ─── Interfaces ────────────────────────────────────────────────
 
 export interface Stage {
@@ -432,6 +433,16 @@ export default function JobPipelineDashboard({
     candidateNames?: string[];
   } | null>(null);
 
+  // ── Filters & Date Range ──
+  const [pipelineFilters, setPipelineFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
+  const [showPipelineFilterPanel, setShowPipelineFilterPanel] = useState(false);
+  const pipelineFilterButtonRef = useRef<HTMLButtonElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const [dateRangeFilterLabel, setDateRangeFilterLabel] = useState<string>("Date Filter");
+  const [isDateRangeFilterApplied, setIsDateRangeFilterApplied] = useState<boolean>(false);
+  const [dateRange, setDateRange] = useState<{from: string, to: string}>({from: "", to: ""});
+
   // ── Sorting
   type CandidateSortKey =
     | "Name"
@@ -479,74 +490,6 @@ export default function JobPipelineDashboard({
     );
   };
 
-  const getSortedCandidates = (cands: CandidateListItem[]) => {
-    if (!sortConfig) return cands;
-    return [...cands].sort((a, b) => {
-      const candA = a.candidate;
-      const candB = b.candidate;
-
-      let valA: any = 0;
-      let valB: any = 0;
-
-      switch (sortConfig.key) {
-        case "Name":
-          valA = candA.full_name?.toLowerCase() || "";
-          valB = candB.full_name?.toLowerCase() || "";
-          break;
-        case "AI Score":
-          valA = parseInt(
-            (a.job_score?.candidate_match_score?.score || "0").replace("%", ""),
-            10,
-          );
-          valB = parseInt(
-            (b.job_score?.candidate_match_score?.score || "0").replace("%", ""),
-            10,
-          );
-          break;
-        case "Location":
-          valA = candA.location?.toLowerCase() || "";
-          valB = candB.location?.toLowerCase() || "";
-          break;
-        case "Exp":
-          valA =
-            candA.total_experience ??
-            (candA.experience_years ? parseInt(candA.experience_years) : 0);
-          valB =
-            candB.total_experience ??
-            (candB.experience_years ? parseInt(candB.experience_years) : 0);
-          break;
-        case "CTC":
-          valA = candA.current_salary_lpa
-            ? parseFloat(candA.current_salary_lpa)
-            : 0;
-          valB = candB.current_salary_lpa
-            ? parseFloat(candB.current_salary_lpa)
-            : 0;
-          break;
-        case "Expected CTC":
-          valA = candA.expected_ctc ? parseFloat(candA.expected_ctc) : 0;
-          valB = candB.expected_ctc ? parseFloat(candB.expected_ctc) : 0;
-          break;
-        case "Notice Period":
-          valA = candA.notice_period_days ?? 999;
-          valB = candB.notice_period_days ?? 999;
-          break;
-        case "Stage":
-          valA = a.current_stage?.name?.toLowerCase() || "";
-          valB = b.current_stage?.name?.toLowerCase() || "";
-          break;
-        case "Attention":
-          valA = a.status_tags?.find((t) => t.text)?.text?.toLowerCase() || "";
-          valB = b.status_tags?.find((t) => t.text)?.text?.toLowerCase() || "";
-          break;
-      }
-
-      if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
-      if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
-  };
-
   // Primary list for active candidates
   let combinedCands = candidates;
 
@@ -555,7 +498,7 @@ export default function JobPipelineDashboard({
       (c) => (c.current_stage?.slug || c.stage_slug) === activeStageSlug,
     );
   }
-  const sortedCandidates = getSortedCandidates(combinedCands);
+  const sortedCandidates = combinedCands;
 
   // Derived list for archived candidates (separated to avoid duplication in the main active list)
   const filteredArchivedTable = archivedCandidates.filter((item) => {
@@ -1022,7 +965,20 @@ export default function JobPipelineDashboard({
     }
   }, []);
 
+  const [stageCounts, setStageCounts] = useState<Record<string, number>>({});
+
   // ── Fetch Candidates ─────────────────────────────────────────
+
+  const orderingMap: Record<string, string> = {
+    "Name": "full_name",
+    "AI Score": "ai_score",
+    "Location": "location",
+    "Exp": "experience",
+    "CTC": "current_ctc",
+    "Expected CTC": "expected_ctc",
+    "Notice Period": "notice_period",
+    "Stage": "stage",
+  };
 
   const fetchCandidates = useCallback(
     async (
@@ -1033,14 +989,68 @@ export default function JobPipelineDashboard({
       limit: number = pageSize
     ) => {
       setLoadingCandidates(true);
-      try {
-        let url = `/jobs/applications/?job_id=${jId}`;
-        if (stageSlug) url += `&stage_slug=${stageSlug}`;
-        url += `&page=${page}&page_size=${limit}`;
-        if (search.trim())
-          url += `&search=${encodeURIComponent(search.trim())}`;
+      
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
 
-        const response = await apiClient.get(url);
+      try {
+        const queryParams = new URLSearchParams();
+        queryParams.append("job_id", jId.toString());
+        if (stageSlug) queryParams.append("stage_slug", stageSlug);
+        queryParams.append("page", page.toString());
+        queryParams.append("page_size", limit.toString());
+        if (search.trim()) queryParams.append("search", search.trim());
+
+        if (sortConfig && orderingMap[sortConfig.key]) {
+          const prefix = sortConfig.direction === "desc" ? "-" : "";
+          queryParams.append("ordering", `${prefix}${orderingMap[sortConfig.key]}`);
+        }
+
+        if (pipelineFilters.location.length) {
+          queryParams.append("location", pipelineFilters.location.join(","));
+        }
+        if (pipelineFilters.salaryRange.min) {
+          queryParams.append("salary_min", pipelineFilters.salaryRange.min);
+        }
+        if (pipelineFilters.salaryRange.max) {
+          queryParams.append("salary_max", pipelineFilters.salaryRange.max);
+        }
+        if (pipelineFilters.experience.min) {
+          queryParams.append("experience_min", pipelineFilters.experience.min);
+        }
+        if (pipelineFilters.experience.max) {
+          queryParams.append("experience_max", pipelineFilters.experience.max);
+        }
+        if (pipelineFilters.designation.length) {
+          queryParams.append("designation", pipelineFilters.designation.join(","));
+        }
+        if (pipelineFilters.noticePeriod.selected.length) {
+          queryParams.append("notice_period", pipelineFilters.noticePeriod.selected.join(","));
+        }
+        if (pipelineFilters.noticePeriod.minDays) {
+          queryParams.append("notice_period_min_days", pipelineFilters.noticePeriod.minDays);
+        }
+        if (pipelineFilters.noticePeriod.maxDays) {
+          queryParams.append("notice_period_max_days", pipelineFilters.noticePeriod.maxDays);
+        }
+        if (pipelineFilters.attention.length) {
+          queryParams.append("attention", pipelineFilters.attention.join(","));
+        }
+        if (dateRange.from) {
+          queryParams.append("last_activity_from", dateRange.from);
+        }
+        if (dateRange.to) {
+          queryParams.append("last_activity_to", dateRange.to);
+        }
+
+        const url = `/jobs/applications/?${queryParams.toString()}`;
+
+        const response = await apiClient.get(url, {
+          signal: abortControllerRef.current.signal
+        });
+        
         const data = response.data;
 
         let candidateData: CandidateListItem[] = [];
@@ -1053,9 +1063,16 @@ export default function JobPipelineDashboard({
           count = data.count || data.results.length;
         }
 
+        if (data && data.stage_counts) {
+          setStageCounts(data.stage_counts);
+        }
+
         setCandidates(candidateData);
         setTotalCandidates(count);
-      } catch (error) {
+      } catch (error: any) {
+        if (error.name === 'CanceledError' || error.message === 'canceled') {
+          return;
+        }
         console.error("Error fetching candidates:", error);
         setCandidates([]);
         setTotalCandidates(0);
@@ -1063,14 +1080,15 @@ export default function JobPipelineDashboard({
         setLoadingCandidates(false);
       }
     },
-    [],
+    [pipelineFilters, dateRange, sortConfig, pageSize],
   );
 
   useEffect(() => {
-    if (jobId != null && searchQuery === "") {
-      const currentLimit = isKanbanView ? 1000 : pageSize;
-      const currentStage = isKanbanView ? null : activeStageSlug;
-      fetchCandidates(jobId, currentStage, currentPage, "", currentLimit);
+    if (jobId != null) {
+      if (!isKanbanView) {
+        const currentStage = activeStageSlug;
+        fetchCandidates(jobId, currentStage, currentPage, searchQuery, pageSize);
+      }
       fetchArchivedCandidates(jobId);
     }
   }, [
@@ -1121,7 +1139,7 @@ export default function JobPipelineDashboard({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeStageSlug, searchQuery]);
+  }, [activeStageSlug, searchQuery, pipelineFilters, dateRange, sortConfig]);
 
   // ── Candidate Edit Handlers ──
   useEffect(() => {
@@ -2074,15 +2092,29 @@ export default function JobPipelineDashboard({
                       </div>
                     )}
                   </div>
-                  <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M2 2H14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M5.33301 6H10.6663" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M2 10H14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M5.33301 14H10.6663" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Filters
-                  </button>
+                  <div className="relative">
+                    <button
+                      ref={pipelineFilterButtonRef}
+                      onClick={() => setShowPipelineFilterPanel(!showPipelineFilterPanel)}
+                      className={`flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium transition-colors ${showPipelineFilterPanel ? "text-[#0F47F2] border-[#0F47F2]" : "text-[#AEAEB2] hover:bg-[#F3F5F7]"}`}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M5.33301 6H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M2 10H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M5.33301 14H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Filters
+                    </button>
+                    <PipelineFilterPanel 
+                      isOpen={showPipelineFilterPanel}
+                      onClose={() => setShowPipelineFilterPanel(false)}
+                      onApply={(filters) => setPipelineFilters(filters)}
+                      initialFilters={pipelineFilters}
+                      anchorRef={pipelineFilterButtonRef}
+                      jobId={jobId}
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -2121,24 +2153,20 @@ export default function JobPipelineDashboard({
                     </svg>
                     Export CSV
                   </button>
-                  <button
-                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                    title="Feature Coming Soon"
-                    disabled
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="#374151" strokeLinecap="round" />
-                      <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M4 5.3335H12" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {" "}
-                    {new Date().toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
-                  </button>
+                  <DateRangeFilter
+                    valueLabel={dateRangeFilterLabel}
+                    isFilterApplied={isDateRangeFilterApplied}
+                    onApply={(payload) => {
+                      setDateRangeFilterLabel(payload.label);
+                      setIsDateRangeFilterApplied(true);
+                      setDateRange({ from: payload.createdAfter || "", to: payload.createdBefore || "" });
+                    }}
+                    onClear={() => {
+                      setDateRangeFilterLabel("Date Filter");
+                      setIsDateRangeFilterApplied(false);
+                      setDateRange({ from: "", to: "" });
+                    }}
+                  />
                 </div>
               </div>
             </>
