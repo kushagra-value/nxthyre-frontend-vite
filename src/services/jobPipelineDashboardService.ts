@@ -74,6 +74,7 @@ export interface CallHistoryEntry {
     | "failed"
     | "completed";
   call_type: "outgoing" | "incoming";
+  call_mode?: "platform" | "manual";
   reason: string | null;
   note: string | null;
   duration_seconds: number;

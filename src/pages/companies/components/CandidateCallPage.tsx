@@ -549,7 +549,8 @@ export default function CandidateCallPage() {
         duration_seconds: seconds,
         tags: activeTags.length > 0 ? activeTags : undefined,
         checklist_data: checklist,
-        call_mode: isManual ? "manual" : "platform"
+        call_mode: isManual ? "manual" : "platform",
+        call_status: isManual && manualCallConnected ? "completed" : undefined
       });
       
       finalCallUuid = callLogRes.call_uuid || finalCallUuid;

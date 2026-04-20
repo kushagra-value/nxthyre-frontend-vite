@@ -2068,7 +2068,8 @@ export default function JobCandidateProfile({
                   callHistory.map((call) => {
                     const isAnswered =
                       call.call_status === "answered" ||
-                      call.call_status === "completed";
+                      call.call_status === "completed" ||
+                      (call.call_mode === "manual" && (call.duration_seconds > 0 || call.recording?.transcript));
                     const isExpanded = expandedCallId === call.id;
                     const { main: summaryBullets, nextSteps } =
                       parseSummaryBullets(call.recording?.summary || null);
