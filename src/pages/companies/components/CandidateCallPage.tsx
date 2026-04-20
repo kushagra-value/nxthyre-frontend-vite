@@ -463,6 +463,17 @@ export default function CandidateCallPage() {
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
+      
+      // Auto-submit transcript to DB on stop
+      if (candidate && callUuid && finalizedTranscriptRef.current) {
+        processManualRecording({
+          call_uuid: callUuid,
+          candidate_id: candidate.id,
+          transcript: finalizedTranscriptRef.current,
+          recording_duration: seconds
+        }).then(() => console.log("Transcript saved successfully on stop."))
+          .catch((err) => console.error("Failed to save transcript:", err));
+      }
     } else {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -736,7 +747,10 @@ export default function CandidateCallPage() {
                 {/* Outcome buttons row 3 */}
                 <div className="flex gap-2 justify-center w-full mt-1">
                   <button
-                    onClick={() => setManualCallConnected(true)}
+                    onClick={() => {
+                      if (!callUuid) setCallUuid(crypto.randomUUID());
+                      setManualCallConnected(true);
+                    }}
                     className="px-4 py-2 rounded-full text-[12px] font-bold bg-[#22C55E] text-white hover:bg-[#16A34A] transition-colors shadow-lg shadow-green-500/30 flex items-center gap-1.5"
                   >
                     <PhoneIncoming className="w-3.5 h-3.5" /> Picked Up
@@ -787,7 +801,17 @@ export default function CandidateCallPage() {
                       onClick={() => {
                         setManualCallConnected(false);
                         setIsPaused(true);
-                        if (isManualRecordingRef.current) toggleManualRecording();
+                        if (isManualRecordingRef.current) {
+                          toggleManualRecording();
+                        } else if (candidate && callUuid && finalizedTranscriptRef.current) {
+                          // If record was previously stopped, re-submit on end call just in case
+                          processManualRecording({
+                            call_uuid: callUuid,
+                            candidate_id: candidate.id,
+                            transcript: finalizedTranscriptRef.current,
+                            recording_duration: seconds
+                          }).catch(() => {});
+                        }
                       }}
                       className="w-16 h-16 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95"
                     >
