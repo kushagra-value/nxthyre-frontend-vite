@@ -314,12 +314,14 @@ export interface ProcessManualRecordingPayload {
 }
 
 export async function processManualRecording(
-  payload: ProcessManualRecordingPayload,
+  formData: FormData,
 ): Promise<any> {
   const res = await fetch(`${PLIVO_BASE}/recordings/manual/process/`, {
     method: "POST",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(payload),
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
+    },
+    body: formData,
   });
   return handleResponse(res);
 }

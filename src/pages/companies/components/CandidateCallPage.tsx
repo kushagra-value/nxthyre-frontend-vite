@@ -111,9 +111,8 @@ export default function CandidateCallPage() {
   // Manual recording states
   const [isManualRecording, setIsManualRecording] = useState(false);
   const isManualRecordingRef = useRef(false);
-  const [manualTranscript, setManualTranscript] = useState("");
-  const finalizedTranscriptRef = useRef("");
-  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   // Clear session storage once we've consumed it
   useEffect(() => {
@@ -456,83 +455,72 @@ export default function CandidateCallPage() {
   //   });
   // };
 
-  const toggleManualRecording = () => {
+  const toggleManualRecording = async () => {
     if (isManualRecordingRef.current) {
+      // ── STOP VOICE RECORDING ──
       isManualRecordingRef.current = false;
       setIsManualRecording(false);
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
       
-      // Auto-submit transcript to DB on stop
-      if (candidate && callUuid && finalizedTranscriptRef.current) {
-        processManualRecording({
-          call_uuid: callUuid,
-          candidate_id: candidate.id,
-          transcript: finalizedTranscriptRef.current,
-          recording_duration: seconds
-        }).then(() => console.log("Transcript saved successfully on stop."))
-          .catch((err) => console.error("Failed to save transcript:", err));
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+        // The submission logic is handled in the onstop callback
       }
     } else {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Your browser does not support Speech Recognition. Please use Chrome.");
-        return;
-      }
-
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = "en-US";
-
-      recognition.onresult = (event: any) => {
-        let interimTranscript = "";
-        let newFinalPart = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            newFinalPart += event.results[i][0].transcript + " ";
-          } else {
-            interimTranscript += event.results[i][0].transcript;
-          }
-        }
-        if (newFinalPart) {
-          finalizedTranscriptRef.current += newFinalPart;
-        }
-        setManualTranscript(finalizedTranscriptRef.current + interimTranscript);
-      };
-
-      recognition.onerror = (event: any) => {
-        console.error("Speech recognition error", event.error);
-        if (event.error === 'not-allowed') {
-          isManualRecordingRef.current = false;
-          setIsManualRecording(false);
-        }
-      };
-
-      recognition.onend = () => {
-        if (isManualRecordingRef.current) {
-          try {
-            recognition.start();
-          } catch (e) {}
-        }
-      };
-
+      // ── START VOICE RECORDING ──
       try {
-        recognition.start();
-        recognitionRef.current = recognition;
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Use a supported mime type for Gemini
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/ogg";
+        const mediaRecorder = new MediaRecorder(stream, { mimeType });
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          // Compile chunks into a single Blob
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+          
+          if (candidate && callUuid && audioBlob.size > 0) {
+            console.log("Submitting manual recording audio file...");
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "manual_call.webm");
+            formData.append("call_uuid", callUuid);
+            formData.append("candidate_id", candidate.id);
+            formData.append("recording_duration", seconds.toString());
+
+            try {
+              await processManualRecording(formData);
+              console.log("Audio recording submitted successfully.");
+              showToast.success("Recording saved and processing...");
+            } catch (err) {
+              console.error("Failed to submit manual recording audio:", err);
+            }
+          }
+
+          // Clean up the stream
+          stream.getTracks().forEach((track) => track.stop());
+        };
+
+        mediaRecorder.start();
         isManualRecordingRef.current = true;
         setIsManualRecording(true);
       } catch (err) {
-        console.error("Failed to start speech recognition:", err);
+        console.error("Failed to start media recorder:", err);
+        alert("Failed to access microphone. Please check permissions.");
       }
     }
   };
 
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
       }
     };
   }, []);
@@ -555,21 +543,6 @@ export default function CandidateCallPage() {
       
       finalCallUuid = callLogRes.call_uuid || finalCallUuid;
       
-      if (isManual && finalCallUuid && finalizedTranscriptRef.current) {
-        try {
-          const fullTranscriptText = finalizedTranscriptRef.current;
-          await processManualRecording({
-            call_uuid: finalCallUuid,
-            candidate_id: candidate.id,
-            transcript: fullTranscriptText,
-            recording_duration: seconds
-          });
-          console.log("Manual recording processed successfully.");
-        } catch(err) {
-          console.error("Failed to process manual recording:", err);
-        }
-      }
-
       alert("Notes and checklist saved successfully!");
     } catch (err) {
       console.error("Failed to save notes:", err);
@@ -777,24 +750,22 @@ export default function CandidateCallPage() {
                 
                 {/* Manual Call Controls */}
                 <div className="mt-6 flex items-center gap-6">
-                  {/* Record Call Button */}
-                  <div className="flex flex-col items-center gap-2">
-                    <button
-                      onClick={toggleManualRecording}
-                      className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg ${isManualRecording ? "bg-red-500 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}
-                    >
-                      {isManualRecording ? (
-                        <div className="w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
-                        </div>
-                      ) : (
-                        <Mic className="w-5 h-5" />
-                      )}
-                    </button>
-                    <span className="text-xs text-white uppercase tracking-widest font-semibold">
-                      {isManualRecording ? "Stop Rec" : "Record"}
-                    </span>
-                  </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="relative">
+                        <button
+                          onClick={toggleManualRecording}
+                          className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg z-10 relative ${isManualRecording ? "bg-red-500 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}
+                        >
+                          <Mic className={`w-5 h-5 ${isManualRecording ? "animate-pulse" : ""}`} />
+                        </button>
+                        {isManualRecording && (
+                          <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20 -z-0"></div>
+                        )}
+                      </div>
+                      <span className="text-xs text-white uppercase tracking-widest font-semibold">
+                        {isManualRecording ? "Stop Rec" : "Record"}
+                      </span>
+                    </div>
 
                   {/* End Call Button */}
                   <div className="flex flex-col items-center gap-2">
@@ -804,14 +775,6 @@ export default function CandidateCallPage() {
                         setIsPaused(true);
                         if (isManualRecordingRef.current) {
                           toggleManualRecording();
-                        } else if (candidate && callUuid && finalizedTranscriptRef.current) {
-                          // If record was previously stopped, re-submit on end call just in case
-                          processManualRecording({
-                            call_uuid: callUuid,
-                            candidate_id: candidate.id,
-                            transcript: finalizedTranscriptRef.current,
-                            recording_duration: seconds
-                          }).catch(() => {});
                         }
                       }}
                       className="w-16 h-16 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95"
