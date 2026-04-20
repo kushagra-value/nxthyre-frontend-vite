@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
-import { Search, SlidersHorizontal, X, ArrowRight, ArrowLeft, Zap, Copy, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Zap, ArrowLeft, ArrowRight, Copy, Trash2 } from "lucide-react";
 import { linkedinBotService, LinkedinBotCandidate, LinkedinBotCandidateSummary } from "../../../services/linkedinBotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
+import LinkedinBotFilterPanel, { LinkedinBotFiltersState, EMPTY_LINKEDIN_BOT_FILTERS } from "./LinkedinBotFilterPanel";
 
 interface LinkedinBotTabProps {
   jobId: number | null;
@@ -25,35 +26,66 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortBy, setSortBy] = useState("ai_score_desc");
+
+  // Filters State
+  const [botFilters, setBotFilters] = useState<LinkedinBotFiltersState>(EMPTY_LINKEDIN_BOT_FILTERS);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Selection
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const fetchCandidates = useCallback(async () => {
     if (!jobId) return;
+
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     try {
-      const res = await linkedinBotService.getLinkedinBotCandidates({
-        job_id: jobId,
+      const params: any = {
+        job_id: jobId!,
         page,
         page_size: pageSize,
-        search: searchQuery,
+        search: debouncedSearch,
         sort_by: sortBy,
-      });
+      };
+
+      if (botFilters.location.length) params.location = botFilters.location.join(',');
+      if (botFilters.salaryRange.min) params.salary_min = botFilters.salaryRange.min;
+      if (botFilters.salaryRange.max) params.salary_max = botFilters.salaryRange.max;
+      if (botFilters.experience.min) params.experience_min = botFilters.experience.min;
+      if (botFilters.experience.max) params.experience_max = botFilters.experience.max;
+      if (botFilters.designation.length) params.designation = botFilters.designation.join(',');
+      if (botFilters.noticePeriod.selected.length) params.notice_period = botFilters.noticePeriod.selected.join(',');
+      if (botFilters.noticePeriod.minDays) params.notice_period_min_days = botFilters.noticePeriod.minDays;
+      if (botFilters.noticePeriod.maxDays) params.notice_period_max_days = botFilters.noticePeriod.maxDays;
+      if (botFilters.skills.length) params.skills = botFilters.skills.join(',');
+
+      const res = await linkedinBotService.getLinkedinBotCandidates(params as any, controller.signal);
       setCandidates(res.results);
       setTotalPages(res.total_pages);
       setTotalCount(res.count);
       if (res.summary) {
         setSummary(res.summary);
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return;
       console.error(error);
       showToast.error("Failed to load LinkedIn Bot candidates");
     } finally {
       setLoading(false);
     }
-  }, [jobId, page, pageSize, searchQuery, sortBy]);
+  }, [jobId, page, pageSize, debouncedSearch, sortBy, botFilters]);
 
   useEffect(() => {
     fetchCandidates();
@@ -61,7 +93,42 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
 
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, sortBy, jobId]);
+  }, [debouncedSearch, sortBy, jobId, botFilters]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (botFilters.location.length) count++;
+    if (botFilters.salaryRange.min || botFilters.salaryRange.max) count++;
+    if (botFilters.experience.min || botFilters.experience.max) count++;
+    if (botFilters.designation.length) count++;
+    if (botFilters.noticePeriod.selected.length || botFilters.noticePeriod.minDays || botFilters.noticePeriod.maxDays) count++;
+    if (botFilters.skills.length) count++;
+    return count;
+  }, [botFilters]);
+
+  const removeFilter = (key: keyof LinkedinBotFiltersState, value: string | null = null) => {
+    setBotFilters((prev) => {
+      const updated = { ...prev };
+      if (key === 'location' && value) {
+        updated.location = updated.location.filter(v => v !== value);
+      } else if (key === 'designation' && value) {
+        updated.designation = updated.designation.filter(v => v !== value);
+      } else if (key === 'skills' && value) {
+        updated.skills = updated.skills.filter(v => v !== value);
+      } else if (key === 'salaryRange') {
+        updated.salaryRange = { min: "", max: "" };
+      } else if (key === 'experience') {
+        updated.experience = { min: "", max: "" };
+      } else if (key === 'noticePeriod') {
+        if (value && updated.noticePeriod.selected.includes(value)) {
+          updated.noticePeriod.selected = updated.noticePeriod.selected.filter(v => v !== value);
+        } else {
+          updated.noticePeriod = { selected: [], minDays: "", maxDays: "" };
+        }
+      }
+      return updated;
+    });
+  };
 
   const toggleSelection = (id: string) => {
     setSelectedCandidates((prev) => {
@@ -212,9 +279,28 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
             />
           </div>
           <div className="flex items-center gap-3">
-             <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors">
+           <div className="relative">
+             <button
+               ref={filterButtonRef}
+               onClick={() => setShowFilterPanel(!showFilterPanel)}
+               className={`flex items-center gap-2 px-4 py-2 ${showFilterPanel || activeFilterCount > 0 ? "bg-[#F3F5F7] border border-[#d2d6db] text-[#4B5563]" : "bg-white border border-[#E5E7EB] text-[#8E8E93]"} rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors`}
+             >
               <SlidersHorizontal className="w-4 h-4" /> Filters
+              {activeFilterCount > 0 && (
+                <span className="w-5 h-5 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
             </button>
+            <LinkedinBotFilterPanel
+              isOpen={showFilterPanel}
+              onClose={() => setShowFilterPanel(false)}
+              onApply={(f) => { setBotFilters(f); setShowFilterPanel(false); }}
+              initialFilters={botFilters}
+              anchorRef={filterButtonRef}
+              jobId={jobId!}
+            />
+          </div>
             <select 
               className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:border-[#0F47F2]"
               value={sortBy}
@@ -231,6 +317,60 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
             </select>
           </div>
         </div>
+
+        {/* Active Filters Bar */}
+        {activeFilterCount > 0 && (
+          <div className="bg-white border-x border-[#E5E7EB] px-6 py-3 flex items-center gap-2 flex-wrap">
+            {botFilters.location.map(loc => (
+              <span key={`loc-${loc}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {loc}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('location', loc)} />
+              </span>
+            ))}
+            {botFilters.designation.map(desig => (
+              <span key={`desig-${desig}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {desig}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('designation', desig)} />
+              </span>
+            ))}
+            {botFilters.skills.map(skill => (
+              <span key={`skill-${skill}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {skill}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('skills', skill)} />
+              </span>
+            ))}
+            {(botFilters.salaryRange.min || botFilters.salaryRange.max) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                CTC: {botFilters.salaryRange.min || 0} - {botFilters.salaryRange.max || 'Any'} LPA
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('salaryRange')} />
+              </span>
+            )}
+            {(botFilters.experience.min || botFilters.experience.max) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                Exp: {botFilters.experience.min || 0} - {botFilters.experience.max || 'Any'} Yrs
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('experience')} />
+              </span>
+            )}
+            {botFilters.noticePeriod.selected.map(np => (
+              <span key={`np-${np}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {np}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod', np)} />
+              </span>
+            ))}
+            {(botFilters.noticePeriod.minDays || botFilters.noticePeriod.maxDays) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                Notice (Days): {botFilters.noticePeriod.minDays || 0} - {botFilters.noticePeriod.maxDays || 'Any'}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod')} />
+              </span>
+            )}
+            <button 
+              onClick={() => { setBotFilters(EMPTY_LINKEDIN_BOT_FILTERS); setPage(1); }} 
+              className="text-xs font-semibold text-[#8E8E93] hover:text-[#4B5563] ml-2 underline decoration-dashed underline-offset-2"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
 
         {/* Table View */}
         <div className="bg-white border-x border-t border-[#E5E7EB] overflow-hidden">

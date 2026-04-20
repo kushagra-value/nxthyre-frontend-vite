@@ -42,14 +42,25 @@ export interface GetLinkedinBotCandidatesParams {
   page_size?: number;
   search?: string;
   sort_by?: string;
+  location?: string;
+  salary_min?: number;
+  salary_max?: number;
+  experience_min?: number;
+  experience_max?: number;
+  designation?: string;
+  notice_period?: string;
+  notice_period_min_days?: number;
+  notice_period_max_days?: number;
+  skills?: string;
 }
 
 class LinkedinBotService {
-  async getLinkedinBotCandidates(params: GetLinkedinBotCandidatesParams): Promise<LinkedinBotCandidatesResponse> {
+  async getLinkedinBotCandidates(params: GetLinkedinBotCandidatesParams, signal?: AbortSignal): Promise<LinkedinBotCandidatesResponse> {
     try {
-      const response = await apiClient.get("/candidates/linkedin-bot/candidates/", { params });
+      const response = await apiClient.get("/candidates/linkedin-bot/candidates/", { params, signal });
       return response.data;
     } catch (error: any) {
+      if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') throw error;
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch LinkedIn bot candidates");
     }
   }
@@ -60,6 +71,28 @@ class LinkedinBotService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to trigger LinkedIn Bot job");
+    }
+  }
+
+  async getSkillsList(jobId: number): Promise<string[]> {
+    try {
+      const response = await apiClient.get('/candidates/linkedin-bot/skills-list/', {
+        params: { job_id: jobId }
+      });
+      return response.data?.skills || [];
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || "Failed to fetch skills list");
+    }
+  }
+
+  async getDesignationList(jobId: number, search?: string): Promise<string[]> {
+    try {
+      const params: any = { job_id: jobId };
+      if (search?.trim()) params.search = search.trim();
+      const response = await apiClient.get('/candidates/linkedin-bot/designation-list/', { params });
+      return response.data?.designations || [];
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || "Failed to fetch designation list");
     }
   }
 }
