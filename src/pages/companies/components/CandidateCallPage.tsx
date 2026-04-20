@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { showToast } from "../../../utils/toast";
 import CallCandidateModal from "./CallCandidateModal";
 import {
   Mic,
@@ -787,12 +788,11 @@ export default function CandidateCallPage() {
                   </div>
                 </div>
                 
-                {/* Visualizer / Transcript feedback */}
-                {isManualRecording && (
-                  <div className="mt-4 w-full px-4 max-h-24 overflow-y-auto text-xs text-slate-300 italic text-center custom-scrollbar">
-                    {manualTranscript || "Listening..."}
-                  </div>
-                )}
+                  {isManualRecording && (
+                    <div className="mt-4 w-full px-4 max-h-24 overflow-y-auto text-xs text-slate-300 italic text-center custom-scrollbar">
+                      Recording audio...
+                    </div>
+                  )}
               </div>
             )}
           </div>
