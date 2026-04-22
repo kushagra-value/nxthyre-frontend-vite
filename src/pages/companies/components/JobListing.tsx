@@ -158,6 +158,46 @@ const JobListing: React.FC<JobListingProps> = ({
         left: number;
     }>({ visible: false, name: "", active: 0, archived: 0, top: 0, left: 0 });
 
+    // --- Column Visibility Filter ---
+    const ALL_COLUMNS = [
+        { key: 'checkbox', label: 'Checkbox', width: '40px', alwaysVisible: true },
+        { key: 'jobTitle', label: 'Job Title', width: '220px', alwaysVisible: true },
+        { key: 'position', label: 'Position', width: '80px' },
+        { key: 'yoe', label: 'YOE', width: '80px' },
+        { key: 'location', label: 'Location', width: '120px' },
+        { key: 'ctcBudget', label: 'CTC Budget', width: '120px' },
+        { key: 'candidates', label: 'Candidates', width: '100px' },
+        { key: 'naukbot', label: 'Naukbot', width: '100px' },
+        { key: 'linkedinBot', label: 'LinkedIn Bot', width: '100px' },
+        { key: 'nxthyre', label: 'Nxthyre', width: '100px' },
+        { key: 'pipelineStages', label: 'Pipeline Stages', width: '380px' },
+        { key: 'shortlisted', label: 'Shortlisted', width: '100px' },
+        { key: 'hired', label: 'Hired', width: '80px' },
+        { key: 'daysOpen', label: 'Days Open', width: '100px' },
+        { key: 'status', label: 'Status', width: '100px' },
+        { key: 'note', label: 'Note', width: '200px' },
+        { key: 'actions', label: 'Actions', width: '60px', alwaysVisible: true },
+    ];
+
+    const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(() => {
+        const saved = localStorage.getItem('job_listing_visible_columns');
+        if (saved) return JSON.parse(saved);
+        return ALL_COLUMNS.reduce((acc, col) => ({ ...acc, [col.key]: true }), {});
+    });
+
+    const [showColumnFilter, setShowColumnFilter] = useState(false);
+    const columnFilterRef = useRef<HTMLDivElement>(null);
+
+    const toggleColumn = (key: string) => {
+        setVisibleColumns(prev => {
+            const next = { ...prev, [key]: !prev[key] };
+            localStorage.setItem('job_listing_visible_columns', JSON.stringify(next));
+            return next;
+        });
+    };
+
+    const columnsToRender = ALL_COLUMNS.filter(c => c.alwaysVisible || visibleColumns[c.key]);
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -166,10 +206,14 @@ const JobListing: React.FC<JobListingProps> = ({
             if (statusMenuRef.current && !statusMenuRef.current.contains(event.target as Node)) {
                 setStatusMenuOpenId(null);
             }
+            if (columnFilterRef.current && !columnFilterRef.current.contains(event.target as Node)) {
+                setShowColumnFilter(false);
+            }
         };
         const handleScroll = () => {
             setMenuOpenJobId(null);
             setStatusMenuOpenId(null);
+            setShowColumnFilter(false);
             setStageTooltip((prev) => ({ ...prev, visible: false }));
         };
         document.addEventListener("mousedown", handleClickOutside);
@@ -671,73 +715,84 @@ const JobListing: React.FC<JobListingProps> = ({
                             onApply={onJobDateFilterApply}
                             onClear={onClearJobDateFilter}
                         />
+
+                        {/* Column Visibility Filter */}
+                        <div className="relative" ref={columnFilterRef}>
+                            <button
+                                onClick={() => setShowColumnFilter(!showColumnFilter)}
+                                className={`flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs transition-colors
+                                    ${showColumnFilter ? 'bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]' : 'text-[#AEAEB2] hover:bg-gray-50'}`}
+                            >
+                                <LayoutGrid className="w-4 h-4" />
+                                Columns
+                            </button>
+                            {showColumnFilter && (
+                                <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[10001] py-2 max-h-[400px] overflow-y-auto">
+                                    <p className="px-4 py-2 text-[11px] font-semibold uppercase text-[#AEAEB2] border-b border-gray-00 mb-1">Toggle Columns</p>
+                                    {ALL_COLUMNS.filter(c => !c.alwaysVisible).map(col => (
+                                        <label key={col.key} className="flex items-center px-4 py-2 hover:bg-[#F3F5F7] cursor-pointer group transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                checked={visibleColumns[col.key]}
+                                                onChange={() => toggleColumn(col.key)}
+                                                className="w-4 h-4 rounded border-gray-300 accent-[#0F47F2]"
+                                            />
+                                            <span className="ml-3 text-sm text-[#4B5563] group-hover:text-[#1C1C1E]">{col.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 <div className="overflow-x-auto overflow-y-visible">
-                    <table className="w-full text-left border-collapse">
-                        <colgroup>
-                            <col style={{ width: '3%' }} />  {/* Checkbox */}
-                            <col style={{ width: '15%' }} /> {/* Job Title */}
-                            <col style={{ width: '5%' }} />  {/* Position */}
-                            <col style={{ width: '6%' }} />  {/* YOE */}
-                            <col style={{ width: '8%' }} />  {/* Location */}
-                            <col style={{ width: '10%' }} /> {/* CTC Budget */}
-                            <col style={{ width: '6%' }} />  {/* Candidates */}
-                            <col style={{ width: '6%' }} />  {/* Naukri.com */}
-                            <col style={{ width: '6%' }} />  {/* LinkedIn Bot */}
-                            <col style={{ width: '6%' }} />  {/* Nxthyre */}
-                            <col style={{ width: '15%' }} /> {/* Pipeline Stages */}
-                            <col style={{ width: '6%' }} />  {/* Shortlisted */}
-                            <col style={{ width: '6%' }} />  {/* Hired */}
-                            <col style={{ width: '6%' }} />  {/* Days Open */}
-                            <col style={{ width: '8%' }} />  {/* Status */}
-                            <col style={{ width: '12%' }} /> {/* Note */}
-                            <col style={{ width: '3%' }} />  {/* Actions */}
+                    <table className="w-full text-left border-collapse">                        <colgroup>
+                            {columnsToRender.map(col => (
+                                <col key={col.key} style={{ width: col.width }} />
+                            ))}
                         </colgroup>
                         <thead className="bg-[#F9FAFB]">
                             <tr>
-                                <th className="px-4 py-3">
-                                    <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded" />
-                                </th>
-                                {[
-                                    { key: "Job Title" },
-                                    { key: "Position" },
-                                    { key: "YOE", sortKey: "experience_min_years" },
-                                    { key: "Location", sortable: false },
-                                    { key: "CTC Budget", sortKey: "salary_max" },
-                                    { key: "Candidates" },
-                                    { key: "Naukri.com", sortKey: "naukri_bot_candidates_count" },
-                                    { key: "LinkedIn Bot", sortKey: "linkedin_bot_candidates_count" },
-                                    { key: "Nxthyre", sortKey: "inbound_candidates_count" },
-                                    { key: "Pipeline Stages", sortable: false },
-                                    { key: "Shortlisted", sortKey: "shortlisted_candidate_count" },
-                                    { key: "Hired", sortKey: "hired_count" },
-                                    { key: "Days Open", sortKey: "Days open" },
-                                    { key: "Status" },
-                                    { key: "Note", sortable: false },
-                                ].map(({ key, sortable = true, sortKey }: any) => (
-                                    <th
-                                        key={key}
-                                        className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#AEAEB2] ${sortable ? 'cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap' : 'select-none whitespace-nowrap'}`}
-                                        onClick={sortable ? () => handleSort(sortKey || key) : undefined}
-                                    >
-                                        <div className="flex items-center">
-                                            {key}
-                                            {sortable && <SortIcon columnKey={sortKey || key} />}
-                                        </div>
-                                    </th>
-                                ))}
-                                <th className="px-4 py-3"></th>
+                                {columnsToRender.map(col => {
+                                    if (col.key === 'checkbox') {
+                                        return (
+                                            <th key={col.key} className="px-4 py-3">
+                                                <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded border-gray-300" />
+                                            </th>
+                                        );
+                                    }
+                                    if (col.key === 'actions') {
+                                        return <th key={col.key} className="px-4 py-3"></th>;
+                                    }
+                                    const sortKey = ALL_COLUMNS.find(c => c.key === col.key)?.label || col.label;
+                                    const canSort = !!orderingMap[sortKey];
+                                    
+                                    return (
+                                        <th
+                                            key={col.key}
+                                            className={`px-4 py-3 text-[11px] font-semibold uppercase text-[#AEAEB2] tracking-wider ${col.key !== 'jobTitle' ? 'text-center' : ''} whitespace-nowrap`}
+                                        >
+                                            <div
+                                                className={`flex items-center gap-1.5 ${col.key !== 'jobTitle' ? 'justify-center' : ''} ${canSort ? 'cursor-pointer hover:text-[#0F47F2] transition-colors' : ''}`}
+                                                onClick={() => canSort && handleSort(sortKey)}
+                                            >
+                                                {col.label}
+                                                {canSort && <ArrowUpDown className="w-3 h-3" />}
+                                            </div>
+                                        </th>
+                                    );
+                                })}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F5F7]">
-                            {paginatedJobs.map((job, jobIdx) => {
+                            {paginatedJobs.map((job) => {
                                 const daysOpen = job.days_open || 18;
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
 
                                 const defaultStages = [
-                                    { name: 'Shortlisted', count: job.shortlisted_candidate_count || 2, color: '#14b8a6', archive: 0 },
+                                    { name: "Shortlisted", count: job.shortlisted_count || 0, color: "#4F46E5" },
+                                    { name: "Hired", count: job.hired_count || 0, color: "#16A34A" },
                                 ];
                                 const allStages = job.stage_breakdown || null;
 
@@ -759,230 +814,299 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                 return (
                                     <tr key={job.id} className="h-[72px] hover:bg-[#FAFBFC] transition-colors group">
-                                        {/* Checkbox */}
-                                        <td className="px-4 py-3">
-                                            <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded border-gray-300" />
-                                        </td>
-
-                                        {/* Job Title */}
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-2">
-                                                <span
-                                                    className="text-[14px] font-[600] text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] transition-colors truncate max-w-[200px]"
-                                                    onClick={() => onJobSelect?.(job)}
-                                                    title={job.title}
-                                                >
-                                                    {job.title}
-                                                </span>
-                                                {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
-                                            </div>
-                                        </td>
-
-                                        {/* Position */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
-                                            {noOfPositions}
-                                        </td>
-
-                                        {/* YOE */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
-                                            {job.experience_display || `${job.experience_min_years || 0} - ${job.experience_max_years || 0} Yrs`}
-                                        </td>
-
-                                        {/* Location */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center truncate max-w-[120px]" title={Array.isArray(job.location) ? job.location.join(", ") : job.location}>
-                                            {Array.isArray(job.location) ? job.location[0] || "--" : job.location || "--"}
-                                        </td>
-
-                                        {/* CTC Budget */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
-                                            {(Number(job.salary_min || 0) === 0 && Number(job.salary_max || 0) === 0) ? "Confidential" : `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
-                                        </td>
-
-                                        {/* Candidates */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
-                                            {job.candidates_count ?? job.total_applied ?? 0}
-                                        </td>
-
-                                        {/* Naukri.com */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
-                                            {job.naukri_bot_candidates_count ?? 0}
-                                        </td>
-
-                                        {/* LinkedIn Bot */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
-                                            {job.linkedin_bot_candidates_count ?? 0}
-                                        </td>
-
-                                        {/* Nxthyre */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
-                                            {job.inbound_candidates_count ?? job.inbound_count ?? 0}
-                                        </td>
-
-                                        {/* Pipeline Stages */}
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center justify-center gap-1.5 flex-wrap max-w-[200px]">
-                                                {stages.map((stage: any, idx: number) => {
-                                                    const colorSet = stageColors[idx % stageColors.length];
-                                                    const displayCount = stage.archived_count !== undefined 
-                                                        ? `${stage.count} - ${stage.count - stage.archived_count}`
-                                                        : stage.count;
-                                                    
+                                        {columnsToRender.map(col => {
+                                            switch (col.key) {
+                                                case 'checkbox':
                                                     return (
-                                                        <div
-                                                            key={idx}
-                                                            onMouseEnter={(e) => showStageTooltip(e, stage.name, stage.count, stage.archived_count || 0)}
-                                                            onMouseLeave={() => setStageTooltip(prev => ({ ...prev, visible: false }))}
-                                                            className="px-2 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap cursor-default transition-transform hover:scale-105"
-                                                            style={{
-                                                                backgroundColor: colorSet.bg,
-                                                                color: colorSet.text,
-                                                                border: `1px solid ${colorSet.border}`
-                                                            }}
-                                                        >
-                                                            {displayCount}
-                                                        </div>
+                                                        <td key={col.key} className="px-4 py-3">
+                                                            <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded border-gray-300" />
+                                                        </td>
                                                     );
-                                                })}
-                                            </div>
-                                        </td>
+                                                case 'jobTitle':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <span
+                                                                    className="text-[14px] font-[600] text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] transition-colors truncate max-w-[200px]"
+                                                                    onClick={() => onJobSelect?.(job)}
+                                                                    title={job.title}
+                                                                >
+                                                                    {job.title}
+                                                                </span>
+                                                                {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
+                                                            </div>
+                                                        </td>
+                                                    );
+                                                case 'position':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
+                                                            {noOfPositions}
+                                                        </td>
+                                                    );
+                                                case 'yoe':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
+                                                            {job.experience_display || `${job.experience_min_years ?? 0}-${job.experience_max_years ?? 0} Yrs`}
+                                                        </td>
+                                                    );
+                                                case 'location':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center truncate max-w-[120px]" title={Array.isArray(job.location) ? job.location.join(', ') : job.location}>
+                                                            {Array.isArray(job.location) ? job.location[0] || 'N/A' : job.location || 'N/A'}
+                                                        </td>
+                                                    );
+                                                case 'ctcBudget':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
+                                                            {(Number(job.salary_min || 0) === 0 && Number(job.salary_max || 0) === 0) 
+                                                                ? "Confidential" 
+                                                                : `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
+                                                        </td>
+                                                    );
+                                                case 'candidates':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
+                                                            {job.candidates_count ?? job.total_applied ?? 0}
+                                                        </td>
+                                                    );
+                                                case 'naukbot':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
+                                                            {job.naukri_bot_candidates_count ?? 0}
+                                                        </td>
+                                                    );
+                                                case 'linkedinBot':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
+                                                            {job.linkedin_bot_candidates_count ?? 0}
+                                                        </td>
+                                                    );
+                                                case 'nxthyre':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
+                                                            {job.inbound_candidates_count ?? job.inbound_count ?? 0}
+                                                        </td>
+                                                    );
+                                                case 'pipelineStages':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3">
+                                                            <div className="flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                                                {stages.map((stage: any, idx: number) => {
+                                                                    const colorSet = stageColors[idx % stageColors.length];
+                                                                    const displayCount = stage.archived_count !== undefined
+                                                                        ? `${stage.count} - ${stage.count - stage.archived_count}`
+                                                                        : stage.count;
 
-                                        {/* Shortlisted */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
-                                            {job.shortlisted_count ?? job.shortlisted_candidate_count ?? 0}
-                                        </td>
-
-                                        {/* Hired */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
-                                            {job.hired_count ?? 0}
-                                        </td>
-
-                                        {/* Days Open */}
-                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
-                                            {daysOpen} d
-                                        </td>
-
-                                        {/* Status */}
-                                        <td className="px-4 py-3 text-center">
-                                            <div className="flex items-center justify-center">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const rect = e.currentTarget.getBoundingClientRect();
-                                                        setStatusMenuPos({ top: rect.bottom + 5, left: rect.left });
-                                                        setStatusMenuOpenId(job.id);
-                                                    }}
-                                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all hover:opacity-80
-                                                        ${(job.status || 'ACTIVE').toUpperCase() === 'ACTIVE'
-                                                            ? 'bg-[#EBFFEE] text-[#069855] border border-[#34C759]'
-                                                            : (job.status || '').toUpperCase() === 'PAUSED'
-                                                                ? 'bg-[#FFF7D6] text-[#92400E] border border-[#F59E0B]'
-                                                                : 'bg-[#F3F5F7] text-[#8E8E93] border border-[#D1D1D6]'
-                                                        }`}
-                                                >
-                                                    {(job.status || 'ACTIVE').toUpperCase() === 'ACTIVE' && <Plus className="w-3 h-3" />}
-                                                    {statusUpdating === job.id ? '...' : (job.status || 'Active')}
-                                                </button>
-                                            </div>
-                                        </td>
-
-                                        {/* Note */}
-                                        <td className="px-4 py-3">
-                                            <div
-                                                className="group/note relative cursor-pointer"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setInlineEditJobId(job.id);
-                                                    const latestNote = fetchedNotes[job.id]?.[0];
-                                                    setInlineNoteContent(latestNote?.content || "");
-                                                }}
-                                            >
-                                                {inlineEditJobId === job.id ? (
-                                                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                                        <input
-                                                            autoFocus
-                                                            className="flex-1 px-2 py-1 text-xs border rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                                                            value={inlineNoteContent}
-                                                            onChange={(e) => setInlineNoteContent(e.target.value)}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter') handleSaveInlineNote(job.id);
-                                                                if (e.key === 'Escape') setInlineEditJobId(null);
-                                                            }}
-                                                        />
-                                                        <button
-                                                            onClick={() => handleSaveInlineNote(job.id)}
-                                                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                                        >
-                                                            <UserCheck className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-[12px] text-[#4B5563] line-clamp-2 italic leading-tight">
-                                                            {fetchedNotes[job.id]?.[0]?.content || "Add a note..." }
-                                                        </p>
-                                                        <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover/note:opacity-100 transition-opacity shrink-0" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-
-                                        {/* Actions */}
-                                        <td className="px-4 py-3 text-center relative" onClick={(e) => e.stopPropagation()}>
-                                            <button
-                                                onClick={(e) => {
-                                                    if (menuOpenJobId === job.id) {
-                                                        setMenuOpenJobId(null);
-                                                        return;
-                                                    }
-                                                    const rect = e.currentTarget.getBoundingClientRect();
-                                                    const mW = 160, mH = 240, gap = 8;
-                                                    const openUp = rect.bottom + mH + gap > window.innerHeight;
-                                                    const isBottom = rect.bottom + mH + gap > window.innerHeight;
-                                                    setMenuPos({
-                                                        top: isBottom ? 0 : rect.bottom + gap,
-                                                        bottom: isBottom ? window.innerHeight - rect.top + gap : 0,
-                                                        right: window.innerWidth - rect.right,
-                                                        isBottom
-                                                    });
-                                                    setMenuOpenJobId(job.id);
-                                                }}
-                                                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                                            >
-                                                <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
-                                            </button>
-                                            {menuOpenJobId === job.id && (
-                                                <div
-                                                    ref={menuRef}
-                                                    className={`fixed w-40 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200`}
-                                                    style={{
-                                                        top: menuPos.isBottom ? 'auto' : menuPos.top,
-                                                        bottom: menuPos.isBottom ? menuPos.bottom : 'auto',
-                                                        right: menuPos.right
-                                                    }}
-                                                >
-                                                    <button onClick={() => { setMenuOpenJobId(null); onJobSelect?.(job); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">
-                                                        <Eye className="w-4 h-4" /> View Details
-                                                    </button>
-                                                    <button onClick={() => { setMenuOpenJobId(null); setEditingJobId(job.id); setShowEditJobRole(true); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">
-                                                        <Pencil className="w-4 h-4" /> Edit
-                                                    </button>
-                                                    <button onClick={() => { setMenuOpenJobId(null); handleToggleFlag(job.id, !!job.is_flagged); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">
-                                                        <Flag className={`w-4 h-4 ${job.is_flagged ? 'text-red-500 fill-red-500' : ''}`} /> {job.is_flagged ? 'Unflag' : 'Flag'}
-                                                    </button>
-                                                    <div className="h-[1px] bg-gray-100 my-1"></div>
-                                                    <button onClick={() => { setMenuOpenJobId(null); if (window.confirm("Are you sure you want to delete this job?")) { jobPostService.deleteJob(job.id).then(() => fetchJobs()); } }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2">
-                                                        <Trash2 className="w-4 h-4" /> Delete
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
+                                                                    return (
+                                                                        <div
+                                                                            key={idx}
+                                                                            onMouseEnter={(e) => showStageTooltip(e, stage.name, stage.count, stage.archived_count || 0)}
+                                                                            onMouseLeave={() => setStageTooltip(prev => ({ ...prev, visible: false }))}
+                                                                            className="px-2 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap cursor-default transition-transform hover:scale-105"
+                                                                            style={{
+                                                                                backgroundColor: colorSet.bg,
+                                                                                color: colorSet.text,
+                                                                                border: `1px solid ${colorSet.border}`
+                                                                            }}
+                                                                        >
+                                                                            {displayCount}
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </td>
+                                                    );
+                                                case 'shortlisted':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
+                                                            {job.shortlisted_count ?? job.shortlisted_candidate_count ?? 0}
+                                                        </td>
+                                                    );
+                                                case 'hired':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
+                                                            {job.hired_count ?? 0}
+                                                        </td>
+                                                    );
+                                                case 'daysOpen':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
+                                                            {daysOpen} d
+                                                        </td>
+                                                    );
+                                                case 'status':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-center">
+                                                            <div className="flex items-center justify-center">
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                                        setStatusMenuPos({ top: rect.bottom + 5, left: rect.left });
+                                                                        setStatusMenuOpenId(job.id);
+                                                                    }}
+                                                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all hover:opacity-80
+                                                                        ${(job.status || 'ACTIVE').toUpperCase() === 'ACTIVE'
+                                                                            ? 'bg-[#EBFFEE] text-[#069855] border border-[#34C759]'
+                                                                            : (job.status || '').toUpperCase() === 'PAUSED'
+                                                                                ? 'bg-[#FFF7D6] text-[#92400E] border border-[#F59E0B]'
+                                                                                : 'bg-[#F3F5F7] text-[#8E8E93] border border-[#D1D1D6]'
+                                                                        }`}
+                                                                >
+                                                                    {(job.status || 'ACTIVE').toUpperCase() === 'ACTIVE' && <Plus className="w-3 h-3" />}
+                                                                    {statusUpdating === job.id ? '...' : (job.status || 'Active')}
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    );
+                                                case 'note':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3">
+                                                            <div
+                                                                className="group/note relative cursor-pointer"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setInlineEditJobId(job.id);
+                                                                    const latestNote = fetchedNotes[job.id]?.[0];
+                                                                    setInlineNoteContent(latestNote?.content || "");
+                                                                }}
+                                                            >
+                                                                {inlineEditJobId === job.id ? (
+                                                                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                                                        <input
+                                                                            autoFocus
+                                                                            className="flex-1 px-2 py-1 text-xs border rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                                                                            value={inlineNoteContent}
+                                                                            onChange={(e) => setInlineNoteContent(e.target.value)}
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter') handleSaveInlineNote(job.id);
+                                                                                if (e.key === 'Escape') setInlineEditJobId(null);
+                                                                            }}
+                                                                        />
+                                                                        <button
+                                                                            onClick={() => handleSaveInlineNote(job.id)}
+                                                                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                                                        >
+                                                                            <UserCheck className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <p className="text-[12px] text-[#4B5563] line-clamp-2 italic leading-tight">
+                                                                            {fetchedNotes[job.id]?.[0]?.content || "Add a note..." }
+                                                                        </p>
+                                                                        <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover/note:opacity-100 transition-opacity shrink-0" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    );
+                                                case 'actions':
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3 text-center relative" onClick={(e) => e.stopPropagation()}>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    if (menuOpenJobId === job.id) {
+                                                                        setMenuOpenJobId(null);
+                                                                        return;
+                                                                    }
+                                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                                    const mW = 160, mH = 240, gap = 8;
+                                                                    const isBottom = rect.bottom + mH + gap > window.innerHeight;
+                                                                    setMenuPos({
+                                                                        top: isBottom ? 0 : rect.bottom + gap,
+                                                                        bottom: isBottom ? window.innerHeight - rect.top + gap : 0,
+                                                                        right: window.innerWidth - rect.right,
+                                                                        isBottom
+                                                                    });
+                                                                    setMenuOpenJobId(job.id);
+                                                                }}
+                                                                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                                                            >
+                                                                <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                                                            </button>
+                                                            {menuOpenJobId === job.id && (
+                                                                <div
+                                                                    ref={menuRef}
+                                                                    className={`fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[10000] py-2 animate-in fade-in slide-in-from-top-2 duration-200`}
+                                                                    style={{
+                                                                        top: menuPos.isBottom ? 'auto' : menuPos.top + 4,
+                                                                        bottom: menuPos.isBottom ? menuPos.bottom + 4 : 'auto',
+                                                                        right: menuPos.right
+                                                                    }}
+                                                                >
+                                                                    <button
+                                                                        onClick={() => { setMenuOpenJobId(null); setEditingJobId(job.id); setShowEditJobRole(true); }}
+                                                                        className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => { setMenuOpenJobId(null); handleStatusChange(job.id, (job.status || 'ACTIVE').toUpperCase() === 'PAUSED' ? 'ACTIVE' : 'PAUSED'); }}
+                                                                        className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+                                                                    >
+                                                                        {(job.status || 'ACTIVE').toUpperCase() === 'PAUSED' ? 'Active' : 'Pause'}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => { setMenuOpenJobId(null); setInlineEditJobId(job.id); setInlineNoteContent(fetchedNotes[job.id]?.[0]?.content || ""); }}
+                                                                        className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+                                                                    >
+                                                                        {fetchedNotes[job.id]?.[0] ? 'Edit Note' : 'Add Note'}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => { setMenuOpenJobId(null); showToast.success("Timeline coming soon"); }}
+                                                                        className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+                                                                    >
+                                                                        Timeline
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setMenuOpenJobId(null);
+                                                                            navigator.clipboard.writeText(String(job.job_id || job.id)).then(() => showToast.success("Job ID copied"));
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+                                                                    >
+                                                                        Copy Job ID
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => { setMenuOpenJobId(null); window.open(`/jobs/${job.id}`, '_blank'); }}
+                                                                        className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+                                                                    >
+                                                                        Share Job
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => { setMenuOpenJobId(null); handleToggleFlag(job.id, !!job.is_flagged); }}
+                                                                        className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+                                                                    >
+                                                                        {job.is_flagged ? 'Unflag' : 'Mark as Flag'}
+                                                                    </button>
+                                                                    <div className="h-[1px] bg-[#F3F5F7] my-1"></div>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setMenuOpenJobId(null);
+                                                                            if (window.confirm("Are you sure you want to delete this job role?")) {
+                                                                                jobPostService.deleteJob(job.id).then(() => fetchJobs());
+                                                                            }
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-2.5 text-[15px] text-[#DC2626] hover:bg-[#FEE2E2] transition-colors font-medium"
+                                                                    >
+                                                                        Delete Role
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    );
+                                                default:
+                                                    return null;
+                                            }
+                                        })}
                                     </tr>
                                 );
                             })}
 
-                            {filteredWorkspaceJobs.length === 0 && !jobsLoading && (
+                            {paginatedJobs.length === 0 && !jobsLoading && (
                                 <tr>
-                                    <td colSpan={9} className="px-5 py-10 text-center text-[#8E8E93]">
+                                    <td colSpan={columnsToRender.length} className="px-5 py-10 text-center text-[#8E8E93]">
                                         No jobs found for this criteria.
                                     </td>
                                 </tr>
