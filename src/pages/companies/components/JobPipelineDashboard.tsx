@@ -58,6 +58,8 @@ import * as XLSX from "xlsx";
 import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } from "./PipelineFilterPanel";
 import DateRangeFilter from "./DateRangeFilter";
 import PipelineKanbanColumn from "./PipelineKanbanColumn";
+import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
+
 // ─── Interfaces ────────────────────────────────────────────────
 
 export interface Stage {
@@ -398,6 +400,8 @@ export default function JobPipelineDashboard({
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [totalCandidates, setTotalCandidates] = useState(0);
+  const [callModalCandidate, setCallModalCandidate] = useState<CallCandidateData | null>(null);
+
 
   // ── Candidate Edit Modal State
   const [showCandidateEditModal, setShowCandidateEditModal] = useState(false);
@@ -4581,7 +4585,6 @@ export default function JobPipelineDashboard({
         </div>
       )}
 
-      {/* FEEDBACK MODAL (Archive / Move / Unarchive) */}
       {showFeedbackModal && pendingAction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
@@ -4668,6 +4671,15 @@ export default function JobPipelineDashboard({
           </div>
         </div>
       )}
+
+      {/* CALL CANDIDATE MODAL */}
+      <CallCandidateModal
+        isOpen={!!callModalCandidate}
+        onClose={() => setCallModalCandidate(null)}
+        candidate={callModalCandidate}
+        jobId={jobId}
+      />
     </div>
+
   );
 }
