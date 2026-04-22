@@ -29,6 +29,7 @@ import {
     ArrowUpDown,
     PlusCircle,
     UserCheck,
+    MoreHorizontal,
 } from "lucide-react";
 import CreateWorkspaceModal from "./components/CreateWorkspaceModal";
 import JoinWorkspaceModal from "./components/JoinWorkspaceModal";
@@ -160,6 +161,10 @@ export default function Companies() {
     const [infoWorkspace, setInfoWorkspace] = useState<MyWorkspace | null>(null);
     const [companyResearchData, setCompanyResearchData] = useState<CompanyResearchData | null>(null);
     const [loadingCompanyResearch, setLoadingCompanyResearch] = useState(false);
+    const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+    const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+    const menuRef = useRef<HTMLDivElement>(null);
+
 
     useEffect(() => {
         if (!infoWorkspace) {
@@ -255,6 +260,17 @@ export default function Companies() {
         window.addEventListener('breadcrumb-navigate', handleBreadcrumbNavigate);
         return () => window.removeEventListener('breadcrumb-navigate', handleBreadcrumbNavigate);
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setMenuOpenId(null);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
 
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
@@ -439,9 +455,12 @@ export default function Companies() {
                     : "--",
                 status: normalizedStatus as any,
                 createdBy: ws.created_by || undefined,
+                activeJobs: ws.jobs_count ? Math.floor(ws.jobs_count * 0.25) : 21, // Mock logic: 25% of jobs are active
+                createdDate: '12/12/2025', // Mock date
             };
         });
     }, [workspaces]);
+
 
     useEffect(() => {
         const uniqueCompanies = Array.from(new Set(allRows.map((r) => r.name)));
@@ -674,53 +693,6 @@ export default function Companies() {
         );
     }
 
-    const getDynamicStatCards = () => {
-        if (!statsCount) return companyStatCards;
-
-        const renderTrend = (val: number | undefined) => {
-            if (val === undefined || val === null || val === 0) return undefined;
-            return `${val > 0 ? '+' : ''}${val}%`;
-        };
-
-        const totalCompanyTrend = statsCount.increased_decreased_rate_percentages?.total_companies?.monthly;
-        const activeCompanyTrend = statsCount.increased_decreased_rate_percentages?.active_companies?.monthly;
-        const totalOpenJobsTrend = statsCount.increased_decreased_rate_percentages?.total_open_jobs?.monthly;
-        const immediateActionsTrend = statsCount.increased_decreased_rate_percentages?.immediate_action_jobs?.monthly;
-
-        return [
-            {
-                id: 'cs-1',
-                label: 'Total Companies',
-                value: statsCount.total_companies,
-                trend: renderTrend(totalCompanyTrend),
-                trendColor: (totalCompanyTrend && totalCompanyTrend >= 0) ? 'green' : 'red',
-            },
-            {
-                id: 'cs-2',
-                label: 'Active Companies',
-                value: statsCount.active_companies,
-                trend: renderTrend(activeCompanyTrend),
-                trendColor: (activeCompanyTrend && activeCompanyTrend >= 0) ? 'green' : 'red',
-            },
-            {
-                id: 'cs-3',
-                label: 'Total Open Jobs',
-                value: statsCount.total_open_jobs,
-                trend: renderTrend(totalOpenJobsTrend),
-                trendColor: (totalOpenJobsTrend && totalOpenJobsTrend >= 0) ? 'green' : 'red',
-            },
-            {
-                id: 'cs-4',
-                label: 'Immediate Actions',
-                value: statsCount.immediate_action_jobs,
-                trend: renderTrend(immediateActionsTrend),
-                trendColor: (immediateActionsTrend && immediateActionsTrend >= 0) ? 'green' : 'red',
-                subText: `${statsCount.immediate_action_jobs} pending`,
-            },
-        ] as any;
-    };
-
-    const dynamicStatCards = getDynamicStatCards();
 
     const SortIcon = ({ columnKey }: { columnKey: keyof CompanyTableRow }) => {
         if (sortConfig?.key !== columnKey) return <ArrowUpDown className="w-3 h-3 ml-1 text-gray-400 group-hover:text-gray-600 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />;
@@ -733,50 +705,6 @@ export default function Companies() {
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
             <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 flex flex-col gap-4">
-                    {/* ── Stats Grid ── */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {dynamicStatCards.map((stat: any) => {
-                            const isAction = stat.id === "cs-4";
-                            return (
-                                <div
-                                    key={stat.id}
-                                    className={`bg-white rounded-xl flex flex-col border border-[#E5E7EB] ${isAction ? "cursor-pointer hover:bg-gray-50 transition-colors" : ""}`}
-                                    style={{ padding: "16px", gap: "10px" }}
-                                    onClick={isAction ? () => setIsActionView(!isActionView) : undefined}
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div className="shrink-0">
-                                            {stat.id === "cs-1" && <TotalCompaniesIcon />}
-                                            {stat.id === "cs-2" && <ActiveCompaniesIcon />}
-                                            {stat.id === "cs-3" && <TotalOpenJobsIcon />}
-                                            {stat.id === "cs-4" && <ImmediateActionsIcon />}
-                                        </div>
-                                        {stat.trend && (
-                                            <span className={`text-[11px] font-medium ${stat.trendColor === "green" ? "text-[#14AE5C]" : "text-[#DC2626]"}`}>
-                                                {stat.trend} vs last month
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-[13px] font-normal text-[#4B5563] leading-[18px]">
-                                        {stat.label}
-                                    </p>
-                                    <div className="flex items-end justify-between">
-                                        <span
-                                            className={`font-medium leading-[40px] ${isAction ? "text-black" : "text-black"}`}
-                                            style={{ fontSize: "40px" }}
-                                        >
-                                            {stat.value}
-                                        </span>
-                                        {stat.subText && (
-                                            <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#FFF7D6] text-[#92400E]">
-                                                 {stat.subText}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
 
                     {/* ── Main Grid ── */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white rounded-xl">
@@ -850,22 +778,7 @@ export default function Companies() {
 
                                 <div className="flex items-center gap-2 flex-wrap">
 
-                                    {/* Export CSV */}
-                                    <button
-                                        onClick={() => {
-                                            organizationService.exportWorkspacesCSV()
-                                                .then(() => showToast.success("Export started successfully"))
-                                                .catch((err) => showToast.error(err.message || "Failed to export data"));
-                                        }}
-                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#4B5563] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] hover:text-black transition-colors"
-                                        title="Export Workspaces CSV"
-                                    >
-                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11.6519 6.00737C11.6569 6.00735 11.6618 6.00734 11.6668 6.00734C13.3237 6.00734 14.6668 7.35295 14.6668 9.01284C14.6668 10.5599 13.5001 11.8339 12.0002 12M11.6519 6.00737C11.6618 5.89737 11.6668 5.78597 11.6668 5.67339C11.6668 3.64463 10.0252 2 8.00016 2C6.08232 2 4.50838 3.47511 4.34711 5.35461M11.6519 6.00737C11.5837 6.76506 11.2859 7.4564 10.8287 8.01101M4.34711 5.35461C2.65615 5.51582 1.3335 6.94261 1.3335 8.6789C1.3335 10.2945 2.47867 11.6421 4.00016 11.9515M4.34711 5.35461C4.45233 5.34458 4.55898 5.33945 4.66683 5.33945C5.41738 5.33945 6.10999 5.58796 6.66715 6.00734" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M8.00016 8.6665L8.00016 13.9998M8.00016 8.6665C7.53334 8.6665 6.66118 9.99604 6.3335 10.3332M8.00016 8.6665C8.46698 8.6665 9.33914 9.99604 9.66683 10.3332" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                        Export CSV
-                                    </button>
+
 
                                     {/* Date Picker Mock */}
                                     <button
@@ -940,44 +853,56 @@ export default function Companies() {
                                                     <div className="flex items-center">Company <SortIcon columnKey="name" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
                                                     onClick={() => handleSort('totalJobs')}
                                                 >
-                                                    <div className="flex items-center justify-center">Jobs <SortIcon columnKey="totalJobs" /></div>
+                                                    <div className="flex items-center justify-center">Total Jobs <SortIcon columnKey="totalJobs" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    onClick={() => handleSort('activeJobs' as any)}
+                                                >
+                                                    <div className="flex items-center justify-center">Active Jobs <SortIcon columnKey={'activeJobs' as any} /></div>
+                                                </th>
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    onClick={() => handleSort('createdDate' as any)}
+                                                >
+                                                    <div className="flex items-center justify-center">Created Date <SortIcon columnKey={'createdDate' as any} /></div>
+                                                </th>
+                                                <th
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
                                                     onClick={() => handleSort('totalCandidates')}
                                                 >
                                                     <div className="flex items-center justify-center">Candidates <SortIcon columnKey="totalCandidates" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
                                                     onClick={() => handleSort('shortlisted')}
                                                 >
                                                     <div className="flex items-center justify-center">Shortlisted <SortIcon columnKey="shortlisted" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
                                                     onClick={() => handleSort('hired')}
                                                 >
                                                     <div className="flex items-center justify-center">Hired <SortIcon columnKey="hired" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
                                                     onClick={() => handleSort('lastActiveDate')}
                                                 >
                                                     <div className="flex items-center justify-center">Last Active Date <SortIcon columnKey="lastActiveDate" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
                                                     onClick={() => handleSort('status')}
                                                 >
                                                     <div className="flex items-center justify-center">Status <SortIcon columnKey="status" /></div>
                                                 </th>
                                                 <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
-                                                    Actions
                                                 </th>
+
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-[#F3F5F7]">
@@ -995,20 +920,20 @@ export default function Companies() {
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-20 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center"><div className="h-5 bg-gray-200 rounded-full w-14 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center">
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <div className="w-6 h-6 bg-gray-200 rounded-full" />
-                                                                <div className="w-6 h-6 bg-gray-200 rounded-full" />
-                                                            </div>
+                                                            <div className="w-6 h-6 bg-gray-200 rounded-full mx-auto" />
                                                         </td>
+
                                                     </tr>
                                                 ))
                                             ) : paginatedRows.length === 0 ? (
                                                 <tr>
                                                     <td
-                                                        colSpan={8}
+                                                        colSpan={10}
+
                                                         className="px-6 py-12 text-center text-sm text-[#AEAEB2]"
                                                     >
                                                         No companies found.
@@ -1046,17 +971,32 @@ export default function Companies() {
                                                                         </p>
                                                                         {row.createdBy && (
                                                                             <p className="text-[11px] text-[#AEAEB2] font-normal truncate max-w-[200px]">
-                                                                                Created by: {row.createdBy}
+                                                                                {row.createdBy}
                                                                             </p>
                                                                         )}
                                                                     </div>
+
                                                                 </div>
                                                             </td>
 
-                                                            {/* Jobs */}
+                                                            {/* Total Jobs */}
                                                             <td className="px-6 py-4 text-center">
                                                                 <p className="text-sm text-[#4B5563]">
                                                                     {row.totalJobs}
+                                                                </p>
+                                                            </td>
+
+                                                            {/* Active Jobs */}
+                                                            <td className="px-6 py-4 text-center">
+                                                                <p className="text-sm text-[#4B5563]">
+                                                                    {row.activeJobs}
+                                                                </p>
+                                                            </td>
+
+                                                            {/* Created Date */}
+                                                            <td className="px-6 py-4 text-center">
+                                                                <p className="text-sm text-[#4B5563]">
+                                                                    {row.createdDate}
                                                                 </p>
                                                             </td>
 
@@ -1109,31 +1049,41 @@ export default function Companies() {
                                                             </td>
 
                                                             {/* Actions */}
-                                                            <td className="px-6 py-4 text-center">
-                                                                <div
-                                                                    className="flex items-center justify-center gap-3"
-                                                                    onClick={(e) => e.stopPropagation()}
+                                                            <td className="px-6 py-4 text-center relative" onClick={(e) => e.stopPropagation()}>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        if (menuOpenId === row.id) { setMenuOpenId(null); return; }
+                                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                                        const mW = 160, mH = 240, gap = 8;
+                                                                        const openUp = rect.bottom + mH + gap > window.innerHeight;
+                                                                        const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
+                                                                        const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
+                                                                        let left = rect.right - mW;
+                                                                        if (left < 8) left = 8;
+                                                                        if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
+                                                                        setMenuPos({ top, left });
+                                                                        setMenuOpenId(row.id);
+                                                                    }}
+                                                                    className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
                                                                 >
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            const match = workspaces.find(w => w.id === row.workspaceId);
-                                                                            if (match) setInfoWorkspace(match);
-                                                                        }}
-                                                                        className="p-1.5 text-[#0F47F2] bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
+                                                                    <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                                                                </button>
+                                                                {menuOpenId === row.id && (
+                                                                    <div
+                                                                        ref={menuRef}
+                                                                        className="fixed w-40 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                                                                        style={{ top: menuPos.top, left: menuPos.left }}
                                                                     >
-                                                                        <Eye className="w-4 h-4" />
-                                                                    </button>
-
-                                                                    <button
-                                                                        onClick={(e) => { e.stopPropagation(); handleStatusToggle(row.workspaceId, row.status); }}
-                                                                        disabled={statusUpdating === row.workspaceId}
-                                                                        title={`Toggle status (Current: ${row.status})`}
-                                                                        className={`p-1.5 transition-colors rounded-full hover:bg-gray-100 ${statusUpdating === row.workspaceId ? 'opacity-50 pointer-events-none' : ''}`}
-                                                                    >
-                                                                        {row.status === 'Active' ? <PlayIcon /> : row.status === 'Paused' ? <PauseIcon /> : <StopIcon />}
-                                                                    </button>
-                                                                </div>
-                                                            </td>
+                                                                        <button onClick={() => { setMenuOpenId(null); const match = workspaces.find(w => w.id === row.workspaceId); if (match) setInfoWorkspace(match); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> View Details</button>
+                                                                        <button onClick={() => { setMenuOpenId(null); showToast.success("Edit coming soon"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit</button>
+                                                                        <button onClick={() => { setMenuOpenId(null); showToast.success("Delete coming soon"); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Delete</button>
+                                                                        <div className="h-[1px] bg-gray-100 my-1"></div>
+                                                                        <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Active"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Active</button>
+                                                                        <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Paused"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Pause</button>
+                                                                        <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Inactive"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Inactive</button>
+                                                                    </div>
+                                                                                                )}
+                                                                                            </td>
                                                         </tr>
                                                     );
                                                 })
@@ -1190,172 +1140,8 @@ export default function Companies() {
                                 </div>
                             </section>
                         </div>
-
                     </div>
                 </div>
-                {!isActionView && (
-                    <aside className="w-96 flex flex-col gap-4 shrink-0">
-                        {/* Immediate Actions */}
-                        <div className="bg-white rounded-xl p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-semibold text-black">
-                                    Immediate Actions
-                                    {sidebarData && (
-                                        <span className="ml-1.5 text-xs font-normal text-[#AEAEB2]">
-                                            ({sidebarData.right_sidebar.immediate_actions.total_pending})
-                                        </span>
-                                    )}
-                                </h3>
-                                <button
-                                    className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
-                                    onClick={() => setIsActionView(true)}
-                                >
-                                    Hide Activities
-                                </button>
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                {sidebarLoading ? (
-                                    // Skeleton loading for immediate actions
-                                    [...Array(3)].map((_, i) => (
-                                        <div key={`ia-skel-${i}`} className="p-4 bg-[#F9FAFB] rounded-lg animate-pulse" style={{ border: "0.5px solid #E5E7EB" }}>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="w-24 h-4 rounded bg-gray-200" />
-                                                <div className="w-6 h-6 rounded-full bg-gray-200" />
-                                            </div>
-                                            <div className="w-full h-3 rounded bg-gray-200 mb-2" />
-                                            <div className="w-3/4 h-3 rounded bg-gray-200 mb-4" />
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-24 h-6 rounded bg-gray-200" />
-                                                <div className="w-14 h-3 rounded bg-gray-200" />
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : sidebarData ? (
-                                    sidebarData.right_sidebar.immediate_actions.items.map((action: SidebarImmediateAction) => (
-                                        <div key={action.id} className="p-4 bg-[#F9FAFB] rounded-lg" style={{ border: "0.5px solid #E5E7EB" }}>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    {action.company_logo_url ? (
-                                                        <img src={action.company_logo_url} alt={action.company_name} className="w-5 h-5 rounded-full object-contain" />
-                                                    ) : null}
-                                                    <p className="text-sm font-semibold text-[#0F47F2]">{action.company_name}</p>
-                                                </div>
-                                                {action.has_star && (
-                                                    <div className="w-6 h-6 rounded-full bg-[#0F47F2] flex items-center justify-center shadow-sm">
-                                                        <Star className="w-3 h-3 text-white fill-current" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <p className="text-[13px] text-[#4B5563] mb-4 leading-relaxed">
-                                                {action.issue_summary}
-                                            </p>
-                                            <div className="flex items-center gap-4">
-                                                <button
-                                                    className={`py-1.5 px-3 text-xs font-semibold rounded-md transition-colors ${action.priority_level === 'high'
-                                                        ? 'bg-[#E7EDFF] text-[#0F47F2] hover:bg-[#D7E3FF]'
-                                                        : 'bg-[#FFF7D6] text-[#D97706] hover:bg-[#FDE68A]'
-                                                        }`}
-                                                >
-                                                    {action.action_button_label}
-                                                </button>
-                                                <span className="text-xs text-[#AEAEB2] font-medium">
-                                                    {action.timestamp_relative}
-                                                </span>
-                                                <ArrowRight className="w-4 h-4 text-[#AEAEB2] ml-auto" />
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-sm text-[#AEAEB2] text-center py-4">No immediate actions</p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Recent Activities */}
-                        <div
-                            className="bg-white rounded-xl p-5"
-                            style={{ border: "0.5px solid #D1D1D6" }}
-                        >
-                            <div className="flex items-center justify-between mb-5">
-                                <h3 className="text-sm font-semibold text-black">Recent Activities</h3>
-                                {sidebarData ? (
-                                    <div className="flex items-center gap-1">
-                                        {sidebarData.right_sidebar.recent_activities.view_options.map((opt) => (
-                                            <button
-                                                key={opt}
-                                                onClick={() => setSidebarActivityView(opt)}
-                                                className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${sidebarActivityView === opt
-                                                    ? 'text-[#0F47F2] bg-[#E7EDFF]'
-                                                    : 'text-[#4B5563] border border-[#E5E7EB] bg-white hover:bg-gray-50'
-                                                    }`}
-                                            >
-                                                {opt}
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <button className="text-xs font-medium text-[#4B5563] border border-[#E5E7EB] bg-white px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors">
-                                        Today
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-4">
-                                {sidebarLoading ? (
-                                    [...Array(3)].map((_, i) => (
-                                        <div key={`ra-skel-${i}`} className="flex items-start justify-between pb-3 border-b border-[#F3F5F7] animate-pulse">
-                                            <div>
-                                                <div className="w-28 h-4 rounded bg-gray-200 mb-1" />
-                                                <div className="w-40 h-3 rounded bg-gray-200 mb-1" />
-                                                <div className="w-32 h-2 rounded bg-gray-200" />
-                                            </div>
-                                            <div className="w-14 h-3 rounded bg-gray-200 mt-1" />
-                                        </div>
-                                    ))
-                                ) : sidebarData ? (
-                                    sidebarData.right_sidebar.recent_activities.groups
-                                        .filter((group: SidebarActivityGroup) => {
-                                            if (sidebarActivityView === 'All') return true;
-                                            if (sidebarActivityView === 'Today') return group.date_label === 'Today';
-                                            if (sidebarActivityView === 'This Week') return true;
-                                            return true;
-                                        })
-                                        .map((group: SidebarActivityGroup, gIdx: number) => (
-                                            <div key={`group-${gIdx}`}>
-                                                <div className="mb-3">
-                                                    <h4 className="text-xs font-semibold text-[#4B5563]">
-                                                        {group.date_label}
-                                                        {group.date_sub_label && <span className="font-normal"> · {group.date_sub_label}</span>}
-                                                    </h4>
-                                                </div>
-                                                {group.items.map((item) => (
-                                                    <div key={item.id} className="flex items-start justify-between pb-3 border-b border-[#F3F5F7] mb-2">
-                                                        <div className="flex items-start gap-2">
-                                                            <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 shrink-0 ${item.color === 'green' ? 'bg-[#DEF7EC]' : 'bg-[#E7EDFF]'
-                                                                }`}>
-                                                                {item.activity_type === 'hire' ? (
-                                                                    <UserCheck className="w-3 h-3 text-[#069855]" />
-                                                                ) : (
-                                                                    <PlusCircle className="w-3 h-3 text-[#0F47F2]" />
-                                                                )}
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm font-medium text-[#0F47F2] mb-0.5">{item.company_name}</p>
-                                                                <p className="text-[13px] text-[#4B5563]">{item.message}</p>
-                                                            </div>
-                                                        </div>
-                                                        <span className="text-xs text-[#AEAEB2] font-medium mt-1 shrink-0 ml-2">{item.time}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ))
-                                ) : (
-                                    <p className="text-sm text-[#AEAEB2] text-center py-4">No recent activities</p>
-                                )}
-                            </div>
-                        </div>
-                    </aside>
-                )}
             </div>
 
             {/* Modals */}

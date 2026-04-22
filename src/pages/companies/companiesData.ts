@@ -17,6 +17,8 @@ export interface CompanyTableRow {
     name: string;
     domain: string;
     totalJobs: number | string;
+    activeJobs?: number | string;
+    createdDate?: string;
     totalCandidates: number | string;
     shortlisted: number | string;
     shortlistedTrend?: string;
