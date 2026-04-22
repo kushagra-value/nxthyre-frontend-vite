@@ -55,7 +55,9 @@ import AddNewStageForm from "../../pipelines/AddNewStageForm";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
 import * as XLSX from "xlsx";
-
+import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } from "./PipelineFilterPanel";
+import DateRangeFilter from "./DateRangeFilter";
+import PipelineKanbanColumn from "./PipelineKanbanColumn";
 // ─── Interfaces ────────────────────────────────────────────────
 
 export interface Stage {
@@ -380,6 +382,17 @@ export default function JobPipelineDashboard({
   const [activeStageSlug, setActiveStageSlug] = useState<string | null>(null);
   const [showAddStageForm, setShowAddStageForm] = useState(false);
   const [archivedCandidates, setArchivedCandidates] = useState<any[]>([]);
+  const [kanbanRefreshCounters, setKanbanRefreshCounters] = useState<Record<string, number>>({});
+
+  const triggerKanbanRefresh = useCallback((slugs: string[]) => {
+    setKanbanRefreshCounters(prev => {
+      const next = { ...prev };
+      slugs.forEach(slug => {
+        next[slug] = (next[slug] || 0) + 1;
+      });
+      return next;
+    });
+  }, []);
 
   // ── Candidates
   const [candidates, setCandidates] = useState<CandidateListItem[]>([]);
@@ -415,6 +428,7 @@ export default function JobPipelineDashboard({
   const [selectionType, setSelectionType] = useState<
     "ACTIVE" | "ARCHIVED" | null
   >(null);
+  const [selectedCandidatesMap, setSelectedCandidatesMap] = useState<Record<number, any>>({});
 
   // ── Stage Actions Modal State ──
   const [stageToDelete, setStageToDelete] = useState<Stage | null>(null);
@@ -424,6 +438,7 @@ export default function JobPipelineDashboard({
   // ── Feedback Modal State ──
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackComment, setFeedbackComment] = useState("");
+  const draggedCandidateItemRef = useRef<any>(null);
   const [pendingAction, setPendingAction] = useState<{
     type: "archive" | "unarchive" | "move";
     applicationIds: number[];
@@ -431,6 +446,16 @@ export default function JobPipelineDashboard({
     targetStageName?: string;
     candidateNames?: string[];
   } | null>(null);
+
+  // ── Filters & Date Range ──
+  const [pipelineFilters, setPipelineFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
+  const [showPipelineFilterPanel, setShowPipelineFilterPanel] = useState(false);
+  const pipelineFilterButtonRef = useRef<HTMLButtonElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const [dateRangeFilterLabel, setDateRangeFilterLabel] = useState<string>("Date Filter");
+  const [isDateRangeFilterApplied, setIsDateRangeFilterApplied] = useState<boolean>(false);
+  const [dateRange, setDateRange] = useState<{from: string, to: string}>({from: "", to: ""});
 
   // ── Sorting
   type CandidateSortKey =
@@ -479,74 +504,6 @@ export default function JobPipelineDashboard({
     );
   };
 
-  const getSortedCandidates = (cands: CandidateListItem[]) => {
-    if (!sortConfig) return cands;
-    return [...cands].sort((a, b) => {
-      const candA = a.candidate;
-      const candB = b.candidate;
-
-      let valA: any = 0;
-      let valB: any = 0;
-
-      switch (sortConfig.key) {
-        case "Name":
-          valA = candA.full_name?.toLowerCase() || "";
-          valB = candB.full_name?.toLowerCase() || "";
-          break;
-        case "AI Score":
-          valA = parseInt(
-            (a.job_score?.candidate_match_score?.score || "0").replace("%", ""),
-            10,
-          );
-          valB = parseInt(
-            (b.job_score?.candidate_match_score?.score || "0").replace("%", ""),
-            10,
-          );
-          break;
-        case "Location":
-          valA = candA.location?.toLowerCase() || "";
-          valB = candB.location?.toLowerCase() || "";
-          break;
-        case "Exp":
-          valA =
-            candA.total_experience ??
-            (candA.experience_years ? parseInt(candA.experience_years) : 0);
-          valB =
-            candB.total_experience ??
-            (candB.experience_years ? parseInt(candB.experience_years) : 0);
-          break;
-        case "CTC":
-          valA = candA.current_salary_lpa
-            ? parseFloat(candA.current_salary_lpa)
-            : 0;
-          valB = candB.current_salary_lpa
-            ? parseFloat(candB.current_salary_lpa)
-            : 0;
-          break;
-        case "Expected CTC":
-          valA = candA.expected_ctc ? parseFloat(candA.expected_ctc) : 0;
-          valB = candB.expected_ctc ? parseFloat(candB.expected_ctc) : 0;
-          break;
-        case "Notice Period":
-          valA = candA.notice_period_days ?? 999;
-          valB = candB.notice_period_days ?? 999;
-          break;
-        case "Stage":
-          valA = a.current_stage?.name?.toLowerCase() || "";
-          valB = b.current_stage?.name?.toLowerCase() || "";
-          break;
-        case "Attention":
-          valA = a.status_tags?.find((t) => t.text)?.text?.toLowerCase() || "";
-          valB = b.status_tags?.find((t) => t.text)?.text?.toLowerCase() || "";
-          break;
-      }
-
-      if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
-      if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
-  };
-
   // Primary list for active candidates
   let combinedCands = candidates;
 
@@ -555,7 +512,7 @@ export default function JobPipelineDashboard({
       (c) => (c.current_stage?.slug || c.stage_slug) === activeStageSlug,
     );
   }
-  const sortedCandidates = getSortedCandidates(combinedCands);
+  const sortedCandidates = combinedCands;
 
   // Derived list for archived candidates (separated to avoid duplication in the main active list)
   const filteredArchivedTable = archivedCandidates.filter((item) => {
@@ -620,16 +577,18 @@ export default function JobPipelineDashboard({
     return name.substring(0, 2).toUpperCase();
   };
 
-  const handleDragStart = (e: React.DragEvent, id: number) => {
+  const handleDragStart = (e: React.DragEvent, item: any) => {
+    const id = item.id;
     setDraggedCandidateId(id);
+    draggedCandidateItemRef.current = item;
 
     // Custom drag image logic for multiple selections
     if (selectedIds.has(id) && selectedIds.size > 1) {
       const selectedArray = Array.from(selectedIds);
 
       const getCandidateName = (cId: number) => {
-        const c = candidates.find(cand => cand.id === cId) || archivedCandidates.find((cand: any) => cand.id === cId);
-        return c?.candidate?.full_name || "Unknown";
+        if (cId === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.candidate?.full_name || "Unknown";
+        return selectedCandidatesMap[cId]?.candidate?.full_name || candidates.find(cand => cand.id === cId)?.candidate?.full_name || archivedCandidates.find((cand: any) => cand.id === cId)?.candidate?.full_name || "Unknown";
       };
 
       const candidatesToDrag = selectedArray.map(getCandidateName);
@@ -1020,7 +979,20 @@ export default function JobPipelineDashboard({
     }
   }, []);
 
+  const [stageCounts, setStageCounts] = useState<Record<string, number>>({});
+
   // ── Fetch Candidates ─────────────────────────────────────────
+
+  const orderingMap: Record<string, string> = {
+    "Name": "full_name",
+    "AI Score": "ai_score",
+    "Location": "location",
+    "Exp": "experience",
+    "CTC": "current_ctc",
+    "Expected CTC": "expected_ctc",
+    "Notice Period": "notice_period",
+    "Stage": "stage",
+  };
 
   const fetchCandidates = useCallback(
     async (
@@ -1031,14 +1003,68 @@ export default function JobPipelineDashboard({
       limit: number = pageSize
     ) => {
       setLoadingCandidates(true);
-      try {
-        let url = `/jobs/applications/?job_id=${jId}`;
-        if (stageSlug) url += `&stage_slug=${stageSlug}`;
-        url += `&page=${page}&page_size=${limit}`;
-        if (search.trim())
-          url += `&search=${encodeURIComponent(search.trim())}`;
+      
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
 
-        const response = await apiClient.get(url);
+      try {
+        const queryParams = new URLSearchParams();
+        queryParams.append("job_id", jId.toString());
+        if (stageSlug) queryParams.append("stage_slug", stageSlug);
+        queryParams.append("page", page.toString());
+        queryParams.append("page_size", limit.toString());
+        if (search.trim()) queryParams.append("search", search.trim());
+
+        if (sortConfig && orderingMap[sortConfig.key]) {
+          const prefix = sortConfig.direction === "desc" ? "-" : "";
+          queryParams.append("ordering", `${prefix}${orderingMap[sortConfig.key]}`);
+        }
+
+        if (pipelineFilters.location.length) {
+          queryParams.append("location", pipelineFilters.location.join(","));
+        }
+        if (pipelineFilters.salaryRange.min) {
+          queryParams.append("salary_min", pipelineFilters.salaryRange.min);
+        }
+        if (pipelineFilters.salaryRange.max) {
+          queryParams.append("salary_max", pipelineFilters.salaryRange.max);
+        }
+        if (pipelineFilters.experience.min) {
+          queryParams.append("experience_min", pipelineFilters.experience.min);
+        }
+        if (pipelineFilters.experience.max) {
+          queryParams.append("experience_max", pipelineFilters.experience.max);
+        }
+        if (pipelineFilters.designation.length) {
+          queryParams.append("designation", pipelineFilters.designation.join(","));
+        }
+        if (pipelineFilters.noticePeriod.selected.length) {
+          queryParams.append("notice_period", pipelineFilters.noticePeriod.selected.join(","));
+        }
+        if (pipelineFilters.noticePeriod.minDays) {
+          queryParams.append("notice_period_min_days", pipelineFilters.noticePeriod.minDays);
+        }
+        if (pipelineFilters.noticePeriod.maxDays) {
+          queryParams.append("notice_period_max_days", pipelineFilters.noticePeriod.maxDays);
+        }
+        if (pipelineFilters.attention.length) {
+          queryParams.append("attention", pipelineFilters.attention.join(","));
+        }
+        if (dateRange.from) {
+          queryParams.append("last_activity_from", dateRange.from);
+        }
+        if (dateRange.to) {
+          queryParams.append("last_activity_to", dateRange.to);
+        }
+
+        const url = `/jobs/applications/?${queryParams.toString()}`;
+
+        const response = await apiClient.get(url, {
+          signal: abortControllerRef.current.signal
+        });
+        
         const data = response.data;
 
         let candidateData: CandidateListItem[] = [];
@@ -1051,9 +1077,16 @@ export default function JobPipelineDashboard({
           count = data.count || data.results.length;
         }
 
+        if (data && data.stage_counts) {
+          setStageCounts(data.stage_counts);
+        }
+
         setCandidates(candidateData);
         setTotalCandidates(count);
-      } catch (error) {
+      } catch (error: any) {
+        if (error.name === 'CanceledError' || error.message === 'canceled') {
+          return;
+        }
         console.error("Error fetching candidates:", error);
         setCandidates([]);
         setTotalCandidates(0);
@@ -1061,14 +1094,15 @@ export default function JobPipelineDashboard({
         setLoadingCandidates(false);
       }
     },
-    [],
+    [pipelineFilters, dateRange, sortConfig, pageSize],
   );
 
   useEffect(() => {
-    if (jobId != null && searchQuery === "") {
-      const currentLimit = isKanbanView ? 1000 : pageSize;
-      const currentStage = isKanbanView ? null : activeStageSlug;
-      fetchCandidates(jobId, currentStage, currentPage, "", currentLimit);
+    if (jobId != null) {
+      if (!isKanbanView) {
+        const currentStage = activeStageSlug;
+        fetchCandidates(jobId, currentStage, currentPage, searchQuery, pageSize);
+      }
       fetchArchivedCandidates(jobId);
     }
   }, [
@@ -1119,7 +1153,7 @@ export default function JobPipelineDashboard({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeStageSlug, searchQuery]);
+  }, [activeStageSlug, searchQuery, pipelineFilters, dateRange, sortConfig]);
 
   // ── Candidate Edit Handlers ──
   useEffect(() => {
@@ -1322,6 +1356,7 @@ export default function JobPipelineDashboard({
     const itemStage = item.current_stage?.slug || item.stage_slug;
 
     const next = new Set(selectedIds);
+    const nextMap = { ...selectedCandidatesMap };
 
     // Exclusive selection logic
     if (next.size > 0) {
@@ -1339,17 +1374,20 @@ export default function JobPipelineDashboard({
 
     if (next.has(id)) {
       next.delete(id);
+      delete nextMap[id];
       if (next.size === 0) {
         setSelectionType(null);
         setSelectionStage(null);
       }
     } else {
       next.add(id);
+      nextMap[id] = item;
       setSelectionType(itemType);
       if (isKanbanView) setSelectionStage(itemStage);
     }
 
     setSelectedIds(next);
+    setSelectedCandidatesMap(nextMap);
     setSelectAll(next.size === candidates.length && candidates.length > 0);
   };
 
@@ -1357,6 +1395,7 @@ export default function JobPipelineDashboard({
 
   const clearSelection = () => {
     setSelectedIds(new Set());
+    setSelectedCandidatesMap({});
     setSelectAll(false);
     setSelectionStage(null);
     setSelectionType(null);
@@ -1400,6 +1439,8 @@ export default function JobPipelineDashboard({
   }) => {
     // Gather candidate names for display
     const names = action.applicationIds.map((id) => {
+      if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.candidate?.full_name || "Unknown";
+      if (selectedCandidatesMap[id]) return selectedCandidatesMap[id].candidate?.full_name || "Unknown";
       const cand = candidates.find((c) => c.id === id) || archivedCandidates.find((c: any) => c.id === id);
       return cand?.candidate?.full_name || "Unknown";
     });
@@ -1484,9 +1525,19 @@ export default function JobPipelineDashboard({
       setPendingAction(null);
 
       if (jobId != null) {
-        const currentLimit = isKanbanView ? 1000 : pageSize;
-        const currentStage = isKanbanView ? null : activeStageSlug;
-        fetchCandidates(jobId, currentStage, currentPage, searchQuery, currentLimit);
+        if (!isKanbanView) {
+          fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
+        } else {
+          const impactedSlugs = new Set([
+            ...applicationIds.map(id => {
+               if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.current_stage?.slug || draggedCandidateItemRef.current?.stage_slug;
+               return selectedCandidatesMap[id]?.current_stage?.slug || selectedCandidatesMap[id]?.stage_slug || candidates.find(c => c.id === id)?.current_stage?.slug || candidates.find(c => c.id === id)?.stage_slug;
+            }).filter(Boolean),
+            targetStageId ? stages.find(s => s.id === targetStageId)?.slug : null,
+            type === "archive" ? "archives" : null
+          ].filter(Boolean) as string[]);
+          triggerKanbanRefresh(Array.from(impactedSlugs));
+        }
         fetchStages(jobId);
         fetchArchivedCandidates(jobId);
       }
@@ -1585,8 +1636,218 @@ export default function JobPipelineDashboard({
   // ── Derived ──────────────────────────────────────────────────
 
   const totalPipelineCandidates = stages.reduce(
-    (sum, s) => sum + (s.candidate_count || 0),
+    (sum, s) => {
+      if (s.slug === "archives") return sum;
+      return sum + (stageCounts[s.slug] !== undefined ? stageCounts[s.slug] : (s.candidate_count || 0));
+    },
     0,
+  );
+
+  const renderCandidateCard = useCallback(
+    (item: any, isArchived: boolean, list: any[], idx: number, stageSlug: string) => {
+      const cand = item.candidate;
+      const aiScoreRaw = item.job_score?.candidate_match_score?.score || "--%";
+      const aiScoreNum = parseInt(aiScoreRaw.replace("%", ""), 10) || 0;
+      const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : "#FF383C";
+
+      const isDisabled =
+        selectionType === (isArchived ? "ACTIVE" : "ARCHIVED") ||
+        (selectionStage && selectionStage !== stageSlug);
+
+      let headline = cand.headline || "--";
+      let companyName = cand.experience_summary?.title || "--";
+
+      return (
+        <div
+          key={item.id}
+          draggable={!isArchived}
+          onDragStart={(e) => !isArchived && handleDragStart(e, item)}
+          className={`${isArchived ? "bg-[#F9FAFB] grayscale opacity-60 pointer-events-none" : "bg-white cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30"} border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm transition-all flex flex-col gap-3 relative ${isDisabled && !isArchived ? "opacity-60" : ""} ${isDisabled && isArchived ? "pointer-events-none opacity-40" : ""}`}
+        >
+          <div className="flex justify-between items-start">
+            <div className="flex gap-3">
+              <div className="mt-1">
+                <input
+                  type="checkbox"
+                  className={`w-5 h-5 rounded-md border-[#D1D1D6] cursor-pointer ${isArchived ? "accent-[#8E8E93]" : "accent-[#0F47F2]"}`}
+                  checked={selectedIds.has(item.id)}
+                  onChange={() => handleToggleCandidate(item)}
+                  disabled={!!isDisabled}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <h4
+                    className={`font-semibold text-[15px] line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2 ${isArchived ? "text-[#8E8E93]" : "text-[#1C1C1E]"}`}
+                    onClick={() => onSelectCandidate?.(item, list, idx)}
+                  >
+                    {cand.full_name || "--"}
+                  </h4>
+                  {isArchived ? (
+                    <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                  ) : (
+                    <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (menuOpenId === item.id) { setMenuOpenId(null); return; }
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const mW = 192, mH = 260, gap = 8;
+                          const openUp = rect.bottom + mH + gap > window.innerHeight;
+                          const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
+                          const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
+                          let left = rect.right - mW;
+                          if (left < 8) left = 8;
+                          if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
+                          setMenuPos({ top, left });
+                          setMenuOpenId(item.id);
+                        }}
+                        className="p-0.5 hover:bg-gray-100 rounded-md transition-colors"
+                        title="Options"
+                      >
+                        <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                      </button>
+                      {menuOpenId === item.id && (
+                        <div
+                          className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                          style={{ top: menuPos.top, left: menuPos.left }}
+                        >
+                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
+                          <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
+                          <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
+                          <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
+                          <button onClick={(e) => { e.stopPropagation(); setShiftStageItem(item); setShiftStageTargetId(null); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">Shift to Stage</button>
+                          <button onClick={(e) => { e.stopPropagation(); navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, { state: { shareOption: "full_profile", resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "" } }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Share Profile</button>
+                          <button onClick={(e) => { e.stopPropagation(); openFeedbackModal({ type: "archive", applicationIds: [item.id] }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Move to Archive</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <p className="text-[13px] text-[#8E8E93] line-clamp-1 mt-0.5">{headline}</p>
+                {!isArchived && (
+                  <>
+                    <p className="text-[13px] font-medium text-[#4B5563] line-clamp-1">{companyName}</p>
+                    {(() => {
+                      const attentionTag = item.status_tags?.find((t: any) => t.text);
+                      const pill = getAttentionPill(item, attentionTag);
+                      if (!pill) return null;
+                      const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
+                      const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                      return (
+                        <div className="mt-1">
+                          <span
+                            className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full truncate max-w-full"
+                            style={{ backgroundColor: bgColor, color: textColor }}
+                            title={pill.text}
+                          >
+                            {pill.text}
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
+                {isArchived && item.archive_reason && (
+                  <div className="bg-[#FEF2F2] px-2 py-1 rounded text-[10px] text-[#DC2626] font-medium mt-1 inline-flex items-center gap-1.5 w-fit max-w-[200px]">
+                    <Archive className="w-3 h-3 shrink-0" />
+                    <span className="truncate" title={item.archive_reason}>
+                      {item.archive_reason}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {!isArchived ? (
+              <div className="relative w-12 h-12 shrink-0">
+                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F2F2F7" strokeWidth="3" />
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="3" strokeDasharray={`${aiScoreNum}, 100`} strokeLinecap="round" />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#4B5563]">
+                  {aiScoreRaw === "--%" ? "0%" : aiScoreRaw}
+                </div>
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400 shrink-0">
+                --
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-between items-center mt-auto">
+            {!isArchived && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
+                  {cand.total_experience != null
+                    ? `${cand.total_experience} yrs`
+                    : cand.experience_years
+                      ? cand.experience_years.replace(/\s*exp$/i, "")
+                      : "--"}
+                </span>
+                <span
+                  className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F3E8FF] text-[#7C3AED]"
+                  title={cand.last_working_day ? `Last Working Day: ${formatDate(cand.last_working_day)}` : ""}
+                >
+                  {cand.notice_period_summary || "--"}
+                  {cand.last_working_day && (
+                    <span className="ml-1 opacity-80 text-[10px] font-normal italic">
+                      ({formatDate(cand.last_working_day)})
+                    </span>
+                  )}
+                </span>
+                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FFE4E6] text-[#E11D48]">
+                  {cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--"}
+                </span>
+              </div>
+            )}
+            <div className={`flex items-center gap-1.5 shrink-0 ${isArchived ? "w-full justify-end" : ""}`}>
+              {isArchived && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
+                  <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
+                  <span className="text-[11px] font-bold text-[#8E8E93]">
+                    {formatMovedDate(item.status_tags)}
+                  </span>
+                </div>
+              )}
+              {!isArchived && (
+                <>
+                  <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
+                  <span className="text-[11px] font-bold text-[#8E8E93]">
+                    {formatMovedDate(item.status_tags)}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    },
+    [
+      selectionType,
+      selectionStage,
+      selectedIds,
+      handleToggleCandidate,
+      menuOpenId,
+      menuPos,
+      setMenuOpenId,
+      setMenuPos,
+      setCallModalCandidate,
+      setCandidateEditing,
+      setShowCandidateEditModal,
+      handleCopyCandidateEmail,
+      getNextStageForItem,
+      showToast,
+      openFeedbackModal,
+      getPrimaryMoveLabel,
+      setShiftStageItem,
+      setShiftStageTargetId,
+      navigate,
+      jobId,
+      onSelectCandidate,
+    ]
   );
 
   // ── Render ───────────────────────────────────────────────────
@@ -2010,7 +2271,7 @@ export default function JobPipelineDashboard({
                           : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
                           }`}
                       >
-                        {stage.name} ({stage.candidate_count})
+                        {stage.name} ({stageCounts[stage.slug] !== undefined ? stageCounts[stage.slug] : stage.candidate_count})
                       </button>
                     ))}
                 </div>
@@ -2072,15 +2333,29 @@ export default function JobPipelineDashboard({
                       </div>
                     )}
                   </div>
-                  <button className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M2 2H14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M5.33301 6H10.6663" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M2 10H14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M5.33301 14H10.6663" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Filters
-                  </button>
+                  <div className="relative">
+                    <button
+                      ref={pipelineFilterButtonRef}
+                      onClick={() => setShowPipelineFilterPanel(!showPipelineFilterPanel)}
+                      className={`flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium transition-colors ${showPipelineFilterPanel ? "text-[#0F47F2] border-[#0F47F2]" : "text-[#AEAEB2] hover:bg-[#F3F5F7]"}`}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M5.33301 6H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M2 10H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M5.33301 14H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Filters
+                    </button>
+                    <PipelineFilterPanel 
+                      isOpen={showPipelineFilterPanel}
+                      onClose={() => setShowPipelineFilterPanel(false)}
+                      onApply={(filters) => setPipelineFilters(filters)}
+                      initialFilters={pipelineFilters}
+                      anchorRef={pipelineFilterButtonRef}
+                      jobId={jobId}
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -2119,24 +2394,20 @@ export default function JobPipelineDashboard({
                     </svg>
                     Export CSV
                   </button>
-                  <button
-                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                    title="Feature Coming Soon"
-                    disabled
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="#374151" strokeLinecap="round" />
-                      <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M4 5.3335H12" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {" "}
-                    {new Date().toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
-                  </button>
+                  <DateRangeFilter
+                    valueLabel={dateRangeFilterLabel}
+                    isFilterApplied={isDateRangeFilterApplied}
+                    onApply={(payload) => {
+                      setDateRangeFilterLabel(payload.label);
+                      setIsDateRangeFilterApplied(true);
+                      setDateRange({ from: payload.createdAfter || "", to: payload.createdBefore || "" });
+                    }}
+                    onClear={() => {
+                      setDateRangeFilterLabel("Date Filter");
+                      setIsDateRangeFilterApplied(false);
+                      setDateRange({ from: "", to: "" });
+                    }}
+                  />
                 </div>
               </div>
             </>
@@ -2248,381 +2519,29 @@ export default function JobPipelineDashboard({
           {isKanbanView ? (
             <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch">
               {stages.filter(s => s.slug !== 'archives').map((stage) => {
-                const activeColumnCandidates = candidates.filter((item) => {
-                  const itemStageSlug =
-                    item.current_stage?.slug || item.stage_slug;
-                  return itemStageSlug === stage.slug;
-                });
-                const archivedColumnCandidates = archivedCandidates.filter(
-                  (item) => {
-                    const itemStageSlug =
-                      item.current_stage?.slug || item.stage_slug;
-                    return itemStageSlug === stage.slug;
-                  },
-                );
-
                 return (
-                  <div
-                    key={stage.id}
-                    className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full relative"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, stage.slug)}
-                  >
-                    <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between shrink-0">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: stageBarColors[stages.filter(s => s.slug !== 'archives').indexOf(stage) % stageBarColors.length] }} />
-                        <h3 className="text-sm font-bold text-[#4B5563] capitalize">{stage.name}</h3>
-                        <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">
-                          {activeColumnCandidates.length + archivedColumnCandidates.length}
-                        </span>
-                      </div>
-                      <div className={`relative ${stageMenuOpenId === stage.id ? "z-50" : ""}`} ref={stageMenuOpenId === stage.id ? stageMenuRef : null}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (stageMenuOpenId === stage.id) {
-                              setStageMenuOpenId(null);
-                              return;
-                            }
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const mW = 192, mH = 120, gap = 8;
-                            const openUp = rect.bottom + mH + gap > window.innerHeight;
-                            const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
-                            const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
-                            let left = rect.right - mW;
-                            if (left < 8) left = 8;
-                            if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
-                            setStageMenuPos({ top, left });
-                            setStageMenuOpenId(stage.id);
-                          }}
-                          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
-                          title="Stage options"
-                        >
-                          <MoreHorizontal className="w-4 h-4 text-[#8E8E93] rotate-90" />
-                        </button>
-
-                        {stageMenuOpenId === stage.id && (
-                          <div
-                            className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
-                            style={{ top: stageMenuPos.top, left: stageMenuPos.left }}
-                          >
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setStageToEdit(stage);
-                                setStageMenuOpenId(null);
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                            >
-                              Edit Stage Details
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setStageToDelete(stage);
-                                setStageMenuOpenId(null);
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-[#FEE2E2] flex items-center gap-2"
-                            >
-                              Delete Stage
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                showToast.info("Shift Stage feature coming soon");
-                                setStageMenuOpenId(null);
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                            >
-                              Shift Stage
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setVisibleArchives((prev) => {
-                                  const newSet = new Set(prev);
-                                  if (newSet.has(stage.slug)) {
-                                    newSet.delete(stage.slug);
-                                  } else {
-                                    newSet.add(stage.slug);
-                                  }
-                                  return newSet;
-                                });
-                                setStageMenuOpenId(null);
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                            >
-                              {visibleArchives.has(stage.slug) ? "Hide" : "Show"} Archived Candidates
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex-1 p-3 space-y-3 overflow-y-auto mt-1 custom-scrollbar pb-24">
-                      {/* Pipeline Candidates */}
-                      {activeColumnCandidates.map((item, idx) => {
-                        const cand = item.candidate;
-                        const aiScoreRaw =
-                          item.job_score?.candidate_match_score?.score || "--%";
-                        const aiScoreNum = parseInt(aiScoreRaw.replace("%", ""), 10) || 0;
-                        const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : "#FF383C";
-
-                        const isDisabled =
-                          selectionType === "ARCHIVED" ||
-                          (selectionStage && selectionStage !== stage.slug);
-
-                        let headline = cand.headline || "--";
-                        let companyName = cand.experience_summary?.title || "--";
-
-                        return (
-                          <div
-                            key={item.id}
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, item.id)}
-                            className={`bg-white border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30 transition-all flex flex-col gap-3 relative ${isDisabled ? "opacity-60" : ""}`}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="flex gap-3">
-                                <div className="mt-1">
-                                  <input
-                                    type="checkbox"
-                                    className="w-5 h-5 rounded-md border-[#D1D1D6] accent-[#0F47F2] cursor-pointer"
-                                    checked={selectedIds.has(item.id)}
-                                    onChange={() => handleToggleCandidate(item)}
-                                    disabled={!!isDisabled}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                </div>
-                                <div className="flex flex-col min-w-0 flex-1">
-                                  <div className="flex items-center gap-1.5">
-                                    <h4
-                                      className="font-semibold text-[15px] text-[#1C1C1E] line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2"
-                                      onClick={() =>
-                                        onSelectCandidate?.(
-                                          item,
-                                          activeColumnCandidates,
-                                          idx,
-                                        )
-                                      }
-                                    >
-                                      {cand.full_name || "--"}
-                                    </h4>
-                                    <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (menuOpenId === item.id) { setMenuOpenId(null); return; }
-                                          const rect = e.currentTarget.getBoundingClientRect();
-                                          const mW = 192, mH = 260, gap = 8;
-                                          const openUp = rect.bottom + mH + gap > window.innerHeight;
-                                          const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
-                                          const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
-                                          let left = rect.right - mW;
-                                          if (left < 8) left = 8;
-                                          if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
-                                          setMenuPos({ top, left });
-                                          setMenuOpenId(item.id);
-                                        }}
-                                        className="p-0.5 hover:bg-gray-100 rounded-md transition-colors"
-                                        title="Options"
-                                      >
-                                        <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
-                                      </button>
-                                      {menuOpenId === item.id && (
-                                        <div
-                                          className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
-                                          style={{ top: menuPos.top, left: menuPos.left }}
-                                        >
-                                          <button onClick={(e) => { e.stopPropagation(); const callData = { id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }; sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData })); setMenuOpenId(null); window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`; }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
-                                          <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
-                                          <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
-                                          <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
-                                          <button onClick={(e) => { e.stopPropagation(); setShiftStageItem(item); setShiftStageTargetId(null); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">Shift to Stage</button>
-                                          <button onClick={(e) => { e.stopPropagation(); navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, { state: { shareOption: "full_profile", resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "" } }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Share Profile</button>
-                                          <button onClick={(e) => { e.stopPropagation(); openFeedbackModal({ type: "archive", applicationIds: [item.id] }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Move to Archive</button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <p className="text-[13px] text-[#8E8E93] line-clamp-1 mt-0.5">{headline}</p>
-                                  <p className="text-[13px] font-medium text-[#4B5563] line-clamp-1">{companyName}</p>
-                                  {(() => {
-                                    const attentionTag = item.status_tags?.find((t) => t.text);
-                                    const pill = getAttentionPill(item, attentionTag);
-                                    if (!pill) return null;
-                                    const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
-                                    const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
-                                    return (
-                                      <div className="mt-1">
-                                        <span
-                                          className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full truncate max-w-full"
-                                          style={{ backgroundColor: bgColor, color: textColor }}
-                                          title={pill.text}
-                                        >
-                                          {pill.text}
-                                        </span>
-                                      </div>
-                                    );
-                                  })()}
-                                </div>
-                              </div>
-
-                              <div className="relative w-12 h-12 shrink-0">
-                                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
-                                  <path
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                    fill="none"
-                                    stroke="#F2F2F7"
-                                    strokeWidth="3"
-                                  />
-                                  <path
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                    fill="none"
-                                    stroke={aiScoreColor}
-                                    strokeWidth="3"
-                                    strokeDasharray={`${aiScoreNum}, 100`}
-                                    strokeLinecap="round"
-                                  />
-                                </svg>
-                                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#4B5563]">
-                                  {aiScoreRaw === "--%" ? "0%" : aiScoreRaw}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex justify-between items-center mt-auto">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
-                                  {cand.total_experience != null
-                                    ? `${cand.total_experience} yrs`
-                                    : cand.experience_years
-                                      ? cand.experience_years.replace(/\s*exp$/i, "")
-                                      : "--"}
-                                </span>
-                                <span
-                                  className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F3E8FF] text-[#7C3AED]"
-                                  title={cand.last_working_day ? `Last Working Day: ${formatDate(cand.last_working_day)}` : ""}
-                                >
-                                  {cand.notice_period_summary || "--"}
-                                  {cand.last_working_day && (
-                                    <span className="ml-1 opacity-80 text-[10px] font-normal italic">
-                                      ({formatDate(cand.last_working_day)})
-                                    </span>
-                                  )}
-                                </span>
-                                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FFE4E6] text-[#E11D48]">
-                                  {cand.expected_ctc
-                                    ? `${cand.expected_ctc} LPA`
-                                    : "--"}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
-                                <span className="text-[11px] font-bold text-[#8E8E93]">
-                                  {formatMovedDate(item.status_tags)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-
-                      {/* Archives Section */}
-                      {archivedColumnCandidates.length > 0 && visibleArchives.has(stage.slug) && (
-                        <div className="mt-6">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="h-px bg-[#E5E7EB] flex-1"></div>
-                            <span className="text-[10px] font-bold text-[#AEAEB2] uppercase tracking-wider">
-                              Archives
-                            </span>
-                            <div className="h-px bg-[#E5E7EB] flex-1"></div>
-                          </div>
-                          <div className="space-y-3">
-                            {archivedColumnCandidates.map((item, idx) => {
-                              const cand = item.candidate;
-                              const isDisabled =
-                                selectionType === "ACTIVE" ||
-                                (selectionStage &&
-                                  selectionStage !== stage.slug);
-
-                              return (
-                                <div
-                                  key={item.id}
-                                  className={`bg-[#F9FAFB] border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm grayscale opacity-60 flex flex-col gap-4 relative ${isDisabled ? "pointer-events-none opacity-40" : ""}`}
-                                >
-                                  <div className="flex justify-between items-start">
-                                    <div className="flex gap-3">
-                                      <div className="mt-1">
-                                        <input
-                                          type="checkbox"
-                                          className="w-5 h-5 rounded-md border-[#D1D1D6] accent-[#8E8E93] cursor-pointer"
-                                          checked={selectedIds.has(item.id)}
-                                          onChange={() =>
-                                            handleToggleCandidate(item)
-                                          }
-                                          disabled={!!isDisabled}
-                                          onClick={(e) => e.stopPropagation()}
-                                        />
-                                      </div>
-                                      <div className="flex flex-col">
-                                        <div className="flex items-center gap-2">
-                                          <h4
-                                            className="font-semibold text-[17px] text-[#8E8E93] line-clamp-1 cursor-pointer"
-                                            onClick={() =>
-                                              onSelectCandidate?.(
-                                                item,
-                                                archivedColumnCandidates,
-                                                idx,
-                                              )
-                                            }
-                                          >
-                                            {cand.full_name || "--"}
-                                          </h4>
-                                          <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
-                                        </div>
-                                        <p className="text-[14px] text-[#AEAEB2] line-clamp-1 mt-0.5">
-                                          {cand.headline || "--"}
-                                        </p>
-                                        {(item as any).archive_reason && (
-                                          <div className="bg-[#FEF2F2] px-2 py-1 rounded text-[10px] text-[#DC2626] font-medium mt-1 inline-flex items-center gap-1.5 w-fit max-w-[200px]">
-                                            <Archive className="w-3 h-3 shrink-0" />
-                                            <span className="truncate" title={(item as any).archive_reason}>
-                                              {(item as any).archive_reason}
-                                            </span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400 shrink-0">
-                                      --
-                                    </div>
-                                  </div>
-
-                                  <div className="flex justify-end mt-auto">
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
-                                      <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
-                                      <span className="text-[11px] font-bold text-[#8E8E93]">
-                                        {formatMovedDate(item.status_tags)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {activeColumnCandidates.length === 0 &&
-                        archivedColumnCandidates.length === 0 && (
-                          <div className="flex items-center justify-center p-6 border-2 border-dashed border-[#E5E7EB] rounded-lg h-32">
-                            <span className="text-xs text-[#AEAEB2] font-medium">
-                              Drop candidates here
-                            </span>
-                          </div>
-                        )}
-                    </div>
+                  <div key={stage.id} className="relative h-full">
+                    <PipelineKanbanColumn 
+                      jobId={jobId}
+                      stage={stage}
+                      filters={pipelineFilters}
+                      dateRange={dateRange}
+                      searchQuery={searchQuery}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      stageBarColor={stageBarColors[stages.filter(s => s.slug !== 'archives').indexOf(stage) % stageBarColors.length]}
+                      stageMenuOpenId={stageMenuOpenId}
+                      setStageMenuOpenId={setStageMenuOpenId}
+                      onEditStage={setStageToEdit}
+                      onDeleteStage={setStageToDelete}
+                      renderCandidateCard={renderCandidateCard}
+                      visibleArchives={visibleArchives}
+                      setVisibleArchives={setVisibleArchives}
+                      setStageMenuPos={setStageMenuPos}
+                      stageMenuPos={stageMenuPos}
+                      stageCountOverride={stageCounts[stage.slug]}
+                      refreshCounter={kanbanRefreshCounters[stage.slug]}
+                    />
 
                     {/* Stage Action Footer */}
                     {selectedIds.size > 0 && selectionStage === stage.slug && (

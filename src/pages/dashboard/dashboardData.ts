@@ -13,6 +13,7 @@ export interface StatCardData {
 }
 
 export interface PriorityCardData {
+    latestCallNote: string | null | undefined;
     id: string;
     name: string;
     role: string;

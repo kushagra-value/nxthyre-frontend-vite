@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Search, ChevronRight } from "lucide-react";
 import { debounce } from "lodash";
-import { candidateService } from "../../../services/candidateService";
+import { candidateSearchService } from "../../../services/candidateSearchService";
 
 export interface FilterOption {
   value: string;
@@ -77,7 +77,7 @@ export default function CandidateFilterPanel({
         }
         try {
           setIsSearchingLocation(true);
-          const suggestions = await candidateService.getCitySuggestions(query);
+          const suggestions = await candidateSearchService.getLocationSuggestions(query);
           setLocationSuggestions(suggestions.map((s: string) => ({ value: s, label: s })));
         } catch (error) {
           console.error("Failed to fetch location suggestions", error);

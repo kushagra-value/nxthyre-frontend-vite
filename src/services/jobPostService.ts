@@ -751,6 +751,17 @@ class JobPostService {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch AI JD");
     }
   }
+
+  async getDesignationList(jobId: number, search?: string): Promise<string[]> {
+    try {
+      const params: any = { job_id: jobId };
+      if (search?.trim()) params.search = search.trim();
+      const response = await apiClient.get('/jobs/applications/designation-list/', { params });
+      return response.data?.designations || [];
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch designation list");
+    }
+  }
 }
 
 export const jobPostService = new JobPostService();
