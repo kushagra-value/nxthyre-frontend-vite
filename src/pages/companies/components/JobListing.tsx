@@ -678,14 +678,22 @@ const JobListing: React.FC<JobListingProps> = ({
                     <table className="w-full text-left border-collapse">
                         <colgroup>
                             <col style={{ width: '3%' }} />  {/* Checkbox */}
-                            <col style={{ width: '22%' }} /> {/* Job Title */}
-                            <col style={{ width: '6%' }} />  {/* Position */}
-                            <col style={{ width: '7%' }} />  {/* Candidates */}
-                            <col style={{ width: '24%' }} /> {/* Pipeline Stages */}
+                            <col style={{ width: '15%' }} /> {/* Job Title */}
+                            <col style={{ width: '5%' }} />  {/* Position */}
+                            <col style={{ width: '6%' }} />  {/* YOE */}
+                            <col style={{ width: '8%' }} />  {/* Location */}
+                            <col style={{ width: '10%' }} /> {/* CTC Budget */}
+                            <col style={{ width: '6%' }} />  {/* Candidates */}
+                            <col style={{ width: '6%' }} />  {/* Naukri.com */}
+                            <col style={{ width: '6%' }} />  {/* LinkedIn Bot */}
+                            <col style={{ width: '6%' }} />  {/* Nxthyre */}
+                            <col style={{ width: '15%' }} /> {/* Pipeline Stages */}
+                            <col style={{ width: '6%' }} />  {/* Shortlisted */}
+                            <col style={{ width: '6%' }} />  {/* Hired */}
                             <col style={{ width: '6%' }} />  {/* Days Open */}
                             <col style={{ width: '8%' }} />  {/* Status */}
-                            <col style={{ width: '19%' }} /> {/* Note */}
-                            <col style={{ width: '5%' }} />  {/* Actions */}
+                            <col style={{ width: '12%' }} /> {/* Note */}
+                            <col style={{ width: '3%' }} />  {/* Actions */}
                         </colgroup>
                         <thead className="bg-[#F9FAFB]">
                             <tr>
@@ -695,8 +703,16 @@ const JobListing: React.FC<JobListingProps> = ({
                                 {[
                                     { key: "Job Title" },
                                     { key: "Position" },
+                                    { key: "YOE", sortKey: "experience_min_years" },
+                                    { key: "Location", sortable: false },
+                                    { key: "CTC Budget", sortKey: "salary_max" },
                                     { key: "Candidates" },
+                                    { key: "Naukri.com", sortKey: "naukri_bot_candidates_count" },
+                                    { key: "LinkedIn Bot", sortKey: "linkedin_bot_candidates_count" },
+                                    { key: "Nxthyre", sortKey: "inbound_candidates_count" },
                                     { key: "Pipeline Stages", sortable: false },
+                                    { key: "Shortlisted", sortKey: "shortlisted_candidate_count" },
+                                    { key: "Hired", sortKey: "hired_count" },
                                     { key: "Days Open", sortKey: "Days open" },
                                     { key: "Status" },
                                     { key: "Note", sortable: false },
@@ -750,245 +766,215 @@ const JobListing: React.FC<JobListingProps> = ({
 
                                         {/* Job Title */}
                                         <td className="px-4 py-3">
-                                            <div className="flex flex-col gap-1.5 overflow-hidden">
-                                                <div className="flex items-center gap-2">
-                                                    <span
-                                                        className="text-[14px] font-[600] text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] hover:underline transition-colors truncate"
-                                                        onClick={() => onJobSelect?.(job)}
-                                                    >{job.title}</span>
-                                                    {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
-                                                </div>
-                                                <div className="flex items-center gap-1.5 overflow-x-auto overflow-y-visible whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                                    {/* add a copy button here and line it up with job id */}
-                                                    <span
-                                                        className="flex items-center gap-1 px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap cursor-pointer hover:bg-[#E0E9FF] transition-colors"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigator.clipboard.writeText(`${job.title}, ${job.location} (Job ID: ${job.id})`).then(() => showToast.success("Job ID copied"));
-                                                        }}
-                                                    >
-
-                                                        {/* add a copy button here  */}
-                                                        <Copy className="w-3.5 h-3.5 text-[#4674E5] shrink-0" />
-                                                        {job.job_id || job.id}
-                                                    </span>
-                                                    <span className="px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap">
-                                                        {job.experience_display || `${job.experience_min_years || 3} - ${job.experience_max_years || 5}yrs`}
-                                                    </span>
-                                                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap ${(job.notice_period || 'Immediate') === 'Immediate'
-                                                        ? 'bg-[#FFF0F2] text-[#E11D48]'
-                                                        : (job.notice_period || '').includes('90')
-                                                            ? 'bg-[#FFF0F2] text-[#E11D48]'
-                                                            : 'bg-[#FFF3E0] text-[#E65100]'
-                                                        }`}>
-                                                        {job.notice_period || '--'}
-                                                    </span>
-                                                    <span className="px-2.5 py-0.5 bg-[#F0F4FF] rounded-full text-[11px] font-medium text-[#4674E5] whitespace-nowrap">
-                                                        {(Number(job.salary_min || 0) === 0 && Number(job.salary_max || 0) === 0) ? "Confidential" : `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
-                                                    </span>
-                                                </div>
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className="text-[14px] font-[600] text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] transition-colors truncate max-w-[200px]"
+                                                    onClick={() => onJobSelect?.(job)}
+                                                    title={job.title}
+                                                >
+                                                    {job.title}
+                                                </span>
+                                                {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
                                             </div>
                                         </td>
 
                                         {/* Position */}
-                                        <td className="px-4 py-3 text-[14px] text-[#4B5563] text-center">
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
                                             {noOfPositions}
                                         </td>
 
+                                        {/* YOE */}
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
+                                            {job.experience_display || `${job.experience_min_years || 0} - ${job.experience_max_years || 0} Yrs`}
+                                        </td>
+
+                                        {/* Location */}
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center truncate max-w-[120px]" title={Array.isArray(job.location) ? job.location.join(", ") : job.location}>
+                                            {Array.isArray(job.location) ? job.location[0] || "--" : job.location || "--"}
+                                        </td>
+
+                                        {/* CTC Budget */}
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
+                                            {(Number(job.salary_min || 0) === 0 && Number(job.salary_max || 0) === 0) ? "Confidential" : `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
+                                        </td>
+
                                         {/* Candidates */}
-                                        <td className="px-4 py-3 text-[14px] text-[#4B5563] text-center">
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
                                             {job.candidates_count ?? job.total_applied ?? 0}
+                                        </td>
+
+                                        {/* Naukri.com */}
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
+                                            {job.naukri_bot_candidates_count ?? 0}
+                                        </td>
+
+                                        {/* LinkedIn Bot */}
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
+                                            {job.linkedin_bot_candidates_count ?? 0}
+                                        </td>
+
+                                        {/* Nxthyre */}
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
+                                            {job.inbound_candidates_count ?? job.inbound_count ?? 0}
                                         </td>
 
                                         {/* Pipeline Stages */}
                                         <td className="px-4 py-3">
-                                            <div className="overflow-x-auto overflow-y-visible whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                                <div className="flex gap-1.5 items-center min-w-max">
-                                                    {stages.length > 0 ? stages.map((item: any, idx: number) => {
-                                                        const stageArchivedCount = item.archived_count || 0;
-                                                        const palette = stageColors[idx % stageColors.length];
-                                                        return (
-                                                            <div
-                                                                key={idx}
-                                                                className="relative"
-                                                                onMouseEnter={(e) => showStageTooltip(e, item.name, item.count, stageArchivedCount)}
-                                                                onMouseLeave={() => setStageTooltip((prev) => ({ ...prev, visible: false }))}
-                                                            >
-                                                                <div
-                                                                    className="min-w-[28px] h-[28px] px-2 rounded-[6px] border flex items-center justify-center text-[13px] font-bold cursor-default"
-                                                                    style={{ backgroundColor: palette.bg, borderColor: palette.border, color: palette.text }}
-                                                                >
-                                                                    <span>{item.count}</span>
-                                                                    <span className="text-[#8E8E93] text-[12px] font-semibold ml-1">- {stageArchivedCount}</span>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    }) : (
-                                                        <span className="text-xs text-[#8E8E93]">--</span>
-                                                    )}
-                                                </div>
+                                            <div className="flex items-center justify-center gap-1.5 flex-wrap max-w-[200px]">
+                                                {stages.map((stage: any, idx: number) => {
+                                                    const colorSet = stageColors[idx % stageColors.length];
+                                                    const displayCount = stage.archived_count !== undefined 
+                                                        ? `${stage.count} - ${stage.count - stage.archived_count}`
+                                                        : stage.count;
+                                                    
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            onMouseEnter={(e) => showStageTooltip(e, stage.name, stage.count, stage.archived_count || 0)}
+                                                            onMouseLeave={() => setStageTooltip(prev => ({ ...prev, visible: false }))}
+                                                            className="px-2 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap cursor-default transition-transform hover:scale-105"
+                                                            style={{
+                                                                backgroundColor: colorSet.bg,
+                                                                color: colorSet.text,
+                                                                border: `1px solid ${colorSet.border}`
+                                                            }}
+                                                        >
+                                                            {displayCount}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </td>
 
+                                        {/* Shortlisted */}
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
+                                            {job.shortlisted_count ?? job.shortlisted_candidate_count ?? 0}
+                                        </td>
+
+                                        {/* Hired */}
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
+                                            {job.hired_count ?? 0}
+                                        </td>
+
                                         {/* Days Open */}
-                                        <td className="px-4 py-3 text-center whitespace-nowrap">
-                                            <span className="text-[14px] font-medium text-[#4B5563]">{daysOpen} d</span>
+                                        <td className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
+                                            {daysOpen} d
                                         </td>
 
                                         {/* Status */}
                                         <td className="px-4 py-3 text-center">
-                                            <div className="relative inline-block" ref={statusMenuOpenId === job.id ? statusMenuRef : null}>
+                                            <div className="flex items-center justify-center">
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        if (statusMenuOpenId === job.id) {
-                                                            setStatusMenuOpenId(null);
-                                                            return;
-                                                        }
                                                         const rect = e.currentTarget.getBoundingClientRect();
-                                                        const menuWidth = 128;
-                                                        const menuHeight = 116;
-                                                        const verticalGap = 6;
-                                                        const openUp = rect.bottom + menuHeight + verticalGap > window.innerHeight;
-                                                        const top = openUp
-                                                            ? Math.max(8, rect.top - menuHeight - verticalGap)
-                                                            : rect.bottom + verticalGap;
-                                                        let left = rect.left + rect.width / 2 - menuWidth / 2;
-                                                        if (left < 8) left = 8;
-                                                        if (left + menuWidth > window.innerWidth - 8) {
-                                                            left = window.innerWidth - menuWidth - 8;
-                                                        }
-                                                        setStatusMenuPos({ top, left });
+                                                        setStatusMenuPos({ top: rect.bottom + 5, left: rect.left });
                                                         setStatusMenuOpenId(job.id);
                                                     }}
-                                                    className={`inline-flex items-center justify-between min-w-[90px] gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium transition-colors hover:opacity-80 active:opacity-60 cursor-pointer ${job.status === 'ACTIVE' ? 'bg-[#D1FAE5] text-[#059669]'
-                                                        : job.status === 'PAUSED' ? 'bg-[#FEF3C7] text-[#D97706]'
-                                                            : 'bg-[#F3F4F6] text-[#4B5563]'
+                                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all hover:opacity-80
+                                                        ${(job.status || 'ACTIVE').toUpperCase() === 'ACTIVE'
+                                                            ? 'bg-[#EBFFEE] text-[#069855] border border-[#34C759]'
+                                                            : (job.status || '').toUpperCase() === 'PAUSED'
+                                                                ? 'bg-[#FFF7D6] text-[#92400E] border border-[#F59E0B]'
+                                                                : 'bg-[#F3F5F7] text-[#8E8E93] border border-[#D1D1D6]'
                                                         }`}
                                                 >
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className={`w-1.5 h-1.5 rounded-full ${job.status === 'ACTIVE' ? 'bg-[#059669]'
-                                                            : job.status === 'PAUSED' ? 'bg-[#D97706]'
-                                                                : 'bg-[#4B5563]'
-                                                            }`} />
-                                                        {job.status === 'ACTIVE' ? 'Active'
-                                                            : job.status === 'PAUSED' ? 'Paused'
-                                                                : job.status === 'INACTIVE' ? 'Inactive'
-                                                                    : job.status?.charAt(0) + job.status?.slice(1).toLowerCase()}
-                                                    </div>
-                                                    <ChevronDown className="w-3 h-3 opacity-50 ml-1" />
+                                                    {(job.status || 'ACTIVE').toUpperCase() === 'ACTIVE' && <Plus className="w-3 h-3" />}
+                                                    {statusUpdating === job.id ? '...' : (job.status || 'Active')}
                                                 </button>
                                             </div>
                                         </td>
 
                                         {/* Note */}
-                                        <td className="px-4 py-3 min-w-[200px]">
-                                            {inlineEditJobId === job.id ? (
-                                                <div className="relative">
-                                                    <textarea
-                                                        value={inlineNoteContent}
-                                                        onChange={(e) => setInlineNoteContent(e.target.value)}
-                                                        className="w-full max-h-20 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden border border-gray-200 rounded text-[13px] p-2 focus:outline-none focus:border-[#0F47F2]"
-                                                        rows={2}
-                                                        autoFocus
-                                                    />
-                                                    <div className="flex items-center gap-2 mt-1 justify-end">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); setInlineEditJobId(null); }}
-                                                            className="text-xs text-gray-500 hover:text-gray-700"
-                                                        >Cancel</button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleSaveInlineNote(job.id); }}
-                                                            className="text-xs text-white bg-[#0F47F2] px-2 py-1 rounded"
-                                                        >Save</button>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <span className="block max-h-10 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden text-[13px] text-[#4B5563] leading-relaxed">
-                                                    {fetchedNotes[job.id]?.[0]?.content || <span className="text-[#8E8E93] opacity-70">Add a note</span>}
-                                                </span>
-                                            )}
-                                        </td>
-
-                                        {/* Three-dot Menu */}
                                         <td className="px-4 py-3">
-                                            <div className="relative" ref={menuOpenJobId === job.id ? menuRef : null}>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        if (menuOpenJobId === job.id) {
-                                                            setMenuOpenJobId(null);
-                                                        } else {
-                                                            const rect = e.currentTarget.getBoundingClientRect();
-                                                            const isBottom = rect.bottom + 320 > window.innerHeight;
-                                                            setMenuPos({
-                                                                top: rect.bottom,
-                                                                bottom: window.innerHeight - rect.top,
-                                                                right: window.innerWidth - rect.right,
-                                                                isBottom
-                                                            });
-                                                            setMenuOpenJobId(job.id);
-                                                        }
-                                                    }}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F3F5F7] transition-colors"
-                                                >
-                                                    <MoreHorizontal className="w-5 h-5 text-[#8E8E93]" />
-                                                </button>
-
-                                                {menuOpenJobId === job.id && (
-                                                    <div
-                                                        className="fixed w-52 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[9999] py-2"
-                                                        style={
-                                                            menuPos.isBottom
-                                                                ? { bottom: menuPos.bottom + 4, right: menuPos.right }
-                                                                : { top: menuPos.top + 4, right: menuPos.right }
-                                                        }
-                                                    >
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); setEditingJobId(job.id); setShowEditJobRole(true); setMenuOpenJobId(null); }}
-                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
-                                                        >
-                                                            <Pencil className="w-4 h-4" /> Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleStatusChange(job.id, job.status === 'PAUSED' ? 'ACTIVE' : 'PAUSED'); setMenuOpenJobId(null); }}
-                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
-                                                        >
-                                                            <Pause className="w-4 h-4" /> {job.status === 'PAUSED' ? 'Resume' : 'Pause'}
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setMenuOpenJobId(null);
-                                                                setInlineEditJobId(job.id);
-                                                                setInlineNoteContent(fetchedNotes[job.id]?.[0]?.content || "");
+                                            <div
+                                                className="group/note relative cursor-pointer"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setInlineEditJobId(job.id);
+                                                    const latestNote = fetchedNotes[job.id]?.[0];
+                                                    setInlineNoteContent(latestNote?.content || "");
+                                                }}
+                                            >
+                                                {inlineEditJobId === job.id ? (
+                                                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                                        <input
+                                                            autoFocus
+                                                            className="flex-1 px-2 py-1 text-xs border rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                                                            value={inlineNoteContent}
+                                                            onChange={(e) => setInlineNoteContent(e.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') handleSaveInlineNote(job.id);
+                                                                if (e.key === 'Escape') setInlineEditJobId(null);
                                                             }}
-                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
-                                                        >
-                                                            <MessageSquare className="w-4 h-4" /> {fetchedNotes[job.id]?.[0] ? 'Edit Note' : 'Add Note'}
-                                                        </button>
+                                                        />
                                                         <button
-                                                            onClick={(e) => { e.stopPropagation(); window.open(`/jobs/${job.id}`, '_blank'); setMenuOpenJobId(null); }}
-                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
+                                                            onClick={() => handleSaveInlineNote(job.id)}
+                                                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                                                         >
-                                                            <Share2 className="w-4 h-4" /> Share Job
+                                                            <UserCheck className="w-4 h-4" />
                                                         </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleToggleFlag(job.id, !!job.is_flagged); setMenuOpenJobId(null); }}
-                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-3"
-                                                        >
-                                                            <Flag className="w-4 h-4" /> {job.is_flagged ? "Remove Flag" : "Mark as Flag"}
-                                                        </button>
-                                                        <div className="h-px bg-[#E5E7EB] my-1" />
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); toastUtil.success("Delete Role — Coming soon"); setMenuOpenJobId(null); }}
-                                                            className="w-full text-left px-4 py-2.5 text-sm text-[#DC2626] hover:bg-red-50 flex items-center gap-3"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" /> Delete Role
-                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-[12px] text-[#4B5563] line-clamp-2 italic leading-tight">
+                                                            {fetchedNotes[job.id]?.[0]?.content || "Add a note..." }
+                                                        </p>
+                                                        <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover/note:opacity-100 transition-opacity shrink-0" />
                                                     </div>
                                                 )}
                                             </div>
+                                        </td>
+
+                                        {/* Actions */}
+                                        <td className="px-4 py-3 text-center relative" onClick={(e) => e.stopPropagation()}>
+                                            <button
+                                                onClick={(e) => {
+                                                    if (menuOpenJobId === job.id) {
+                                                        setMenuOpenJobId(null);
+                                                        return;
+                                                    }
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    const mW = 160, mH = 240, gap = 8;
+                                                    const openUp = rect.bottom + mH + gap > window.innerHeight;
+                                                    const isBottom = rect.bottom + mH + gap > window.innerHeight;
+                                                    setMenuPos({
+                                                        top: isBottom ? 0 : rect.bottom + gap,
+                                                        bottom: isBottom ? window.innerHeight - rect.top + gap : 0,
+                                                        right: window.innerWidth - rect.right,
+                                                        isBottom
+                                                    });
+                                                    setMenuOpenJobId(job.id);
+                                                }}
+                                                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                                            >
+                                                <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                                            </button>
+                                            {menuOpenJobId === job.id && (
+                                                <div
+                                                    ref={menuRef}
+                                                    className={`fixed w-40 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200`}
+                                                    style={{
+                                                        top: menuPos.isBottom ? 'auto' : menuPos.top,
+                                                        bottom: menuPos.isBottom ? menuPos.bottom : 'auto',
+                                                        right: menuPos.right
+                                                    }}
+                                                >
+                                                    <button onClick={() => { setMenuOpenJobId(null); onJobSelect?.(job); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">
+                                                        <Eye className="w-4 h-4" /> View Details
+                                                    </button>
+                                                    <button onClick={() => { setMenuOpenJobId(null); setEditingJobId(job.id); setShowEditJobRole(true); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">
+                                                        <Pencil className="w-4 h-4" /> Edit
+                                                    </button>
+                                                    <button onClick={() => { setMenuOpenJobId(null); handleToggleFlag(job.id, !!job.is_flagged); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">
+                                                        <Flag className={`w-4 h-4 ${job.is_flagged ? 'text-red-500 fill-red-500' : ''}`} /> {job.is_flagged ? 'Unflag' : 'Flag'}
+                                                    </button>
+                                                    <div className="h-[1px] bg-gray-100 my-1"></div>
+                                                    <button onClick={() => { setMenuOpenJobId(null); if (window.confirm("Are you sure you want to delete this job?")) { jobPostService.deleteJob(job.id).then(() => fetchJobs()); } }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2">
+                                                        <Trash2 className="w-4 h-4" /> Delete
+                                                    </button>
+                                                </div>
+                                            )}
                                         </td>
                                     </tr>
                                 );
