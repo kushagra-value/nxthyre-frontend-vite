@@ -126,12 +126,18 @@ const JobListing: React.FC<JobListingProps> = ({
     // Mapping from UI column keys to backend ordering field names
     const orderingMap: Record<string, string> = {
         "Job Title": "title",
-        "Candidates": "candidates_count",
-        "Days open": "days_open",
         "Position": "num_positions",
-        "Budget": "salary_max",
-        "Active Date": "updated_at",
+        "YOE": "experience_min_years",
+        "CTC Budget": "salary_max",
+        "Candidates": "candidates_count",
+        "Naukbot": "naukri_bot_candidates_count",
+        "LinkedIn Bot": "linkedin_bot_candidates_count",
+        "Nxthyre": "inbound_candidates_count",
+        "Shortlisted": "shortlisted_candidate_count",
+        "Hired": "hired_count",
+        "Days Open": "days_open",
         "Status": "status",
+        "Active Date": "updated_at",
     };
 
     const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
@@ -197,6 +203,7 @@ const JobListing: React.FC<JobListingProps> = ({
     };
 
     const columnsToRender = ALL_COLUMNS.filter(c => c.alwaysVisible || visibleColumns[c.key]);
+    const totalTableWidth = columnsToRender.reduce((acc, col) => acc + parseInt(col.width), 0);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -746,8 +753,9 @@ const JobListing: React.FC<JobListingProps> = ({
                     </div>
                 </div>
 
-                <div className="overflow-x-auto overflow-y-visible">
-                    <table className="w-full text-left border-collapse">                        <colgroup>
+                <div className="overflow-x-auto overflow-y-visible custom-scrollbar">
+                    <table className="w-full text-left border-collapse" style={{ minWidth: `${totalTableWidth}px` }}>
+                        <colgroup>
                             {columnsToRender.map(col => (
                                 <col key={col.key} style={{ width: col.width }} />
                             ))}
@@ -890,7 +898,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 case 'pipelineStages':
                                                     return (
                                                         <td key={col.key} className="px-4 py-3">
-                                                            <div className="flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                                            <div className="flex items-center justify-start gap-1.5 flex-wrap max-w-[360px]">
                                                                 {stages.map((stage: any, idx: number) => {
                                                                     const colorSet = stageColors[idx % stageColors.length];
                                                                     const displayCount = stage.archived_count !== undefined
@@ -902,14 +910,14 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                             key={idx}
                                                                             onMouseEnter={(e) => showStageTooltip(e, stage.name, stage.count, stage.archived_count || 0)}
                                                                             onMouseLeave={() => setStageTooltip(prev => ({ ...prev, visible: false }))}
-                                                                            className="px-2 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap cursor-default transition-transform hover:scale-105"
+                                                                            className="px-2 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap cursor-default transition-transform hover:scale-105 shadow-sm"
                                                                             style={{
                                                                                 backgroundColor: colorSet.bg,
                                                                                 color: colorSet.text,
                                                                                 border: `1px solid ${colorSet.border}`
                                                                             }}
                                                                         >
-                                                                            {displayCount}
+                                                                            {stage.name}: {displayCount}
                                                                         </div>
                                                                     );
                                                                 })}
