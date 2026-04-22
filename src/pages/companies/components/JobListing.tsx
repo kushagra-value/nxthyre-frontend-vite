@@ -898,11 +898,11 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 case 'pipelineStages':
                                                     return (
                                                         <td key={col.key} className="px-4 py-3">
-                                                            <div className="flex items-center justify-start gap-1.5 flex-wrap max-w-[360px]">
+                                                            <div className="flex items-center justify-start gap-1.5">
                                                                 {stages.map((stage: any, idx: number) => {
                                                                     const colorSet = stageColors[idx % stageColors.length];
                                                                     const displayCount = stage.archived_count !== undefined
-                                                                        ? `${stage.count} - ${stage.count - stage.archived_count}`
+                                                                        ? `${stage.count} - ${stage.archived_count}`
                                                                         : stage.count;
 
                                                                     return (
@@ -917,7 +917,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                                 border: `1px solid ${colorSet.border}`
                                                                             }}
                                                                         >
-                                                                            {stage.name}: {displayCount}
+                                                                            {displayCount}
                                                                         </div>
                                                                     );
                                                                 })}
