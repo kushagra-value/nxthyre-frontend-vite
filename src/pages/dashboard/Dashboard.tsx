@@ -2,12 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
 import StatCard from './components/StatCard';
 import PriorityCard from './components/PriorityCard';
-import TalentMatchCard from './components/TalentMatchCard';
 import CalendarWidget from './components/CalendarWidget';
 import ScheduleWidget from './components/ScheduleWidget';
 import RecentActivities from './components/RecentActivities';
 import ActionReviewModal from './components/ActionReviewModal';
-import NewMatchCandidateModal from './components/NewMatchCandidateModal';
 import CustomDateSelector from './components/CustomDateSelector';
 import ScheduleEventModal from './components/ScheduleEventModal';
 import DateWiseAgendaModal from './components/DateWiseAgendaModal';
@@ -25,7 +23,6 @@ import dashboardService, {
   AgendaResponse,
   DailyActivitiesResponse,
 } from '../../services/dashboardService';
-import { jobPostService, AllRoleOption } from '../../services/jobPostService';
 import organizationService from '../../services/organizationService';
 import type { DiscoverWorkspace } from '../../services/organizationService';
 import {
@@ -36,8 +33,6 @@ import {
   ScheduleItemData,
   StatCardData,
   PriorityColumnData,
-  TalentMatchData,
-  CandidateSource,
 } from './dashboardData';
 import type { ScheduleFilterLabel } from './components/ScheduleWidget';
 
@@ -76,12 +71,21 @@ const ClockIcon = (
   </svg>
 );
 
+const UploadIcon = (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+);
+
 const iconMap: Record<string, React.ReactNode> = {
   briefcase: BriefcaseIcon,
   building: BuildingIcon,
   userPlus: UserPlusIcon,
   'user-plus': UserPlusIcon,
   clock: ClockIcon,
+  upload: UploadIcon,
 };
 
 // Map API icon_type to internal iconType keys
@@ -91,26 +95,13 @@ const mapIconType = (apiIconType: string): string => {
     building: 'building',
     'user-plus': 'userPlus',
     clock: 'clock',
+    upload: 'upload',
   };
   return mapping[apiIconType] || apiIconType;
 };
 
 
 
-
-// Map API source to internal CandidateSource
-const mapSource = (src: any): CandidateSource | undefined => {
-  if (typeof src !== 'string') return 'external';
-  const mapping: Record<string, CandidateSource> = {
-    autopilot: 'nxt',
-    nxthyre: 'nxt',
-    naukri: 'naukri',
-    pyjamahr: 'pyjama',
-    upload: 'external',
-    external: 'external',
-  };
-  return mapping[src.toLowerCase()] || 'external';
-};
 
 // Column color config
 const columnColors: Record<string, { dotColor: string; accentColor: string }> = {
@@ -199,25 +190,6 @@ export default function Dashboard() {
   const [customEndDate, setCustomEndDate] = useState<string | undefined>(undefined);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
 
-  const [talentMatchDateRange, setTalentMatchDateRange] = useState('Last 24 Hours');
-  const [talentMatchDateRangePreset, setTalentMatchDateRangePreset] = useState<DateRangePreset>('today');
-  const [talentMatchCustomStartDate, setTalentMatchCustomStartDate] = useState<string | undefined>(undefined);
-  const [talentMatchCustomEndDate, setTalentMatchCustomEndDate] = useState<string | undefined>(undefined);
-  const [showTalentMatchDateDropdown, setShowTalentMatchDateDropdown] = useState(false);
-
-  // Talent Matches Job Filter
-  const [talentMatchJobs, setTalentMatchJobs] = useState<AllRoleOption[]>([]);
-  const [talentMatchSelectedJob, setTalentMatchSelectedJob] = useState<{ id: number | null, title: string }>({ id: null, title: 'All Jobs' });
-  const [showTalentMatchJobDropdown, setShowTalentMatchJobDropdown] = useState(false);
-  const talentMatchJobDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Staged job selection (applied on "Apply" click)
-  const [pendingJobId, setPendingJobId] = useState<number | null>(null);
-  const [pendingJobTitle, setPendingJobTitle] = useState('All Jobs');
-  const [jobSearchQuery, setJobSearchQuery] = useState('');
-
-  const [talentMatchesResponse, setTalentMatchesResponse] = useState<any>(null);
-  const [talentMatchesLoading, setTalentMatchesLoading] = useState(true);
   // Modal states
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [actionModalCandidateData, setActionModalCandidateData] = useState<any>(null);
@@ -225,11 +197,6 @@ export default function Dashboard() {
   const [actionModalTab, setActionModalTab] = useState<PriorityTab>('sourcing');
   const [actionModalCards, setActionModalCards] = useState<PriorityActionItem[]>([]);
   const [actionModalCurrentIndex, setActionModalCurrentIndex] = useState(0);
-
-  const [isNewMatchModalOpen, setIsNewMatchModalOpen] = useState(false);
-  const [newMatchCurrentIndex, setNewMatchCurrentIndex] = useState(0);
-  const [newMatchCandidateData, setNewMatchCandidateData] = useState<any>(null);
-  const [newMatchLoading, setNewMatchLoading] = useState(false);
 
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [selectedScheduleEventIndex, setSelectedScheduleEventIndex] = useState(0);
@@ -254,9 +221,6 @@ export default function Dashboard() {
     const handleClickOutside = (event: MouseEvent) => {
       if (companyDropdownRef.current && !companyDropdownRef.current.contains(event.target as Node)) {
         setShowCompanyDropdown(false);
-      }
-      if (talentMatchJobDropdownRef.current && !talentMatchJobDropdownRef.current.contains(event.target as Node)) {
-        setShowTalentMatchJobDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -333,20 +297,6 @@ export default function Dashboard() {
     });
   }, [companyOptions]);
 
-  // Fetch jobs list for Talent Matches filter
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const loadJobs = async () => {
-      try {
-        const jobs = await jobPostService.getAllRoles();
-        setTalentMatchJobs(jobs);
-      } catch (err) {
-        console.error('Failed to fetch jobs for filter:', err);
-      }
-    };
-    loadJobs();
-  }, [isAuthenticated]);
-
   // Fetch dashboard data (stat cards, talent matches, schedule, etc.)
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -372,69 +322,6 @@ export default function Dashboard() {
       cancelled = true;
     };
   }, [isAuthenticated]);
-
-  // Fetch talent matches — direct useEffect, no useCallback
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    let cancelled = false;
-    setTalentMatchesLoading(true);
-
-    dashboardService
-      .getTalentMatches({
-        job_id: talentMatchSelectedJob.id ?? undefined,
-        date_range: talentMatchDateRangePreset,
-        start_date: talentMatchCustomStartDate,
-        end_date: talentMatchCustomEndDate,
-        page_size: 10,
-      })
-      .then((data) => {
-        if (!cancelled) {
-          setTalentMatchesResponse(data ?? { count: 0, results: [] });
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          console.error('Failed to fetch talent matches:', err);
-          setTalentMatchesResponse({ count: 0, results: [] });
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setTalentMatchesLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    isAuthenticated,
-    talentMatchSelectedJob.id,
-    talentMatchDateRangePreset,
-    talentMatchCustomStartDate,
-    talentMatchCustomEndDate,
-  ]);
-
-  // Simple refresh for imperative calls (skip, modal actions)
-  const refreshTalentMatches = async () => {
-    try {
-      setTalentMatchesLoading(true);
-      const data = await dashboardService.getTalentMatches({
-        job_id: talentMatchSelectedJob.id ?? undefined,
-        date_range: talentMatchDateRangePreset,
-        start_date: talentMatchCustomStartDate,
-        end_date: talentMatchCustomEndDate,
-        page_size: 10,
-      });
-      setTalentMatchesResponse(data ?? { count: 0, results: [] });
-    } catch (err) {
-      console.error('Failed to refresh talent matches:', err);
-      setTalentMatchesResponse({ count: 0, results: [] });
-    } finally {
-      setTalentMatchesLoading(false);
-    }
-  };
 
   // Fetch priority actions from the new API
   const fetchPriorityActions = useCallback(async () => {
@@ -520,7 +407,9 @@ export default function Dashboard() {
       value: card.unit ? `${card.value}` : card.value,
       trend: card.trend,
       trendText: card.trend_text,
-      dateText: card.unit,
+      trendColor: card.trend_color,
+      trendData: card.trend_data,
+      dateText: card.unit ?? undefined,
     }))
     : statCardsData;
 
@@ -567,53 +456,6 @@ export default function Dashboard() {
       cards,
     };
   });
-
-  const mapMatchPercentage = (match: any): number => {
-    const scoreRaw = match.score ?? match.match_percentage ?? match.match_score;
-    if (typeof scoreRaw === 'number') return scoreRaw;
-    if (typeof scoreRaw === 'string') return parseInt(scoreRaw.replace('%', ''), 10) || 0;
-    return 0;
-  };
-
-  const dynamicTalentMatches: TalentMatchData[] = talentMatchesResponse?.results
-    ? talentMatchesResponse.results.map((m: any, idx: number) => ({
-      id: `${m.match_id || idx}-${m.job_score_object?.candidate_id || idx}`,
-      name: m.candidate_details || 'Unknown',
-      company: m.current_company || 'N/A',
-      position: m.job_title || '',
-      experience: m.total_exp != null ? `${m.total_exp} yrs` : '',
-      matchPercentage: mapMatchPercentage({ score: m.score }),
-      source: mapSource(m.source?.source),
-    }))
-    : [];
-
-  const modalCandidates = talentMatchesResponse?.results
-    ? talentMatchesResponse.results.map((m: any) => {
-      const quickFitSource = m.job_score_object?.quick_fit_summary || [];
-      const quickFitSkills = quickFitSource.map((q: any) => ({
-        name: q.badge,
-        match: q.color === 'green'
-      }));
-
-      return {
-        name: m.candidate_details || 'Unknown',
-        role: m.job_title || '',
-        company: m.current_company || 'N/A',
-        matchPercentage: mapMatchPercentage({ score: m.score }),
-        experience: m.total_exp != null ? `${m.total_exp} yrs` : '',
-        currentCTC: m.current_salary || '-',
-        expectedCTC: '-', // API JSON didn't show expectedCTC
-        noticePeriod: '-', // API JSON didn't show noticePeriod explicitly as days
-        location: '-', // API JSON didn't show location
-        source: mapSource(m.source?.source),
-        quickFitSkills,
-        aiSummary: m.job_score_object?.recommended_message || m.job_score_object?.candidate_match_score?.description || '',
-        nbcId: m.job_score_object?.candidate_id,  // CandidateProfile UUID — used for Skip/NVite
-        matchId: m.match_id,
-        jobId: m.job_id,
-      };
-    })
-    : [];
 
   // For schedule, use API data if available; map to ScheduleItemData from dashboardData types
   const dynamicScheduleItems: ScheduleItemData[] = Array.isArray(dashboardData?.dashboard?.schedule?.items)
@@ -669,68 +511,6 @@ export default function Dashboard() {
       setActionModalCandidateData(null);
     } finally {
       setActionModalLoading(false);
-    }
-  };
-
-  const handleTalentMatchClick = async (name: string) => {
-    const idx = modalCandidates.findIndex((c: any) => c.name === name);
-    const indexToUse = idx >= 0 ? idx : 0;
-
-    setNewMatchCurrentIndex(indexToUse);
-    setIsNewMatchModalOpen(true);
-
-    const item = modalCandidates[indexToUse];
-    if (item && item.matchId) {
-      setNewMatchLoading(true);
-      try {
-        const data = await dashboardService.getCandidateDetails(item.matchId, item.jobId);
-        setNewMatchCandidateData(data);
-      } catch (err) {
-        console.error('Failed to fetch talent match details:', err);
-        setNewMatchCandidateData(null);
-      } finally {
-        setNewMatchLoading(false);
-      }
-    }
-  };
-
-  const handleSkipTalentMatch = async (nbcId: string) => {
-    try {
-      const { naukbotService } = await import('../../services/naukbotService');
-      await naukbotService.skipCandidates([nbcId]);
-
-      import('react-hot-toast').then(({ default: toast }) =>
-        toast.success('Candidate skipped')
-      );
-
-      await refreshTalentMatches();
-
-    } catch (err: any) {
-      console.error('Skip failed:', err);
-      import('react-hot-toast').then(({ default: toast }) =>
-        toast.error(err.message || 'Failed to skip candidate')
-      );
-    }
-  };
-
-  const handleNewMatchModalNavigate = async (newIndex: number) => {
-    if (newIndex < 0 || newIndex >= modalCandidates.length) return;
-    setNewMatchCurrentIndex(newIndex);
-    const item = modalCandidates[newIndex];
-
-    if (item && item.matchId) {
-      setNewMatchLoading(true);
-      try {
-        const data = await dashboardService.getCandidateDetails(item.matchId, item.jobId);
-        setNewMatchCandidateData(data);
-      } catch (err) {
-        console.error('Failed to fetch talent match details:', err);
-        setNewMatchCandidateData(null);
-      } finally {
-        setNewMatchLoading(false);
-      }
-    } else {
-      setNewMatchCandidateData(null);
     }
   };
 
@@ -794,29 +574,7 @@ export default function Dashboard() {
     }
   };
 
-  // Handle talent match date range selection
-  const handleTalentMatchDateRangeApply = (range: { start?: Date; end?: Date; label: string }) => {
-    setTalentMatchDateRange(range.label);
-    const labelLower = typeof range.label === 'string' ? range.label.toLowerCase() : '';
-
-    if (labelLower === 'today' || labelLower === 'last 24 hours') {
-      setTalentMatchDateRangePreset('today');
-      setTalentMatchCustomStartDate(undefined);
-      setTalentMatchCustomEndDate(undefined);
-    } else if (labelLower === 'last week') {
-      setTalentMatchDateRangePreset('last_week');
-      setTalentMatchCustomStartDate(undefined);
-      setTalentMatchCustomEndDate(undefined);
-    } else if (labelLower === 'last month') {
-      setTalentMatchDateRangePreset('last_month');
-      setTalentMatchCustomStartDate(undefined);
-      setTalentMatchCustomEndDate(undefined);
-    } else {
-      setTalentMatchDateRangePreset('custom');
-      if (range.start) setTalentMatchCustomStartDate(formatDateToYMD(range.start));
-      if (range.end) setTalentMatchCustomEndDate(formatDateToYMD(range.end));
-    }
-  };
+ 
 
   // Handle company selection (stage it for Apply)
   const handleCompanySelect = (option: CompanyOption) => {
@@ -867,11 +625,13 @@ export default function Dashboard() {
               : dynamicStatCards.map((stat) => (
                 <StatCard
                   key={stat.id}
-                  icon={iconMap[stat.iconType]}
+                  iconType={stat.iconType}
                   label={stat.label}
                   value={stat.value}
                   trend={stat.trend}
                   trendText={stat.trendText}
+                  trendColor={stat.trendColor}
+                  trendData={stat.trendData}
                   dateText={stat.dateText}
                 />
               ))}
@@ -1022,7 +782,7 @@ export default function Dashboard() {
                     column.cards.sort((a, b) => b.daysAgo - a.daysAgo);
                   }
                   return (
-                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto max-h-[400px] hide-scrollbar">
+                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto flex-1 min-h-[400px] hide-scrollbar">
                       <div className="flex items-center justify-between px-1 py-1">
                         <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
@@ -1054,155 +814,6 @@ export default function Dashboard() {
                     </div>
                   );
                 })}
-            </div>
-          </section>
-
-          {/* Talent Matches from API or fallback */}
-          <section className="bg-white rounded-[10px] p-5 flex flex-col gap-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-[22px] font-medium leading-6 text-black">Auto Pilot</h2>
-              <div className="flex items-end gap-3">
-                <div className="relative" ref={talentMatchJobDropdownRef}>
-                  <button
-                    onClick={() => {
-                      if (!showTalentMatchJobDropdown) {
-                        setPendingJobId(talentMatchSelectedJob.id);
-                        setPendingJobTitle(talentMatchSelectedJob.title);
-                        setJobSearchQuery('');
-                      }
-                      setShowTalentMatchJobDropdown(!showTalentMatchJobDropdown);
-                    }}
-                    className="flex items-center gap-2 px-3.5 py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] leading-[17px] bg-white border border-[#D1D1D6] min-w-[140px] justify-between transition-colors hover:bg-gray-50"
-                  >
-                    <span className="truncate max-w-[150px]">{talentMatchSelectedJob.title}</span>
-                    <ChevronDown className={`w-4 h-4 opacity-60 transition-transform flex-shrink-0 ${showTalentMatchJobDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-                  {showTalentMatchJobDropdown && (
-                    <div className="absolute top-full mt-1 right-0 min-w-[220px] bg-white border border-[#D1D1D6] rounded-[12px] shadow-lg z-10 flex flex-col">
-                      {/* Search */}
-                      <div className="px-3 pt-3 pb-2">
-                        <div className="relative">
-                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#AEAEB2]" />
-                          <input
-                            type="text"
-                            placeholder="Search job"
-                            value={jobSearchQuery}
-                            onChange={(e) => setJobSearchQuery(e.target.value)}
-                            className="w-full h-8 pl-8 pr-3 rounded-lg text-xs text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 border border-[#E5E7EB]"
-                          />
-                        </div>
-                      </div>
-                      {/* Options list */}
-                      <div className="max-h-[220px] overflow-y-auto px-1.5">
-                        {/* All Jobs option */}
-                        {(jobSearchQuery.trim() === '' || 'all jobs'.includes(jobSearchQuery.toLowerCase())) && (
-                          <button
-                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${pendingJobId === null
-                              ? 'bg-[#E7EDFF] text-[#0F47F2]'
-                              : 'text-[#4B5563] hover:bg-[#F3F5F7]'
-                              }`}
-                            onClick={() => {
-                              setPendingJobId(null);
-                              setPendingJobTitle('All Jobs');
-                            }}
-                          >
-                            <span className="truncate">All Jobs</span>
-                          </button>
-                        )}
-                        {talentMatchJobs
-                          .filter(job =>
-                            jobSearchQuery.trim() === '' ||
-                            job.title.toLowerCase().includes(jobSearchQuery.toLowerCase())
-                          )
-                          .map(job => (
-                            <button
-                              key={job.id}
-                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${pendingJobId === job.id
-                                ? 'bg-[#E7EDFF] text-[#0F47F2]'
-                                : 'text-[#4B5563] hover:bg-[#F3F5F7]'
-                                }`}
-                              onClick={() => {
-                                setPendingJobId(job.id);
-                                setPendingJobTitle(job.title);
-                              }}
-                            >
-                              <span className="truncate">{job.title}</span>
-                            </button>
-                          ))}
-                      </div>
-                      {/* Apply button */}
-                      <div className="px-3 py-2.5 border-t border-[#E5E7EB]">
-                        <button
-                          onClick={() => {
-                            setTalentMatchSelectedJob({ id: pendingJobId, title: pendingJobTitle });
-                            setShowTalentMatchJobDropdown(false);
-                            setJobSearchQuery('');
-                          }}
-                          className="w-full py-2 rounded-lg bg-[#0F47F2] text-white text-sm font-medium hover:bg-[#0D3ED4] transition-colors"
-                        >
-                          Apply
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="relative">
-                  <button
-                    onClick={() => setShowTalentMatchDateDropdown(!showTalentMatchDateDropdown)}
-                    className="flex items-center gap-3 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[140px]"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M15 1.66675V3.33341M5 1.66675V3.33341" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                      <path d="M8.33333 14.1666L8.33332 11.1226C8.33332 10.9628 8.21938 10.8333 8.07882 10.8333H7.5M11.358 14.1666L12.4868 11.1242C12.5396 10.982 12.4274 10.8333 12.2672 10.8333H10.8333" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" />
-                      <path d="M2.08301 10.2027C2.08301 6.57161 2.08301 4.75607 3.12644 3.62803C4.16987 2.5 5.84925 2.5 9.20801 2.5H10.7913C14.1501 2.5 15.8295 2.5 16.8729 3.62803C17.9163 4.75607 17.9163 6.57161 17.9163 10.2027V10.6306C17.9163 14.2617 17.9163 16.0773 16.8729 17.2053C15.8295 18.3333 14.1501 18.3333 10.7913 18.3333H9.20801C5.84925 18.3333 4.16987 18.3333 3.12644 17.2053C2.08301 16.0773 2.08301 14.2617 2.08301 10.6306V10.2027Z" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                      <path d="M5 6.66675H15" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    {talentMatchDateRange}
-                  </button>
-                  {showTalentMatchDateDropdown && (
-                    <div className="absolute top-full mt-1 right-0 z-20">
-                      <CustomDateSelector
-                        onApply={handleTalentMatchDateRangeApply}
-                        onClose={() => setShowTalentMatchDateDropdown(false)}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-5">
-              {talentMatchesLoading
-                ? [...Array(3)].map((_, i) => (
-                  <div key={`tm-skel-${i}`} className="bg-white p-5 rounded-[10px] flex items-center justify-between animate-pulse" style={{ border: '1px solid #D1D1D6' }}>
-                    <div className="flex flex-col gap-2">
-                      <div className="w-32 h-4 rounded bg-gray-200" />
-                      <div className="w-48 h-3 rounded bg-gray-200" />
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-gray-200" />
-                  </div>
-                ))
-                : dynamicTalentMatches.length > 0 ? (
-                  dynamicTalentMatches.map((match) => (
-                    <TalentMatchCard
-                      key={match.id}
-                      name={match.name}
-                      company={match.company}
-                      position={match.position}
-                      experience={match.experience}
-                      matchPercentage={match.matchPercentage}
-                      source={match.source}
-                      onClick={() => handleTalentMatchClick(match.name)}
-                      onSkip={() => {
-                        const mc = modalCandidates.find((c: any) => c.name === match.name);
-                        if (mc?.nbcId) handleSkipTalentMatch(mc.nbcId);
-                      }}
-                    />
-                  ))
-                ) : (
-                  <div className="flex items-center justify-center py-8 text-sm text-[#8E8E93]">
-                    No immediate talent matches
-                  </div>
-                )}
             </div>
           </section>
         </div>
@@ -1258,20 +869,6 @@ export default function Dashboard() {
             console.error('Failed to complete action:', err);
           }
         }}
-      />
-      {/* New Match Candidate Modal */}
-      <NewMatchCandidateModal
-        isOpen={isNewMatchModalOpen}
-        onClose={() => {
-          setIsNewMatchModalOpen(false);
-          setNewMatchCandidateData(null);
-        }}
-        candidates={modalCandidates}
-        candidateData={newMatchCandidateData}
-        isLoading={newMatchLoading}
-        currentIndex={newMatchCurrentIndex}
-        onNavigate={handleNewMatchModalNavigate}
-        onSkipped={refreshTalentMatches}
       />
       {/* Schedule Event Modal */}
       <ScheduleEventModal

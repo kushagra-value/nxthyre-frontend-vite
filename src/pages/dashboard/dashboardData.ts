@@ -8,8 +8,10 @@ export interface StatCardData {
     value: string | number;
     trend?: string;
     trendText?: string;
+    trendColor?: 'green' | 'rose';
+    trendData?: number[];
     dateText?: string;
-    iconType: 'briefcase' | 'building' | 'userPlus' | 'clock';
+    iconType: 'briefcase' | 'building' | 'userPlus' | 'clock' | 'upload';
 }
 
 export interface PriorityCardData {
@@ -184,6 +186,8 @@ export const statCardsData: StatCardData[] = [
         value: '68',
         trend: '10%',
         trendText: 'vs last month',
+        trendColor: 'green',
+        trendData: [40, 35, 50, 45, 60, 55, 68],
     },
     {
         id: 'stat-2',
@@ -192,6 +196,8 @@ export const statCardsData: StatCardData[] = [
         value: '25',
         trend: '10%',
         trendText: 'vs last month',
+        trendColor: 'green',
+        trendData: [15, 18, 12, 20, 22, 19, 25],
     },
     {
         id: 'stat-3',
@@ -200,15 +206,18 @@ export const statCardsData: StatCardData[] = [
         value: '4',
         trend: '10%',
         trendText: 'vs last month',
+        trendColor: 'green',
+        trendData: [1, 2, 1, 3, 2, 4, 4],
     },
     {
         id: 'stat-4',
-        iconType: 'clock',
-        label: 'Autopilot Saved Time',
-        value: '3',
-        dateText: 'Days',
+        iconType: 'upload',
+        label: 'Total Resume Uploads',
+        value: '124',
         trend: '10%',
         trendText: 'vs last month',
+        trendColor: 'green',
+        trendData: [80, 95, 110, 100, 115, 105, 124],
     },
 ];
 
@@ -232,6 +241,7 @@ export const priorityColumnsData: PriorityColumnData[] = [
                 daysAgo: 4,
                 status: 'Follow up required',
                 statusColor: 'blue',
+                latestCallNote: undefined
             },
             {
                 id: 'pc-2',
@@ -240,6 +250,7 @@ export const priorityColumnsData: PriorityColumnData[] = [
                 daysAgo: 4,
                 status: 'Outreach Required',
                 statusColor: 'blue',
+                latestCallNote: undefined
             },
             {
                 id: 'pc-3',
@@ -248,6 +259,7 @@ export const priorityColumnsData: PriorityColumnData[] = [
                 daysAgo: 4,
                 status: 'Follow up required',
                 statusColor: 'blue',
+                latestCallNote: undefined
             },
             {
                 id: 'pc-4',
@@ -256,6 +268,7 @@ export const priorityColumnsData: PriorityColumnData[] = [
                 daysAgo: 4,
                 status: 'Follow up required',
                 statusColor: 'grey',
+                latestCallNote: undefined
             },
         ],
     },
@@ -274,6 +287,7 @@ export const priorityColumnsData: PriorityColumnData[] = [
                 daysAgo: 4,
                 status: 'Availability Expires today',
                 statusColor: 'rose',
+                latestCallNote: undefined
             },
         ],
     },
@@ -292,6 +306,7 @@ export const priorityColumnsData: PriorityColumnData[] = [
                 daysAgo: 4,
                 status: 'HM Feedback missing',
                 statusColor: 'amber',
+                latestCallNote: undefined
             },
             {
                 id: 'pc-7',
@@ -300,6 +315,7 @@ export const priorityColumnsData: PriorityColumnData[] = [
                 daysAgo: 4,
                 status: 'Required Scheduling',
                 statusColor: 'indigo',
+                latestCallNote: undefined
             },
             {
                 id: 'pc-8',
@@ -308,6 +324,7 @@ export const priorityColumnsData: PriorityColumnData[] = [
                 daysAgo: 4,
                 status: 'Not Available',
                 statusColor: 'rose',
+                latestCallNote: undefined
             },
         ],
     },

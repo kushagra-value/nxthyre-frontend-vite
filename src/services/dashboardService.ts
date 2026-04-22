@@ -9,11 +9,12 @@ export interface DashboardStatCard {
   id: string;
   icon_type: string;
   label: string;
-  value: number;
-  unit?: string;
+  value: number | string;
+  unit?: string | null;
   trend: string;
   trend_text: string;
   trend_color: "green" | "rose";
+  trend_data: number[];
 }
 
 export interface DashboardPriorityCard {
