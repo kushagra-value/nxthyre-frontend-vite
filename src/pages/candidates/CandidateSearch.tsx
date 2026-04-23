@@ -32,6 +32,8 @@ import candidateSearchService, {
   V1CandidateStats,
 } from '../../services/candidateSearchService';
 import candidateService from '../../services/candidateService';
+import organizationService from '../../services/organizationService';
+import type { DiscoverWorkspace } from '../../services/organizationService';
 
 // ── Icons for stat cards ──
 const BriefcaseIcon = () => (
@@ -741,19 +743,39 @@ export default function CandidateSearch() {
 
     const fetchDropdownData = async () => {
       try {
-        const [wsData, jobsData] = await Promise.all([
-          candidateSearchService.getWorkspaces().catch(() => []),
+        const [myWsData, discoverWs, jobsData] = await Promise.all([
+          organizationService.getMyWorkspacesData().catch(() => ({ workspaces: [], stats_count: {} })),
+          organizationService.getDiscoverWorkspaces().catch(() => [] as DiscoverWorkspace[]),
           candidateSearchService.getJobs().catch(() => []),
         ]);
 
         if (cancelled) return;
 
-        setWorkspaces(wsData);
+        // Merge workspaces like in Dashboard
+        const mergedWs: V1Workspace[] = [];
+        const seenWs = new Set<number>();
+        
+        const myWorkspaces = (myWsData as any).workspaces || [];
+        myWorkspaces.forEach((ws: any) => {
+          if (!seenWs.has(ws.id)) {
+            seenWs.add(ws.id);
+            mergedWs.push({ id: ws.id, name: ws.name, website: ws.company_research_data?.website || '' });
+          }
+        });
+
+        discoverWs.forEach((ws: any) => {
+          if (!seenWs.has(ws.id)) {
+            seenWs.add(ws.id);
+            mergedWs.push({ id: ws.id, name: ws.name, website: '' });
+          }
+        });
+
+        setWorkspaces(mergedWs);
         setJobs(jobsData);
 
         // Build workspace map & options
         const wsMap = new Map<string, number>();
-        const clientOptions = wsData.map((ws: V1Workspace) => {
+        const clientOptions = mergedWs.map((ws: V1Workspace) => {
           wsMap.set(ws.name, ws.id);
           return { value: ws.name, label: ws.name, logo: undefined as any };
         });
@@ -775,7 +797,7 @@ export default function CandidateSearch() {
         }));
 
         // Fetch logos for clients
-        wsData.forEach((ws: V1Workspace) => {
+        mergedWs.forEach((ws: V1Workspace) => {
           const name = ws.name;
           if (name && !logoRequestedRef.current.has(name)) {
             logoRequestedRef.current.add(name);
