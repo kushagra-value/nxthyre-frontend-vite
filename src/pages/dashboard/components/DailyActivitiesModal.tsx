@@ -34,6 +34,9 @@ const NaukbotIcon = (
 const DownloadIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3.33v9.17M6.67 10l3.33 3.33L13.33 10M5 15h10" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
+const ChevronDownIcon = ({ className = '' }: { className?: string }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={className}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+);
 
 const TAB_CONFIG: { key: TabKey; label: string; icon: JSX.Element; color: string; bg: string; typeMatch: string[] }[] = [
   { key: 'call', label: 'Calls Made', icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF', typeMatch: ['call', 'call-cancel'] },
@@ -51,9 +54,7 @@ const getIconForType = (type: string) => {
   return { icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF' };
 };
 
-/**
- * Build grouped summaries from flat activities (fallback when API doesn't provide grouped_activities).
- */
+/** Build grouped summaries from flat activities (fallback). */
 function buildGroupedFromFlat(activities: DailyActivityItemAPI[]): DailyActivityGroupedItem[] {
   const groups: Record<string, DailyActivityItemAPI[]> = {};
   activities.forEach(a => {
@@ -104,9 +105,7 @@ function buildGroupedFromFlat(activities: DailyActivityItemAPI[]): DailyActivity
   });
 }
 
-/**
- * Build detail items from flat activities (fallback when API doesn't provide per-category arrays).
- */
+/** Build detail items from flat activities (fallback). */
 function buildDetailsFromFlat(activities: DailyActivityItemAPI[], typeFilter: string[]): DailyActivityDetailItem[] {
   return activities
     .filter(a => typeFilter.includes(a.type))
@@ -114,9 +113,8 @@ function buildDetailsFromFlat(activities: DailyActivityItemAPI[], typeFilter: st
       const timePart = a.time?.split('·').pop()?.trim() || a.time || '';
       const namePart = a.title.replace('Called ', '').replace('Follow-up — ', '').replace(' shortlisted', '');
       let actionLabel: string | undefined;
-      if (a.type === 'call' || a.type === 'call-cancel') {
-        actionLabel = a.type === 'call-cancel' ? 'Call Back' : 'View Call Note';
-      }
+      if (a.type === 'call') actionLabel = 'View Call Note';
+      if (a.type === 'call-cancel') actionLabel = 'Call Back';
       return {
         id: a.id,
         time: timePart,
@@ -132,11 +130,26 @@ function buildDetailsFromFlat(activities: DailyActivityItemAPI[], typeFilter: st
     });
 }
 
+/** Get all detail items for a given group type from data. */
+function getDetailsForGroupType(data: DailyActivitiesResponse, groupType: string): DailyActivityDetailItem[] {
+  // Map group type to the matching tab config
+  const matchingTab = TAB_CONFIG.find(t => t.typeMatch.includes(groupType));
+  if (!matchingTab) return [];
+
+  // Try new API fields first
+  if (matchingTab.key === 'call' && data.calls?.length) return data.calls;
+  if (matchingTab.key === 'follow-up' && data.follow_ups?.length) return data.follow_ups;
+  if (matchingTab.key === 'shortlist' && data.shortlisted?.length) return data.shortlisted;
+  if (matchingTab.key === 'hired' && data.hired?.length) return data.hired;
+
+  // Fallback from flat activities
+  return buildDetailsFromFlat(data.activities, matchingTab.typeMatch);
+}
+
 
 const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onClose, data, isLoading = false }) => {
   const [activeTab, setActiveTab] = useState<TabKey>('all');
 
-  // Compute tab counts from summary
   const tabCounts = useMemo(() => {
     if (!data) return { all: 0, call: 0, 'follow-up': 0, shortlist: 0, hired: 0 };
     return {
@@ -148,32 +161,25 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
     };
   }, [data]);
 
-  // Grouped items for "All" tab
   const groupedItems = useMemo(() => {
     if (!data) return [];
     if (data.grouped_activities && data.grouped_activities.length > 0) return data.grouped_activities;
     return buildGroupedFromFlat(data.activities);
   }, [data]);
 
-  // Detail items for per-category tabs
   const getDetailItems = (tabKey: TabKey): DailyActivityDetailItem[] => {
     if (!data || tabKey === 'all') return [];
     const cfg = TAB_CONFIG.find(t => t.key === tabKey);
     if (!cfg) return [];
-
-    // Use new API fields if available
     if (tabKey === 'call' && data.calls?.length) return data.calls;
     if (tabKey === 'follow-up' && data.follow_ups?.length) return data.follow_ups;
     if (tabKey === 'shortlist' && data.shortlisted?.length) return data.shortlisted;
     if (tabKey === 'hired' && data.hired?.length) return data.hired;
-
-    // Fallback: build from flat activities
     return buildDetailsFromFlat(data.activities, cfg.typeMatch);
   };
 
   if (!isOpen) return null;
 
-  // ── Loading skeleton ──
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end" onClick={onClose}>
@@ -189,7 +195,6 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
     );
   }
 
-  // ── Empty state ──
   if (!data) {
     return (
       <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end" onClick={onClose}>
@@ -206,25 +211,18 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end" onClick={onClose}>
       <div className="bg-white shadow-xl w-full max-w-[520px] h-screen flex flex-col" onClick={e => e.stopPropagation()}>
-
-        {/* ── Header ── */}
         <ModalHeader title={data.date_label} subtitle={`${data.total_activities} total activities`} onClose={onClose} />
 
         {/* ── Tabs ── */}
         <div className="px-6 py-3 border-b border-[#E5E7EB] flex items-center gap-2 overflow-x-auto shrink-0 hide-scrollbar">
-          {/* All tab */}
           <button
             onClick={() => setActiveTab('all')}
             className={`flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
-              activeTab === 'all'
-                ? 'border-[#0F47F2] text-[#0F47F2] bg-[#E7EDFF]'
-                : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
+              activeTab === 'all' ? 'border-[#0F47F2] text-[#0F47F2] bg-[#E7EDFF]' : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
             }`}
           >
             All <span className="font-semibold">{tabCounts.all}</span>
           </button>
-
-          {/* Category tabs */}
           {TAB_CONFIG.map(tab => {
             const count = tabCounts[tab.key];
             const isActive = activeTab === tab.key;
@@ -233,9 +231,7 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
-                  isActive
-                    ? 'bg-white shadow-sm'
-                    : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
+                  isActive ? 'bg-white shadow-sm' : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
                 }`}
                 style={isActive ? { borderColor: tab.color, color: tab.color } : {}}
               >
@@ -251,12 +247,9 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
         {/* ── Content ── */}
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {activeTab === 'all' ? (
-            <AllTabContent groupedItems={groupedItems} />
+            <AllTabContent groupedItems={groupedItems} data={data} />
           ) : (
-            <DetailTabContent
-              items={detailItems}
-              tabKey={activeTab}
-            />
+            <DetailTabContent items={detailItems} tabKey={activeTab} />
           )}
         </div>
       </div>
@@ -288,33 +281,116 @@ function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle: st
   );
 }
 
-/** "All" tab — shows grouped summaries with view links */
-function AllTabContent({ groupedItems }: { groupedItems: DailyActivityGroupedItem[] }) {
+/** Renders a single detail card row — shared between All-tab expansion and per-category tabs */
+function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number }) {
+  const [showNote, setShowNote] = useState(false);
+  const { icon, color, bg } = getIconForType(item.type);
+  const isFailedCall = item.call_status && item.call_status.toLowerCase().includes("didn't pick");
+
+  return (
+    <div className={`py-3.5 ${idx > 0 ? 'border-t border-[#F3F5F7]' : ''}`}>
+      <div className="flex items-start gap-3">
+        {/* Icon */}
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: bg, color }}>
+          <span style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mb-1">{item.time}</p>
+          <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
+          {(item.company_name || item.job_role) && (
+            <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
+              {[item.company_name, item.job_role, item.experience].filter(Boolean).join(' | ')}
+            </p>
+          )}
+          {item.detail_text && (
+            <p className="m-0 text-xs leading-[16px] mt-1" style={{ color: isFailedCall ? '#DC2626' : (item.detail_color || color) }}>
+              {item.detail_text}
+            </p>
+          )}
+        </div>
+
+        {/* Action button */}
+        {item.action_label && (
+          <button
+            onClick={() => {
+              if (item.action_type === 'view_call_note' && item.call_note) setShowNote(!showNote);
+            }}
+            className="shrink-0 text-[11px] font-medium px-3 py-1.5 rounded-md border transition-colors hover:opacity-80 self-center"
+            style={{ color, borderColor: color, background: bg }}
+          >
+            {item.action_label}
+          </button>
+        )}
+      </div>
+
+      {/* Expanded call note */}
+      {showNote && item.call_note && (
+        <div className="ml-12 mt-2 p-3 rounded-lg text-xs text-[#4B5563] leading-[18px] border border-[#E5E7EB]" style={{ background: '#F9FAFB' }}>
+          <p className="m-0 text-[10px] font-semibold text-[#8E8E93] uppercase mb-1">Call Note</p>
+          <p className="m-0 whitespace-pre-wrap">{item.call_note}</p>
+          {item.call_duration && <p className="m-0 mt-1.5 text-[10px] text-[#AEAEB2]">Duration: {item.call_duration} · Status: {item.call_status || 'Completed'}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** "All" tab — grouped summaries that expand inline to show detail cards */
+function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGroupedItem[]; data: DailyActivitiesResponse }) {
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+
   if (groupedItems.length === 0) {
     return <div className="flex items-center justify-center py-12 text-sm text-[#8E8E93]">No activities recorded.</div>;
   }
+
   return (
     <>
       <h3 className="uppercase text-[11px] font-semibold text-[#8E8E93] tracking-wider m-0 mb-5">Actions on this day</h3>
       <div className="flex flex-col">
         {groupedItems.map((item, idx) => {
           const { icon, color, bg } = getIconForType(item.type);
+          const isExpanded = expandedGroup === item.id;
+          const detailItems = isExpanded ? getDetailsForGroupType(data, item.type) : [];
+
           return (
-            <div key={item.id} className={`flex items-start gap-3 py-4 ${idx > 0 ? 'border-t border-[#F3F5F7]' : ''}`}>
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: bg, color: color }}
-              >
-                <span style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
+            <div key={item.id} className={idx > 0 ? 'border-t border-[#F3F5F7]' : ''}>
+              {/* Grouped summary row */}
+              <div className="flex items-start gap-3 py-4">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: bg, color }}>
+                  <span style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="m-0 text-sm text-[#1C1C1E] leading-[20px]">{item.title}</p>
+                  {item.action_label && (
+                    <button
+                      onClick={() => setExpandedGroup(isExpanded ? null : item.id)}
+                      className="mt-1 text-xs font-medium bg-transparent border-none p-0 cursor-pointer hover:underline flex items-center gap-1"
+                      style={{ color }}
+                    >
+                      {isExpanded ? 'Hide' : item.action_label}
+                      <ChevronDownIcon className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                    </button>
+                  )}
+                </div>
+                {/* Count badge */}
+                <span
+                  className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full self-center"
+                  style={{ color, background: bg }}
+                >
+                  {item.count}
+                </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="m-0 text-sm text-[#1C1C1E] leading-[20px]">{item.title}</p>
-                {item.action_label && (
-                  <button className="mt-1 text-xs font-medium bg-transparent border-none p-0 cursor-pointer hover:underline" style={{ color: color }}>
-                    {item.action_label}
-                  </button>
-                )}
-              </div>
+
+              {/* Expanded detail cards */}
+              {isExpanded && detailItems.length > 0 && (
+                <div className="ml-6 pl-6 mb-3 border-l-2 rounded-bl-lg" style={{ borderColor: bg }}>
+                  {detailItems.map((detail, dIdx) => (
+                    <DetailCard key={detail.id} item={detail} idx={dIdx} />
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
@@ -336,46 +412,9 @@ function DetailTabContent({ items, tabKey }: { items: DailyActivityDetailItem[];
     <>
       <h3 className="uppercase text-[11px] font-semibold text-[#8E8E93] tracking-wider m-0 mb-5">{sectionTitle}</h3>
       <div className="flex flex-col">
-        {items.map((item, idx) => {
-          const { icon, color, bg } = getIconForType(item.type);
-          return (
-            <div key={item.id} className={`flex items-start gap-3 py-4 ${idx > 0 ? 'border-t border-[#F3F5F7]' : ''}`}>
-              {/* Icon */}
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                style={{ background: bg, color: color }}
-              >
-                <span style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mb-1">{item.time}</p>
-                <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
-                {(item.company_name || item.job_role) && (
-                  <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
-                    {[item.company_name, item.job_role, item.experience].filter(Boolean).join(' | ')}
-                  </p>
-                )}
-                {item.detail_text && (
-                  <p className="m-0 text-xs leading-[16px] mt-1" style={{ color: item.detail_color || color }}>
-                    {item.detail_text}
-                  </p>
-                )}
-              </div>
-
-              {/* Action button */}
-              {item.action_label && (
-                <button
-                  className="shrink-0 text-[11px] font-medium px-3 py-1.5 rounded-md border transition-colors hover:opacity-80 self-center"
-                  style={{ color: color, borderColor: color, background: bg }}
-                >
-                  {item.action_label}
-                </button>
-              )}
-            </div>
-          );
-        })}
+        {items.map((item, idx) => (
+          <DetailCard key={item.id} item={item} idx={idx} />
+        ))}
       </div>
     </>
   );
