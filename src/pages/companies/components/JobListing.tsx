@@ -1006,7 +1006,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                 ) : (
                                                                     <div className="flex items-center gap-2">
                                                                         <p
-                                                                            className="text-[12px] text-[#4B5563] italic leading-tight truncate max-w-full"
+                                                                            className="text-[12px] text-[#4B5563] italic leading-tight truncate max-w-[300px]"
                                                                             title={fetchedNotes[job.id]?.[0]?.content || "Add a note..."}
                                                                         >
                                                                             {fetchedNotes[job.id]?.[0]?.content || "Add a note..."}
