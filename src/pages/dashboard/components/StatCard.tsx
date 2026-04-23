@@ -159,7 +159,7 @@ export default function StatCard({
       style={{
         padding: '20px',
         gap: '8px',
-        border: `1px solid ${accentColor}`,
+        border: `0.5px solid #D1D1D6`,
         boxShadow: '0px 1px 2px rgba(0,0,0,0.04)'
       }}
     >
