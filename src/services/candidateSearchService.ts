@@ -108,6 +108,7 @@ export interface V1Job {
   id: number;
   title: string;
   job_id: string;
+  workspace_id?: number;
 }
 
 export interface V1MoveToPipelineResponse {
@@ -214,6 +215,25 @@ class CandidateSearchService {
         error.response?.data?.detail ||
           error.response?.data?.error ||
           "Failed to fetch jobs"
+      );
+    }
+  }
+
+  /**
+   * GET /v1/jobs/?workspace_id={id}
+   * Fetches jobs filtered by workspace.
+   */
+  async getJobsByWorkspace(workspaceId: number): Promise<V1Job[]> {
+    try {
+      const response = await apiClient.get("/v1/jobs/", {
+        params: { workspace_id: workspaceId },
+      });
+      return response.data?.data || [];
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail ||
+          error.response?.data?.error ||
+          "Failed to fetch jobs for workspace"
       );
     }
   }

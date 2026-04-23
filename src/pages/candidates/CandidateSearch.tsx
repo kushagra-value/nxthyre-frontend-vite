@@ -21,6 +21,7 @@ import {
   Plus,
   Share2,
   CheckSquare,
+  ChevronDown,
 } from 'lucide-react';
 import CandidateFilterPanel, { FiltersState } from './components/CandidateFilterPanel';
 import candidateSearchService, {
@@ -169,10 +170,11 @@ interface MoveToPipelineModalProps {
   selectedCandidates: V1Candidate[];
   workspaces: V1Workspace[];
   jobs: V1Job[];
+  companyLogos: Record<string, string | null>;
   onSuccess: () => void;
 }
 
-const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, jobs, onSuccess }: MoveToPipelineModalProps) => {
+const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, jobs, companyLogos, onSuccess }: MoveToPipelineModalProps) => {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = React.useState<string>('');
   const [selectedJobId, setSelectedJobId] = React.useState<string>('');
   const [selectedStageId, setSelectedStageId] = React.useState<string>('');
@@ -180,6 +182,18 @@ const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, 
   const [loadingStages, setLoadingStages] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [result, setResult] = React.useState<{ added: number; skipped: number } | null>(null);
+
+  const [workspaceJobs, setWorkspaceJobs] = React.useState<V1Job[]>([]);
+  const [loadingJobs, setLoadingJobs] = React.useState(false);
+  const [showCompanyDrop, setShowCompanyDrop] = React.useState(false);
+  const [showRoleDrop, setShowRoleDrop] = React.useState(false);
+  const [showStageDrop, setShowStageDrop] = React.useState(false);
+  const [compSearch, setCompSearch] = React.useState('');
+  const [roleSearch, setRoleSearch] = React.useState('');
+
+  const companyRef = React.useRef<HTMLDivElement>(null);
+  const roleRef = React.useRef<HTMLDivElement>(null);
+  const stageRef = React.useRef<HTMLDivElement>(null);
 
   // Reset state on open
   React.useEffect(() => {
@@ -189,8 +203,42 @@ const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, 
       setSelectedStageId('');
       setStages([]);
       setResult(null);
+      setWorkspaceJobs([]);
+      setCompSearch('');
+      setRoleSearch('');
     }
   }, [isOpen]);
+
+  // Click outside to close dropdowns
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (companyRef.current && !companyRef.current.contains(event.target as Node)) setShowCompanyDrop(false);
+      if (roleRef.current && !roleRef.current.contains(event.target as Node)) setShowRoleDrop(false);
+      if (stageRef.current && !stageRef.current.contains(event.target as Node)) setShowStageDrop(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Fetch jobs when workspace changes
+  React.useEffect(() => {
+    if (!selectedWorkspaceId) {
+      setWorkspaceJobs([]);
+      return;
+    }
+    const fetchJobs = async () => {
+      setLoadingJobs(true);
+      try {
+        const data = await candidateSearchService.getJobsByWorkspace(Number(selectedWorkspaceId));
+        setWorkspaceJobs(data);
+      } catch (err) {
+        console.error('Failed to fetch jobs for workspace', err);
+      } finally {
+        setLoadingJobs(false);
+      }
+    };
+    fetchJobs();
+  }, [selectedWorkspaceId]);
 
   // Fetch pipeline stages when job changes
   React.useEffect(() => {
@@ -286,54 +334,166 @@ const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, 
 
           {/* Form Fields */}
           <div className="space-y-4">
-            <div>
+            <div className="relative" ref={companyRef}>
               <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                 Company <span className="text-red-500">*</span>
               </label>
-              <select
-                value={selectedWorkspaceId}
-                onChange={(e) => { setSelectedWorkspaceId(e.target.value); setSelectedJobId(''); setSelectedStageId(''); setStages([]); }}
-                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 text-sm appearance-none"
+              <button
+                onClick={() => setShowCompanyDrop(!showCompanyDrop)}
+                className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm hover:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none"
               >
-                <option value="" disabled>Select company...</option>
-                {workspaces.map(ws => (
-                  <option key={ws.id} value={String(ws.id)}>{ws.name}</option>
-                ))}
-              </select>
+                <div className="flex items-center gap-2.5 truncate">
+                  {selectedWorkspaceId ? (
+                    <>
+                      <div className="w-5 h-5 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {companyLogos[workspaces.find(w => String(w.id) === selectedWorkspaceId)?.name || ''] ? (
+                          <img src={companyLogos[workspaces.find(w => String(w.id) === selectedWorkspaceId)?.name || '']!} alt="" className="w-full h-full object-contain" />
+                        ) : (
+                          <span className="text-[10px] font-bold text-gray-400">{(workspaces.find(w => String(w.id) === selectedWorkspaceId)?.name || '?').charAt(0)}</span>
+                        )}
+                      </div>
+                      <span className="truncate">{workspaces.find(w => String(w.id) === selectedWorkspaceId)?.name}</span>
+                    </>
+                  ) : (
+                    <span className="text-gray-400">Select company...</span>
+                  )}
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCompanyDrop ? 'rotate-180' : ''}`} />
+              </button>
+              {showCompanyDrop && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 flex flex-col">
+                  <div className="p-2 border-b border-gray-100">
+                    <input
+                      type="text"
+                      placeholder="Search company..."
+                      className="w-full px-3 py-1.5 bg-gray-50 rounded text-xs outline-none"
+                      value={compSearch}
+                      onChange={(e) => setCompSearch(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                    {workspaces
+                      .filter(ws => ws.name.toLowerCase().includes(compSearch.toLowerCase()))
+                      .map(ws => (
+                        <button
+                          key={ws.id}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-gray-50 text-left"
+                          onClick={() => {
+                            setSelectedWorkspaceId(String(ws.id));
+                            setSelectedJobId('');
+                            setSelectedStageId('');
+                            setStages([]);
+                            setShowCompanyDrop(false);
+                            setCompSearch('');
+                          }}
+                        >
+                          <div className="w-6 h-6 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {companyLogos[ws.name] ? (
+                              <img src={companyLogos[ws.name]!} alt="" className="w-full h-full object-contain" />
+                            ) : (
+                              <span className="text-[10px] font-bold text-gray-400">{ws.name.charAt(0)}</span>
+                            )}
+                          </div>
+                          <span className="truncate">{ws.name}</span>
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
+            <div className="relative" ref={roleRef}>
               <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                 Role <span className="text-red-500">*</span>
               </label>
-              <select
-                value={selectedJobId}
-                onChange={(e) => { setSelectedJobId(e.target.value); setSelectedStageId(''); }}
-                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 text-sm appearance-none"
-                disabled={!selectedWorkspaceId}
+              <button
+                disabled={!selectedWorkspaceId || loadingJobs}
+                onClick={() => setShowRoleDrop(!showRoleDrop)}
+                className={`w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none ${!selectedWorkspaceId ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:border-blue-500'}`}
               >
-                <option value="" disabled>Select role...</option>
-                {jobs.map(j => (
-                  <option key={j.id} value={String(j.id)}>{j.title} (#{j.job_id})</option>
-                ))}
-              </select>
+                <div className="flex items-center gap-2 truncate">
+                  {loadingJobs ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+                  ) : selectedJobId ? (
+                    <span className="truncate">{workspaceJobs.find(j => String(j.id) === selectedJobId)?.title} (#{workspaceJobs.find(j => String(j.id) === selectedJobId)?.job_id})</span>
+                  ) : (
+                    <span className="text-gray-400">Select role...</span>
+                  )}
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showRoleDrop ? 'rotate-180' : ''}`} />
+              </button>
+              {showRoleDrop && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 flex flex-col">
+                  <div className="p-2 border-b border-gray-100">
+                    <input
+                      type="text"
+                      placeholder="Search role..."
+                      className="w-full px-3 py-1.5 bg-gray-50 rounded text-xs outline-none"
+                      value={roleSearch}
+                      onChange={(e) => setRoleSearch(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                    {workspaceJobs
+                      .filter(j => j.title.toLowerCase().includes(roleSearch.toLowerCase()) || j.job_id.includes(roleSearch))
+                      .map(j => (
+                        <button
+                          key={j.id}
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50"
+                          onClick={() => {
+                            setSelectedJobId(String(j.id));
+                            setSelectedStageId('');
+                            setShowRoleDrop(false);
+                            setRoleSearch('');
+                          }}
+                        >
+                          <div className="truncate font-medium">{j.title}</div>
+                          <div className="text-[10px] text-gray-400">ID: {j.job_id}</div>
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
+            <div className="relative" ref={stageRef}>
               <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                 Stage <span className="text-red-500">*</span>
               </label>
-              <select
-                value={selectedStageId}
-                onChange={(e) => setSelectedStageId(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 text-sm appearance-none"
+              <button
                 disabled={!selectedJobId || loadingStages}
+                onClick={() => setShowStageDrop(!showStageDrop)}
+                className={`w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none ${!selectedJobId ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:border-blue-500'}`}
               >
-                <option value="" disabled>{loadingStages ? 'Loading stages...' : 'Select stage...'}</option>
-                {stages.map(s => (
-                  <option key={s.id} value={String(s.id)}>{s.name}</option>
-                ))}
-              </select>
+                <div className="flex items-center gap-2 truncate">
+                  {loadingStages ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+                  ) : selectedStageId ? (
+                    <span className="truncate">{stages.find(s => String(s.id) === selectedStageId)?.name}</span>
+                  ) : (
+                    <span className="text-gray-400">Select stage...</span>
+                  )}
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showStageDrop ? 'rotate-180' : ''}`} />
+              </button>
+              {showStageDrop && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-[200px] overflow-y-auto custom-scrollbar">
+                  {stages.map(s => (
+                    <button
+                      key={s.id}
+                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50"
+                      onClick={() => {
+                        setSelectedStageId(String(s.id));
+                        setShowStageDrop(false);
+                      }}
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -543,10 +703,13 @@ export default function CandidateSearch() {
     source: SOURCE_OPTIONS,
   });
 
+  // Company logos for modal and filters
+  const [companyLogos, setCompanyLogos] = React.useState<Record<string, string | null>>({});
+  const logoRequestedRef = React.useRef<Set<string>>(new Set());
+
   // Maps for name→id lookups
   const workspaceMapRef = React.useRef<Map<string, number>>(new Map());
   const jobMapRef = React.useRef<Map<string, number>>(new Map());
-  const logoRequestedRef = React.useRef<Set<string>>(new Set());
 
   // ── Debounce search ──
   React.useEffect(() => {
@@ -625,13 +788,16 @@ export default function CandidateSearch() {
                 .then(data => {
                   if (cancelled) return;
                   const logoUrl = data.length > 0 ? data[0].logo_url : null;
+                  setCompanyLogos(prev => ({ ...prev, [name]: logoUrl }));
                   if (logoUrl) {
                     setOptionsData((prev: any) => ({
                       ...prev,
                       clients: prev.clients.map((c: any) => c.value === name ? { ...c, logo: logoUrl } : c),
                     }));
                   }
-                }).catch(() => { });
+                }).catch(() => { 
+                  setCompanyLogos(prev => ({ ...prev, [name]: null }));
+                });
             }
           }
         });
@@ -1160,6 +1326,7 @@ export default function CandidateSearch() {
         selectedCandidates={selectedCandidates}
         workspaces={workspaces}
         jobs={jobs}
+        companyLogos={companyLogos}
         onSuccess={() => {
           setSelectedIds(new Set());
           // Re-trigger search
