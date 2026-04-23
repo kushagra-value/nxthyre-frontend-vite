@@ -784,7 +784,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                     return (
                                         <th
                                             key={col.key}
-                                            className={`px-4 py-3 text-[11px] font-semibold uppercase text-[#AEAEB2] tracking-wider ${col.key !== 'jobTitle' ? 'text-center' : ''} ${col.key !== 'pipelineStage' ? 'text-center' : ''} whitespace-nowrap`}
+                                            className={`px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider ${col.key !== 'jobTitle' ? 'text-center' : ''} ${col.key !== 'pipelineStage' ? 'text-center' : ''} whitespace-nowrap`}
                                         >
                                             <div
                                                 className={`flex items-center gap-1.5 ${col.key !== 'jobTitle' ? 'justify-center' : ''} ${canSort ? 'cursor-pointer hover:text-[#0F47F2] transition-colors' : ''}`}
