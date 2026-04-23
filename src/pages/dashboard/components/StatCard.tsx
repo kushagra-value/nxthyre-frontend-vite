@@ -80,39 +80,79 @@ export default function StatCard({
   // Sparkline calculation
   const renderSparkline = () => {
     if (!trendData || trendData.length < 2) return null;
+
     const width = 100;
     const height = 30;
+
     const max = Math.max(...trendData);
     const min = Math.min(...trendData);
     const range = max - min || 1;
-    
+
     const points = trendData.map((val, i) => {
       const x = (i / (trendData.length - 1)) * width;
       const y = height - ((val - min) / range) * height;
-      return `${x},${y}`;
-    }).join(' ');
+      return { x, y };
+    });
+
+    const linePoints = points.map(p => `${p.x},${p.y}`).join(" ");
+
+    // create area polygon
+    const areaPoints = [
+      `${points[0].x},${height}`,
+      ...points.map(p => `${p.x},${p.y}`),
+      `${points[points.length - 1].x},${height}`
+    ].join(" ");
+
+    const gradientId = `sparkGradient-${Math.random()}`;
 
     return (
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Gradient area */}
+        <polygon
+          points={areaPoints}
+          fill={`url(#${gradientId})`}
+        />
+
+        {/* Line */}
         <polyline
           fill="none"
           stroke={color}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          points={points}
+          points={linePoints}
         />
+
       </svg>
     );
   };
 
   return (
     <div
-      className="bg-white flex flex-col items-start rounded-xl group transition-all hover:shadow-md"
+      className="
+      flex flex-col items-start
+      rounded-2xl
+      group
+      transition-all
+      hover:shadow-md
+      bg-gradient-to-br
+      from-[#FFFFFF]
+      via-[#F8F9FB]
+      to-[#F1F3F6]
+      "
       style={{
         padding: '20px',
         gap: '8px',
-        border: '0.5px solid #D1D1D6',
+        border: '0.5px solid #E5E7EB',
+        boxShadow: '0px 1px 2px rgba(0,0,0,0.04)'
       }}
     >
       <div className="flex justify-between items-center w-full">

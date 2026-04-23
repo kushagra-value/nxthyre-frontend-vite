@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+
 import {
     ChevronLeft,
     Globe,
@@ -955,7 +957,12 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         const rect = e.currentTarget.getBoundingClientRect();
-                                                                        setStatusMenuPos({ top: rect.bottom + 5, left: rect.left });
+                                                                        const mH = 140, gap = 5;
+                                                                        const isBottom = rect.bottom + mH + gap > window.innerHeight;
+                                                                        setStatusMenuPos({ 
+                                                                            top: isBottom ? rect.top - mH - gap : rect.bottom + gap, 
+                                                                            left: rect.left 
+                                                                        });
                                                                         setStatusMenuOpenId(job.id);
                                                                     }}
                                                                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all hover:opacity-80
@@ -1028,7 +1035,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                         return;
                                                                     }
                                                                     const rect = e.currentTarget.getBoundingClientRect();
-                                                                    const mW = 160, mH = 240, gap = 8;
+                                                                    const mW = 192, mH = 380, gap = 8;
                                                                     const isBottom = rect.bottom + mH + gap > window.innerHeight;
                                                                     setMenuPos({
                                                                         top: isBottom ? 0 : rect.bottom + gap,
@@ -1042,7 +1049,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             >
                                                                 <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
                                                             </button>
-                                                            {menuOpenJobId === job.id && (
+                                                            {menuOpenJobId === job.id && createPortal(
                                                                 <div
                                                                     ref={menuRef}
                                                                     className={`fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[10000] py-2 animate-in fade-in slide-in-from-top-2 duration-200`}
@@ -1109,7 +1116,8 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                     >
                                                                         Delete Role
                                                                     </button>
-                                                                </div>
+                                                                </div>,
+                                                                document.body
                                                             )}
                                                         </td>
                                                     );
@@ -1335,7 +1343,7 @@ const JobListing: React.FC<JobListingProps> = ({
                 </div>
             )}
 
-            {statusMenuOpenId !== null && (
+            {statusMenuOpenId !== null && createPortal(
                 <div
                     ref={statusMenuRef}
                     className="fixed w-32 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1"
@@ -1359,7 +1367,8 @@ const JobListing: React.FC<JobListingProps> = ({
                     >
                         <span className="w-1.5 h-1.5 rounded-full bg-[#4B5563]" /> Inactive
                     </button>
-                </div>
+                </div>,
+                document.body
             )}
 
             {stageTooltip.visible && (
