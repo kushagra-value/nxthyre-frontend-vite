@@ -622,19 +622,29 @@ export default function Dashboard() {
                   <div className="w-12 h-8 rounded bg-gray-200" />
                 </div>
               ))
-              : dynamicStatCards.map((stat) => (
-                <StatCard
-                  key={stat.id}
-                  iconType={stat.iconType}
-                  label={stat.label}
-                  value={stat.value}
-                  trend={stat.trend}
-                  trendText={stat.trendText}
-                  trendColor={stat.trendColor}
-                  trendData={stat.trendData}
-                  dateText={stat.dateText}
-                />
-              ))}
+              : dynamicStatCards.map((stat) => {
+                const l = stat.label.toLowerCase();
+                let palette = {};
+                if (l.includes('jobs')) palette = { accentColor: '#0F47F2', gradientDark: '#86A4FF', gradientLight: '#CCD9FF1A' };
+                else if (l.includes('companies')) palette = { accentColor: '#FBBF24', gradientDark: '#FBBF24', gradientLight: '#CCD9FF1A' };
+                else if (l.includes('hired')) palette = { accentColor: '#00C8B3', gradientDark: '#4EFFEC', gradientLight: '#CCD9FF1A' };
+                else if (l.includes('uploads') || l.includes('resume')) palette = { accentColor: '#0F47F2', gradientDark: '#86A4FF', gradientLight: '#CCD9FF1A' };
+
+                return (
+                  <StatCard
+                    key={stat.id}
+                    iconType={stat.iconType}
+                    label={stat.label}
+                    value={stat.value}
+                    trend={stat.trend}
+                    trendText={stat.trendText}
+                    trendColor={stat.trendColor}
+                    trendData={stat.trendData}
+                    dateText={stat.dateText}
+                    {...palette}
+                  />
+                );
+              })}
           </div>
 
           {/* Priority Actions from new API */}

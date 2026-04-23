@@ -61,6 +61,9 @@ interface StatCardProps {
   trendText?: string;
   trendColor?: string;
   trendData?: number[];
+  accentColor?: string;
+  gradientDark?: string;
+  gradientLight?: string;
 }
 
 export default function StatCard({
@@ -71,7 +74,10 @@ export default function StatCard({
   dateText,
   trendText,
   trendColor,
-  trendData
+  trendData,
+  accentColor = '#0F47F2',
+  gradientDark,
+  gradientLight
 }: StatCardProps) {
   const isPositive = trendColor === 'green' || !trendColor; // Default to green if not provided
   const color = trendColor === 'rose' ? '#D00E17' : '#069855';
@@ -81,8 +87,8 @@ export default function StatCard({
   const renderSparkline = () => {
     if (!trendData || trendData.length < 2) return null;
 
-    const width = 100;
-    const height = 30;
+    const width = 120;
+    const height = 40;
 
     const max = Math.max(...trendData);
     const min = Math.min(...trendData);
@@ -106,12 +112,12 @@ export default function StatCard({
     const gradientId = `sparkGradient-${Math.random()}`;
 
     return (
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block">
 
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.35" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
+            <stop offset="0%" stopColor={gradientDark || accentColor} stopOpacity={gradientDark ? "1" : "0.35"} />
+            <stop offset="100%" stopColor={gradientLight || accentColor} stopOpacity={gradientLight ? "1" : "0"} />
           </linearGradient>
         </defs>
 
@@ -124,7 +130,7 @@ export default function StatCard({
         {/* Line */}
         <polyline
           fill="none"
-          stroke={color}
+          stroke={accentColor}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -147,15 +153,17 @@ export default function StatCard({
       from-[#FFFFFF]
       via-[#F8F9FB]
       to-[#F1F3F6]
+      relative
+      overflow-hidden
       "
       style={{
         padding: '20px',
         gap: '8px',
-        border: '0.5px solid #E5E7EB',
+        border: `1px solid ${accentColor}`,
         boxShadow: '0px 1px 2px rgba(0,0,0,0.04)'
       }}
     >
-      <div className="flex justify-between items-center w-full">
+      <div className="flex justify-between items-center w-full z-10">
         <div
           className="flex items-center justify-center rounded-lg shrink-0 transition-transform group-hover:scale-110"
           style={{
@@ -199,7 +207,7 @@ export default function StatCard({
         )}
       </div>
 
-      <div className="flex flex-col w-full" style={{ gap: '4px' }}>
+      <div className="flex flex-col w-full z-10" style={{ gap: '4px' }}>
         <span
           style={{
             fontFamily: 'Gellix, sans-serif',
@@ -237,11 +245,14 @@ export default function StatCard({
               </span>
             )}
           </span>
-          <div className="mb-1">
-            {renderSparkline()}
-          </div>
         </div>
+      </div>
+
+      {/* Edge-to-edge Sparkline */}
+      <div className="absolute bottom-0 right-0 pointer-events-none">
+        {renderSparkline()}
       </div>
     </div>
   );
 }
+
