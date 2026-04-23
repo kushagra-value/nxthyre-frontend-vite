@@ -118,7 +118,7 @@ const JobDateRangeFilter: React.FC<JobDateRangeFilterProps> = ({
     <div className="relative" ref={containerRef}>
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+        className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
@@ -158,9 +158,8 @@ const JobDateRangeFilter: React.FC<JobDateRangeFilterProps> = ({
                       }
                       applyPreset(preset);
                     }}
-                    className={`text-left px-3 py-2.5 rounded-lg text-[16px] font-normal transition-colors ${
-                      selectedPreset === preset ? "text-[#0F47F2]" : "text-[#71717A] hover:bg-[#F3F5F7]"
-                    }`}
+                    className={`text-left px-3 py-2.5 rounded-lg text-[16px] font-normal transition-colors ${selectedPreset === preset ? "text-[#0F47F2]" : "text-[#71717A] hover:bg-[#F3F5F7]"
+                      }`}
                   >
                     {preset}
                   </button>
@@ -209,9 +208,8 @@ const JobDateRangeFilter: React.FC<JobDateRangeFilterProps> = ({
                       <div key={day} className="h-10 relative flex items-center justify-center cursor-pointer" onClick={() => handleDateClick(day)}>
                         {inRange && <div className="absolute inset-y-1 left-0 right-0 bg-[#E7EDFF]" />}
                         <div
-                          className={`relative z-10 h-8 w-8 rounded-full flex items-center justify-center text-[18px] leading-[22px] ${
-                            selected ? "bg-[#0F47F2] text-white" : "text-[#4B5563]"
-                          }`}
+                          className={`relative z-10 h-8 w-8 rounded-full flex items-center justify-center text-[18px] leading-[22px] ${selected ? "bg-[#0F47F2] text-white" : "text-[#4B5563]"
+                            }`}
                         >
                           {String(day).padStart(2, "0")}
                         </div>

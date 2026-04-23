@@ -685,6 +685,37 @@ const JobListing: React.FC<JobListingProps> = ({
                     </div>
 
                     <div className="flex items-center gap-3">
+                        {/* Column Visibility Filter */}
+                        <div className="relative" ref={columnFilterRef}>
+                            <button
+                                onClick={() => setShowColumnFilter(!showColumnFilter)}
+                                className={`flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs transition-colors
+                                    ${showColumnFilter ? 'bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]' : 'text-[#AEAEB2] hover:bg-gray-50'}`}
+                            >
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3.3335 2V11.3333M8.00016 4.66667V14M12.6668 9.33333V14M12.6668 6.66667V2" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M3.33333 11.3333C3.06963 11.3333 2.81184 11.4115 2.59257 11.558C2.37331 11.7045 2.20241 11.9128 2.10149 12.1564C2.00058 12.4001 1.97417 12.6681 2.02562 12.9268C2.07707 13.1854 2.20405 13.423 2.39052 13.6095C2.57699 13.7959 2.81457 13.9229 3.07321 13.9744C3.33185 14.0258 3.59994 13.9994 3.84358 13.8985C4.08721 13.7976 4.29545 13.6267 4.44196 13.4074C4.58847 13.1882 4.66667 12.9304 4.66667 12.6667C4.66667 12.313 4.52619 11.9739 4.27614 11.7239C4.02609 11.4738 3.68696 11.3333 3.33333 11.3333ZM8 2C7.73629 2 7.47851 2.0782 7.25924 2.22471C7.03998 2.37122 6.86908 2.57945 6.76816 2.82309C6.66724 3.06672 6.64084 3.33481 6.69229 3.59345C6.74373 3.8521 6.87072 4.08967 7.05719 4.27614C7.24366 4.46261 7.48124 4.5896 7.73988 4.64105C7.99852 4.69249 8.26661 4.66609 8.51025 4.56517C8.75388 4.46426 8.96212 4.29336 9.10863 4.07409C9.25514 3.85483 9.33333 3.59704 9.33333 3.33333C9.33333 2.97971 9.19286 2.64057 8.94281 2.39052C8.69276 2.14048 8.35362 2 8 2ZM12.6667 6.66667C12.403 6.66667 12.1452 6.74487 11.9259 6.89137C11.7066 7.03788 11.5357 7.24612 11.4348 7.48976C11.3339 7.73339 11.3075 8.00148 11.359 8.26012C11.4104 8.51876 11.5374 8.75634 11.7239 8.94281C11.9103 9.12928 12.1479 9.25627 12.4065 9.30771C12.6652 9.35916 12.9333 9.33276 13.1769 9.23184C13.4205 9.13092 13.6288 8.96003 13.7753 8.74076C13.9218 8.52149 14 8.26371 14 8C14 7.64638 13.8595 7.30724 13.6095 7.05719C13.3594 6.80714 13.0203 6.66667 12.6667 6.66667Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+
+                                Column Filters
+                            </button>
+                            {showColumnFilter && (
+                                <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[10001] py-2 max-h-[400px] overflow-y-auto">
+                                    <p className="px-4 py-2 text-[11px] font-semibold uppercase text-[#AEAEB2] border-b border-gray-00 mb-1">Toggle Columns</p>
+                                    {ALL_COLUMNS.filter(c => !c.alwaysVisible).map(col => (
+                                        <label key={col.key} className="flex items-center px-4 py-2 hover:bg-[#F3F5F7] cursor-pointer group transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                checked={visibleColumns[col.key]}
+                                                onChange={() => toggleColumn(col.key)}
+                                                className="w-4 h-4 rounded border-gray-300 accent-[#0F47F2]"
+                                            />
+                                            <span className="ml-3 text-sm text-[#4B5563] group-hover:text-[#1C1C1E]">{col.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                         {/* Share Pipeline - opens public applications page */}
                         <button
                             onClick={handleSharePipeline}
@@ -707,7 +738,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         <button
                             disabled
                             title="Feature coming Soon"
-                            className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
+                            className="flex items-center hidden gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
                         >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M11.6514 6.00737C11.6564 6.00735 11.6614 6.00734 11.6663 6.00734C13.3232 6.00734 14.6663 7.35295 14.6663 9.01284C14.6663 10.5599 13.4997 11.8339 11.9997 12M11.6514 6.00737C11.6613 5.89737 11.6663 5.78597 11.6663 5.67339C11.6663 3.64463 10.0247 2 7.99967 2C6.08183 2 4.50789 3.47511 4.34662 5.35461M11.6514 6.00737C11.5832 6.76506 11.2854 7.4564 10.8282 8.01101M4.34662 5.35461C2.65566 5.51582 1.33301 6.94261 1.33301 8.6789C1.33301 10.2945 2.47818 11.6421 3.99967 11.9515M4.34662 5.35461C4.45185 5.34458 4.5585 5.33945 4.66634 5.33945C5.41689 5.33945 6.1095 5.58796 6.66667 6.00734" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
@@ -723,33 +754,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             onClear={onClearJobDateFilter}
                         />
 
-                        {/* Column Visibility Filter */}
-                        <div className="relative" ref={columnFilterRef}>
-                            <button
-                                onClick={() => setShowColumnFilter(!showColumnFilter)}
-                                className={`flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs transition-colors
-                                    ${showColumnFilter ? 'bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]' : 'text-[#AEAEB2] hover:bg-gray-50'}`}
-                            >
-                                <LayoutGrid className="w-4 h-4" />
-                                Columns
-                            </button>
-                            {showColumnFilter && (
-                                <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[10001] py-2 max-h-[400px] overflow-y-auto">
-                                    <p className="px-4 py-2 text-[11px] font-semibold uppercase text-[#AEAEB2] border-b border-gray-00 mb-1">Toggle Columns</p>
-                                    {ALL_COLUMNS.filter(c => !c.alwaysVisible).map(col => (
-                                        <label key={col.key} className="flex items-center px-4 py-2 hover:bg-[#F3F5F7] cursor-pointer group transition-colors">
-                                            <input
-                                                type="checkbox"
-                                                checked={visibleColumns[col.key]}
-                                                onChange={() => toggleColumn(col.key)}
-                                                className="w-4 h-4 rounded border-gray-300 accent-[#0F47F2]"
-                                            />
-                                            <span className="ml-3 text-sm text-[#4B5563] group-hover:text-[#1C1C1E]">{col.label}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+
                     </div>
                 </div>
 
@@ -775,7 +780,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                     }
                                     const sortKey = ALL_COLUMNS.find(c => c.key === col.key)?.label || col.label;
                                     const canSort = !!orderingMap[sortKey];
-                                    
+
                                     return (
                                         <th
                                             key={col.key}
@@ -866,8 +871,8 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 case 'ctcBudget':
                                                     return (
                                                         <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center whitespace-nowrap">
-                                                            {(Number(job.salary_min || 0) === 0 && Number(job.salary_max || 0) === 0) 
-                                                                ? "Confidential" 
+                                                            {(Number(job.salary_min || 0) === 0 && Number(job.salary_max || 0) === 0)
+                                                                ? "Confidential"
                                                                 : `${formatSalaryToLPA(job.salary_min)} - ${formatSalaryToLPA(job.salary_max)} LPA`}
                                                         </td>
                                                     );
@@ -1001,7 +1006,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                 ) : (
                                                                     <div className="flex items-center gap-2">
                                                                         <p className="text-[12px] text-[#4B5563] line-clamp-2 italic leading-tight">
-                                                                            {fetchedNotes[job.id]?.[0]?.content || "Add a note..." }
+                                                                            {fetchedNotes[job.id]?.[0]?.content || "Add a note..."}
                                                                         </p>
                                                                         <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover/note:opacity-100 transition-opacity shrink-0" />
                                                                     </div>
