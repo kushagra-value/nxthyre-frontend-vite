@@ -317,12 +317,51 @@ export interface DailyActivityItemAPI {
   pill_bg: string;
 }
 
+/** Detailed activity item for individual tab views (Calls, Follow-ups, etc.) */
+export interface DailyActivityDetailItem {
+  id: string;
+  time: string;                     // e.g. "9:00 AM"
+  candidate_name: string;
+  candidate_id?: string;
+  company_name: string;
+  job_role: string;
+  experience?: string;              // e.g. "4 years"
+  type: 'call' | 'follow-up' | 'shortlist' | 'hired' | 'naukbot' | string;
+  detail_text?: string;             // e.g. "Call Screening · 46 Mins"
+  detail_color?: string;            // colour for the detail text
+  action_label?: string;            // e.g. "View Call Note", "Call Back", "View"
+  action_type?: 'view_call_note' | 'call_back' | 'view_shortlist' | 'view' | string;
+  call_note?: string;               // full call note text if available
+  call_duration?: string;           // e.g. "46 Mins"
+  call_status?: string;             // e.g. "Didn't Pick Up", "Completed"
+}
+
+/** Grouped/summarised activity for the "All" tab */
+export interface DailyActivityGroupedItem {
+  id: string;
+  type: 'call' | 'follow-up' | 'shortlist' | 'hired' | 'naukbot' | string;
+  icon_type: string;                // icon identifier
+  title: string;                    // e.g. "Called Max Verstappen and 4 others"
+  action_label?: string;            // e.g. "View call log"
+  action_type?: string;
+  count: number;                    // how many items are grouped
+  category_color: string;
+  category_bg: string;
+}
+
 export interface DailyActivitiesResponse {
   date: string;
   date_label: string;
   total_activities: number;
   summary: DailyActivitySummary;
   activities: DailyActivityItemAPI[];
+  /** New: grouped summaries for the "All" tab */
+  grouped_activities?: DailyActivityGroupedItem[];
+  /** New: detailed breakdowns per category */
+  calls?: DailyActivityDetailItem[];
+  follow_ups?: DailyActivityDetailItem[];
+  shortlisted?: DailyActivityDetailItem[];
+  hired?: DailyActivityDetailItem[];
 }
 
 // ──────────────────────────────────────────────

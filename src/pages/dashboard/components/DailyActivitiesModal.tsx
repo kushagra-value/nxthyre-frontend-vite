@@ -1,238 +1,384 @@
-import React from 'react';
-import type { DailyActivitiesResponse } from '../../../services/dashboardService';
+import React, { useState, useMemo } from 'react';
+import type {
+  DailyActivitiesResponse,
+  DailyActivityItemAPI,
+  DailyActivityDetailItem,
+  DailyActivityGroupedItem,
+} from '../../../services/dashboardService';
 
 interface DailyActivitiesModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    data: DailyActivitiesResponse | null;
-    isLoading?: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  data: DailyActivitiesResponse | null;
+  isLoading?: boolean;
 }
 
-// SVG Icons
-const PhoneIcon = (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M21.97 18.33C21.97 18.69 21.89 19.06 21.72 19.42C21.55 19.78 21.33 20.12 21.04 20.44C20.55 20.98 20.01 21.37 19.4 21.62C18.8 21.87 18.15 22 17.45 22C16.43 22 15.34 21.76 14.19 21.27C13.04 20.78 11.89 20.12 10.75 19.29C9.6 18.45 8.51 17.52 7.47 16.49C6.44 15.45 5.51 14.36 4.68 13.22C3.86 12.08 3.2 10.94 2.71 9.8C2.22 8.66 1.98 7.57 1.98 6.54C1.98 5.84 2.11 5.2 2.36 4.59C2.61 3.99 2.99 3.44 3.53 2.96C3.86 2.66 4.2 2.45 4.56 2.27C4.92 2.1 5.29 2.02 5.65 2.02C5.97 2.02 6.27 2.09 6.54 2.22C6.81 2.35 7.03 2.54 7.21 2.78L9.54 5.89C9.72 6.14 9.85 6.38 9.94 6.6C10.03 6.82 10.08 7.02 10.08 7.21C10.08 7.43 10.01 7.64 9.88 7.85C9.75 8.06 9.58 8.25 9.38 8.44L8.43 9.42C8.31 9.55 8.25 9.69 8.25 9.84C8.25 9.93 8.26 10.01 8.29 10.09C8.32 10.17 8.35 10.25 8.39 10.33C8.75 11.02 9.22 11.72 9.77 12.44C10.33 13.16 10.94 13.88 11.62 14.61C12.3 15.33 12.98 15.98 13.67 16.54C14.36 17.09 15.01 17.51 15.63 17.82C15.72 17.87 15.8 17.91 15.89 17.94C15.97 17.97 16.06 17.98 16.15 17.98C16.3 17.98 16.44 17.92 16.57 17.8C16.57 17.8 17.5 16.91 17.55 16.85C17.74 16.66 17.93 16.48 18.15 16.36C18.36 16.23 18.57 16.16 18.78 16.16C18.98 16.16 19.18 16.21 19.4 16.3C19.62 16.39 19.86 16.53 20.11 16.71L23.22 19.04C23.46 19.22 23.65 19.44 23.78 19.72C23.91 19.99 23.98 20.29 23.98 20.61C23.98 20.91 23.9 21.21 23.75 21.46L21.97 18.33Z" fill="currentColor" />
-    </svg>
-);
+type TabKey = 'all' | 'call' | 'follow-up' | 'shortlist' | 'hired';
 
+// ── Icons ──
+const CallIcon = (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M18.3 15.27c0 .3-.07.6-.2.9-.13.3-.3.58-.54.84-.41.45-.86.77-1.37.96-.5.21-.98.31-1.56.31-.84 0-1.73-.2-2.68-.61-1-.4-1.93-.97-2.88-1.66-.96-.7-1.86-1.48-2.73-2.33a29.6 29.6 0 01-2.33-2.73c-.69-.95-1.23-1.87-1.66-2.87C2.18 7.14 2 6.25 2 5.4c0-.57.1-1.1.3-1.59.21-.5.53-.95.95-1.36.27-.25.56-.4.87-.42.3-.03.59.06.84.2l1.93 2.59c.15.21.26.41.34.58.07.18.11.35.11.5 0 .18-.06.36-.16.53a4.5 4.5 0 01-.42.52l-.79.82a.32.32 0 00-.09.2c0 .07.01.14.04.2l.08.2c.3.57.7 1.16 1.17 1.76.47.6.97 1.2 1.53 1.81.57.6 1.13 1.14 1.7 1.61.58.46 1.12.81 1.63 1.07l.22.08c.07.03.14.04.22.04.12 0 .24-.06.33-.15l.77-.79c.16-.16.32-.29.5-.38.17-.11.34-.16.53-.16.16 0 .33.04.5.12.18.08.37.2.54.34L16.85 15c.2.15.36.32.44.55.1.22.15.47.15.72h-.14z" fill="currentColor"/></svg>
+);
 const BellIcon = (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M11.996 22C10.056 22 8.441 20.627 8.083 18.756H15.91C15.552 20.627 13.936 22 11.996 22ZM19.544 16.183C18.239 15.578 17.478 14.288 17.478 12.872V9.5C17.478 6.467 15.011 4 11.978 4C8.945 4 6.478 6.467 6.478 9.5V12.872C6.478 14.288 5.717 15.578 4.412 16.183C3.597 16.561 3.208 17.514 3.518 18.35C3.766 19.019 4.394 19.475 5.106 19.475H18.85C19.562 19.475 20.19 19.019 20.438 18.35C20.748 17.514 20.359 16.561 19.544 16.183ZM11.978 2.5C12.806 2.5 13.478 1.828 13.478 1C13.478 0.448 13.03 0 12.478 0H11.478C10.926 0 10.478 0.448 10.478 1C10.478 1.828 11.15 2.5 11.978 2.5Z" fill="currentColor" />
-    </svg>
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 18.33c-1.62 0-2.96-1.15-3.26-2.7h6.52a3.33 3.33 0 01-3.26 2.7zm7.95-4.85c-1.09-.5-1.72-1.58-1.72-2.76V7.92c0-2.53-2.06-4.58-4.6-4.58h-3.26c-2.53 0-4.6 2.06-4.6 4.58v2.8c0 1.18-.63 2.26-1.72 2.76-.68.32-1-.84-.74-1.54a1.4 1.4 0 011.33-.88h11.62c.6 0 1.12.38 1.33.88.26.7-.06 1.86-.74 1.54zM10 2.08c.69 0 1.25-.56 1.25-1.25A.83.83 0 0010.42 0h-.83c-.46 0-.84.37-.84.83 0 .7.56 1.25 1.25 1.25z" fill="currentColor"/></svg>
 );
-
 const StarIcon = (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor" />
-    </svg>
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 1.67l2.58 5.21 5.75.84-4.16 4.06.98 5.73L10 14.81l-5.15 2.7.98-5.73L1.67 7.72l5.75-.84L10 1.67z" fill="currentColor"/></svg>
+);
+const HiredIcon = (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 18.33a8.33 8.33 0 100-16.66 8.33 8.33 0 000 16.66z" stroke="currentColor" strokeWidth="1.5"/><path d="M6.67 10l2.5 2.5 4.16-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+);
+const NaukbotIcon = (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M7 9h6M7 12h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+);
+const DownloadIcon = (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3.33v9.17M6.67 10l3.33 3.33L13.33 10M5 15h10" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
 
-const ConfettiIcon = (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M8 12L11 15L16 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
+const TAB_CONFIG: { key: TabKey; label: string; icon: JSX.Element; color: string; bg: string; typeMatch: string[] }[] = [
+  { key: 'call', label: 'Calls Made', icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF', typeMatch: ['call', 'call-cancel'] },
+  { key: 'follow-up', label: 'Follow-ups', icon: BellIcon, color: '#FF8D28', bg: '#FEF3C7', typeMatch: ['follow-up'] },
+  { key: 'shortlist', label: 'Shortlisted', icon: StarIcon, color: '#059669', bg: '#D1FAE5', typeMatch: ['shortlist'] },
+  { key: 'hired', label: 'Hired', icon: HiredIcon, color: '#6155F5', bg: '#EDE9FE', typeMatch: ['hired'] },
+];
 
-// Map activity type to the right icon
 const getIconForType = (type: string) => {
-    switch (type) {
-        case 'call':
-        case 'call-cancel':
-            return PhoneIcon;
-        case 'follow-up':
-            return BellIcon;
-        case 'shortlist':
-            return StarIcon;
-        case 'hired':
-            return ConfettiIcon;
-        default:
-            return PhoneIcon;
-    }
+  if (type === 'call' || type === 'call-cancel') return { icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF' };
+  if (type === 'follow-up') return { icon: BellIcon, color: '#FF8D28', bg: '#FEF3C7' };
+  if (type === 'shortlist') return { icon: StarIcon, color: '#059669', bg: '#D1FAE5' };
+  if (type === 'hired') return { icon: HiredIcon, color: '#6155F5', bg: '#EDE9FE' };
+  if (type === 'naukbot') return { icon: NaukbotIcon, color: '#0F47F2', bg: '#E7EDFF' };
+  return { icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF' };
 };
+
+/**
+ * Build grouped summaries from flat activities (fallback when API doesn't provide grouped_activities).
+ */
+function buildGroupedFromFlat(activities: DailyActivityItemAPI[]): DailyActivityGroupedItem[] {
+  const groups: Record<string, DailyActivityItemAPI[]> = {};
+  activities.forEach(a => {
+    const key = a.type;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(a);
+  });
+
+  const labelMap: Record<string, (items: DailyActivityItemAPI[]) => string> = {
+    call: (items) => items.length === 1 ? `Called ${items[0].title.replace('Called ', '')}` : `Called ${items[0].title.replace('Called ', '')} and ${items.length - 1} others`,
+    'call-cancel': (items) => items.length === 1 ? items[0].title : `${items[0].title} and ${items.length - 1} others`,
+    'follow-up': (items) => {
+      const name = items[0].title.replace('Follow-up — ', '');
+      return items.length === 1 ? `Follow-up with ${name}` : `${name} and ${items.length - 1} more people followed up`;
+    },
+    shortlist: (items) => {
+      const name = items[0].title.replace(' shortlisted', '');
+      return items.length === 1 ? `${name} moved to Shortlist stage` : `${name} and ${items.length - 1} more people moved to Shortlist stage`;
+    },
+    hired: (items) => {
+      const name = items[0].title;
+      return items.length === 1 ? name : `${name} and ${items.length - 1} others`;
+    },
+  };
+
+  const actionMap: Record<string, string> = {
+    call: 'View call log',
+    'call-cancel': 'View call log',
+    'follow-up': 'View Follow-ups',
+    shortlist: 'View Shortlist',
+    hired: 'View',
+  };
+
+  return Object.entries(groups).map(([type, items]) => {
+    const { color, bg } = getIconForType(type);
+    const buildLabel = labelMap[type] || ((arr: DailyActivityItemAPI[]) => `${arr.length} ${type} activities`);
+    return {
+      id: `group-${type}`,
+      type,
+      icon_type: type,
+      title: buildLabel(items),
+      action_label: actionMap[type] || 'View',
+      action_type: 'view',
+      count: items.length,
+      category_color: color,
+      category_bg: bg,
+    };
+  });
+}
+
+/**
+ * Build detail items from flat activities (fallback when API doesn't provide per-category arrays).
+ */
+function buildDetailsFromFlat(activities: DailyActivityItemAPI[], typeFilter: string[]): DailyActivityDetailItem[] {
+  return activities
+    .filter(a => typeFilter.includes(a.type))
+    .map(a => {
+      const timePart = a.time?.split('·').pop()?.trim() || a.time || '';
+      const namePart = a.title.replace('Called ', '').replace('Follow-up — ', '').replace(' shortlisted', '');
+      let actionLabel: string | undefined;
+      if (a.type === 'call' || a.type === 'call-cancel') {
+        actionLabel = a.type === 'call-cancel' ? 'Call Back' : 'View Call Note';
+      }
+      return {
+        id: a.id,
+        time: timePart,
+        candidate_name: namePart,
+        company_name: '',
+        job_role: '',
+        type: a.type,
+        detail_text: a.time,
+        detail_color: a.category_color,
+        action_label: actionLabel,
+        action_type: a.type === 'call' ? 'view_call_note' : a.type === 'call-cancel' ? 'call_back' : undefined,
+      };
+    });
+}
+
 
 const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onClose, data, isLoading = false }) => {
-    if (!isOpen) return null;
+  const [activeTab, setActiveTab] = useState<TabKey>('all');
 
-    // Loading state
-    if (isLoading) {
-        return (
-            <div
-                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
-                onClick={onClose}
-            >
-                <div
-                    className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="flex flex-col items-start shrink-0 animate-pulse" style={{ padding: '15px 24px', gap: 10, borderBottom: '0.5px solid #AEAEB2' }}>
-                        <div className="w-48 h-5 rounded bg-gray-200" />
-                        <div className="w-32 h-4 rounded bg-gray-200" />
-                    </div>
-                    <div className="p-6 space-y-4">
-                        <div className="bg-gray-50 rounded-lg h-20" />
-                        {[...Array(4)].map((_, i) => (
-                            <div key={i} className="flex items-center gap-3 animate-pulse">
-                                <div className="w-6 h-6 rounded bg-gray-200" />
-                                <div className="flex-1">
-                                    <div className="w-40 h-4 rounded bg-gray-200 mb-1" />
-                                    <div className="w-24 h-3 rounded bg-gray-200" />
-                                </div>
-                                <div className="w-16 h-5 rounded-full bg-gray-200" />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
-    }
+  // Compute tab counts from summary
+  const tabCounts = useMemo(() => {
+    if (!data) return { all: 0, call: 0, 'follow-up': 0, shortlist: 0, hired: 0 };
+    return {
+      all: data.total_activities,
+      call: data.summary.calls_made,
+      'follow-up': data.summary.follow_ups,
+      shortlist: data.summary.shortlisted,
+      hired: data.summary.hired,
+    };
+  }, [data]);
 
-    // Empty state
-    if (!data) {
-        return (
-            <div
-                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
-                onClick={onClose}
-            >
-                <div
-                    className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="flex items-center justify-between" style={{ padding: '15px 24px', borderBottom: '0.5px solid #AEAEB2' }}>
-                        <h2 className="font-semibold text-gray-600" style={{ fontSize: 16 }}>No Activities</h2>
-                        <button className="bg-transparent border-none p-0 cursor-pointer hover:opacity-60 text-gray-600" onClick={onClose}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <circle cx="12" cy="12" r="10" stroke="#4B5563" strokeWidth="1" />
-                                <path d="M8.46 8.46L15.54 15.54M15.54 8.46L8.46 15.54" stroke="#4B5563" strokeWidth="1" strokeLinecap="round" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div className="flex items-center justify-center py-12 text-sm text-[#8E8E93]">
-                        No activities found for this date.
-                    </div>
-                </div>
-            </div>
-        );
-    }
+  // Grouped items for "All" tab
+  const groupedItems = useMemo(() => {
+    if (!data) return [];
+    if (data.grouped_activities && data.grouped_activities.length > 0) return data.grouped_activities;
+    return buildGroupedFromFlat(data.activities);
+  }, [data]);
 
+  // Detail items for per-category tabs
+  const getDetailItems = (tabKey: TabKey): DailyActivityDetailItem[] => {
+    if (!data || tabKey === 'all') return [];
+    const cfg = TAB_CONFIG.find(t => t.key === tabKey);
+    if (!cfg) return [];
+
+    // Use new API fields if available
+    if (tabKey === 'call' && data.calls?.length) return data.calls;
+    if (tabKey === 'follow-up' && data.follow_ups?.length) return data.follow_ups;
+    if (tabKey === 'shortlist' && data.shortlisted?.length) return data.shortlisted;
+    if (tabKey === 'hired' && data.hired?.length) return data.hired;
+
+    // Fallback: build from flat activities
+    return buildDetailsFromFlat(data.activities, cfg.typeMatch);
+  };
+
+  if (!isOpen) return null;
+
+  // ── Loading skeleton ──
+  if (isLoading) {
     return (
-        <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
-            onClick={onClose}
-        >
-            <div
-                className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* ── Header ── */}
-                <div className="flex flex-col items-start shrink-0" style={{ padding: '15px 24px', gap: 10, borderBottom: '0.5px solid #AEAEB2' }}>
-                    <div className="flex items-center justify-between w-full">
-                        <div className="flex flex-col gap-1">
-                            <h2 className="m-0 font-semibold text-gray-600" style={{ fontSize: 16, lineHeight: '19px' }}>
-                                {data.date_label}
-                            </h2>
-                            <p className="m-0 font-normal text-gray-600" style={{ fontSize: 14, lineHeight: '17px' }}>
-                                {data.total_activities} total activities
-                            </p>
-                        </div>
-                        <button
-                            className="bg-transparent border-none p-0 cursor-pointer hover:opacity-60 flex items-center justify-center text-gray-600"
-                            onClick={onClose}
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <circle cx="12" cy="12" r="10" stroke="#4B5563" strokeWidth="1" />
-                                <path d="M8.46 8.46L15.54 15.54M15.54 8.46L8.46 15.54" stroke="#4B5563" strokeWidth="1" strokeLinecap="round" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                {/* ── Stats Summary Row ── */}
-                <div className="shrink-0 w-full" style={{ padding: '20px 24px', borderBottom: '0.5px solid #AEAEB2' }}>
-                    <div className="flex items-center justify-between bg-gray-50" style={{ padding: '20px', borderRadius: 10 }}>
-                        <div className="flex flex-col gap-[7px]">
-                            <div className="text-[#0F47F2]">{PhoneIcon}</div>
-                            <span className="font-medium text-[#8E8E93]" style={{ fontSize: 14, lineHeight: '17px' }}>Calls Made</span>
-                            <span className="font-normal text-gray-600" style={{ fontSize: 20, lineHeight: '24px' }}>{data.summary.calls_made}</span>
-                        </div>
-                        <div className="flex flex-col gap-[7px]">
-                            <div className="text-[#FF8D28]">{BellIcon}</div>
-                            <span className="font-medium text-[#8E8E93]" style={{ fontSize: 14, lineHeight: '17px' }}>Follow-ups</span>
-                            <span className="font-normal text-gray-600" style={{ fontSize: 20, lineHeight: '24px' }}>{data.summary.follow_ups}</span>
-                        </div>
-                        <div className="flex flex-col gap-[7px]">
-                            <div className="text-[#059669]">{StarIcon}</div>
-                            <span className="font-medium text-[#8E8E93]" style={{ fontSize: 14, lineHeight: '17px' }}>Shortlisted</span>
-                            <span className="font-normal text-gray-600" style={{ fontSize: 20, lineHeight: '24px' }}>{data.summary.shortlisted}</span>
-                        </div>
-                        <div className="flex flex-col gap-[7px]">
-                            <div className="text-[#6155F5]">{ConfettiIcon}</div>
-                            <span className="font-medium text-[#8E8E93]" style={{ fontSize: 14, lineHeight: '17px' }}>Hired</span>
-                            <span className="font-normal text-gray-600" style={{ fontSize: 20, lineHeight: '24px' }}>{data.summary.hired}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* ── Actions List ── */}
-                <div className="flex-1 overflow-y-auto px-[24px] py-[20px] relative">
-                    <h3 className="uppercase font-medium text-gray-600 m-0 mb-[20px]" style={{ fontSize: 14, lineHeight: '17px' }}>
-                        Actions on this day
-                    </h3>
-
-                    {/* Timeline line */}
-                    <div className="absolute w-[5px] bg-[#E5E7EB] rounded-[10px]" style={{ left: 34, top: 60, bottom: 20, zIndex: 0 }}></div>
-
-                    {data.activities.length > 0 ? (
-                        <div className="flex flex-col gap-[20px] relative z-10">
-                            {data.activities.map((act) => (
-                                <div key={act.id} className="flex items-center justify-between w-full">
-                                    <div className="flex items-center gap-[12px]">
-                                        <div
-                                            className="flex items-center justify-center shrink-0"
-                                            style={{
-                                                width: 24, height: 24,
-                                                background: act.category_bg,
-                                                color: act.category_color,
-                                                borderRadius: 5
-                                            }}
-                                        >
-                                            <div style={{ width: 14, height: 14 }}>
-                                                {getIconForType(act.type)}
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col gap-[2px]">
-                                            <span className="font-normal" style={{ fontSize: 14, lineHeight: '17px', color: act.type === 'hired' ? act.category_color : '#111827' }}>
-                                                {act.title}
-                                            </span>
-                                            <span className="font-normal" style={{ fontSize: 12, lineHeight: '14px', color: '#AEAEB2' }}>
-                                                {act.time}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <span
-                                        className="px-[8px] py-[4px] lowercase first-letter:uppercase whitespace-nowrap"
-                                        style={{
-                                            background: act.pill_bg,
-                                            color: act.pill_color,
-                                            fontSize: 10,
-                                            lineHeight: '12px',
-                                            borderRadius: 34
-                                        }}
-                                    >
-                                        {act.pill_text}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-center py-8 text-sm text-[#8E8E93]">
-                            No activities recorded.
-                        </div>
-                    )}
-                </div>
-            </div>
+      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end" onClick={onClose}>
+        <div className="bg-white shadow-xl w-full max-w-[520px] h-screen flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="animate-pulse p-6 space-y-4">
+            <div className="w-48 h-5 rounded bg-gray-200" />
+            <div className="w-32 h-4 rounded bg-gray-200" />
+            <div className="flex gap-2 mt-4">{[...Array(5)].map((_, i) => <div key={i} className="w-24 h-9 rounded-full bg-gray-200" />)}</div>
+            {[...Array(5)].map((_, i) => <div key={i} className="flex gap-3 items-center"><div className="w-10 h-10 rounded-lg bg-gray-200 shrink-0" /><div className="flex-1 space-y-2"><div className="w-32 h-4 rounded bg-gray-200" /><div className="w-48 h-3 rounded bg-gray-200" /></div></div>)}
+          </div>
         </div>
+      </div>
     );
+  }
+
+  // ── Empty state ──
+  if (!data) {
+    return (
+      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end" onClick={onClose}>
+        <div className="bg-white shadow-xl w-full max-w-[520px] h-screen flex flex-col" onClick={e => e.stopPropagation()}>
+          <ModalHeader title="No Activities" subtitle="" onClose={onClose} />
+          <div className="flex-1 flex items-center justify-center text-sm text-[#8E8E93]">No activities found for this date.</div>
+        </div>
+      </div>
+    );
+  }
+
+  const detailItems = getDetailItems(activeTab);
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end" onClick={onClose}>
+      <div className="bg-white shadow-xl w-full max-w-[520px] h-screen flex flex-col" onClick={e => e.stopPropagation()}>
+
+        {/* ── Header ── */}
+        <ModalHeader title={data.date_label} subtitle={`${data.total_activities} total activities`} onClose={onClose} />
+
+        {/* ── Tabs ── */}
+        <div className="px-6 py-3 border-b border-[#E5E7EB] flex items-center gap-2 overflow-x-auto shrink-0 hide-scrollbar">
+          {/* All tab */}
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
+              activeTab === 'all'
+                ? 'border-[#0F47F2] text-[#0F47F2] bg-[#E7EDFF]'
+                : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
+            }`}
+          >
+            All <span className="font-semibold">{tabCounts.all}</span>
+          </button>
+
+          {/* Category tabs */}
+          {TAB_CONFIG.map(tab => {
+            const count = tabCounts[tab.key];
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
+                  isActive
+                    ? 'bg-white shadow-sm'
+                    : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
+                }`}
+                style={isActive ? { borderColor: tab.color, color: tab.color } : {}}
+              >
+                <span style={{ color: isActive ? tab.color : '#8E8E93', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ transform: 'scale(0.7)', display: 'block' }}>{tab.icon}</span>
+                </span>
+                {tab.label} <span className="font-semibold">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Content ── */}
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {activeTab === 'all' ? (
+            <AllTabContent groupedItems={groupedItems} />
+          ) : (
+            <DetailTabContent
+              items={detailItems}
+              tabKey={activeTab}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
+
+
+/* ═══════════════════════════════════════════════
+   Sub-components
+   ═══════════════════════════════════════════════ */
+
+function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle: string; onClose: () => void }) {
+  return (
+    <div className="flex items-center justify-between shrink-0" style={{ padding: '16px 24px', borderBottom: '0.5px solid #AEAEB2' }}>
+      <div className="flex flex-col gap-1">
+        <h2 className="m-0 font-semibold text-[#1C1C1E]" style={{ fontSize: 16, lineHeight: '19px' }}>{title}</h2>
+        {subtitle && <p className="m-0 text-[#8E8E93]" style={{ fontSize: 13, lineHeight: '16px' }}>{subtitle}</p>}
+      </div>
+      <div className="flex items-center gap-2">
+        <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-[#4B5563]" title="Download">
+          {DownloadIcon}
+        </button>
+        <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-[#8E8E93]" onClick={onClose}>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** "All" tab — shows grouped summaries with view links */
+function AllTabContent({ groupedItems }: { groupedItems: DailyActivityGroupedItem[] }) {
+  if (groupedItems.length === 0) {
+    return <div className="flex items-center justify-center py-12 text-sm text-[#8E8E93]">No activities recorded.</div>;
+  }
+  return (
+    <>
+      <h3 className="uppercase text-[11px] font-semibold text-[#8E8E93] tracking-wider m-0 mb-5">Actions on this day</h3>
+      <div className="flex flex-col">
+        {groupedItems.map((item, idx) => {
+          const { icon, color, bg } = getIconForType(item.type);
+          return (
+            <div key={item.id} className={`flex items-start gap-3 py-4 ${idx > 0 ? 'border-t border-[#F3F5F7]' : ''}`}>
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: bg, color: color }}
+              >
+                <span style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="m-0 text-sm text-[#1C1C1E] leading-[20px]">{item.title}</p>
+                {item.action_label && (
+                  <button className="mt-1 text-xs font-medium bg-transparent border-none p-0 cursor-pointer hover:underline" style={{ color: color }}>
+                    {item.action_label}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+/** Per-category tab — shows detailed activity cards */
+function DetailTabContent({ items, tabKey }: { items: DailyActivityDetailItem[]; tabKey: TabKey }) {
+  const cfg = TAB_CONFIG.find(t => t.key === tabKey);
+  const sectionTitle = cfg ? `${cfg.label.toUpperCase()} ON THIS DAY` : 'ACTIVITIES';
+
+  if (items.length === 0) {
+    return <div className="flex items-center justify-center py-12 text-sm text-[#8E8E93]">No {cfg?.label.toLowerCase() || 'activities'} recorded.</div>;
+  }
+
+  return (
+    <>
+      <h3 className="uppercase text-[11px] font-semibold text-[#8E8E93] tracking-wider m-0 mb-5">{sectionTitle}</h3>
+      <div className="flex flex-col">
+        {items.map((item, idx) => {
+          const { icon, color, bg } = getIconForType(item.type);
+          return (
+            <div key={item.id} className={`flex items-start gap-3 py-4 ${idx > 0 ? 'border-t border-[#F3F5F7]' : ''}`}>
+              {/* Icon */}
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                style={{ background: bg, color: color }}
+              >
+                <span style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mb-1">{item.time}</p>
+                <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
+                {(item.company_name || item.job_role) && (
+                  <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
+                    {[item.company_name, item.job_role, item.experience].filter(Boolean).join(' | ')}
+                  </p>
+                )}
+                {item.detail_text && (
+                  <p className="m-0 text-xs leading-[16px] mt-1" style={{ color: item.detail_color || color }}>
+                    {item.detail_text}
+                  </p>
+                )}
+              </div>
+
+              {/* Action button */}
+              {item.action_label && (
+                <button
+                  className="shrink-0 text-[11px] font-medium px-3 py-1.5 rounded-md border transition-colors hover:opacity-80 self-center"
+                  style={{ color: color, borderColor: color, background: bg }}
+                >
+                  {item.action_label}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
 
 export default DailyActivitiesModal;
