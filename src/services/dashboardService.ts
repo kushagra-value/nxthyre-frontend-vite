@@ -323,6 +323,7 @@ export interface DailyActivityDetailItem {
   time: string;                     // e.g. "9:00 AM"
   candidate_name: string;
   candidate_id?: string;
+  candidate_number?: string;        // e.g. "+91 98765 43210"
   company_name: string;
   job_role: string;
   experience?: string;              // e.g. "4 years"

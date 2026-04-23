@@ -210,7 +210,7 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end" onClick={onClose}>
-      <div className="bg-white shadow-xl w-full max-w-[520px] h-screen flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="bg-white shadow-xl w-full max-w-[600px] h-screen flex flex-col" onClick={e => e.stopPropagation()}>
         <ModalHeader title={data.date_label} subtitle={`${data.total_activities} total activities`} onClose={onClose} />
 
         {/* ── Tabs ── */}
@@ -299,6 +299,11 @@ function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number 
         <div className="flex-1 min-w-0">
           <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mb-1">{item.time}</p>
           <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
+          {item.candidate_number && (
+            <a href={`tel:${item.candidate_number}`} className="m-0 text-xs text-[#0F47F2] leading-[16px] mt-0.5 block no-underline hover:underline">
+              {item.candidate_number}
+            </a>
+          )}
           {(item.company_name || item.job_role) && (
             <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
               {[item.company_name, item.job_role, item.experience].filter(Boolean).join(' | ')}
