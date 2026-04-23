@@ -597,7 +597,7 @@ export default function Dashboard() {
           </div>
 
           {/* Priority Actions from new API */}
-          <section className="bg-white rounded-xl p-5 flex flex-col gap-5 max-h-[85vh]">
+          <section className="bg-white rounded-xl p-5 flex flex-col gap-5 max-h-[90vh]">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
               <div className="flex items-center gap-2.5">
