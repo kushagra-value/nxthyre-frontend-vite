@@ -134,7 +134,7 @@ const JobListing: React.FC<JobListingProps> = ({
         "Candidates": "candidates_count",
         "Naukbot": "naukri_bot_candidates_count",
         "LinkedIn Bot": "linkedin_bot_candidates_count",
-        "Nxthyre": "inbound_candidates_count",
+        "Inbound": "inbound_candidates_count",
         "Shortlisted": "shortlisted_candidate_count",
         "Hired": "hired_count",
         "Days Open": "days_open",
@@ -222,8 +222,8 @@ const JobListing: React.FC<JobListingProps> = ({
         const handleScroll = (event: Event) => {
             const target = event.target as HTMLElement;
             // If scrolling inside the menus or filters, don't close them
-            if (menuRef.current?.contains(target) || 
-                statusMenuRef.current?.contains(target) || 
+            if (menuRef.current?.contains(target) ||
+                statusMenuRef.current?.contains(target) ||
                 columnFilterRef.current?.contains(target)) {
                 return;
             }
@@ -967,9 +967,9 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                         const rect = e.currentTarget.getBoundingClientRect();
                                                                         const mH = 140, gap = 5;
                                                                         const isBottom = rect.bottom + mH + gap > window.innerHeight;
-                                                                        setStatusMenuPos({ 
-                                                                            top: isBottom ? rect.top - mH - gap : rect.bottom + gap, 
-                                                                            left: rect.left 
+                                                                        setStatusMenuPos({
+                                                                            top: isBottom ? rect.top - mH - gap : rect.bottom + gap,
+                                                                            left: rect.left
                                                                         });
                                                                         setStatusMenuOpenId(job.id);
                                                                     }}
