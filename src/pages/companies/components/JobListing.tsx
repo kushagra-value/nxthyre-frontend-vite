@@ -219,7 +219,15 @@ const JobListing: React.FC<JobListingProps> = ({
                 setShowColumnFilter(false);
             }
         };
-        const handleScroll = () => {
+        const handleScroll = (event: Event) => {
+            const target = event.target as HTMLElement;
+            // If scrolling inside the menus or filters, don't close them
+            if (menuRef.current?.contains(target) || 
+                statusMenuRef.current?.contains(target) || 
+                columnFilterRef.current?.contains(target)) {
+                return;
+            }
+
             setMenuOpenJobId(null);
             setStatusMenuOpenId(null);
             setShowColumnFilter(false);
