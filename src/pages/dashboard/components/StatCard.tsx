@@ -11,15 +11,17 @@ const BriefcaseIcon = (
 );
 
 const BuildingIcon = (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M13.3334 18.3333C12.4451 17.2961 11.2781 16.6667 10.0001 16.6667C8.72203 16.6667 7.55511 17.2961 6.66675 18.3333" stroke="#0F47F2" stroke-linecap="round" />
-    <path d="M10.0002 10.8333C8.94339 10.8333 7.82607 11.0161 6.95018 11.2607C6.29065 11.4448 5.76012 12.2846 5.84182 12.9663C5.87209 13.2189 6.08959 13.3333 6.31827 13.3333H13.6821C13.9107 13.3333 14.1282 13.2189 14.1585 12.9663C14.2402 12.2846 13.7097 11.4448 13.0501 11.2607C12.1743 11.0161 11.0569 10.8333 10.0002 10.8333Z" stroke="#0F47F2" stroke-linecap="round" />
-    <path d="M17.5001 8.33334C16.5796 8.33334 15.8334 9.07954 15.8334 10V10.8333C15.8334 11.7538 15.0872 12.5 14.1667 12.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-    <path d="M2.50016 8.33334C3.42064 8.33334 4.16683 9.07954 4.16683 10V10.8333C4.16683 11.7538 4.91302 12.5 5.8335 12.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-    <path d="M10 13.3333V18.3333" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-    <path d="M10.6833 8.33334H9.31704C8.14859 8.33334 7.56436 8.33334 7.14173 7.98035C6.71909 7.62736 6.5774 7.02106 6.29401 5.80846C5.84843 3.90191 5.62565 2.94863 6.09349 2.30765C6.56133 1.66667 7.4799 1.66667 9.31705 1.66667H10.6833C12.5204 1.66667 13.439 1.66667 13.9068 2.30765C14.3747 2.94863 14.1519 3.90191 13.7063 5.80846C13.4229 7.02106 13.2812 7.62736 12.8586 7.98035C12.436 8.33334 11.8517 8.33334 10.6833 8.33334Z" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-    <path d="M10 8.33334V10.8333" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+    <path d="M28.6667 28.6667H12" stroke="#0F47F2" stroke-linecap="round" />
+    <path d="M27.8336 28.6667V15.3333C27.8336 13.762 27.8336 12.9763 27.3455 12.4882C26.8573 12 26.0717 12 24.5002 12H22.8336C21.2622 12 20.4766 12 19.9884 12.4882C19.5955 12.8811 19.5188 13.4669 19.5039 14.5" stroke="#0F47F2" />
+    <path d="M22.8335 28.6667V17.8333C22.8335 16.262 22.8335 15.4763 22.3453 14.9882C21.8572 14.5 21.0715 14.5 19.5002 14.5H16.1668C14.5955 14.5 13.8098 14.5 13.3217 14.9882C12.8335 15.4763 12.8335 16.262 12.8335 17.8333V28.6667" stroke="#0F47F2" />
+    <path d="M17.8335 28.6667V26.1667" stroke="#0F47F2" stroke-linecap="round" />
+    <path d="M15.3335 17H20.3335" stroke="#0F47F2" stroke-linecap="round" />
+    <path d="M15.3335 19.5H20.3335" stroke="#0F47F2" stroke-linecap="round" />
+    <path d="M15.3335 22H20.3335" stroke="#0F47F2" stroke-linecap="round" />
   </svg>
+
 );
 
 const UserPlusIcon = (
@@ -31,17 +33,11 @@ const UserPlusIcon = (
 );
 
 const ClockIcon = (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fillRule="evenodd" clipRule="evenodd" d="M10.0001 2.29167C5.74289 2.29167 2.29175 5.74281 2.29175 10C2.29175 14.2572 5.74289 17.7083 10.0001 17.7083C14.2572 17.7083 17.7084 14.2572 17.7084 10C17.7084 5.74281 14.2572 2.29167 10.0001 2.29167ZM1.04175 10C1.04175 5.05245 5.05253 1.04167 10.0001 1.04167C14.9477 1.04167 18.9584 5.05245 18.9584 10C18.9584 14.9476 14.9477 18.9583 10.0001 18.9583C5.05253 18.9583 1.04175 14.9476 1.04175 10ZM10.0001 6.04167C10.3452 6.04167 10.6251 6.3215 10.6251 6.66667V9.74109L12.5253 11.6414C12.7694 11.8855 12.7694 12.2812 12.5253 12.5253C12.2812 12.7693 11.8856 12.7693 11.6415 12.5253L9.55816 10.4419C9.44091 10.3248 9.37508 10.1658 9.37508 10V6.66667C9.37508 6.3215 9.65491 6.04167 10.0001 6.04167Z" fill="#0F47F2" />
+  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M20.0001 12.2917C15.7429 12.2917 12.2917 15.7429 12.2917 20.0001C12.2917 24.2572 15.7429 27.7084 20.0001 27.7084C24.2572 27.7084 27.7084 24.2572 27.7084 20.0001C27.7084 15.7429 24.2572 12.2917 20.0001 12.2917ZM11.0417 20.0001C11.0417 15.0525 15.0525 11.0417 20.0001 11.0417C24.9477 11.0417 28.9584 15.0525 28.9584 20.0001C28.9584 24.9477 24.9477 28.9584 20.0001 28.9584C15.0525 28.9584 11.0417 24.9477 11.0417 20.0001ZM20.0001 16.0417C20.3452 16.0417 20.6251 16.3216 20.6251 16.6667V19.7412L22.5253 21.6415C22.7694 21.8856 22.7694 22.2812 22.5253 22.5253C22.2812 22.7694 21.8856 22.7694 21.6415 22.5253L19.5582 20.442C19.4409 20.3248 19.3751 20.1658 19.3751 20.0001V16.6667C19.3751 16.3216 19.6549 16.0417 20.0001 16.0417Z" fill="#0F47F2" />
   </svg>
-);
 
-const UploadIcon = (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="17 8 12 3 7 8" />
-    <line x1="12" y1="3" x2="12" y2="15" />
-  </svg>
 );
 
 const iconMap = {
@@ -49,7 +45,6 @@ const iconMap = {
   building: BuildingIcon,
   userPlus: UserPlusIcon,
   clock: ClockIcon,
-  upload: UploadIcon,
 };
 
 interface StatCardProps {
@@ -81,7 +76,7 @@ export default function StatCard({
 }: StatCardProps) {
   const isPositive = trendColor === 'green' || !trendColor; // Default to green if not provided
   const color = trendColor === 'rose' ? '#D00E17' : '#069855';
-  const icon = iconMap[iconType] || BriefcaseIcon;
+  const icon = iconMap[iconType];
 
   // Sparkline calculation
   const renderSparkline = () => {
