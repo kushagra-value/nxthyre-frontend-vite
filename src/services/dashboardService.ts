@@ -322,7 +322,8 @@ export interface DailyActivityDetailItem {
   id: string;
   time: string;                     // e.g. "9:00 AM"
   candidate_name: string;
-  candidate_id?: string;
+  candidate_id?: string;            // UUID
+  application_id?: number;          // application ID for navigation
   candidate_number?: string;        // e.g. "+91 98765 43210"
   company_name: string;
   job_role: string;
