@@ -292,7 +292,7 @@ const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, 
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100]">
-      <div className="bg-white rounded-2xl w-[600px] overflow-hidden">
+      <div className="bg-white rounded-2xl w-[600px] shadow-2xl relative">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-100">
           <div>
@@ -363,7 +363,7 @@ const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, 
                 <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCompanyDrop ? 'rotate-180' : ''}`} />
               </button>
               {showCompanyDrop && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 flex flex-col">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 flex flex-col overflow-hidden">
                   <div className="p-2 border-b border-gray-100">
                     <input
                       type="text"
@@ -375,31 +375,37 @@ const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, 
                     />
                   </div>
                   <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
-                    {workspaces
-                      .filter(ws => ws.name.toLowerCase().includes(compSearch.toLowerCase()))
-                      .map(ws => (
-                        <button
-                          key={ws.id}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-gray-50 text-left"
-                          onClick={() => {
-                            setSelectedWorkspaceId(String(ws.id));
-                            setSelectedJobId('');
-                            setSelectedStageId('');
-                            setStages([]);
-                            setShowCompanyDrop(false);
-                            setCompSearch('');
-                          }}
-                        >
-                          <div className="w-6 h-6 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                            {companyLogos[ws.name] ? (
-                              <img src={companyLogos[ws.name]!} alt="" className="w-full h-full object-contain" />
-                            ) : (
-                              <span className="text-[10px] font-bold text-gray-400">{ws.name.charAt(0)}</span>
-                            )}
-                          </div>
-                          <span className="truncate">{ws.name}</span>
-                        </button>
-                      ))}
+                    {workspaces.length > 0 ? (
+                      workspaces
+                        .filter(ws => ws.name.toLowerCase().includes(compSearch.toLowerCase()))
+                        .map(ws => (
+                          <button
+                            key={ws.id}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-gray-50 text-left"
+                            onClick={() => {
+                              setSelectedWorkspaceId(String(ws.id));
+                              setSelectedJobId('');
+                              setSelectedStageId('');
+                              setStages([]);
+                              setShowCompanyDrop(false);
+                              setCompSearch('');
+                            }}
+                          >
+                            <div className="w-6 h-6 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                              {companyLogos[ws.name] ? (
+                                <img src={companyLogos[ws.name]!} alt="" className="w-full h-full object-contain" />
+                              ) : (
+                                <span className="text-[10px] font-bold text-gray-400">{ws.name.charAt(0)}</span>
+                              )}
+                            </div>
+                            <span className="truncate">{ws.name}</span>
+                          </button>
+                        ))
+                    ) : (
+                      <div className="px-4 py-6 text-center text-sm text-gray-400 italic">
+                        No companies found
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -426,7 +432,7 @@ const MoveToPipelineModal = ({ isOpen, onClose, selectedCandidates, workspaces, 
                 <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showRoleDrop ? 'rotate-180' : ''}`} />
               </button>
               {showRoleDrop && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 flex flex-col">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 flex flex-col overflow-hidden">
                   <div className="p-2 border-b border-gray-100">
                     <input
                       type="text"
