@@ -648,7 +648,7 @@ export default function Dashboard() {
           </div>
 
           {/* Priority Actions from new API */}
-          <section className="bg-white rounded-xl p-5 flex flex-col gap-5">
+          <section className="bg-white rounded-xl p-5 flex flex-col gap-5 flex-1 min-h-0">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
               <div className="flex items-center gap-2.5">
@@ -768,7 +768,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 flex-1 min-h-0">
               {priorityLoading
                 ? [...Array(3)].map((_, i) => (
                   <div key={`col-skel-${i}`} className="bg-[#F3F5F7] rounded-xl p-2.5 animate-pulse min-h-[200px]">
@@ -792,7 +792,7 @@ export default function Dashboard() {
                     column.cards.sort((a, b) => b.daysAgo - a.daysAgo);
                   }
                   return (
-                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto flex-1 min-h-[400px] hide-scrollbar">
+                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 overflow-y-auto flex-1 h-full max-h-[500px] lg:max-h-none hide-scrollbar">
                       <div className="flex items-center justify-between px-1 py-1">
                         <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>

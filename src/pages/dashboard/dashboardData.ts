@@ -11,7 +11,7 @@ export interface StatCardData {
     trendColor?: 'green' | 'rose';
     trendData?: number[];
     dateText?: string;
-    iconType: 'briefcase' | 'building' | 'userPlus' | 'clock' | 'upload';
+    iconType: 'briefcase' | 'building' | 'userPlus' | 'clock';
 }
 
 export interface PriorityCardData {
@@ -211,7 +211,7 @@ export const statCardsData: StatCardData[] = [
     },
     {
         id: 'stat-4',
-        iconType: 'upload',
+        iconType: 'clock',
         label: 'Total Resume Uploads',
         value: '124',
         trend: '+10%',
