@@ -22,6 +22,7 @@ interface PipelineKanbanColumnProps {
   stageMenuPos: { top: number; left: number };
   stageCountOverride?: number;
   refreshCounter?: number;
+  sortConfig: { key: string; direction: "asc" | "desc" } | null;
 }
 
 const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
@@ -44,6 +45,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
   stageMenuPos,
   stageCountOverride,
   refreshCounter = 0,
+  sortConfig,
 }) => {
   const [candidates, setCandidates] = useState<any[]>([]);
   const [archivedCandidates, setArchivedCandidates] = useState<any[]>([]);
@@ -72,6 +74,22 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
         queryParams.append("page", currentPage.toString());
         queryParams.append("page_size", "15");
         if (searchQuery.trim()) queryParams.append("search", searchQuery.trim());
+        
+        const orderingMap: Record<string, string> = {
+          "Name": "full_name",
+          "AI Score": "ai_score",
+          "Location": "location",
+          "Exp": "experience",
+          "CTC": "current_ctc",
+          "Expected CTC": "expected_ctc",
+          "Notice Period": "notice_period",
+          "Stage": "stage",
+        };
+
+        if (sortConfig && orderingMap[sortConfig.key]) {
+          const prefix = sortConfig.direction === "desc" ? "-" : "";
+          queryParams.append("ordering", `${prefix}${orderingMap[sortConfig.key]}`);
+        }
 
         if (filters.location?.length) {
           queryParams.append("location", filters.location.join(","));
@@ -162,7 +180,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
     setPage(1);
     setHasMore(true);
     fetchStageCandidates(1, true);
-  }, [filters, dateRange, searchQuery, visibleArchives, refreshCounter]);
+  }, [filters, dateRange, searchQuery, visibleArchives, refreshCounter, sortConfig]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;

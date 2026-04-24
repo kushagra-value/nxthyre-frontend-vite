@@ -475,7 +475,7 @@ export default function JobPipelineDashboard({
   const [sortConfig, setSortConfig] = useState<{
     key: CandidateSortKey;
     direction: "asc" | "desc";
-  } | null>(null);
+  } | null>({ key: "AI Score", direction: "desc" });
 
   const handleSort = (key: CandidateSortKey) => {
     let direction: "asc" | "desc" = "asc";
@@ -2545,6 +2545,7 @@ export default function JobPipelineDashboard({
                       stageMenuPos={stageMenuPos}
                       stageCountOverride={stageCounts[stage.slug]}
                       refreshCounter={kanbanRefreshCounters[stage.slug]}
+                      sortConfig={sortConfig}
                     />
 
                     {/* Stage Action Footer */}
