@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
-import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check, ArrowUpRight, Zap } from "lucide-react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check, ArrowUpRight, Zap, ArrowUp, ArrowDown } from "lucide-react";
 import { naukbotService, NaukbotCandidate, NaukbotCandidateSummary } from "../../../services/naukbotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
 import NViteModal from "./NViteModal";
+import NaukbotFilterPanel, { NaukbotFiltersState, EMPTY_NAUKBOT_FILTERS } from "./NaukbotFilterPanel";
 
 interface NaukbotTabProps {
   jobId: number | null;
@@ -28,7 +29,14 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortBy, setSortBy] = useState("ai_score_desc");
+
+  // Filters State
+  const [botFilters, setBotFilters] = useState<NaukbotFiltersState>(EMPTY_NAUKBOT_FILTERS);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Selection
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
@@ -37,30 +45,52 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
   const [nviteModal, setNviteModal] = useState<{ candidateIds: string[] } | null>(null);
   const [movingToPipeline, setMovingToPipeline] = useState(false);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const fetchCandidates = useCallback(async () => {
     if (!jobId) return;
+
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     try {
-      const res = await naukbotService.getNaukbotCandidates({
+      const params: any = {
         job_id: jobId,
         page,
         page_size: pageSize,
-        search: searchQuery,
+        search: debouncedSearch,
         sort_by: sortBy,
-      });
+      };
+
+      if (botFilters.location.length) params.location = botFilters.location.join(',');
+      if (botFilters.salaryRange.min) params.min_salary = parseFloat(botFilters.salaryRange.min);
+      if (botFilters.salaryRange.max) params.max_salary = parseFloat(botFilters.salaryRange.max);
+      if (botFilters.experience.min) params.min_experience = parseFloat(botFilters.experience.min);
+      if (botFilters.experience.max) params.max_experience = parseFloat(botFilters.experience.max);
+      if (botFilters.jobRole.length) params.job_role = botFilters.jobRole.join(',');
+      if (botFilters.noticePeriod.selected.length) params.notice_period = botFilters.noticePeriod.selected.join(',');
+      if (botFilters.noticePeriod.minDays) params.min_notice_period = parseInt(botFilters.noticePeriod.minDays);
+      if (botFilters.noticePeriod.maxDays) params.max_notice_period = parseInt(botFilters.noticePeriod.maxDays);
+      if (botFilters.skills.length) params.skills = botFilters.skills.join(',');
+
+      const res = await naukbotService.getNaukbotCandidates(params);
       setCandidates(res.results);
       setTotalPages(res.total_pages);
       setTotalCount(res.count);
       setSummary(res.summary);
-      // We'll trust the status from the specialized job roles API instead
-      // setSourcingEnabled(res.sourcing_enabled);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return;
       console.error(error);
       showToast.error("Failed to load Naukbot candidates");
     } finally {
       setLoading(false);
     }
-  }, [jobId, page, pageSize, searchQuery, sortBy]);
+  }, [jobId, page, pageSize, debouncedSearch, sortBy, botFilters]);
 
   const fetchJobStatus = useCallback(async () => {
     if (!jobId) return;
@@ -85,7 +115,42 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
 
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, sortBy, jobId]);
+  }, [debouncedSearch, sortBy, jobId, botFilters]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (botFilters.location.length) count++;
+    if (botFilters.salaryRange.min || botFilters.salaryRange.max) count++;
+    if (botFilters.experience.min || botFilters.experience.max) count++;
+    if (botFilters.jobRole.length) count++;
+    if (botFilters.noticePeriod.selected.length || botFilters.noticePeriod.minDays || botFilters.noticePeriod.maxDays) count++;
+    if (botFilters.skills.length) count++;
+    return count;
+  }, [botFilters]);
+
+  const removeFilter = (key: keyof NaukbotFiltersState, value: string | null = null) => {
+    setBotFilters((prev) => {
+      const updated = { ...prev };
+      if (key === 'location' && value) {
+        updated.location = updated.location.filter(v => v !== value);
+      } else if (key === 'jobRole' && value) {
+        updated.jobRole = updated.jobRole.filter(v => v !== value);
+      } else if (key === 'skills' && value) {
+        updated.skills = updated.skills.filter(v => v !== value);
+      } else if (key === 'salaryRange') {
+        updated.salaryRange = { min: "", max: "" };
+      } else if (key === 'experience') {
+        updated.experience = { min: "", max: "" };
+      } else if (key === 'noticePeriod') {
+        if (value && updated.noticePeriod.selected.includes(value)) {
+          updated.noticePeriod.selected = updated.noticePeriod.selected.filter(v => v !== value);
+        } else {
+          updated.noticePeriod = { selected: [], minDays: "", maxDays: "" };
+        }
+      }
+      return updated;
+    });
+  };
 
   const toggleSelection = (id: string) => {
     setSelectedCandidates((prev) => {
@@ -128,11 +193,6 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     }
   };
 
-  /**
-   * Opens the NVite modal for one or more candidates.
-   * If called with a single id string: per-row nVite button.
-   * If called with no arguments: uses the current selectedCandidates set.
-   */
   const openNviteModal = (singleId?: string) => {
     const ids = singleId ? [singleId] : Array.from(selectedCandidates);
     if (ids.length === 0) return;
@@ -142,10 +202,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
   const closeNviteModal = () => setNviteModal(null);
 
   const handleNviteSuccess = () => {
-    // Keep modal open — it will show the result screen.
-    // After the recruiter dismisses it, refresh the list.
     fetchCandidates();
-    // Also clear selection since those candidates are now nvited
     setSelectedCandidates(new Set());
   };
 
@@ -192,6 +249,35 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     } finally {
       setToggleLoading(false);
     }
+  };
+
+  const handleSort = (column: string) => {
+    if (sortBy === `${column}_desc`) {
+      setSortBy(`${column}_asc`);
+    } else {
+      setSortBy(`${column}_desc`);
+    }
+  };
+
+  const renderSortableHeader = (label: string, column: string, align: 'left' | 'center' | 'right' = 'left') => {
+    const isSorted = sortBy.startsWith(column);
+    const isAsc = sortBy === `${column}_asc`;
+    return (
+      <th 
+        key={column}
+        className={`group px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap cursor-pointer hover:bg-[#F9FAFB] hover:text-[#4B5563] transition-colors select-none ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`}
+        onClick={() => handleSort(column)}
+      >
+        <div className={`flex items-center gap-1 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : ''}`}>
+          {label}
+          {isSorted ? (
+            isAsc ? <ArrowUp className="w-3.5 h-3.5 text-[#0F47F2]" /> : <ArrowDown className="w-3.5 h-3.5 text-[#0F47F2]" />
+          ) : (
+            <ArrowDown className="w-3.5 h-3.5 text-[#AEAEB2] opacity-0 group-hover:opacity-100 transition-opacity" />
+          )}
+        </div>
+      </th>
+    );
   };
 
   const getPageNumbers = () => {
@@ -289,9 +375,28 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
             />
           </div>
           <div className="flex items-center gap-3">
-             <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors">
-              <SlidersHorizontal className="w-4 h-4" /> Filters
-            </button>
+             <div className="relative">
+              <button
+                ref={filterButtonRef}
+                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                className={`flex items-center gap-2 px-4 py-2 ${showFilterPanel || activeFilterCount > 0 ? "bg-[#F3F5F7] border border-[#d2d6db] text-[#4B5563]" : "bg-white border border-[#E5E7EB] text-[#8E8E93]"} rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors`}
+              >
+                <SlidersHorizontal className="w-4 h-4" /> Filters
+                {activeFilterCount > 0 && (
+                  <span className="w-5 h-5 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+              <NaukbotFilterPanel
+                isOpen={showFilterPanel}
+                onClose={() => setShowFilterPanel(false)}
+                onApply={(f) => { setBotFilters(f); setShowFilterPanel(false); }}
+                initialFilters={botFilters}
+                anchorRef={filterButtonRef}
+                jobId={jobId!}
+              />
+            </div>
             <select 
               className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:border-[#0F47F2]"
               value={sortBy}
@@ -302,6 +407,9 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
               <option value="newest">Newest</option>
               <option value="experience_desc">Experience ↓</option>
               <option value="ctc_desc">CTC ↓</option>
+              {!["ai_score_desc", "ai_score_asc", "newest", "experience_desc", "ctc_desc"].includes(sortBy) && (
+                <option value={sortBy} className="hidden">Sorted by Header</option>
+              )}
             </select>
             {selectedCandidates.size > 0 && (
               <>
@@ -326,6 +434,60 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
           </div>
         </div>
 
+        {/* Active Filters Bar */}
+        {activeFilterCount > 0 && (
+          <div className="bg-white border-x border-[#E5E7EB] px-6 py-3 flex items-center gap-2 flex-wrap">
+            {botFilters.location.map(loc => (
+              <span key={`loc-${loc}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {loc}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('location', loc)} />
+              </span>
+            ))}
+            {botFilters.jobRole.map(role => (
+              <span key={`role-${role}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {role}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('jobRole', role)} />
+              </span>
+            ))}
+            {botFilters.skills.map(skill => (
+              <span key={`skill-${skill}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {skill}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('skills', skill)} />
+              </span>
+            ))}
+            {(botFilters.salaryRange.min || botFilters.salaryRange.max) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                CTC: {botFilters.salaryRange.min || 0} - {botFilters.salaryRange.max || 'Any'} LPA
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('salaryRange')} />
+              </span>
+            )}
+            {(botFilters.experience.min || botFilters.experience.max) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                Exp: {botFilters.experience.min || 0} - {botFilters.experience.max || 'Any'} Yrs
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('experience')} />
+              </span>
+            )}
+            {botFilters.noticePeriod.selected.map(np => (
+              <span key={`np-${np}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {np}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod', np)} />
+              </span>
+            ))}
+            {(botFilters.noticePeriod.minDays || botFilters.noticePeriod.maxDays) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                Notice (Days): {botFilters.noticePeriod.minDays || 0} - {botFilters.noticePeriod.maxDays || 'Any'}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod')} />
+              </span>
+            )}
+            <button 
+              onClick={() => { setBotFilters(EMPTY_NAUKBOT_FILTERS); setPage(1); }} 
+              className="text-xs font-semibold text-[#8E8E93] hover:text-[#4B5563] ml-2 underline decoration-dashed underline-offset-2"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+
         {/* Table View */}
         <div className="bg-white border-x border-t border-[#E5E7EB] overflow-hidden">
           <table className="w-full text-left border-collapse">
@@ -340,14 +502,14 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                     className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
                   />
                 </th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Candidate</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">AI Score</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Location</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Exp</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">CTC</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Expected CTC</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Notice Period</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Skills Match</th>
+                {renderSortableHeader('Candidate', 'name')}
+                {renderSortableHeader('AI Score', 'ai_score', 'center')}
+                {renderSortableHeader('Location', 'location')}
+                {renderSortableHeader('Exp', 'experience')}
+                {renderSortableHeader('CTC', 'ctc')}
+                {renderSortableHeader('Expected CTC', 'expected_ctc')}
+                {renderSortableHeader('Notice Period', 'notice_period')}
+                {renderSortableHeader('Skills Match', 'skills_match', 'center')}
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-right">Actions</th>
               </tr>
             </thead>
@@ -387,7 +549,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                     <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] font-medium border-transparent text-[#8E8E93]">{item.notice_period || "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium border-transparent" style={{ color: skillsColor }}>{item.skills_match.matched}/{item.skills_match.total} skills</td>
+                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center" style={{ color: skillsColor }}>{item.skills_match.matched}/{item.skills_match.total} skills</td>
                     <td className="px-6 py-6 border-transparent">
                       <div className="flex justify-end gap-2">
                         <button 

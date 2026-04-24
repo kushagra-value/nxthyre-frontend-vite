@@ -82,10 +82,21 @@ export interface GetNaukbotCandidatesParams {
   page_size?: number;
   search?: string;
   sort_by?: string;
+  location?: string;
+  min_salary?: number;
+  max_salary?: number;
+  min_experience?: number;
+  max_experience?: number;
+  job_role?: string;
+  min_notice_period?: number;
+  max_notice_period?: number;
+  notice_period?: string;
+  skills?: string;
+  min_expected_ctc?: number;
+  max_expected_ctc?: number;
   min_match_pct?: number;
   max_match_pct?: number;
   tier?: string;
-  notice_period?: string;
   show_skipped?: boolean;
   sourced_after?: string;
 }
