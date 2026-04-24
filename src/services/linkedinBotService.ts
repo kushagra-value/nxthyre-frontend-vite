@@ -20,6 +20,8 @@ export interface LinkedinBotCandidate {
   skills_match: {
     matched: number;
     total: number;
+    matched_skills?: string[];
+    missing_skills?: string[];
   };
   linkedin_url: string;
   is_nvited?: boolean;

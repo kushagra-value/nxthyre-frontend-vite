@@ -5,6 +5,7 @@ import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
 import NViteModal from "./NViteModal";
 import NaukbotFilterPanel, { NaukbotFiltersState, EMPTY_NAUKBOT_FILTERS } from "./NaukbotFilterPanel";
+import SkillsMatchTooltip from "./SkillsMatchTooltip";
 
 interface NaukbotTabProps {
   jobId: number | null;
@@ -40,6 +41,14 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
 
   // Selection
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+
+  // Tooltip
+  const [hoveredSkills, setHoveredSkills] = useState<{
+    candidateId: string;
+    matched: string[];
+    missing: string[];
+    ref: React.RefObject<HTMLElement>;
+  } | null>(null);
 
   // NVite modal state: null = closed, object with candidateIds = open
   const [nviteModal, setNviteModal] = useState<{ candidateIds: string[] } | null>(null);
@@ -549,7 +558,27 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                     <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] font-medium border-transparent text-[#8E8E93]">{item.notice_period || "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center" style={{ color: skillsColor }}>{item.skills_match.matched}/{item.skills_match.total} skills</td>
+                    <td 
+                      className="px-6 py-6 text-[13px] font-medium border-transparent text-center cursor-help relative" 
+                      style={{ color: skillsColor }}
+                      onMouseEnter={(e) => setHoveredSkills({ 
+                        candidateId: item.id, 
+                        matched: item.skills_match.matched_skills || [], 
+                        missing: item.skills_match.missing_skills || [],
+                        ref: { current: e.currentTarget }
+                      })}
+                      onMouseLeave={() => setHoveredSkills(null)}
+                    >
+                      {item.skills_match.matched}/{item.skills_match.total} skills
+                      {hoveredSkills?.candidateId === item.id && (
+                        <SkillsMatchTooltip 
+                          matchedSkills={hoveredSkills.matched} 
+                          missingSkills={hoveredSkills.missing} 
+                          anchorRef={hoveredSkills.ref}
+                          onClose={() => setHoveredSkills(null)}
+                        />
+                      )}
+                    </td>
                     <td className="px-6 py-6 border-transparent">
                       <div className="flex justify-end gap-2">
                         <button 

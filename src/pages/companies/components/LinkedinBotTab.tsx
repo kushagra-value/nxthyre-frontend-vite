@@ -4,6 +4,7 @@ import { linkedinBotService, LinkedinBotCandidate, LinkedinBotCandidateSummary }
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
 import LinkedinBotFilterPanel, { LinkedinBotFiltersState, EMPTY_LINKEDIN_BOT_FILTERS } from "./LinkedinBotFilterPanel";
+import SkillsMatchTooltip from "./SkillsMatchTooltip";
 
 interface LinkedinBotTabProps {
   jobId: number | null;
@@ -37,6 +38,14 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
 
   // Selection
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+
+  // Tooltip
+  const [hoveredSkills, setHoveredSkills] = useState<{
+    candidateId: string;
+    matched: string[];
+    missing: string[];
+    ref: React.RefObject<HTMLElement>;
+  } | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
@@ -437,7 +446,27 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent">{item.notice_period || "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center" style={{ color: skillsColor }}>{item.skills_match?.matched || 0}/{item.skills_match?.total || 0} skills</td>
+                    <td 
+                      className="px-6 py-6 text-[13px] font-medium border-transparent text-center cursor-help relative" 
+                      style={{ color: skillsColor }}
+                      onMouseEnter={(e) => setHoveredSkills({ 
+                        candidateId: item.id, 
+                        matched: item.skills_match?.matched_skills || [], 
+                        missing: item.skills_match?.missing_skills || [],
+                        ref: { current: e.currentTarget }
+                      })}
+                      onMouseLeave={() => setHoveredSkills(null)}
+                    >
+                      {item.skills_match?.matched || 0}/{item.skills_match?.total || 0} skills
+                      {hoveredSkills?.candidateId === item.id && (
+                        <SkillsMatchTooltip 
+                          matchedSkills={hoveredSkills.matched} 
+                          missingSkills={hoveredSkills.missing} 
+                          anchorRef={hoveredSkills.ref}
+                          onClose={() => setHoveredSkills(null)}
+                        />
+                      )}
+                    </td>
                     <td className="px-6 py-6 border-transparent">
                       <div className="flex justify-end gap-3 z-10 flex-row">
                         {item.linkedin_url && (
