@@ -177,7 +177,7 @@ const JobListing: React.FC<JobListingProps> = ({
         { key: 'candidates', label: 'Candidates', width: '100px' },
         { key: 'naukbot', label: 'Naukbot', width: '100px' },
         { key: 'linkedinBot', label: 'LinkedIn Bot', width: '100px' },
-        { key: 'nxthyre', label: 'Nxthyre', width: '100px' },
+        { key: 'inbound', label: 'Inbound', width: '100px' },
         { key: 'pipelineStages', label: 'Pipeline Stages', width: '380px' },
         { key: 'shortlisted', label: 'Shortlisted', width: '100px' },
         { key: 'hired', label: 'Hired', width: '80px' },
@@ -810,7 +810,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         </thead>
                         <tbody className="divide-y divide-[#F3F5F7]">
                             {paginatedJobs.map((job) => {
-                                const daysOpen = job.days_open || 18;
+                                const daysOpen = job.days_open;
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
 
                                 const defaultStages = [
@@ -904,7 +904,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             {job.linkedin_bot_candidates_count ?? 0}
                                                         </td>
                                                     );
-                                                case 'nxthyre':
+                                                case 'inbound':
                                                     return (
                                                         <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
                                                             {job.inbound_candidates_count ?? job.inbound_count ?? 0}
