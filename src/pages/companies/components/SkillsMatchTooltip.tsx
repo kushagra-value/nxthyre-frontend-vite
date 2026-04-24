@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { CheckCircle2, XCircle } from 'lucide-react';
 
 interface SkillsMatchTooltipProps {
@@ -8,7 +9,7 @@ interface SkillsMatchTooltipProps {
   anchorRef: React.RefObject<HTMLElement>;
 }
 
-export default function SkillsMatchTooltip({ matchedSkills, missingSkills, anchorRef }: SkillsMatchTooltipProps) {
+export default function SkillsMatchTooltip({ matchedSkills, missingSkills, anchorRef, onClose }: SkillsMatchTooltipProps) {
   const [position, setPosition] = useState({ top: 0, left: 0, placement: 'bottom' });
   const tooltipRef = useRef<HTMLDivElement>(null);
 
@@ -19,8 +20,9 @@ export default function SkillsMatchTooltip({ matchedSkills, missingSkills, ancho
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
 
-      let top = anchorRect.bottom + window.scrollY + 8;
-      let left = anchorRect.left + window.scrollX + (anchorRect.width / 2) - (tooltipRect.width / 2);
+      // We use fixed positioning to avoid parent relative/overflow issues
+      let top = anchorRect.bottom + 8;
+      let left = anchorRect.left + (anchorRect.width / 2) - (tooltipRect.width / 2);
       let placement = 'bottom';
 
       // Horizontal overflow
@@ -31,8 +33,8 @@ export default function SkillsMatchTooltip({ matchedSkills, missingSkills, ancho
       }
 
       // Vertical overflow
-      if (top + tooltipRect.height > windowHeight + window.scrollY - 10) {
-        top = anchorRect.top + window.scrollY - tooltipRect.height - 8;
+      if (top + tooltipRect.height > windowHeight - 10) {
+        top = anchorRect.top - tooltipRect.height - 8;
         placement = 'top';
       }
 
@@ -40,15 +42,18 @@ export default function SkillsMatchTooltip({ matchedSkills, missingSkills, ancho
     }
   }, [anchorRef, matchedSkills, missingSkills]);
 
-  return (
+  // Use a Portal to render at the end of the body
+  return createPortal(
     <div
       ref={tooltipRef}
       style={{
         top: position.top,
         left: position.left,
-        position: 'absolute',
+        position: 'fixed',
       }}
-      className="z-[100] w-[280px] bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-[#E5E7EB] p-5 animate-in fade-in zoom-in duration-200"
+      className="z-[9999] w-[280px] bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-[#E5E7EB] p-5 animate-in fade-in zoom-in duration-200 pointer-events-auto"
+      onMouseEnter={(e) => e.stopPropagation()}
+      onMouseLeave={onClose}
     >
       <div className="flex flex-col gap-6">
         {/* Matched Skills */}
@@ -93,6 +98,7 @@ export default function SkillsMatchTooltip({ matchedSkills, missingSkills, ancho
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

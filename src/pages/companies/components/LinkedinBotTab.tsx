@@ -46,6 +46,26 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
     missing: string[];
     ref: React.RefObject<HTMLElement>;
   } | null>(null);
+  const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleSkillsMouseEnter = (e: React.MouseEvent<HTMLElement>, item: any) => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+    setHoveredSkills({ 
+      candidateId: item.id, 
+      matched: item.skills_match?.matched_skills || [], 
+      missing: item.skills_match?.missing_skills || [],
+      ref: { current: e.currentTarget }
+    });
+  };
+
+  const handleSkillsMouseLeave = () => {
+    leaveTimeoutRef.current = setTimeout(() => {
+      setHoveredSkills(null);
+    }, 200);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
@@ -449,13 +469,8 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
                     <td 
                       className="px-6 py-6 text-[13px] font-medium border-transparent text-center cursor-help relative" 
                       style={{ color: skillsColor }}
-                      onMouseEnter={(e) => setHoveredSkills({ 
-                        candidateId: item.id, 
-                        matched: item.skills_match?.matched_skills || [], 
-                        missing: item.skills_match?.missing_skills || [],
-                        ref: { current: e.currentTarget }
-                      })}
-                      onMouseLeave={() => setHoveredSkills(null)}
+                      onMouseEnter={(e) => handleSkillsMouseEnter(e, item)}
+                      onMouseLeave={handleSkillsMouseLeave}
                     >
                       {item.skills_match?.matched || 0}/{item.skills_match?.total || 0} skills
                       {hoveredSkills?.candidateId === item.id && (
