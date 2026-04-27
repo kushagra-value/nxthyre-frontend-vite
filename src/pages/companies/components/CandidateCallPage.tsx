@@ -642,25 +642,25 @@ export default function CandidateCallPage() {
 
         {isManual ? (
           /* ─── MANUAL CALL LEFT PANEL ─── */
-          <div className="z-10 flex flex-col items-center w-full max-w-sm mt-8 pb-[180px]">
+          <div className="z-10 flex flex-col items-center w-full max-w-sm mt-8 pb-[300px]">
             <div className="relative mb-6">
-              <div className="w-[150px] h-[150px] max-w-[20vw] max-h-[20vw] lg:max-w-none lg:max-h-none rounded-full bg-white flex items-center justify-center text-[#0F47F2] text-[40px] font-medium shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] transition-all">
+              <div className="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] rounded-full bg-white flex items-center justify-center text-[#0F47F2] text-3xl font-medium shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] transition-all">
                 {candidate.avatarInitials || "UN"}
               </div>
-              <div className="absolute bottom-2 right-4 w-[26px] h-[26px] bg-[#FF383C] rounded-full shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] border-[3px] border-[#1D4ED8] z-10 transition-all"></div>
+              <div className="absolute bottom-1 right-2 w-5 h-5 bg-[#FF383C] rounded-full shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] border-[2px] border-[#1D4ED8] z-10 transition-all"></div>
             </div>
 
-            <h1 className="text-xl lg:text-[24px] font-medium mb-0.5 lg:mb-1 text-center text-[#F3F5F7] mt-2 lg:mt-3 transition-all break-words leading-tight px-2">{candidate.name || "Unknown Candidate"}</h1>
-            <p className="text-[#F3F5F7] text-xs lg:text-[14px] mb-6 text-center leading-snug px-2">{candidate.headline || "Product Designer"}</p>
+            <h1 className="text-lg lg:text-xl font-medium mb-0.5 text-center text-[#F3F5F7] mt-1 transition-all break-words leading-tight px-2">{candidate.name || "Unknown Candidate"}</h1>
+            <p className="text-[#F3F5F7] text-xs mb-6 text-center leading-snug px-2">{candidate.headline || "Product Designer"}</p>
 
-            <div className="bg-[#BFDBFE] rounded-full px-4 lg:px-6 flex items-center justify-center w-fit h-[40px] lg:h-[48px] mb-4 lg:mb-6 transition-all shadow-sm">
-              <span className="text-[#0F47F2] font-medium text-lg lg:text-[24px] transition-all tracking-tight">
+            <div className="bg-[#BFDBFE] rounded-full px-4 lg:px-6 flex items-center justify-center w-fit h-[32px] lg:h-[40px] mb-4 transition-all shadow-sm">
+              <span className="text-[#0F47F2] font-medium text-base lg:text-lg transition-all tracking-tight">
                 {candidate.phone || "No phone provided"}
               </span>
             </div>
 
-            <div className="bg-transparent border border-white/20 rounded-[5px] px-3 flex items-center justify-center gap-2 mb-8 h-[39px] min-w-[165px]">
-              <span className="text-[#00C8B3] text-sm lg:text-[14px] font-medium uppercase tracking-[0.02em]">
+            <div className="bg-transparent border border-white/20 rounded-[5px] px-3 flex items-center justify-center gap-2 mb-8 h-[30px] min-w-[140px]">
+              <span className="text-[#00C8B3] text-xs font-medium uppercase tracking-[0.02em]">
                 · ON MANUAL CALL
               </span>
             </div>
@@ -672,11 +672,11 @@ export default function CandidateCallPage() {
                     if (!callUuid) setCallUuid(crypto.randomUUID());
                     setManualCallConnected(true);
                   }}
-                  className="w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] rounded-full bg-[#10B981] flex items-center justify-center hover:bg-[#059669] transition-transform active:scale-95 border border-white/20 shadow-lg shadow-green-900/30"
+                  className="w-[40px] h-[40px] lg:w-[48px] lg:h-[48px] rounded-full bg-[#10B981] flex items-center justify-center hover:bg-[#059669] transition-transform active:scale-95 border border-white/20 shadow-lg shadow-green-900/30"
                 >
-                  <Phone className="w-5 h-5 lg:w-6 lg:h-6 text-white fill-current" />
+                  <Phone className="w-4 h-4 lg:w-5 lg:h-5 text-white fill-current" />
                 </button>
-                <span className="text-[#F3F5F7] font-normal text-xs lg:text-[14px] mt-3 tracking-wide">Start Call</span>
+                <span className="text-[#F3F5F7] font-normal text-xs mt-2 tracking-wide">Start Call</span>
               </div>
             ) : (
               /* Post-connection: timer + controls */
@@ -718,11 +718,11 @@ export default function CandidateCallPage() {
                           toggleManualRecording();
                         }
                       }}
-                      className="w-16 h-16 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95"
+                      className="w-14 h-14 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95"
                     >
-                      <PhoneOff className="w-6 h-6" />
+                      <PhoneOff className="w-5 h-5" />
                     </button>
-                    <span className="text-xs text-white uppercase tracking-widest font-semibold">
+                    <span className="text-[10px] text-white uppercase tracking-widest font-semibold">
                       End Call
                     </span>
                   </div>
@@ -735,6 +735,56 @@ export default function CandidateCallPage() {
                   )}
               </div>
             )}
+            
+            {/* INJECTED QUICK NOTES IN LEFT PANEL */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/20 bg-[#1D4ED8] bg-opacity-90 backdrop-blur-sm z-20">
+              <div className="bg-white rounded-[16px] p-4 shadow-2xl relative">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex gap-1">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M2.66663 14V2.66667C2.66663 2.29851 2.9651 2 3.33329 2H10.5961C10.7423 2 10.8844 2.04838 10.9983 2.13764L13.8407 4.36442C13.9431 4.44464 14 4.57008 14 4.70425V14C14 14.3682 13.7015 14.6667 13.3333 14.6667H3.33329C2.9651 14.6667 2.66663 14.3682 2.66663 14Z" stroke="#475569" strokeWidth="1.2"/>
+                      <path d="M10.6666 2V4C10.6666 4.36819 10.9651 4.66667 11.3333 4.66667H14" stroke="#475569" strokeWidth="1.2"/>
+                      <path d="M6 7.33333H10.6667" stroke="#475569" strokeWidth="1.2" strokeLinecap="round"/>
+                      <path d="M6 10H8.66667" stroke="#475569" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Quick Notes</span>
+                </div>
+                
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {tags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      className={`px-2 py-1 rounded-full text-[10px] whitespace-nowrap transition-colors border ${
+                        activeTags.includes(tag) 
+                          ? "bg-blue-50 text-blue-600 border-blue-200" 
+                          : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      {activeTags.includes(tag) ? "✓" : "○"} {tag}
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add key notes"
+                    className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 outline-none focus:border-blue-500"
+                  />
+                  <button 
+                    onClick={handleSaveNotes}
+                    disabled={isSaving}
+                    className="bg-blue-600 text-white rounded-lg px-4 py-1.5 text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 min-w-[60px]"
+                  >
+                    {isSaving ? "..." : "Save"}
+                  </button>
+                </div>
+              </div>
+            </div>
+            {/* END INJECTED QUICK NOTES */}
           </div>
         ) : (
           /* ─── PLATFORM CALL LEFT PANEL (original) ─── */
@@ -920,11 +970,11 @@ export default function CandidateCallPage() {
           </div>
         </div>
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar bg-slate-50/30">
+        <div className="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-8 py-6 custom-scrollbar bg-slate-50/30">
           {/* MANUAL MODE TABS */}
           {isManual && manualActiveTab === "jobDescription" && (
-            <div className="flex flex-col h-full max-w-4xl mx-auto">
-              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm p-8">
+            <div className="flex flex-col h-full w-full">
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm p-4 md:p-8 w-full max-w-4xl mx-auto break-words">
                 <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6">Job Description: {candidate.headline}</h2>
                 <div className="space-y-6 text-sm text-slate-700">
                   <section>
