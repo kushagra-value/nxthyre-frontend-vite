@@ -455,8 +455,8 @@ export default function Companies() {
                     : "--",
                 status: normalizedStatus as any,
                 createdBy: ws.created_by || undefined,
-                activeJobs: ws.jobs_count ? Math.floor(ws.jobs_count * 0.25) : 21, // Mock logic: 25% of jobs are active
-                createdDate: '12/12/2025', // Mock date
+                activeJobs: ws.active_jobs_count || "--",
+                createdDate: ws.created_at || "--",
             };
         });
     }, [workspaces]);

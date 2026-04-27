@@ -152,6 +152,8 @@ export interface MyWorkspace {
   organization: number;
   member_count: number;
   created_by: string;
+  created_at: string;
+  active_jobs_count: number;
   user_role: string;
   company_research_data?: CompanyResearchData;
   jobs_count?: number;
