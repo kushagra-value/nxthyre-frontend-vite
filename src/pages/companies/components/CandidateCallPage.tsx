@@ -97,7 +97,7 @@ export default function CandidateCallPage() {
 
   // Manual call states
   const [manualCallConnected, setManualCallConnected] = useState(false);
-  const [manualActiveTab, setManualActiveTab] = useState<"roleQuestions" | "resume">("roleQuestions");
+  const [manualActiveTab, setManualActiveTab] = useState<"jobDescription" | "roleQuestions" | "resume">("jobDescription");
 
   // Call States
   const [seconds, setSeconds] = useState(0);
@@ -142,14 +142,18 @@ export default function CandidateCallPage() {
     location: false,
   });
 
-  // const [skillsChecklist, setSkillsChecklist] = useState({
-  //   figma: false,
-  //   uxResearch: false,
-  //   designSystems: false,
-  //   b2c: false,
-  //   stakeholder: false,
-  //   mobileFirst: false,
-  // });
+  const [skillsChecklist, setSkillsChecklist] = useState({
+    figma: true,
+    hiFi: true,
+    autoLayout: true,
+    hugFill: true,
+    prototyping: false,
+    variables: false,
+    designSystems: false,
+    uxResearch: false,
+    b2c: false,
+    mobileFirst: false,
+  });
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const transcriptPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -571,9 +575,7 @@ export default function CandidateCallPage() {
     setChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // const toggleSkills = (key: keyof typeof skillsChecklist) => {
-  //   setSkillsChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
-  // };
+  
 
   const handleEvaluateQuestion = async (
     qId: number,
@@ -931,8 +933,9 @@ export default function CandidateCallPage() {
             {isManual ? (
               /* Manual mode tabs: Candidate Resume | Role Questions */
               <>
-                {(["roleQuestions", "resume"] as const).map((tab) => {
+                {(["jobDescription", "roleQuestions", "resume"] as const).map((tab) => {
                   const labels = {
+                    jobDescription: "Job Description",
                     roleQuestions: "Role Questions",
                     resume: "Candidate Resume",
                   };
@@ -981,6 +984,39 @@ export default function CandidateCallPage() {
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar bg-slate-50/30">
           {/* MANUAL MODE TABS */}
+          {isManual && manualActiveTab === "jobDescription" && (
+            <div className="flex flex-col h-full max-w-4xl mx-auto">
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm p-8">
+                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6">Job Description: {candidate.headline}</h2>
+                <div className="space-y-6 text-sm text-slate-700">
+                  <section>
+                    <h3 className="font-bold text-slate-800 text-base mb-2">About the Role</h3>
+                    <p className="leading-relaxed text-slate-600">
+                      We are looking for a talented {candidate.headline} to join our growing team. You will be responsible for creating elegant, highly usable, and beautifully crafted user interfaces that delight our customers. You will work closely with product managers, engineers, and researchers to iterate quickly and build scalable product experiences.
+                    </p>
+                  </section>
+                  <section>
+                    <h3 className="font-bold text-slate-800 text-base mb-2">Key Responsibilities</h3>
+                    <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
+                      <li>Lead end-to-end design initiatives for major features and product verticals.</li>
+                      <li>Collaborate effectively with cross-functional teams to define product requirements.</li>
+                      <li>Develop and maintain our design system and visual guidelines.</li>
+                      <li>Conduct user research and usability testing to validate design decisions.</li>
+                    </ul>
+                  </section>
+                  <section>
+                    <h3 className="font-bold text-slate-800 text-base mb-2">Requirements</h3>
+                    <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
+                      <li>{candidate.experience} of experience in product design, UX/UI, or similar role.</li>
+                      <li>Expert proficiency in Figma and modern design tools.</li>
+                      <li>Strong portfolio demonstrating user-centric design solutions.</li>
+                      <li>Excellent communication skills and ability to articulate design rationale.</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </div>
+          )}
           {isManual && manualActiveTab === "resume" && (
             <div className="flex flex-col h-full max-w-4xl mx-auto">
               <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
@@ -1433,45 +1469,10 @@ export default function CandidateCallPage() {
         </>
         )}
         </div>
-        {/* Fixed Footer for Save */}
+        {/* Fixed Footer for Save - Platform mode only */}
+        {!isManual && (
         <div className="w-full shrink-0 border-t border-slate-100 py-3 px-6 bg-white flex flex-col justify-center z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-          {isManual ? (
-            <div className="flex flex-col gap-3 w-full">
-              <div className="flex items-center justify-between w-full">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                  📝 QUICK NOTES
-                </span>
-                <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
-                  {tags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all flex items-center gap-1.5 ${activeTags.includes(tag) ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
-                    >
-                      {tag === "Interested" ? <span className="text-green-500">✅</span> : tag === "Follow Up" ? <span className="text-red-500">⏰</span> : tag === "CTC Mismatch" ? <span>💰</span> : tag === "Strong fit" ? <span className="text-yellow-500">⭐</span> : null}
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-3 w-full">
-                <input
-                  type="text"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add key notes while on the call..."
-                  className="flex-1 h-10 bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
-                />
-                <button
-                  onClick={handleSaveNotes}
-                  disabled={isSaving}
-                  className="h-10 px-6 bg-[#1D4ED8] text-white font-semibold text-sm rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2 shrink-0"
-                >
-                  💾 Save
-                </button>
-              </div>
-            </div>
-          ) : (
+          
             <div className="flex items-center w-full">
               <button
                 onClick={handleSaveNotes}
@@ -1481,11 +1482,11 @@ export default function CandidateCallPage() {
                 {isSaving ? "Saving..." : "Save Call Wrap-up Data"}
               </button>
             </div>
-          )}
         </div>
+        )}
         </div>
         {/* RIGHT SIDEBAR for manual mode */}
-        {isManual && manualCallConnected && (
+        {isManual && (
           <div className="w-[280px] shrink-0 border-l border-slate-200 bg-white overflow-y-auto">
             {/* Candidate Header */}
             <div className="p-5 border-b border-slate-100">
@@ -1528,7 +1529,10 @@ export default function CandidateCallPage() {
                   { name: "Auto layout & constraints", score: null, checked: true, color: "bg-red-500" },
                   { name: "Hug / Fill / Fixed sizing", score: null, checked: true, color: "bg-yellow-500" },
                   { name: "Prototyping & interactions", score: null, checked: false, color: "bg-slate-200" },
-                  { name: "Variables & tokens", score: null, checked: false, color: "bg-slate-200" },
+                  { name: "Design Systems", score: null, checked: false, color: "bg-slate-200" },
+                  { name: "UX Research", score: null, checked: false, color: "bg-slate-200" },
+                  { name: "B2C Product Work", score: null, checked: false, color: "bg-slate-200" },
+                  { name: "Mobile-first Design", score: null, checked: false, color: "bg-slate-200" },
                 ].map((skill) => (
                   <label key={skill.name} className="flex items-center gap-3 cursor-pointer group">
                     <input
@@ -1543,6 +1547,17 @@ export default function CandidateCallPage() {
                   </label>
                 ))}
               </div>
+            </div>
+
+            {/* Save Checklist Footer Button */}
+            <div className="p-5 mt-auto">
+              <button
+                onClick={handleSaveNotes}
+                disabled={isSaving}
+                className="w-full bg-[#1D4ED8] text-white font-bold py-3 rounded-lg text-xs hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save Notes & Checklist"}
+              </button>
             </div>
           </div>
         )}
