@@ -1,3 +1,4 @@
+import { jobPostService, Job } from '../../../services/jobPostService';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { showToast } from "../../../utils/toast";
@@ -127,6 +128,8 @@ export default function CandidateCallPage() {
     "roleQuestions" | "transcript" | "quickNotes"
   >("roleQuestions");
   const [roleQuestions, setRoleQuestions] = useState<RoleQuestion[]>([]);
+  const [jobData, setJobData] = useState<Job | null>(null);
+  const [competenciesData, setCompetenciesData] = useState<any>(null);
   const [transcripts, setTranscripts] = useState<LiveTranscript[]>([]);
 
   // Job ID ::
@@ -630,11 +633,15 @@ export default function CandidateCallPage() {
           <div className="absolute w-[600px] h-[600px] rounded-full border border-white/20"></div>
           <div className="absolute w-[400px] h-[400px] rounded-full border border-white/20"></div>
           <div className="absolute w-[300px] h-[300px] rounded-full border border-white/30 bg-white/5"></div>
+          <div className="absolute w-[200px] h-[200px] rounded-full border border-white/40 bg-white/10"></div>
         </div>
 
         {/* Back button */}
         <button
-          onClick={() => window.location.href = "/"}
+          onClick={() => {
+            if (jobId) navigate(`/business/pipeline/${jobId}`);
+            else navigate(-1);
+          }}
           className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2 z-10"
         >
           <ChevronLeft className="w-5 h-5" /> Back
@@ -643,24 +650,24 @@ export default function CandidateCallPage() {
         {isManual ? (
           /* ─── MANUAL CALL LEFT PANEL ─── */
           <div className="z-10 flex flex-col items-center w-full max-w-sm mt-8 pb-[300px]">
-            <div className="relative mb-6">
-              <div className="w-[100px] h-[100px] lg:w-[120px] lg:h-[120px] rounded-full bg-white flex items-center justify-center text-[#0F47F2] text-3xl font-medium shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] transition-all">
+            <div className="relative mb-4">
+              <div className="w-[80px] h-[80px] lg:w-[100px] lg:h-[100px] rounded-full bg-white flex items-center justify-center text-[#0F47F2] text-2xl lg:text-3xl font-medium shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] transition-all">
                 {candidate.avatarInitials || "UN"}
               </div>
-              <div className="absolute bottom-1 right-2 w-5 h-5 bg-[#FF383C] rounded-full shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] border-[2px] border-[#1D4ED8] z-10 transition-all"></div>
+              <div className="absolute bottom-1 right-1 lg:right-2 w-4 h-4 lg:w-5 lg:h-5 bg-[#FF383C] rounded-full shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] border-[2px] border-[#1D4ED8] z-10 transition-all"></div>
             </div>
 
-            <h1 className="text-lg lg:text-xl font-medium mb-0.5 text-center text-[#F3F5F7] mt-1 transition-all break-words leading-tight px-2">{candidate.name || "Unknown Candidate"}</h1>
-            <p className="text-[#F3F5F7] text-xs mb-6 text-center leading-snug px-2">{candidate.headline || "Product Designer"}</p>
+            <h1 className="text-lg font-medium mb-0 text-center text-[#F3F5F7] mt-1 transition-all break-words leading-tight px-2">{candidate.name || "Unknown Candidate"}</h1>
+            <p className="text-[#F3F5F7] text-[11px] mb-4 text-center leading-snug px-2 opacity-80">{candidate.headline || "Product Designer"}</p>
 
-            <div className="bg-[#BFDBFE] rounded-full px-4 lg:px-6 flex items-center justify-center w-fit h-[32px] lg:h-[40px] mb-4 transition-all shadow-sm">
-              <span className="text-[#0F47F2] font-medium text-base lg:text-lg transition-all tracking-tight">
+            <div className="bg-[#BFDBFE] rounded-full px-3 flex items-center justify-center w-fit h-[28px] mb-3 transition-all shadow-sm">
+              <span className="text-[#0F47F2] font-medium text-xs lg:text-sm transition-all tracking-tight">
                 {candidate.phone || "No phone provided"}
               </span>
             </div>
 
-            <div className="bg-transparent border border-white/20 rounded-[5px] px-3 flex items-center justify-center gap-2 mb-8 h-[30px] min-w-[140px]">
-              <span className="text-[#00C8B3] text-xs font-medium uppercase tracking-[0.02em]">
+            <div className="bg-transparent px-2 flex items-center justify-center gap-1.5 mb-6 h-[24px]">
+              <span className="text-[#00C8B3] text-[10px] font-bold uppercase tracking-[0.04em]">
                 · ON MANUAL CALL
               </span>
             </div>
@@ -975,32 +982,54 @@ export default function CandidateCallPage() {
           {isManual && manualActiveTab === "jobDescription" && (
             <div className="flex flex-col h-full w-full">
               <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm p-4 md:p-8 w-full max-w-4xl mx-auto break-words">
-                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6">Job Description: {candidate.headline}</h2>
+                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6">Job Description: {jobData ? jobData.title : candidate.headline}</h2>
                 <div className="space-y-6 text-sm text-slate-700">
-                  <section>
-                    <h3 className="font-bold text-slate-800 text-base mb-2">About the Role</h3>
-                    <p className="leading-relaxed text-slate-600">
-                      We are looking for a talented {candidate.headline} to join our growing team. You will be responsible for creating elegant, highly usable, and beautifully crafted user interfaces that delight our customers. You will work closely with product managers, engineers, and researchers to iterate quickly and build scalable product experiences.
-                    </p>
-                  </section>
-                  <section>
-                    <h3 className="font-bold text-slate-800 text-base mb-2">Key Responsibilities</h3>
-                    <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
-                      <li>Lead end-to-end design initiatives for major features and product verticals.</li>
-                      <li>Collaborate effectively with cross-functional teams to define product requirements.</li>
-                      <li>Develop and maintain our design system and visual guidelines.</li>
-                      <li>Conduct user research and usability testing to validate design decisions.</li>
-                    </ul>
-                  </section>
-                  <section>
-                    <h3 className="font-bold text-slate-800 text-base mb-2">Requirements</h3>
-                    <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
-                      <li>{candidate.experience} of experience in product design, UX/UI, or similar role.</li>
-                      <li>Expert proficiency in Figma and modern design tools.</li>
-                      <li>Strong portfolio demonstrating user-centric design solutions.</li>
-                      <li>Excellent communication skills and ability to articulate design rationale.</li>
-                    </ul>
-                  </section>
+                  {jobData ? (
+                    <>
+                      {competenciesData?.role_overview ? (
+                        <>
+                          <section>
+                            <h3 className="font-bold text-slate-800 text-base mb-2">Role Overview</h3>
+                            <p className="leading-relaxed text-[#727272] whitespace-pre-wrap">{competenciesData.role_overview}</p>
+                          </section>
+                          {competenciesData.the_core_expectation && (
+                            <section>
+                              <h3 className="font-bold text-slate-800 text-base mb-2">The Core Expectation</h3>
+                              <div className="rounded-[10px] bg-[#EBFFEE] p-[20px]">
+                                <ul className="flex flex-col gap-0 list-disc ml-[16px]">
+                                  {competenciesData.the_core_expectation.map((item: string, i: number) => (
+                                    <li key={i} className="text-[#727272] leading-relaxed mb-1">{item}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </section>
+                          )}
+                          {competenciesData.key_responsibilities_explained?.functional && (
+                            <section>
+                              <h3 className="font-bold text-slate-800 text-base mb-2">Key Responsibilities</h3>
+                              <div className="flex flex-col gap-3">
+                                {competenciesData.key_responsibilities_explained.functional.map((item: any, i: number) => (
+                                  <div key={i} className="flex flex-col gap-1 p-4 bg-[#E7EDFF] rounded-[10px] text-sm">
+                                    <span className="font-semibold text-black">{item.competency}</span>
+                                    <span className="text-[#727272] text-xs">{item.context}</span>
+                                    {item.priority && (
+                                      <span className="bg-[#FFF7D6] text-[#F59E0B] text-[10px] font-bold px-2 py-0.5 rounded-full w-fit mt-1">Priority: {item.priority}</span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </section>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-slate-500 whitespace-pre-wrap">
+                          {jobData.description ? <div dangerouslySetInnerHTML={{ __html: jobData.description }} /> : "Loading job details..."}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-10 text-slate-400">Loading Job Description...</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1019,7 +1048,7 @@ export default function CandidateCallPage() {
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="h-[60vh] bg-white">
+                <div className="min-h-[120vh] bg-white">
                   {candidate.resumeUrl ? (() => {
                     const url = candidate.resumeUrl;
                     const ext = url.split(".").pop()?.toLowerCase() || "";
