@@ -51,6 +51,7 @@ import CompanyInfoTab from "./CompanyInfoTab";
 import NaukbotTab from "./NaukbotTab";
 import LinkedinBotTab from "./LinkedinBotTab";
 import InboundTab from "./InboundTab";
+import NxthyreTab from "./NxthyreTab";
 import AddNewStageForm from "../../pipelines/AddNewStageForm";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
@@ -539,7 +540,7 @@ export default function JobPipelineDashboard({
 
   // ── Active tab
   const [activeTab, setActiveTab] = useState<
-    "pipeline" | "naukbot" | "inbound" | "linkedinbot"
+    "pipeline" | "naukbot" | "inbound" | "linkedinbot" | "nxthyre"
   >("pipeline");
 
   const [isKanbanView, setIsKanbanView] = useState(false);
@@ -2118,6 +2119,11 @@ export default function JobPipelineDashboard({
               label: "LinkedIn Bot",
               count: jobDetails?.linkedin_bot_candidates_count ?? 0,
             },
+            {
+              key: "nxthyre" as const,
+              label: "Nxthyre",
+              count: jobDetails?.candidates_count ?? 0,
+            },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -3336,6 +3342,7 @@ export default function JobPipelineDashboard({
       {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
       {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} />}
       {activeTab === "inbound" && <InboundTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
+      {activeTab === "nxthyre" && <NxthyreTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
 
       {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal

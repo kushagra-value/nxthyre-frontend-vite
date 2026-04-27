@@ -1045,7 +1045,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                         return;
                                                                     }
                                                                     const rect = e.currentTarget.getBoundingClientRect();
-                                                                    const mW = 192, mH = 380, gap = 8;
+                                                                    const mH = 380, gap = 8;
                                                                     const isBottom = rect.bottom + mH + gap > window.innerHeight;
                                                                     setMenuPos({
                                                                         top: isBottom ? 0 : rect.bottom + gap,
