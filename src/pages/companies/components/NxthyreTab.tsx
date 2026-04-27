@@ -114,25 +114,27 @@ export default function NxthyreTab({ jobId, onSelectCandidate }: NxthyreTabProps
                 className="w-full h-10 pl-10 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none border border-[#E5E7EB] focus:border-[#0F47F2] transition-colors"
               />
             </div>
-            <button
-              ref={filterButtonRef}
-              onClick={() => setShowFilterPanel(!showFilterPanel)}
-              className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 ${
-                showFilterPanel
-                  ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]"
-                  : "bg-white text-[#8E8E93] border-[#E5E7EB] hover:bg-[#F3F5F7]"
-              }`}
-            >
-              <SlidersHorizontal className="w-4 h-4" /> Filters
-            </button>
-            <PipelineFilterPanel
-              isOpen={showFilterPanel}
-              onClose={() => setShowFilterPanel(false)}
-              onApply={(f) => setFilters(f)}
-              initialFilters={filters}
-              anchorRef={filterButtonRef}
-              jobId={jobId!}
-            />
+            <div className="relative">
+              <button
+                ref={filterButtonRef}
+                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 ${
+                  showFilterPanel
+                    ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]"
+                    : "bg-white text-[#8E8E93] border-[#E5E7EB] hover:bg-[#F3F5F7]"
+                }`}
+              >
+                <SlidersHorizontal className="w-4 h-4" /> Filters
+              </button>
+              <PipelineFilterPanel
+                isOpen={showFilterPanel}
+                onClose={() => setShowFilterPanel(false)}
+                onApply={(f) => setFilters(f)}
+                initialFilters={filters}
+                anchorRef={filterButtonRef}
+                jobId={jobId!}
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
