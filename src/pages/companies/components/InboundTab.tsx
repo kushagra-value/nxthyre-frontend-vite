@@ -186,7 +186,7 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
                             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F3F5F7" strokeWidth="4" />
                             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={scoreColor} strokeWidth="4" strokeDasharray={`${score}, 100`} />
                           </svg>
-                          <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{score}%</div>
+                          <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{score}</div>
                         </div>
                     </td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.location || "-"}</td>
