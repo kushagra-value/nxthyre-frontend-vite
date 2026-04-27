@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, ArrowUpDown, Plus, MoreHorizontal } from "lucide-react";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
@@ -29,7 +29,7 @@ export default function NxthyreTab({ jobId, onSelectCandidate }: NxthyreTabProps
   // Filters
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [filters, setFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
-  const filterButtonRef = null;
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   // Date range
   const [dateRangeLabel, setDateRangeLabel] = useState("Date Filter");
@@ -115,6 +115,7 @@ export default function NxthyreTab({ jobId, onSelectCandidate }: NxthyreTabProps
               />
             </div>
             <button
+              ref={filterButtonRef}
               onClick={() => setShowFilterPanel(!showFilterPanel)}
               className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 ${
                 showFilterPanel
@@ -124,6 +125,14 @@ export default function NxthyreTab({ jobId, onSelectCandidate }: NxthyreTabProps
             >
               <SlidersHorizontal className="w-4 h-4" /> Filters
             </button>
+            <PipelineFilterPanel
+              isOpen={showFilterPanel}
+              onClose={() => setShowFilterPanel(false)}
+              onApply={(f) => setFilters(f)}
+              initialFilters={filters}
+              anchorRef={filterButtonRef}
+              jobId={jobId!}
+            />
           </div>
 
           <div className="flex items-center gap-3">

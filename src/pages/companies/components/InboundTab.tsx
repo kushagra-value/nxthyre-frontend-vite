@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus } from "lucide-react";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
+import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } from "./PipelineFilterPanel";
 
 interface InboundTabProps {
   jobId: number | null;
@@ -23,6 +24,11 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
   const pageSize = 10;
   
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+
+  // Filter panel state
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [pipelineFilters, setPipelineFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!jobId) return;
@@ -96,9 +102,23 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
             />
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30">
-              <SlidersHorizontal className="w-4 h-4" /> Filters
-            </button>
+            <div className="relative">
+              <button
+                ref={filterButtonRef}
+                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 ${showFilterPanel ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]" : "bg-white text-[#8E8E93] border-[#E5E7EB] hover:bg-[#F3F5F7]"}`}
+              >
+                <SlidersHorizontal className="w-4 h-4" /> Filters
+              </button>
+              <PipelineFilterPanel
+                isOpen={showFilterPanel}
+                onClose={() => setShowFilterPanel(false)}
+                onApply={(filters) => setPipelineFilters(filters)}
+                initialFilters={pipelineFilters}
+                anchorRef={filterButtonRef}
+                jobId={jobId!}
+              />
+            </div>
             <div className="w-px h-6 bg-[#E5E7EB] mx-1"></div>
             <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
