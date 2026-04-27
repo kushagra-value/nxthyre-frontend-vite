@@ -621,9 +621,9 @@ export default function CandidateCallPage() {
       : "text-[#22C55E]";
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
+    <div className="flex flex-col lg:flex-row w-screen h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
       {/* LEFT COLUMN */}
-      <div className="w-full lg:w-[347px] lg:min-w-[347px] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-y-auto custom-scrollbar p-6 shrink-0 z-10">
+      <div className="w-full lg:w-[20%] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-x-hidden overflow-y-auto custom-scrollbar p-6 shrink-0 z-10 transition-all">
         {/* Visual Audio Rings */}
         <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none fixed">
           <div className="w-[800px] h-[800px] rounded-full border border-white/20"></div>
@@ -642,103 +642,41 @@ export default function CandidateCallPage() {
 
         {isManual ? (
           /* ─── MANUAL CALL LEFT PANEL ─── */
-          <div className="z-10 flex flex-col items-center w-[100%] max-w-sm mt-12 pb-[180px]">
-            <div className="relative mb-4">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] text-3xl md:text-4xl font-semibold shadow-2xl">
-                {candidate.avatarInitials}
+          <div className="z-10 flex flex-col items-center w-full max-w-sm mt-8 pb-[180px]">
+            <div className="relative mb-6">
+              <div className="w-[150px] h-[150px] max-w-[20vw] max-h-[20vw] lg:max-w-none lg:max-h-none rounded-full bg-white flex items-center justify-center text-[#0F47F2] text-[40px] font-medium shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] transition-all">
+                {candidate.avatarInitials || "UN"}
               </div>
-              {manualCallConnected && (
-                <div className="absolute top-1 right-1 md:top-2 md:right-2 w-4 h-4 md:w-5 md:h-5 bg-red-500 rounded-full border-2 border-[#1D4ED8]"></div>
-              )}
+              <div className="absolute bottom-2 right-4 w-[26px] h-[26px] bg-[#FF383C] rounded-full shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] border-[3px] border-[#1D4ED8] z-10 transition-all"></div>
             </div>
 
-            <h1 className="text-xl md:text-2xl font-semibold mb-1 text-center">{candidate.name}</h1>
-            <div className="text-white text-sm md:text-base font-medium mb-2 flex items-center justify-center gap-1.5 opacity-90">
-              <Phone className="w-3.5 h-3.5" />
-              <span>{candidate.phone || "No phone provided"}</span>
-            </div>
-            <p className="text-blue-200 text-xs md:text-sm mb-3 text-center">{candidate.headline}</p>
+            <h1 className="text-xl lg:text-[24px] font-medium mb-0.5 lg:mb-1 text-center text-[#F3F5F7] mt-2 lg:mt-3 transition-all break-words leading-tight px-2">{candidate.name || "Unknown Candidate"}</h1>
+            <p className="text-[#F3F5F7] text-xs lg:text-[14px] mb-6 text-center leading-snug px-2">{candidate.headline || "Product Designer"}</p>
 
-            {/* Candidate Info */}
-            <div className="bg-white/10 rounded-xl p-3 mb-4 w-full grid grid-cols-2 gap-2 text-[10px] md:text-xs">
-              <div>
-                <span className="text-white/50 block">CURRENT CTC</span>
-                <span className="font-semibold">{candidate.currentCtc}</span>
-              </div>
-              <div>
-                <span className="text-white/50 block">EXPECTED</span>
-                <span className="font-semibold">{candidate.expectedCtc}</span>
-              </div>
-              <div>
-                <span className="text-white/50 block">NOTICE</span>
-                <span className="font-semibold">{candidate.noticePeriod}</span>
-              </div>
-              <div>
-                <span className="text-white/50 block">AI SCORE</span>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#22C55E] rounded-full" style={{ width: "84%" }}></div>
-                  </div>
-                  <span className="font-semibold">84%</span>
-                </div>
-              </div>
+            <div className="bg-[#BFDBFE] rounded-full px-4 lg:px-6 flex items-center justify-center w-fit h-[40px] lg:h-[48px] mb-4 lg:mb-6 transition-all shadow-sm">
+              <span className="text-[#0F47F2] font-medium text-lg lg:text-[24px] transition-all tracking-tight">
+                {candidate.phone || "No phone provided"}
+              </span>
+            </div>
+
+            <div className="bg-transparent border border-white/20 rounded-[5px] px-3 flex items-center justify-center gap-2 mb-8 h-[39px] min-w-[165px]">
+              <span className="text-[#00C8B3] text-sm lg:text-[14px] font-medium uppercase tracking-[0.02em]">
+                · ON MANUAL CALL
+              </span>
             </div>
 
             {!manualCallConnected ? (
-              /* Pre-connection: outcome buttons */
-              <div className="flex flex-col items-center gap-2 w-full">
-                {/* Call on Nxthyre button */}
+              <div className="flex flex-col items-center mt-4">
                 <button
                   onClick={() => {
-                    // Bypass React Router transition for speed
-                    sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate }));
-                    window.location.href = `/call/${candidate.id}/${jobId}?mode=platform`;
+                    if (!callUuid) setCallUuid(crypto.randomUUID());
+                    setManualCallConnected(true);
                   }}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white font-semibold text-xs hover:bg-white/20 transition-colors backdrop-blur-sm"
+                  className="w-[50px] h-[50px] lg:w-[60px] lg:h-[60px] rounded-full bg-[#10B981] flex items-center justify-center hover:bg-[#059669] transition-transform active:scale-95 border border-white/20 shadow-lg shadow-green-900/30"
                 >
-                  <PhoneCall className="w-3.5 h-3.5" />
-                  <span className="text-[#22C55E] font-bold text-[10px] uppercase">nxt</span>{" "}
-                  Call on Nxthyre
+                  <Phone className="w-5 h-5 lg:w-6 lg:h-6 text-white fill-current" />
                 </button>
-
-                <div className="flex items-center gap-1.5 mt-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]"></span>
-                  <span className="text-[#22C55E] text-[11px] md:text-xs font-bold uppercase tracking-wider">ON MANUAL CALL</span>
-                </div>
-
-                <p className="text-white text-[13px] md:text-[14px] mt-1 mb-1">Did Candidate Picked Call?</p>
-
-                {/* Outcome buttons */}
-                <div className="flex gap-2 justify-center mb-1 w-full flex-wrap">
-                  {["Not Picked up", "Number Busy", "Wrong Number", "Completed", "Failed"].map((reason) => (
-                    <button
-                      key={reason}
-                      onClick={() => setFollowUpReason(reason)}
-                      className="px-4 py-1.5 rounded-full text-[12px] font-medium border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors"
-                    >
-                      {reason}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Outcome buttons row 3 */}
-                <div className="flex gap-2 justify-center w-full mt-1">
-                  <button
-                    onClick={() => {
-                      if (!callUuid) setCallUuid(crypto.randomUUID());
-                      setManualCallConnected(true);
-                    }}
-                    className="px-4 py-2 rounded-full text-[12px] font-bold bg-[#22C55E] text-white hover:bg-[#16A34A] transition-colors shadow-lg shadow-green-500/30 flex items-center gap-1.5"
-                  >
-                    <PhoneIncoming className="w-3.5 h-3.5" /> Picked Up
-                  </button>
-                  <button
-                    onClick={() => window.location.href = "/"}
-                    className="px-4 py-2 rounded-full text-[12px] font-bold border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" /> Call Back again
-                  </button>
-                </div>
+                <span className="text-[#F3F5F7] font-normal text-xs lg:text-[14px] mt-3 tracking-wide">Start Call</span>
               </div>
             ) : (
               /* Post-connection: timer + controls */
@@ -900,9 +838,9 @@ export default function CandidateCallPage() {
       </div>
 
       {/* RIGHT COLUMN: RECRUITER ASSISTANT PANEL */}
-      <div className={`flex-1 flex ${isManual ? "flex-col xl:flex-row" : "flex-col"} h-full overflow-hidden bg-white shadow-xl shadow-slate-200 relative`}>
+      <div className={`w-[80%] flex ${isManual ? "flex-col lg:flex-row" : "flex-col"} h-full overflow-hidden bg-white shadow-xl shadow-slate-200 relative`}>
         {/* Main content area */}
-        <div className={`flex flex-col ${isManual && manualCallConnected ? "flex-1 min-w-0" : "h-full"} overflow-hidden`}>
+        <div className={`flex flex-col ${isManual ? "w-[75%] min-w-0" : "h-full w-full"} overflow-x-hidden overflow-y-auto custom-scrollbar`}>
         {/* Header & Candidate Summary Strip */}
         <div className="bg-white border-b border-slate-200 shrink-0">
           <div className="h-[80px] flex items-center justify-between px-8">
@@ -1487,7 +1425,7 @@ export default function CandidateCallPage() {
         </div>
         {/* RIGHT SIDEBAR for manual mode */}
         {isManual && (
-          <div className="w-[280px] shrink-0 border-l border-slate-200 bg-white overflow-y-auto">
+          <div className="w-[25%] shrink-0 border-l border-slate-200 bg-white overflow-x-hidden overflow-y-auto custom-scrollbar flex flex-col justify-between">
             {/* Candidate Header */}
             <div className="p-5 border-b border-slate-100">
               <div className="flex items-center justify-between mb-1">
