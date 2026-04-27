@@ -910,7 +910,7 @@ export default function CandidateCallPage() {
       {/* RIGHT COLUMN: RECRUITER ASSISTANT PANEL */}
       <div className={`w-[80%] flex ${isManual ? "flex-col lg:flex-row" : "flex-col"} h-full overflow-hidden bg-white shadow-xl shadow-slate-200 relative`}>
         {/* Main content area */}
-        <div className={`flex flex-col ${isManual ? "w-[75%] min-w-0" : "h-full w-full"} overflow-x-hidden overflow-y-auto custom-scrollbar`}>
+        <div className={`flex flex-col ${isManual ? "w-[75%] min-w-0 h-full" : "h-full w-full"} overflow-hidden`}>
         {/* Header & Candidate Summary Strip */}
         <div className="bg-white border-b border-slate-200 shrink-0">
           <div className="h-[80px] flex items-center justify-between px-8">
@@ -990,7 +990,7 @@ export default function CandidateCallPage() {
           </div>
         </div>
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-x-hidden overflow-y-auto px-4 md:px-8 py-6 custom-scrollbar bg-slate-50/30">
+        <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto px-4 md:px-8 py-6 custom-scrollbar bg-slate-50/30">
           {/* MANUAL MODE TABS */}
           {isManual && manualActiveTab === "jobDescription" && (
             <div className="flex flex-col h-full w-full">
