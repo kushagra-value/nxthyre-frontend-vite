@@ -39,6 +39,7 @@ import CreateJobRoleModal from "../../candidates/components/CreateJobRoleModal";
 import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoDrawer from "./CompanyInfoDrawer";
 import JobDateRangeFilter from "./JobDateRangeFilter";
+import JobTimelineDrawer from "./JobTimelineDrawer";
 
 interface JobListingProps {
     selectedWorkspace: MyWorkspace;
@@ -157,6 +158,7 @@ const JobListing: React.FC<JobListingProps> = ({
     const [statusMenuOpenId, setStatusMenuOpenId] = useState<number | null>(null);
     const statusMenuRef = useRef<HTMLDivElement>(null);
     const [statusMenuPos, setStatusMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+    const [timelineJobId, setTimelineJobId] = useState<number | null>(null);
     const [stageTooltip, setStageTooltip] = useState<{
         visible: boolean;
         name: string;
@@ -1086,7 +1088,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                         {fetchedNotes[job.id]?.[0] ? 'Edit Note' : 'Add Note'}
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => { setMenuOpenJobId(null); showToast.success("Timeline coming soon"); }}
+                                                                        onClick={() => { setMenuOpenJobId(null); setTimelineJobId(job.id); }}
                                                                         className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
                                                                     >
                                                                         Timeline
@@ -1389,6 +1391,14 @@ const JobListing: React.FC<JobListingProps> = ({
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#1C1C1E] rotate-45" />
                 </div>
             )}
+
+            {/* Timeline Drawer */}
+            <JobTimelineDrawer
+                isOpen={timelineJobId !== null}
+                onClose={() => setTimelineJobId(null)}
+                jobId={timelineJobId ?? 0}
+                jobTitle={filteredWorkspaceJobs.find(j => j.id === timelineJobId)?.title}
+            />
         </div>
     );
 };
