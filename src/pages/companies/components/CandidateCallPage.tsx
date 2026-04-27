@@ -621,9 +621,9 @@ export default function CandidateCallPage() {
       : "text-[#22C55E]";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
+    <div className="flex flex-col lg:flex-row h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
       {/* LEFT COLUMN */}
-      <div className="w-[35%] lg:w-[40%] xl:w-[45%] min-w-[340px] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-y-auto custom-scrollbar p-6 md:p-8 shrink-0">
+      <div className="w-full lg:w-[347px] lg:min-w-[347px] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-y-auto custom-scrollbar p-6 shrink-0 z-10">
         {/* Visual Audio Rings */}
         <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none fixed">
           <div className="w-[800px] h-[800px] rounded-full border border-white/20"></div>
@@ -642,7 +642,7 @@ export default function CandidateCallPage() {
 
         {isManual ? (
           /* ─── MANUAL CALL LEFT PANEL ─── */
-          <div className="z-10 flex flex-col items-center w-full max-w-sm">
+          <div className="z-10 flex flex-col items-center w-[100%] max-w-sm mt-12 pb-[180px]">
             <div className="relative mb-4">
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] text-3xl md:text-4xl font-semibold shadow-2xl">
                 {candidate.avatarInitials}
@@ -900,7 +900,7 @@ export default function CandidateCallPage() {
       </div>
 
       {/* RIGHT COLUMN: RECRUITER ASSISTANT PANEL */}
-      <div className={`flex-1 flex ${isManual && manualCallConnected ? "flex-row" : "flex-col"} h-full overflow-hidden bg-white shadow-xl shadow-slate-200`}>
+      <div className={`flex-1 flex ${isManual ? "flex-col xl:flex-row" : "flex-col"} h-full overflow-hidden bg-white shadow-xl shadow-slate-200 relative`}>
         {/* Main content area */}
         <div className={`flex flex-col ${isManual && manualCallConnected ? "flex-1 min-w-0" : "h-full"} overflow-hidden`}>
         {/* Header & Candidate Summary Strip */}
