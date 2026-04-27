@@ -456,7 +456,7 @@ export default function Companies() {
                 status: normalizedStatus as any,
                 createdBy: ws.created_by || undefined,
                 activeJobs: ws.active_jobs_count || "--",
-                createdDate: ws.created_at || "--",
+                createdDate: ws.created_at ? new Date(ws.created_at).toLocaleDateString('en-GB') : "--",
             };
         });
     }, [workspaces]);
