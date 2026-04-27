@@ -196,6 +196,23 @@ export default function CandidateCallPage() {
     }
   }, [candidate?.id, jobId]);
 
+  // Fetch Job Data & Competencies for the JD tab
+  useEffect(() => {
+    if (jobId) {
+      Promise.all([
+        jobPostService.getJob(jobId),
+        jobPostService.getJobCompetencies(jobId),
+      ])
+        .then(([job, comp]) => {
+          setJobData(job);
+          setCompetenciesData(comp);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch job data:', err);
+        });
+    }
+  }, [jobId]);
+
   // ─── Register Plivo Browser SDK (WebRTC) ─────────────
   useEffect(() => {
     if (isManual) return; // Skip Plivo SDK for manual calls
@@ -626,7 +643,7 @@ export default function CandidateCallPage() {
   return (
     <div className="flex flex-col lg:flex-row w-screen h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
       {/* LEFT COLUMN */}
-      <div className="w-full lg:w-[20%] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-x-hidden overflow-y-auto custom-scrollbar p-6 shrink-0 z-10 transition-all">
+      <div className="w-full lg:w-[20%] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-hidden p-6 shrink-0 z-10 transition-all">
         {/* Visual Audio Rings */}
         <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none fixed">
           <div className="w-[800px] h-[800px] rounded-full border border-white/20"></div>
@@ -649,7 +666,7 @@ export default function CandidateCallPage() {
 
         {isManual ? (
           /* ─── MANUAL CALL LEFT PANEL ─── */
-          <div className="z-10 flex flex-col items-center w-full max-w-sm mt-8 pb-[300px]">
+          <div className="z-10 flex flex-col items-center w-full max-w-sm mt-16 pb-[300px]">
             <div className="relative mb-4">
               <div className="w-[80px] h-[80px] lg:w-[100px] lg:h-[100px] rounded-full bg-white flex items-center justify-center text-[#0F47F2] text-2xl lg:text-3xl font-medium shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] transition-all">
                 {candidate.avatarInitials || "UN"}
@@ -743,22 +760,20 @@ export default function CandidateCallPage() {
               </div>
             )}
             
-            {/* INJECTED QUICK NOTES IN LEFT PANEL */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/20 bg-[#1D4ED8] bg-opacity-90 backdrop-blur-sm z-20">
-              <div className="bg-white rounded-[16px] p-4 shadow-2xl relative">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex gap-1">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M2.66663 14V2.66667C2.66663 2.29851 2.9651 2 3.33329 2H10.5961C10.7423 2 10.8844 2.04838 10.9983 2.13764L13.8407 4.36442C13.9431 4.44464 14 4.57008 14 4.70425V14C14 14.3682 13.7015 14.6667 13.3333 14.6667H3.33329C2.9651 14.6667 2.66663 14.3682 2.66663 14Z" stroke="#475569" strokeWidth="1.2"/>
-                      <path d="M10.6666 2V4C10.6666 4.36819 10.9651 4.66667 11.3333 4.66667H14" stroke="#475569" strokeWidth="1.2"/>
-                      <path d="M6 7.33333H10.6667" stroke="#475569" strokeWidth="1.2" strokeLinecap="round"/>
-                      <path d="M6 10H8.66667" stroke="#475569" strokeWidth="1.2" strokeLinecap="round"/>
-                    </svg>
-                  </div>
+            {/* QUICK NOTES - pinned to bottom of left panel */}
+            <div className="absolute bottom-0 left-0 right-0 bg-white z-20">
+              <div className="px-4 py-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.66663 14V2.66667C2.66663 2.29851 2.9651 2 3.33329 2H10.5961C10.7423 2 10.8844 2.04838 10.9983 2.13764L13.8407 4.36442C13.9431 4.44464 14 4.57008 14 4.70425V14C14 14.3682 13.7015 14.6667 13.3333 14.6667H3.33329C2.9651 14.6667 2.66663 14.3682 2.66663 14Z" stroke="#475569" strokeWidth="1.2"/>
+                    <path d="M10.6666 2V4C10.6666 4.36819 10.9651 4.66667 11.3333 4.66667H14" stroke="#475569" strokeWidth="1.2"/>
+                    <path d="M6 7.33333H10.6667" stroke="#475569" strokeWidth="1.2" strokeLinecap="round"/>
+                    <path d="M6 10H8.66667" stroke="#475569" strokeWidth="1.2" strokeLinecap="round"/>
+                  </svg>
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Quick Notes</span>
                 </div>
                 
-                <div className="flex flex-wrap gap-1.5 mb-3">
+                <div className="flex flex-wrap gap-1.5 mb-2">
                   {tags.map((tag) => (
                     <button
                       key={tag}
@@ -791,7 +806,6 @@ export default function CandidateCallPage() {
                 </div>
               </div>
             </div>
-            {/* END INJECTED QUICK NOTES */}
           </div>
         ) : (
           /* ─── PLATFORM CALL LEFT PANEL (original) ─── */
@@ -1048,7 +1062,7 @@ export default function CandidateCallPage() {
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="min-h-[120vh] bg-white">
+                <div className="h-[calc(100vh-160px)] bg-white">
                   {candidate.resumeUrl ? (() => {
                     const url = candidate.resumeUrl;
                     const ext = url.split(".").pop()?.toLowerCase() || "";
