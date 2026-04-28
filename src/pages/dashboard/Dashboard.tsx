@@ -386,6 +386,7 @@ export default function Dashboard() {
         jobRole: item.job_role,
         jobRoleId: item.job_role_id,
         latestCallNote: item.latest_call_note,
+        latestCallTags: item.latest_call_tags,
       };
     });
 
@@ -769,6 +770,7 @@ export default function Dashboard() {
                             statusColor={card.statusColor}
                             isDone={card.isDone}
                             latestCallNote={card.latestCallNote}
+                            latestCallTags={card.latestCallTags}
                             onClick={() => handlePriorityCardClick(card, tabKey)}
                           />
                         ))}
