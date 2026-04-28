@@ -994,7 +994,7 @@ export default function CandidateCallPage() {
           {/* MANUAL MODE TABS */}
           {isManual && manualActiveTab === "jobDescription" && (
             <div className="flex flex-col h-full w-full">
-              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm p-4 md:p-8 w-full max-w-4xl mx-auto break-words">
+              <div className="bg-white border border-slate-200 rounded-xl overflow-auto shadow-sm p-4 md:p-8 w-full max-w-4xl mx-auto break-words">
                 <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6">Job Description: {jobData ? jobData.title : candidate.headline}</h2>
                 <div className="space-y-6 text-sm text-slate-700">
                   {jobData ? (
@@ -1049,7 +1049,7 @@ export default function CandidateCallPage() {
           )}
           {isManual && manualActiveTab === "resume" && (
             <div className="flex flex-col h-full max-w-4xl mx-auto">
-              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-white border border-slate-200 rounded-xl overflow-auto shadow-sm">
                 <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50/50">
                   <div>
                     <h3 className="text-sm font-bold text-slate-800">Candidate Resume View</h3>
