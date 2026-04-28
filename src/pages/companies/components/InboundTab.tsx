@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus } from "lucide-react";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
@@ -12,6 +12,61 @@ interface InboundTabProps {
     allCandidates?: any[],
     index?: number
   ) => void;
+}
+
+/** Convert PipelineFiltersState → backend search API payload fields */
+function buildFilterPayload(filters: PipelineFiltersState): Record<string, any> {
+  const payload: Record<string, any> = {};
+
+  // Locations
+  if (filters.location.length > 0) {
+    payload.locations = filters.location;
+  }
+
+  // Salary range (LPA string → number)
+  if (filters.salaryRange.min) {
+    payload.salary_min = Number(filters.salaryRange.min);
+  }
+  if (filters.salaryRange.max) {
+    payload.salary_max = Number(filters.salaryRange.max);
+  }
+
+  // Experience range
+  if (filters.experience.min) {
+    payload.experience_min = Number(filters.experience.min);
+  }
+  if (filters.experience.max) {
+    payload.experience_max = Number(filters.experience.max);
+  }
+
+  // Designation (treated as keywords/companies filter)
+  if (filters.designation.length > 0) {
+    payload.designation = filters.designation;
+  }
+
+  // Notice period – use selected labels or min/max days
+  const noticePeriodMap: Record<string, number> = {
+    Immediate: 0,
+    "15 days": 15,
+    "30 days": 30,
+    "60 days": 60,
+    "90 days": 90,
+  };
+  if (filters.noticePeriod.selected.length > 0) {
+    // Pick the max selected bucket so the backend returns candidates within that range
+    const maxDays = Math.max(
+      ...filters.noticePeriod.selected.map((s) => noticePeriodMap[s] ?? 0)
+    );
+    payload.notice_period_max_days = maxDays;
+  }
+  if (filters.noticePeriod.maxDays) {
+    payload.notice_period_max_days = Number(filters.noticePeriod.maxDays);
+  }
+  if (filters.noticePeriod.minDays) {
+    payload.notice_period_min_days = Number(filters.noticePeriod.minDays);
+  }
+
+  return payload;
 }
 
 export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps) {
@@ -30,13 +85,30 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
   const [pipelineFilters, setPipelineFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Count active filters for badge
+  const activeFilterCount = (() => {
+    let count = 0;
+    if (pipelineFilters.location.length > 0) count++;
+    if (pipelineFilters.salaryRange.min || pipelineFilters.salaryRange.max) count++;
+    if (pipelineFilters.experience.min || pipelineFilters.experience.max) count++;
+    if (pipelineFilters.designation.length > 0) count++;
+    if (pipelineFilters.noticePeriod.selected.length > 0 || pipelineFilters.noticePeriod.minDays || pipelineFilters.noticePeriod.maxDays) count++;
+    if (pipelineFilters.attention.length > 0) count++;
+    return count;
+  })();
+
   useEffect(() => {
     if (!jobId) return;
     const timeoutId = setTimeout(() => {
       fetchInboundCandidates(currentPage);
     }, 500);
     return () => clearTimeout(timeoutId);
-  }, [jobId, currentPage, searchQuery, sortBy]);
+  }, [jobId, currentPage, searchQuery, sortBy, pipelineFilters]);
+
+  const handleApplyFilters = useCallback((filters: PipelineFiltersState) => {
+    setPipelineFilters(filters);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, []);
 
   const fetchInboundCandidates = async (page: number) => {
     try {
@@ -49,6 +121,11 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
       if (searchQuery.trim()) {
         payload.text_query = searchQuery.trim();
       }
+
+      // Merge pipeline filter fields into the payload
+      const filterFields = buildFilterPayload(pipelineFilters);
+      Object.assign(payload, filterFields);
+
       const response = await apiClient.post(`/candidates/search/?page=${page}`, payload);
       setCandidates(response.data.results || []);
       setTotalCount(response.data.count || 0);
@@ -109,11 +186,16 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
                 className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 ${showFilterPanel ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]" : "bg-white text-[#8E8E93] border-[#E5E7EB] hover:bg-[#F3F5F7]"}`}
               >
                 <SlidersHorizontal className="w-4 h-4" /> Filters
+                {activeFilterCount > 0 && (
+                  <span className="ml-1 w-5 h-5 rounded-full bg-[#0F47F2] text-white text-[11px] font-bold flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
               </button>
               <PipelineFilterPanel
                 isOpen={showFilterPanel}
                 onClose={() => setShowFilterPanel(false)}
-                onApply={(filters) => setPipelineFilters(filters)}
+                onApply={handleApplyFilters}
                 initialFilters={pipelineFilters}
                 anchorRef={filterButtonRef}
                 jobId={jobId!}
