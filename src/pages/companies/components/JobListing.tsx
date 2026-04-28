@@ -876,7 +876,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     );
                                                 case 'location':
                                                     return (
-                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center truncate max-w-[120px]" title={Array.isArray(job.location) ? job.location.join(', ') : job.location}>
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center" title={Array.isArray(job.location) ? job.location.join(', ') : job.location}>
                                                                 {Array.isArray(job.location) && job.location.length > 0
                                                                 ? job.location.length === 1
                                                                     ? job.location[0]
