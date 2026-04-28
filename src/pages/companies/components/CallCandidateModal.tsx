@@ -31,6 +31,7 @@ interface CallCandidateModalProps {
   callMode?: "platform" | "manual";
   initialNote?: string;
   initialTags?: string[];
+  initialSkills?: Record<string, boolean>;
 }
 
 const REASONS = [
@@ -61,6 +62,7 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   callMode = "platform",
   initialNote = "",
   initialTags = [],
+  initialSkills = {},
 }) => {
   const [step, setStep] = useState<ModalStep>(initialStep);
   const [selectedReason, setSelectedReason] = useState<string | null>(initialReason);
@@ -211,7 +213,8 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
         call_status: getMappedStatus(selectedReason) || "completed",
         reason: selectedReason || undefined,
         note: note || undefined,
-        checklist_data: { quick_notes_selected: quickNotes }
+        tags: quickNotes.length > 0 ? quickNotes : undefined,
+        skills_data: initialSkills,
       });
     } catch (err) {
       console.error("Failed to save call log:", err);
@@ -248,7 +251,8 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
         note: note || undefined,
         scheduled_date: selectedDate,
         scheduled_time: timeForApi,
-        checklist_data: { quick_notes_selected: quickNotes }
+        tags: quickNotes.length > 0 ? quickNotes : undefined,
+        skills_data: initialSkills,
       });
     } catch (err) {
       console.error("Failed to schedule follow-up:", err);

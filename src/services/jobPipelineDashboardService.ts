@@ -100,6 +100,7 @@ export interface ScheduleFollowUpPayload {
   duration_seconds?: number;
   tags?: string[];
   checklist_data?: Record<string, any>;
+  skills_data?: Record<string, boolean>;
   call_log_id?: number;
 }
 

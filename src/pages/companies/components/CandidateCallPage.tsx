@@ -1608,6 +1608,7 @@ export default function CandidateCallPage() {
           initialReason={followUpReason}
           initialNote={notes}
           initialTags={activeTags}
+          initialSkills={skillsChecklist}
           callMode="manual"
         />
       )}
