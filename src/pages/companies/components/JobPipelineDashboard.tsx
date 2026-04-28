@@ -181,6 +181,10 @@ interface CandidateListItem {
   latest_manual_call_at?: string | null;
   latest_manual_call_note?: string | null;
   latest_manual_call_tags?: string[] | null;
+  latest_call_status?: string | null;
+  latest_call_at?: string | null;
+  latest_call_note?: string | null;
+  latest_call_tags?: string[] | null;
   next_follow_up?: {
     scheduled_date: string;
     scheduled_time: string;
@@ -286,17 +290,21 @@ const getAttentionPill = (item: CandidateListItem, attentionTag?: { text: string
   }
 
   // 2. Manual Call Priority
-  if (item.latest_manual_call_status) {
-    const status = item.latest_manual_call_status;
-    const daysAgo = formatTimeAgo(item.latest_manual_call_at || "");
+  const status = item.latest_call_status || item.latest_manual_call_status;
+  if (status) {
+    const at = item.latest_call_at || item.latest_manual_call_at || "";
+    const tags = item.latest_call_tags || item.latest_manual_call_tags;
+    const note = item.latest_call_note || item.latest_manual_call_note;
+    
+    const daysAgo = formatTimeAgo(at);
     
     if (status === "completed" || status === "initiated") {
       const parts = [];
-      if (item.latest_manual_call_tags && item.latest_manual_call_tags.length > 0) {
-        parts.push(item.latest_manual_call_tags.join(", "));
+      if (tags && tags.length > 0) {
+        parts.push(tags.join(", "));
       }
-      if (item.latest_manual_call_note) {
-        parts.push(`"${item.latest_manual_call_note}"`);
+      if (note) {
+        parts.push(`"${note}"`);
       }
       
       if (parts.length > 0) {
