@@ -1,6 +1,6 @@
 import React from "react";
 import { X, RotateCcw, Copy } from "lucide-react";
-import  CKEditor  from "@ckeditor/ckeditor5-react";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import toast from "react-hot-toast";
 
