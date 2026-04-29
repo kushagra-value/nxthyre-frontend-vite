@@ -245,7 +245,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     } catch (err: any) {
       const msg = err.response?.data?.description ? `Description error: ${err.response.data.description}`
         : err.response?.data?.department ? `Department error: ${err.response.data.department.join(" ")}`
-        : err.message || "Failed to create job role";
+          : err.message || "Failed to create job role";
       showToast.error(msg);
     } finally { setIsLoading(false); }
   };
@@ -349,13 +349,13 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
       <div className="bg-white relative rounded-3xl shadow-xl w-full max-w-4xl max-h-[98vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-10 pb-4">
-          
+        <div className="p-4 px-10">
+
 
           {/* 3-Step Progress */}
-          <div className="mt-8 flex flex-col items-start">
-            
-            <div className="mt-4 text-start">
+          <div className="flex flex-col items-start">
+
+            <div className="text-start">
               <h2 className="text-md font-semibold text-gray-900 uppercase tracking-wide">
                 {stepLabels[currentStep - 1]}
               </h2>
