@@ -365,7 +365,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         </div>
 
         {/* Step Content */}
-        <div className="flex-1 overflow-y-auto px-auto mt-2 pb-6">
+        <div className="flex-1 overflow-y-auto px-10 mt-2 pb-6">
           {currentStep === 1 && (
             <JobBasicsStep
               formData={formData} setFormData={setFormData} workspaces={workspaces}
