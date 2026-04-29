@@ -347,36 +347,15 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white relative rounded-2xl shadow-xl w-full max-w-6xl max-h-[98vh] flex flex-col overflow-hidden">
+      <div className="bg-white relative rounded-3xl shadow-xl w-full max-w-4xl max-h-[98vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-10 pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <button onClick={handleCancel} className="p-1 hover:bg-gray-100 rounded-lg mr-4">
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-              </button>
-              <span className="text-md font-medium text-gray-900">Create Job Role</span>
-            </div>
-            <button onClick={handleCancel}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
-              Cancel
-            </button>
-          </div>
+          
 
           {/* 3-Step Progress */}
-          <div className="mt-8 flex flex-col items-center">
-            <div className="flex items-center w-2/3 justify-center">
-              {stepLabels.map((label, i) => (
-                <React.Fragment key={i}>
-                  {i > 0 && <div className={`flex-1 h-px mx-2 max-w-[200px] ${currentStep > i ? "bg-blue-500" : "bg-gray-300"}`} />}
-                  <div className="flex flex-col items-center gap-2">
-                    <span className={`text-sm ${currentStep >= i + 1 ? "text-blue-500 font-medium" : "text-gray-500"}`}>{label}</span>
-                    <div className={`w-3 h-3 rounded-full ${currentStep >= i + 1 ? "bg-blue-500" : "bg-gray-300"}`} />
-                  </div>
-                </React.Fragment>
-              ))}
-            </div>
-            <div className="mt-4 text-center">
+          <div className="mt-8 flex flex-col items-start">
+            
+            <div className="mt-4 text-start">
               <h2 className="text-md font-semibold text-gray-900 uppercase tracking-wide">
                 {stepLabels[currentStep - 1]}
               </h2>
