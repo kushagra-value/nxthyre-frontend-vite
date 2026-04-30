@@ -340,7 +340,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       const draftId = draftData?.id || Date.now().toString();
       const newDraft = {
         id: draftId,
-        workspaceId: workspaceId,
+        workspaceId: parseInt(formData.workspace) || workspaceId,
         title: formData.title || 'Untitled Draft',
         updatedAt: new Date().toISOString(),
         formData: formData,
