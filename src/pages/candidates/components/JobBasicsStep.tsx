@@ -452,9 +452,7 @@ const JobBasicsStep: React.FC<JobBasicsStepProps> = ({
             />
           </div>
         )}
-        <p className="text-xs text-amber-600 mt-1 italic">
-          Optional but recommended — improves AI JD quality significantly
-        </p>
+        
       </div>
     </div>
   );
