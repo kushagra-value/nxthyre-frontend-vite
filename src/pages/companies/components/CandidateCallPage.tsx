@@ -604,13 +604,20 @@ export default function CandidateCallPage() {
   ]);
 
   const toggleTag = (tag: string) => {
-    setActiveTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    );
+    setActiveTags((prev) => {
+      const next = prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
+      // Save immediately in background
+      setTimeout(() => handleSaveNotes(true), 100);
+      return next;
+    });
   };
 
   const toggleChecklist = (key: keyof typeof checklist) => {
-    setChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
+    setChecklist((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      setTimeout(() => handleSaveNotes(true), 100);
+      return next;
+    });
   };
 
   
@@ -1377,6 +1384,7 @@ export default function CandidateCallPage() {
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
+                    onBlur={() => handleSaveNotes(true)}
                     placeholder="Add key points here during the call"
                     className="w-full h-24 bg-white border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:outline-none rounded-xl p-4 text-sm transition-all resize-none shadow-sm"
                   />
