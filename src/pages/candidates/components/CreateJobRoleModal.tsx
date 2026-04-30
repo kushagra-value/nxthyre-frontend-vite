@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle, Download, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Download, Send, X } from "lucide-react";
 import { showToast } from "../../../utils/toast";
 import { jobPostService, CreateJobData } from "../../../services/jobPostService";
 import { candidateService } from "../../../services/candidateService";
@@ -406,10 +406,16 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white relative rounded-3xl shadow-xl w-full max-w-4xl max-h-[98vh] flex flex-col pt-6 overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" onClick={() => setShowCancelModal(true)}>
+      <div className="bg-white relative rounded-3xl shadow-xl w-full max-w-4xl max-h-[98vh] flex flex-col pt-6 overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="p-4 px-10">
+          <button 
+            onClick={() => setShowCancelModal(true)} 
+            className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-6 h-6" />
+          </button>
 
 
           {/* 3-Step Progress */}
