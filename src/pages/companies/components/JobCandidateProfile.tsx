@@ -908,7 +908,7 @@ export default function JobCandidateProfile({
                     - Uses current_stage_details from API as requested
                     - Each stage is fixed width (no shrinking) + clean connectors
                 */}
-        {cand.application_type === "inbound" ? (
+        {cand.application_type === "inbound" && !applicationId ? (
           <div className="bg-white rounded-xl p-8 shadow-sm flex items-center justify-between">
             <div>
               <h3 className="text-xs font-bold text-[#4B5563] mb-2 uppercase tracking-wider">
