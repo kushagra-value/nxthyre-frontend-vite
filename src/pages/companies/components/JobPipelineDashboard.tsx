@@ -1667,7 +1667,7 @@ export default function JobPipelineDashboard({
           key={item.id}
           draggable={!isArchived}
           onDragStart={(e) => !isArchived && handleDragStart(e, item)}
-          className={`${isArchived ? "bg-[#F9FAFB] grayscale opacity-60 pointer-events-none" : "bg-white cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30"} border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm transition-all flex flex-col gap-3 relative ${isDisabled && !isArchived ? "opacity-60" : ""} ${isDisabled && isArchived ? "pointer-events-none opacity-40" : ""}`}
+          className={`${isArchived ? "bg-[#F9FAFB] grayscale opacity-60" : "bg-white cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30"} border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm transition-all flex flex-col gap-3 relative ${isDisabled && !isArchived ? "opacity-60" : ""} ${isDisabled && isArchived ? "opacity-40" : ""}`}
         >
           <div className="flex justify-between items-start">
             <div className="flex gap-3">
@@ -3161,7 +3161,7 @@ export default function JobPipelineDashboard({
                             return (
                               <tr
                                 key={item.id}
-                                className={`grayscale opacity-50 bg-gray-50/50 hover:bg-gray-100 transition-colors ${isDisabled ? "pointer-events-none opacity-30" : ""}`}
+                                className={`grayscale opacity-50 bg-gray-50/50 hover:bg-gray-100 transition-colors ${isDisabled ? "opacity-30" : ""}`}
                               >
                                 <td className="px-4 py-5">
                                   <input
@@ -3173,12 +3173,19 @@ export default function JobPipelineDashboard({
                                   />
                                 </td>
                                 <td className="px-4 py-5 whitespace-nowrap">
-                                  <div className="flex flex-col">
-                                    <div className="font-medium text-[#8E8E93] truncate" title={cand.full_name || "--"}>
-                                      {cand.full_name || "--"}
-                                    </div>
-                                    <div className="text-xs text-[#AEAEB2] truncate" title={cand.headline || "--"}>
-                                      {cand.headline || "--"}
+                                  <div
+                                    className="cursor-pointer group"
+                                    onClick={() =>
+                                      onSelectCandidate?.(item, filteredArchivedTable, filteredArchivedTable.indexOf(item))
+                                    }
+                                  >
+                                    <div>
+                                      <div className="font-medium text-[#8E8E93] group-hover:underline group-hover:text-blue-600 transition truncate" title={cand.full_name || "--"}>
+                                        {cand.full_name || "--"}
+                                      </div>
+                                      <div className="text-xs text-[#AEAEB2] truncate" title={cand.headline || "--"}>
+                                        {cand.headline || "--"}
+                                      </div>
                                     </div>
                                     {(item as any).archive_reason && (
                                       <div className="bg-[#FEF2F2] px-2 py-1 rounded text-[10px] text-[#DC2626] font-medium mt-1.5 inline-flex items-center gap-1.5 w-fit max-w-[200px]">
