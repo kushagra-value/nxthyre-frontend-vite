@@ -1013,57 +1013,87 @@ export default function CandidateCallPage() {
         <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto px-4 md:px-8 py-6 custom-scrollbar bg-slate-50/30">
           {/* MANUAL MODE TABS */}
           {isManual && manualActiveTab === "jobDescription" && (
-            <div className="flex flex-col h-full w-full">
-              <div className="bg-white border border-slate-200 rounded-xl overflow-auto shadow-sm p-4 md:p-8 w-full max-w-4xl mx-auto break-words">
-                <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6">Job Description: {jobData ? jobData.title : candidate.headline}</h2>
-                <div className="space-y-6 text-sm text-slate-700">
-                  {jobData ? (
-                    <>
-                      {competenciesData?.role_overview ? (
-                        <>
-                          <section>
-                            <h3 className="font-bold text-slate-800 text-base mb-2">Role Overview</h3>
-                            <p className="leading-relaxed text-[#727272] whitespace-pre-wrap">{competenciesData.role_overview}</p>
-                          </section>
-                          {competenciesData.the_core_expectation && (
-                            <section>
-                              <h3 className="font-bold text-slate-800 text-base mb-2">The Core Expectation</h3>
-                              <div className="rounded-[10px] bg-[#EBFFEE] p-[20px]">
-                                <ul className="flex flex-col gap-0 list-disc ml-[16px]">
-                                  {competenciesData.the_core_expectation.map((item: string, i: number) => (
-                                    <li key={i} className="text-[#727272] leading-relaxed mb-1">{item}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            </section>
-                          )}
-                          {competenciesData.key_responsibilities_explained?.functional && (
-                            <section>
-                              <h3 className="font-bold text-slate-800 text-base mb-2">Key Responsibilities</h3>
-                              <div className="flex flex-col gap-3">
-                                {competenciesData.key_responsibilities_explained.functional.map((item: any, i: number) => (
-                                  <div key={i} className="flex flex-col gap-1 p-4 bg-[#E7EDFF] rounded-[10px] text-sm">
-                                    <span className="font-semibold text-black">{item.competency}</span>
-                                    <span className="text-[#727272] text-xs">{item.context}</span>
-                                    {item.priority && (
-                                      <span className="bg-[#FFF7D6] text-[#F59E0B] text-[10px] font-bold px-2 py-0.5 rounded-full w-fit mt-1">Priority: {item.priority}</span>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </section>
-                          )}
-                        </>
-                      ) : (
-                        <div className="text-slate-500 whitespace-pre-wrap">
-                          {jobData.description ? <div dangerouslySetInnerHTML={{ __html: jobData.description }} /> : "Loading job details..."}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="text-center py-10 text-slate-400">Loading Job Description...</div>
-                  )}
+            <div className="flex flex-col h-full w-full max-w-4xl mx-auto break-words pb-10">
+              <div className="bg-white border border-slate-200 rounded-[24px] shadow-sm p-8 md:p-10 w-full relative">
+                
+                {/* Floating Avatars (Premium touch from design) */}
+                <div className="absolute top-8 right-8 flex -space-x-3 group cursor-pointer">
+                  <div className="w-12 h-12 rounded-full border-4 border-white shadow-xl overflow-hidden transition-transform group-hover:-translate-x-1">
+                    <img src="https://i.pravatar.cc/150?u=1" alt="Recruiter 1" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="w-12 h-12 rounded-full border-4 border-white shadow-xl overflow-hidden transition-transform group-hover:translate-x-1">
+                    <img src="https://i.pravatar.cc/150?u=2" alt="Recruiter 2" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -inset-2 bg-blue-500/10 rounded-full blur-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
+
+                {/* Header */}
+                <div className="mb-8 pr-24">
+                  <h2 className="text-2xl font-bold text-slate-800 tracking-tight leading-tight">
+                    {jobData?.title || candidate.headline} {jobData?.workspace_details?.name ? `V2 - ${jobData.workspace_details.name}` : ""}
+                  </h2>
+                </div>
+
+                {/* Job Summary Section */}
+                <div className="mb-10">
+                  <h3 className="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-wider">Job Summary</h3>
+                  <div className="flex flex-col gap-1.5">
+                    {[
+                      { label: "Job Title", value: jobData?.title },
+                      { label: "Company", value: jobData?.workspace_details?.name },
+                      { label: "Location", value: jobData?.location?.join(' · ') || "Hybrid" },
+                      { label: "Salary Range", value: jobData?.salary_min ? `₹${jobData.salary_min}L – ₹${jobData.salary_max}L per annum` : "Not disclosed" },
+                      { label: "Experience", value: jobData?.experience_min_years ? `${jobData.experience_min_years}–${jobData.experience_max_years} years` : "Not specified" },
+                      { label: "Openings", value: jobData?.No_of_opening_or_positions_ || jobData?.num_positions || "1" },
+                      { label: "Notice Period", value: jobData?.notice_period || "30 Days" },
+                    ].map((row, i) => (
+                      <div key={i} className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl hover:bg-[#F1F5F9] transition-colors group">
+                        <span className="text-sm text-slate-500 font-medium">{row.label}</span>
+                        <span className="text-sm text-slate-800 font-semibold group-hover:text-blue-600 transition-colors">{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Primary Skills Section */}
+                <div className="mb-10 bg-[#F4F7FF] rounded-2xl p-6 border border-[#E0E7FF]/50">
+                  <h3 className="text-sm font-semibold text-slate-500 mb-5 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    Primary Skills
+                  </h3>
+                  <div className="flex flex-wrap gap-2.5">
+                    {(jobData?.skills?.length ? jobData.skills : ["React", "TypeScript", "Node.js"]).map((skill, i) => (
+                      <span 
+                        key={i} 
+                        className="px-5 py-2.5 bg-white rounded-xl text-sm text-blue-600 font-bold shadow-sm border border-blue-100 hover:border-blue-300 hover:shadow-md transition-all cursor-default"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Must Have Section */}
+                <div className="bg-[#FFF1F2] rounded-2xl p-6 border border-[#FFE4E6]">
+                  <h3 className="text-sm font-bold text-rose-600 mb-5 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                    Must Have
+                  </h3>
+                  <ul className="space-y-4">
+                    {(competenciesData?.the_core_expectation?.length 
+                      ? competenciesData.the_core_expectation 
+                      : (jobData?.description?.split('\n').filter(l => l.includes('Must') || l.includes('experience')).slice(0, 3) || ["Strong technical knowledge and problem-solving skills"])
+                    ).map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 group">
+                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-rose-400 transition-colors shrink-0" />
+                        <p className="text-sm text-slate-600 leading-relaxed group-hover:text-slate-900 transition-colors">
+                          {item}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
               </div>
             </div>
           )}
