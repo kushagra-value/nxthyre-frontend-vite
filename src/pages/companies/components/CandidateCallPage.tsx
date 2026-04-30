@@ -447,6 +447,8 @@ export default function CandidateCallPage() {
       }
       setCallState("completed");
       setIsPaused(true);
+      // Auto-save when call ends
+      setTimeout(() => handleSaveNotes(true), 500);
     } catch (err) {
       console.error("Failed to end call:", err);
       // Still mark as completed locally
@@ -529,6 +531,8 @@ export default function CandidateCallPage() {
               await processManualRecording(formData);
               console.log("Audio recording submitted successfully.");
               showToast.success("Recording saved and processing...");
+              // Auto-save call log when recording stops
+              handleSaveNotes(true);
             } catch (err) {
               console.error("Failed to submit manual recording audio:", err);
             }
@@ -556,9 +560,9 @@ export default function CandidateCallPage() {
     };
   }, []);
 
-  const handleSaveNotes = useCallback(async () => {
+  const handleSaveNotes = useCallback(async (isSilent = false) => {
     if (!candidate) return;
-    setIsSaving(true);
+    if (!isSilent) setIsSaving(true);
     let finalCallUuid = callUuid;
     try {
       const callLogRes = await saveCallLog({
@@ -569,18 +573,19 @@ export default function CandidateCallPage() {
         tags: activeTags.length > 0 ? activeTags : undefined,
         checklist_data: checklist,
         skills_data: skillsChecklist,
+        role_questions_data: roleQuestions,
         call_mode: isManual ? "manual" : "platform",
         call_status: isManual && manualCallConnected ? "completed" : undefined
       });
       
       finalCallUuid = callLogRes.call_uuid || finalCallUuid;
       
-      alert("Notes and checklist saved successfully!");
+      if (!isSilent) alert("Notes and checklist saved successfully!");
     } catch (err) {
       console.error("Failed to save notes:", err);
-      alert("Failed to save notes. Please try again.");
+      if (!isSilent) alert("Failed to save notes. Please try again.");
     } finally {
-      setIsSaving(false);
+      if (!isSilent) setIsSaving(false);
     }
   }, [
     candidate,
@@ -589,7 +594,10 @@ export default function CandidateCallPage() {
     seconds,
     activeTags,
     checklist,
-    isManual
+    skillsChecklist,
+    roleQuestions,
+    isManual,
+    manualCallConnected
   ]);
 
   const toggleTag = (tag: string) => {

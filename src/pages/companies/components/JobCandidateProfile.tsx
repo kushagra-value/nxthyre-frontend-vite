@@ -28,6 +28,9 @@ import {
   Send,
   User,
   MessageSquareText,
+  CheckCircle2,
+  XCircle,
+  FastForward,
 } from "lucide-react";
 import candidateService, { Note } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
@@ -2087,22 +2090,88 @@ export default function JobCandidateProfile({
                         {isAnswered ? (
                           /* ── Answered Call Card ── */
                           <div className="border border-[#E5E7EB] rounded-xl p-5">
-                            <div className="flex items-center gap-4 mb-5">
-                              <div className="w-10 h-10 rounded-full bg-[#F3F5F7] flex items-center justify-center shrink-0">
-                                <Phone className="w-4 h-4 text-[#8E8E93]" />
+                            <div className="flex justify-between items-start mb-5">
+                              <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-[#F3F5F7] flex items-center justify-center shrink-0">
+                                  <Phone className="w-4 h-4 text-[#8E8E93]" />
+                                </div>
+                                <div>
+                                  <p className="text-[13px] font-bold text-[#4B5563]">
+                                    {call.call_type === "outgoing"
+                                      ? "Outgoing"
+                                      : "Incoming"}{" "}
+                                    Call on {formatTime(call.created_at)}
+                                  </p>
+                                  <p className="text-[11px] text-[#AEAEB2] mt-0.5">
+                                    {formatDuration(call.duration_seconds)}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-[13px] font-bold text-[#4B5563]">
-                                  {call.call_type === "outgoing"
-                                    ? "Outgoing"
-                                    : "Incoming"}{" "}
-                                  Call on {formatTime(call.created_at)}
-                                </p>
-                                <p className="text-[11px] text-[#AEAEB2] mt-0.5">
-                                  {formatDuration(call.duration_seconds)}
-                                </p>
-                              </div>
+
+                              {/* Call Score Badge */}
+                              {call.role_questions_data && Array.isArray(call.role_questions_data) && (
+                                <div className="flex flex-col items-end">
+                                  {(() => {
+                                    const scored = call.role_questions_data.filter((q: any) => q.status === 'convinced' || q.status === 'not_convinced');
+                                    if (scored.length === 0) return null;
+                                    const convinced = scored.filter((q: any) => q.status === 'convinced').length;
+                                    const percentage = Math.round((convinced / scored.length) * 100);
+                                    return (
+                                      <div className="flex items-center gap-2 bg-slate-50 px-2 py-1.5 rounded-lg border border-slate-100">
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Score</span>
+                                        <div className={`text-sm font-black ${percentage >= 70 ? 'text-green-600' : percentage >= 40 ? 'text-orange-600' : 'text-red-600'}`}>
+                                          {percentage}%
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              )}
                             </div>
+
+                            {/* Role Questions Evaluation Summary */}
+                            {call.role_questions_data && Array.isArray(call.role_questions_data) && call.role_questions_data.length > 0 && (
+                              <div className="mb-6 bg-slate-50/50 border border-slate-100 rounded-xl p-4">
+                                <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-3 tracking-widest">
+                                  Role Questions Evaluation
+                                </h5>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {(() => {
+                                    const counts = { convinced: 0, not_convinced: 0, skipped: 0 };
+                                    call.role_questions_data.forEach((q: any) => {
+                                      if (q.status === "convinced") counts.convinced++;
+                                      else if (q.status === "not_convinced") counts.not_convinced++;
+                                      else if (q.status === "skipped") counts.skipped++;
+                                    });
+                                    const total = counts.convinced + counts.not_convinced + counts.skipped;
+                                    if (total === 0) return <span className="text-xs text-slate-400 italic">No evaluations recorded</span>;
+                                    
+                                    return (
+                                      <>
+                                        {counts.convinced > 0 && (
+                                          <div className="flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-[11px] font-bold border border-green-100">
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                            {counts.convinced} Convinced
+                                          </div>
+                                        )}
+                                        {counts.not_convinced > 0 && (
+                                          <div className="flex items-center gap-1.5 bg-red-50 text-red-700 px-3 py-1 rounded-full text-[11px] font-bold border border-red-100">
+                                            <XCircle className="w-3.5 h-3.5" />
+                                            {counts.not_convinced} Not Convinced
+                                          </div>
+                                        )}
+                                        {counts.skipped > 0 && (
+                                          <div className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-3 py-1 rounded-full text-[11px] font-bold border border-gray-100">
+                                            <FastForward className="w-3.5 h-3.5" />
+                                            {counts.skipped} Skipped
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                            )}
 
                             {/* Audio Player */}
                             {call.recording?.recording_url && (
