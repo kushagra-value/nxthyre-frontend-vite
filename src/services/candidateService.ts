@@ -909,6 +909,8 @@ class CandidateService {
       notice_period_days?: number;
       current_salary?: number;
       expected_ctc?: number;
+      location?: string;
+      exp?: number;
     },
   ): Promise<any> {
     try {

@@ -21,7 +21,10 @@ import {
   Phone,
   RotateCcw,
   FileText,
+  Edit2,
+  Check,
 } from "lucide-react";
+import { candidateService } from "../../../services/candidateService";
 import {
   initiateCall,
   getCallStatus,
@@ -191,6 +194,68 @@ export default function CandidateCallPage() {
       setCandidate(DUMMY_FALLBACK);
     }
   }, [candidateId, candidate]);
+
+  // Profile Editing State
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editProfileData, setEditProfileData] = useState({
+    currentCtc: "",
+    expectedCtc: "",
+    noticePeriod: "",
+    location: "",
+    experience: "",
+  });
+
+  const handleStartEdit = () => {
+    if (candidate) {
+      setEditProfileData({
+        currentCtc: candidate.currentCtc,
+        expectedCtc: candidate.expectedCtc,
+        noticePeriod: candidate.noticePeriod,
+        location: candidate.location,
+        experience: candidate.experience,
+      });
+      setIsEditingProfile(true);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!candidate?.id) return;
+    try {
+      // Parse values back to numbers where expected by backend
+      const payload: any = {};
+      
+      const parsedCurrent = parseFloat(editProfileData.currentCtc.replace(/[^0-9.]/g, ""));
+      if (!isNaN(parsedCurrent)) payload.current_salary = parsedCurrent;
+      
+      const parsedExpected = parseFloat(editProfileData.expectedCtc.replace(/[^0-9.]/g, ""));
+      if (!isNaN(parsedExpected)) payload.expected_ctc = parsedExpected;
+      
+      const parsedNotice = parseInt(editProfileData.noticePeriod.replace(/[^0-9]/g, ""), 10);
+      if (!isNaN(parsedNotice)) payload.notice_period_days = parsedNotice;
+      
+      payload.location = editProfileData.location;
+      
+      const parsedExp = parseFloat(editProfileData.experience.replace(/[^0-9.]/g, ""));
+      if (!isNaN(parsedExp)) payload.exp = parsedExp;
+
+      await candidateService.updateCandidateEditableFields(candidate.id, payload);
+      
+      setCandidate(prev => prev ? {
+        ...prev,
+        currentCtc: editProfileData.currentCtc.includes("LPA") ? editProfileData.currentCtc : `${editProfileData.currentCtc} LPA`,
+        expectedCtc: editProfileData.expectedCtc.includes("LPA") ? editProfileData.expectedCtc : `${editProfileData.expectedCtc} LPA`,
+        noticePeriod: editProfileData.noticePeriod.includes("days") ? editProfileData.noticePeriod : `${editProfileData.noticePeriod} days`,
+        location: editProfileData.location,
+        experience: editProfileData.experience.includes("yrs") ? editProfileData.experience : `${editProfileData.experience} yrs`,
+      } : null);
+      
+      setIsEditingProfile(false);
+      showToast.success("Profile updated successfully");
+    } catch (error) {
+      showToast.error("Failed to update profile");
+      console.error(error);
+    }
+  };
 
   // Fetch initial Role Questions on Mount
   useEffect(() => {
@@ -545,9 +610,10 @@ export default function CandidateCallPage() {
         mediaRecorder.start();
         isManualRecordingRef.current = true;
         setIsManualRecording(true);
-      } catch (err) {
-        console.error("Failed to start media recorder:", err);
-        alert("Failed to access microphone. Please check permissions.");
+      } catch (err: any) {
+        if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+          showToast.error("Microphone access failed. Please check permissions.");
+        }
       }
     }
   };
@@ -583,10 +649,10 @@ export default function CandidateCallPage() {
       
       finalCallUuid = callLogRes.call_uuid || finalCallUuid;
       
-      if (!isSilent) alert("Notes and checklist saved successfully!");
+      if (!isSilent) showToast.success("Notes and checklist saved!");
     } catch (err) {
       console.error("Failed to save notes:", err);
-      if (!isSilent) alert("Failed to save notes. Please try again.");
+      if (!isSilent) showToast.error("Failed to save notes. Please try again.");
     } finally {
       if (!isSilent) setIsSaving(false);
     }
@@ -815,8 +881,8 @@ export default function CandidateCallPage() {
                     placeholder="Add key notes"
                     className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-500"
                   />
-                  <button 
-                    onClick={handleSaveNotes}
+                  <button
+                    onClick={() => handleSaveNotes()}
                     disabled={isSaving}
                     className="bg-[#0F47F2] text-white rounded-xl px-5 py-2 text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 min-w-[70px]"
                   >
@@ -1016,7 +1082,7 @@ export default function CandidateCallPage() {
             <div className="flex flex-col h-full w-full max-w-4xl mx-auto break-words pb-10">
               <div className="bg-white border border-slate-200 rounded-[24px] shadow-sm p-8 md:p-10 w-full relative">
                 
-                {/* Floating Avatars (Premium touch from design) */}
+                {/* Floating Avatars (Premium touch from design)
                 <div className="absolute top-8 right-8 flex -space-x-3 group cursor-pointer">
                   <div className="w-12 h-12 rounded-full border-4 border-white shadow-xl overflow-hidden transition-transform group-hover:-translate-x-1">
                     <img src="https://i.pravatar.cc/150?u=1" alt="Recruiter 1" className="w-full h-full object-cover" />
@@ -1025,7 +1091,7 @@ export default function CandidateCallPage() {
                     <img src="https://i.pravatar.cc/150?u=2" alt="Recruiter 2" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute -inset-2 bg-blue-500/10 rounded-full blur-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                </div> */}
 
                 {/* Header */}
                 <div className="mb-8 pr-24">
@@ -1083,7 +1149,7 @@ export default function CandidateCallPage() {
                     {(competenciesData?.the_core_expectation?.length 
                       ? competenciesData.the_core_expectation 
                       : (jobData?.description?.split('\n').filter(l => l.includes('Must') || l.includes('experience')).slice(0, 3) || ["Strong technical knowledge and problem-solving skills"])
-                    ).map((item, i) => (
+                    ).map((item: string, i: number) => (
                       <li key={i} className="flex items-start gap-3 group">
                         <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-rose-400 transition-colors shrink-0" />
                         <p className="text-sm text-slate-600 leading-relaxed group-hover:text-slate-900 transition-colors">
@@ -1595,7 +1661,7 @@ export default function CandidateCallPage() {
           
             <div className="flex items-center w-full">
               <button
-                onClick={handleSaveNotes}
+                onClick={() => handleSaveNotes()}
                 disabled={isSaving}
                 className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50"
               >
@@ -1621,13 +1687,39 @@ export default function CandidateCallPage() {
 
             {/* Profile Info */}
             <div className="p-5 border-b border-slate-100">
-              <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest mb-4">PROFILE INFO</h5>
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest">PROFILE INFO</h5>
+                <button 
+                  onClick={isEditingProfile ? handleUpdateProfile : handleStartEdit}
+                  className={`p-1.5 rounded-md transition-colors ${isEditingProfile ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100" : "bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50"}`}
+                >
+                  {isEditingProfile ? <Check className="w-3.5 h-3.5" /> : <Edit2 className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+              
               <div className="flex flex-col gap-3 text-xs">
-                <div className="flex justify-between"><span className="text-slate-400">Current CTC</span><span className="text-slate-700 font-bold">{candidate.currentCtc}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Expected CTC</span><span className="text-slate-700 font-bold">{candidate.expectedCtc}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Notice Period</span><span className="text-slate-700 font-bold">{candidate.noticePeriod}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Location</span><span className="text-slate-700 font-bold">{candidate.location}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Experience</span><span className="text-slate-700 font-bold">{candidate.experience}</span></div>
+                {[
+                  { label: "Current CTC", key: "currentCtc" },
+                  { label: "Expected CTC", key: "expectedCtc" },
+                  { label: "Notice Period", key: "noticePeriod" },
+                  { label: "Location", key: "location" },
+                  { label: "Experience", key: "experience" },
+                ].map((field) => (
+                  <div key={field.key} className="flex justify-between items-center group min-h-[24px]">
+                    <span className="text-slate-400">{field.label}</span>
+                    {isEditingProfile ? (
+                      <input
+                        type="text"
+                        value={(editProfileData as any)[field.key]}
+                        onChange={(e) => setEditProfileData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                        className="w-[60%] text-right bg-slate-50 border border-slate-200 rounded px-2 py-0.5 font-bold text-slate-700 focus:outline-none focus:border-blue-300 transition-colors"
+                        autoFocus={field.key === "currentCtc"}
+                      />
+                    ) : (
+                      <span className="text-slate-700 font-bold">{(candidate as any)[field.key]}</span>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -1671,7 +1763,7 @@ export default function CandidateCallPage() {
             {/* Save Checklist Footer Button */}
             <div className="p-5 mt-auto">
               <button
-                onClick={handleSaveNotes}
+                onClick={() => handleSaveNotes()}
                 disabled={isSaving}
                 className="w-full bg-[#1D4ED8] text-white font-bold py-3 rounded-lg text-xs hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 disabled:opacity-50"
               >
