@@ -104,12 +104,15 @@ const JobBasicsStep: React.FC<JobBasicsStepProps> = ({
         </label>
         <select
           value={formData.clientCompany}
-          onChange={(e) =>
+          onChange={(e) => {
+            const selectedName = e.target.value;
+            const selectedWorkspace = workspaces.find(w => w.name === selectedName);
             setFormData((prev: any) => ({
               ...prev,
-              clientCompany: e.target.value,
-            }))
-          }
+              clientCompany: selectedName,
+              workspace: selectedWorkspace ? selectedWorkspace.id.toString() : prev.workspace,
+            }));
+          }}
           className="w-full px-3 py-2 text-blue-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           disabled={isLoading}
         >
