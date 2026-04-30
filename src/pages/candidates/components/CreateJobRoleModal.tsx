@@ -303,9 +303,16 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     
     if (draftData) {
       setFormData(draftData.formData);
+      setAiJdResponse(draftData.aiJdResponse || null);
+      setEditableJD(draftData.editableJD || "");
+      setCompetencies(draftData.competencies || []);
+      setCurrentStep(draftData.currentStep || 1);
+      setBooleanSearchTerm(draftData.booleanSearchTerm || "");
+      setOriginalDescription(draftData.originalDescription || "");
+      setOriginalUploadType(draftData.originalUploadType || "paste");
+
       setSkillInput(""); setLocationInput([]); setLocationSuggestions([]);
-      setCompetencyInput(""); setFile(null); setCurrentStep(1);
-      setCompetencies([]); setEditableJD(""); setAiJdResponse(null); setBooleanSearchTerm("");
+      setCompetencyInput(""); setFile(null); 
       return;
     }
 
@@ -336,7 +343,14 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         workspaceId: workspaceId,
         title: formData.title || 'Untitled Draft',
         updatedAt: new Date().toISOString(),
-        formData: formData
+        formData: formData,
+        aiJdResponse: aiJdResponse,
+        editableJD: editableJD,
+        competencies: competencies,
+        currentStep: currentStep,
+        booleanSearchTerm: booleanSearchTerm,
+        originalDescription: originalDescription,
+        originalUploadType: originalUploadType
       };
       const updatedDrafts = drafts.filter((d: any) => d.id !== draftId);
       updatedDrafts.unshift(newDraft);
@@ -511,6 +525,10 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                 <button onClick={() => toast.success("JD downloaded!")}
                   className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
                   Download JD <Download className="w-4 h-4" />
+                </button>
+                <button onClick={handleSaveDraft}
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+                  {saveDraftText}
                 </button>
               </div>
               <button onClick={handlePublish} disabled={isLoading}
