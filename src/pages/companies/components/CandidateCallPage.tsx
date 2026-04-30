@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   Eye,
   X,
+  XCircle,
   FastForward,
   MessageSquare,
   PhoneCall,
@@ -1152,21 +1153,41 @@ export default function CandidateCallPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <button
+                        onClick={() => handleEvaluateQuestion(q.id, "convinced")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-300 shadow-sm" : "bg-white text-slate-500 hover:bg-green-50 hover:text-green-600 border-slate-200"}`}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Convinced
+                      </button>
+                      <button
+                        onClick={() => handleEvaluateQuestion(q.id, "not_convinced")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-300 shadow-sm" : "bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 border-slate-200"}`}
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> Not Convinced
+                      </button>
+                      <button
                         onClick={() => handleEvaluateQuestion(q.id, "skipped")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50 border-slate-200"}`}
                       >
                         <FastForward className="w-3.5 h-3.5" /> Skip
                       </button>
                     </div>
-                    {q.ai_score_percentage !== null && (
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Score</span>
-                        <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500" style={{ width: `${q.ai_score_percentage}%` }}></div>
+                    <div className="flex items-center gap-4">
+                      {q.status === "convinced" && (
+                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Score: 100%</span>
+                      )}
+                      {q.status === "not_convinced" && (
+                        <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
+                      )}
+                      {q.ai_score_percentage !== null && (
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Score</span>
+                          <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-blue-500" style={{ width: `${q.ai_score_percentage}%` }}></div>
+                          </div>
+                          <span className="text-sm font-bold text-blue-700">{q.ai_score_percentage}%</span>
                         </div>
-                        <span className="text-sm font-bold text-blue-700">{q.ai_score_percentage}%</span>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1217,33 +1238,51 @@ export default function CandidateCallPage() {
                   <div className="h-px bg-slate-100 my-1"></div>
                   {/* Actions & AI Score */}
                   <div className="flex items-center justify-between">
-                    {/* Action Buttons */}
                     <div className="flex items-center gap-3">
                       <button
+                        onClick={() => handleEvaluateQuestion(q.id, "convinced")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-300 shadow-sm" : "bg-white text-slate-500 hover:bg-green-50 hover:text-green-600 border-slate-200"}`}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Convinced
+                      </button>
+                      <button
+                        onClick={() => handleEvaluateQuestion(q.id, "not_convinced")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-300 shadow-sm" : "bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 border-slate-200"}`}
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> Not Convinced
+                      </button>
+                      <button
                         onClick={() => handleEvaluateQuestion(q.id, "skipped")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50 border-slate-200"}`}
                       >
                         <FastForward className="w-3.5 h-3.5" /> Skip
                       </button>
                     </div>
 
-                    {/* AI Score */}
-                    {q.ai_score_percentage !== null && (
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                          AI Score
-                        </span>
-                        <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-blue-500"
-                            style={{ width: `${q.ai_score_percentage}%` }}
-                          ></div>
+                    <div className="flex items-center gap-4">
+                      {q.status === "convinced" && (
+                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Score: 100%</span>
+                      )}
+                      {q.status === "not_convinced" && (
+                        <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
+                      )}
+                      {q.ai_score_percentage !== null && (
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            AI Score
+                          </span>
+                          <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-blue-500"
+                              style={{ width: `${q.ai_score_percentage}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm font-bold text-blue-700">
+                            {q.ai_score_percentage}%
+                          </span>
                         </div>
-                        <span className="text-sm font-bold text-blue-700">
-                          {q.ai_score_percentage}%
-                        </span>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
