@@ -44,6 +44,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   const [originalUploadType, setOriginalUploadType] = useState<"paste" | "upload">("paste");
   const [booleanSearchTerm, setBooleanSearchTerm] = useState<string>("");
   const locationInputRef = useRef<HTMLInputElement>(null);
+  const [saveDraftText, setSaveDraftText] = useState("Save Draft");
 
   const [formData, setFormData] = useState({
     allowInbound: true, keepPrivate: true, shareExternally: false,
@@ -341,6 +342,8 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       updatedDrafts.unshift(newDraft);
       localStorage.setItem('job_drafts', JSON.stringify(updatedDrafts));
       toast.success("Draft saved!");
+      setSaveDraftText("Draft Saved!");
+      setTimeout(() => setSaveDraftText("Save Draft"), 2000);
     } catch (err) {
       toast.error("Failed to save draft");
     }
@@ -466,7 +469,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
             <div className="flex justify-between items-center">
               <button onClick={handleSaveDraft}
                 className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
-                Save Draft
+                {saveDraftText}
               </button>
               <button onClick={handleNext} disabled={isLoading}
                 className="px-8 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2">
@@ -483,7 +486,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                 </button>
                 <button onClick={handleSaveDraft}
                   className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
-                  Save Draft
+                  {saveDraftText}
                 </button>
               </div>
               <button onClick={handleNext} disabled={isLoading}

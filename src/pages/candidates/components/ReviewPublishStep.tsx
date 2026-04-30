@@ -63,9 +63,7 @@ const ReviewPublishStep: React.FC<ReviewPublishStepProps> = ({
 
   // Gather all selected primary skills
   const allPrimarySkills = [
-    ...formData.primarySkillsDesign,
-    ...formData.primarySkillsUx,
-    ...formData.primarySkillsTechnical,
+    ...(formData.aiSelectedSkills || []),
     ...formData.skills,
   ];
 

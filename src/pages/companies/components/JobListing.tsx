@@ -368,14 +368,13 @@ const JobListing: React.FC<JobListingProps> = ({
         if (activeJobFilter === "Paused") return jobStatusCounts?.paused ?? filteredWorkspaceJobs.length;
         if (activeJobFilter === "Inactive") return jobStatusCounts?.inactive ?? filteredWorkspaceJobs.length;
         if (activeJobFilter === "Draft") {
-            const localDraftsCount = getLocalDrafts().length;
-            return (jobStatusCounts?.draft ?? 0) + localDraftsCount;
+            return getLocalDrafts().length;
         }
         return jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
     };
     
     const localDrafts = activeJobFilter === "Draft" ? getLocalDrafts().map(mapDraftToJob) : [];
-    const combinedJobs = activeJobFilter === "Draft" ? [...localDrafts, ...filteredWorkspaceJobs] : filteredWorkspaceJobs;
+    const combinedJobs = activeJobFilter === "Draft" ? localDrafts : filteredWorkspaceJobs;
     
     const totalJobsForPagination = getFilteredTotal();
     const totalPages = Math.max(1, Math.ceil(totalJobsForPagination / ITEMS_PER_PAGE));
@@ -686,7 +685,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             else if (filter === "Active") count = jobStatusCounts?.active ?? 0;
                             else if (filter === "Paused") count = jobStatusCounts?.paused ?? 0;
                             else if (filter === "Inactive") count = jobStatusCounts?.inactive ?? 0;
-                            else if (filter === "Draft") count = (jobStatusCounts?.draft ?? 0) + getLocalDrafts().length;
+                            else if (filter === "Draft") count = getLocalDrafts().length ?? 0;
 
                             return (
                                 <button
@@ -852,7 +851,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F5F7]">
-                            {paginatedJobs.map((job) => {
+                            {paginatedJobs.map((job: Job) => {
                                 const daysOpen = job.days_open;
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
 
