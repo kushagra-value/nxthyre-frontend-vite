@@ -186,6 +186,14 @@ export const EventForm = ({
   useEffect(() => {
     if (isOpen && initialCompanyId) {
       setSelectedCompanyId(initialCompanyId);
+      // We set isInitialMount to false after a short delay to allow all initial sync effects to complete
+      // without being interrupted by the reset effects.
+      const timer = setTimeout(() => {
+        isInitialMount.current = false;
+      }, 100);
+      return () => clearTimeout(timer);
+    } else if (isOpen) {
+        isInitialMount.current = false;
     }
   }, [isOpen, initialCompanyId]);
 
@@ -257,7 +265,6 @@ export const EventForm = ({
   const isInitialMount = useRef(true);
   useEffect(() => {
     if (isInitialMount.current) {
-      isInitialMount.current = false;
       return;
     }
     setSelectedJobId('');
@@ -335,8 +342,9 @@ export const EventForm = ({
     fetchStages();
   }, [selectedJobId]);
 
-  // Reset applicationId when job changes
+  // Reset applicationId when job changes, but NOT on initial mount/open
   useEffect(() => {
+    if (isInitialMount.current) return;
     setFormData((prev) => ({ ...prev, applicationId: '', stageId: '', type: '' }));
   }, [selectedJobId]);
 
