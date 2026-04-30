@@ -2109,10 +2109,13 @@ export default function JobCandidateProfile({
                               </div>
 
                               {/* Call Score Badge */}
-                              {call.role_questions_data && Array.isArray(call.role_questions_data) && (
+                              {call.role_questions_data && (
                                 <div className="flex flex-col items-end">
                                   {(() => {
-                                    const scored = call.role_questions_data.filter((q: any) => q.status === 'convinced' || q.status === 'not_convinced');
+                                    const questions = Array.isArray(call.role_questions_data) 
+                                      ? call.role_questions_data 
+                                      : Object.values(call.role_questions_data);
+                                    const scored = questions.filter((q: any) => q.status === 'convinced' || q.status === 'not_convinced');
                                     if (scored.length === 0) return null;
                                     const convinced = scored.filter((q: any) => q.status === 'convinced').length;
                                     const percentage = Math.round((convinced / scored.length) * 100);
@@ -2130,15 +2133,18 @@ export default function JobCandidateProfile({
                             </div>
 
                             {/* Role Questions Evaluation Summary */}
-                            {call.role_questions_data && Array.isArray(call.role_questions_data) && call.role_questions_data.length > 0 && (
+                            {call.role_questions_data && (
                               <div className="mb-6 bg-slate-50/50 border border-slate-100 rounded-xl p-4">
                                 <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-3 tracking-widest">
                                   Role Questions Evaluation
                                 </h5>
                                 <div className="flex flex-wrap items-center gap-2">
                                   {(() => {
+                                    const questions = Array.isArray(call.role_questions_data) 
+                                      ? call.role_questions_data 
+                                      : Object.values(call.role_questions_data);
                                     const counts = { convinced: 0, not_convinced: 0, skipped: 0 };
-                                    call.role_questions_data.forEach((q: any) => {
+                                    questions.forEach((q: any) => {
                                       if (q.status === "convinced") counts.convinced++;
                                       else if (q.status === "not_convinced") counts.not_convinced++;
                                       else if (q.status === "skipped") counts.skipped++;

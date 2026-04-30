@@ -573,7 +573,10 @@ export default function CandidateCallPage() {
         tags: activeTags.length > 0 ? activeTags : undefined,
         checklist_data: checklist,
         skills_data: skillsChecklist,
-        role_questions_data: roleQuestions,
+        role_questions_data: roleQuestions.reduce((acc, q) => {
+          acc[q.id] = q;
+          return acc;
+        }, {} as Record<number, any>),
         call_mode: isManual ? "manual" : "platform",
         call_status: isManual && manualCallConnected ? "completed" : undefined
       });
@@ -1186,7 +1189,7 @@ export default function CandidateCallPage() {
                       {q.status === "not_convinced" && (
                         <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
                       )}
-                      {q.ai_score_percentage !== null && (
+                      {/* {q.ai_score_percentage !== null && (
                         <div className="flex items-center gap-3">
                           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Score</span>
                           <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -1194,7 +1197,7 @@ export default function CandidateCallPage() {
                           </div>
                           <span className="text-sm font-bold text-blue-700">{q.ai_score_percentage}%</span>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </div>
@@ -1274,7 +1277,7 @@ export default function CandidateCallPage() {
                       {q.status === "not_convinced" && (
                         <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
                       )}
-                      {q.ai_score_percentage !== null && (
+                      {/* {q.ai_score_percentage !== null && (
                         <div className="flex items-center gap-3">
                           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                             AI Score
@@ -1289,7 +1292,7 @@ export default function CandidateCallPage() {
                             {q.ai_score_percentage}%
                           </span>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </div>
