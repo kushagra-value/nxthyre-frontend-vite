@@ -15,13 +15,14 @@ interface CreateJobRoleModalProps {
   isOpen: boolean;
   workspaceId: number;
   workspaces: Workspace[];
+  draftData?: any;
   handlePipelinesClick?: () => void;
   onClose: () => void;
   onJobCreated?: () => void;
 }
 
 const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
-  isOpen, workspaceId, workspaces, handlePipelinesClick, onClose, onJobCreated,
+  isOpen, workspaceId, workspaces, draftData, handlePipelinesClick, onClose, onJobCreated,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -271,9 +272,19 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   };
 
   const resetForm = () => {
+    const selectedWorkspaceName = workspaces.find((w) => w.id === workspaceId)?.name || "";
+    
+    if (draftData) {
+      setFormData(draftData.formData);
+      setSkillInput(""); setLocationInput([]); setLocationSuggestions([]);
+      setCompetencyInput(""); setFile(null); setCurrentStep(1);
+      setCompetencies([]); setEditableJD(""); setAiJdResponse(null); setBooleanSearchTerm("");
+      return;
+    }
+
     setFormData({
       allowInbound: true, keepPrivate: false, shareExternally: false,
-      clientCompany: "", title: "", skills: [], location: [],
+      clientCompany: selectedWorkspaceName, title: "", skills: [], location: [],
       workApproach: "Onsite", seniority: "", department: "", openings: "",
       noticePeriod: "", educationLevel: "", specifications: "",
       primarySkillsDesign: [], primarySkillsUx: [], primarySkillsTechnical: [],
@@ -287,7 +298,27 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     setCompetencies([]); setEditableJD(""); setAiJdResponse(null); setBooleanSearchTerm("");
   };
 
-  useEffect(() => { if (isOpen) resetForm(); }, [isOpen]);
+  useEffect(() => { if (isOpen) resetForm(); }, [isOpen, draftData]);
+
+  const handleSaveDraft = () => {
+    try {
+      const drafts = JSON.parse(localStorage.getItem('job_drafts') || '[]');
+      const draftId = draftData?.id || Date.now().toString();
+      const newDraft = {
+        id: draftId,
+        workspaceId: workspaceId,
+        title: formData.title || 'Untitled Draft',
+        updatedAt: new Date().toISOString(),
+        formData: formData
+      };
+      const updatedDrafts = drafts.filter((d: any) => d.id !== draftId);
+      updatedDrafts.unshift(newDraft);
+      localStorage.setItem('job_drafts', JSON.stringify(updatedDrafts));
+      toast.success("Draft saved!");
+    } catch (err) {
+      toast.error("Failed to save draft");
+    }
+  };
 
   // ── Success Modal ──
   if (showSuccessModal) {
@@ -406,7 +437,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         <div className="border-t border-gray-200 px-10 py-4 bg-white rounded-b-2xl">
           {currentStep === 1 && (
             <div className="flex justify-between items-center">
-              <button onClick={() => toast.success("Draft saved!")}
+              <button onClick={handleSaveDraft}
                 className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
                 Save Draft
               </button>
@@ -423,7 +454,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                   className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
                   <ArrowLeft className="w-4 h-4" /> Back
                 </button>
-                <button onClick={() => toast.success("Draft saved!")}
+                <button onClick={handleSaveDraft}
                   className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
                   Save Draft
                 </button>

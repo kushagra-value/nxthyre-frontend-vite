@@ -149,6 +149,7 @@ const JobListing: React.FC<JobListingProps> = ({
     const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
     const [menuOpenJobId, setMenuOpenJobId] = useState<number | null>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, right: 0, bottom: 0, isBottom: false });
+    const [selectedDraft, setSelectedDraft] = useState<any>(null);
 
     // Inline Notes state
     const [inlineEditJobId, setInlineEditJobId] = useState<number | null>(null);
@@ -328,19 +329,59 @@ const JobListing: React.FC<JobListingProps> = ({
 
     // Jobs are already sorted and filtered server-side, use directly.
     // Use the filtered count from status_counts so pagination matches the active tab.
+    
+    const getLocalDrafts = () => {
+        try {
+            const drafts = JSON.parse(localStorage.getItem('job_drafts') || '[]');
+            return drafts.filter((d: any) => d.workspaceId === selectedWorkspace.id);
+        } catch {
+            return [];
+        }
+    };
+
+    const mapDraftToJob = (draft: any): Job => {
+        return {
+            id: draft.id as any,
+            title: draft.title || 'Untitled Draft',
+            location: draft.formData?.location || [],
+            experience_min_years: parseInt(draft.formData?.minExp) || 0,
+            experience_max_years: parseInt(draft.formData?.maxExp) || 0,
+            salary_min: draft.formData?.minSalary,
+            salary_max: draft.formData?.maxSalary,
+            status: 'DRAFT',
+            is_local_draft: true,
+            num_positions: parseInt(draft.formData?.openings) || 0,
+            candidates_count: 0,
+            naukri_bot_candidates_count: 0,
+            linkedin_bot_candidates_count: 0,
+            inbound_candidates_count: 0,
+            shortlisted_candidate_count: 0,
+            hired_count: 0,
+            days_open: 0,
+            _rawDraft: draft,
+        } as any;
+    };
+
     const getFilteredTotal = (): number => {
         if (activeJobFilter === "All") return jobStatusCounts?.all ?? jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
         if (activeJobFilter === "Active") return jobStatusCounts?.active ?? filteredWorkspaceJobs.length;
         if (activeJobFilter === "Paused") return jobStatusCounts?.paused ?? filteredWorkspaceJobs.length;
         if (activeJobFilter === "Inactive") return jobStatusCounts?.inactive ?? filteredWorkspaceJobs.length;
-        if (activeJobFilter === "Draft") return jobStatusCounts?.draft ?? filteredWorkspaceJobs.length;
+        if (activeJobFilter === "Draft") {
+            const localDraftsCount = getLocalDrafts().length;
+            return (jobStatusCounts?.draft ?? 0) + localDraftsCount;
+        }
         return jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
     };
+    
+    const localDrafts = activeJobFilter === "Draft" ? getLocalDrafts().map(mapDraftToJob) : [];
+    const combinedJobs = activeJobFilter === "Draft" ? [...localDrafts, ...filteredWorkspaceJobs] : filteredWorkspaceJobs;
+    
     const totalJobsForPagination = getFilteredTotal();
     const totalPages = Math.max(1, Math.ceil(totalJobsForPagination / ITEMS_PER_PAGE));
-    const paginatedJobs = filteredWorkspaceJobs;
-    const startIdx = filteredWorkspaceJobs.length > 0 ? (jobCurrentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
-    const endIdx = Math.min((jobCurrentPage - 1) * ITEMS_PER_PAGE + filteredWorkspaceJobs.length, totalJobsForPagination);
+    const paginatedJobs = combinedJobs;
+    const startIdx = combinedJobs.length > 0 ? (jobCurrentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+    const endIdx = Math.min((jobCurrentPage - 1) * ITEMS_PER_PAGE + combinedJobs.length, totalJobsForPagination);
 
     // ── Share pipeline handler ──
     const handleSharePipeline = () => {
@@ -645,7 +686,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             else if (filter === "Active") count = jobStatusCounts?.active ?? 0;
                             else if (filter === "Paused") count = jobStatusCounts?.paused ?? 0;
                             else if (filter === "Inactive") count = jobStatusCounts?.inactive ?? 0;
-                            else if (filter === "Draft") count = jobStatusCounts?.draft ?? 0;
+                            else if (filter === "Draft") count = (jobStatusCounts?.draft ?? 0) + getLocalDrafts().length;
 
                             return (
                                 <button
@@ -853,7 +894,13 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             <div className="flex items-center gap-2">
                                                                 <span
                                                                     className="text-[14px] font-[600] text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] transition-colors truncate max-w-[200px]"
-                                                                    onClick={() => onJobSelect?.(job)}
+                                                                    onClick={() => {
+                                                                        if ((job as any).is_local_draft) {
+                                                                            setSelectedDraft((job as any)._rawDraft);
+                                                                        } else {
+                                                                            onJobSelect?.(job);
+                                                                        }
+                                                                    }}
                                                                     title={job.title}
                                                                 >
                                                                     {job.title}
@@ -1159,7 +1206,7 @@ const JobListing: React.FC<JobListingProps> = ({
                 {/* Pagination */}
                 <div className="px-5 py-4 flex items-center justify-between border-t border-[#D1D1D6]">
                     <div className="text-[13px] text-[#8E8E93]">
-                        {filteredWorkspaceJobs.length > 0
+                        {combinedJobs.length > 0
                             ? (jobPagination?.showing || `Showing ${startIdx}-${endIdx} of ${totalJobsForPagination} jobs`)
                             : 'No jobs to display'}
                     </div>
@@ -1200,12 +1247,17 @@ const JobListing: React.FC<JobListingProps> = ({
 
             </div>
             <CreateJobRoleModal
-                isOpen={showCreateJobRole}
-                onClose={() => setShowCreateJobRole(false)}
+                isOpen={showCreateJobRole || !!selectedDraft}
+                onClose={() => {
+                    setShowCreateJobRole(false);
+                    setSelectedDraft(null);
+                }}
                 workspaceId={selectedWorkspace.id}
+                draftData={selectedDraft}
                 workspaces={workspaces.map(ws => ({ id: ws.id, name: ws.name }))}
                 onJobCreated={() => {
                     setShowCreateJobRole(false);
+                    setSelectedDraft(null);
                     fetchJobs(); // Refresh jobs
                     showToast.success("Job role created successfully!");
                 }}
