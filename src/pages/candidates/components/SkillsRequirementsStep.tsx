@@ -1,24 +1,7 @@
 import React, { useRef, useCallback } from "react";
 import { X } from "lucide-react";
 
-// Predefined skill options per category (matching Figma design)
-const DESIGN_SKILLS = ["Figma", "Sketch", "Adobe Xd", "Framer", "Invision"];
-const UX_SKILLS = [
-  "User Research",
-  "Wireframing",
-  "Prototyping",
-  "Design Systems",
-  "Usability Testing",
-  "Journey Mapping",
-  "Information Architecture",
-];
-const TECHNICAL_SKILLS = [
-  "HTML/CSS",
-  "Dev Basics",
-  "Auto Layout",
-  "Design Tokens",
-  "Dev Handoff",
-];
+// Removed static skills, using dynamic skills from aiJdResponse
 const NOTICE_PERIOD_OPTIONS = [
   "Immediate",
   "15 Days",
@@ -56,6 +39,7 @@ interface SkillsRequirementsStepProps {
   handleSkillAdd: (e: React.KeyboardEvent) => void;
   removeSkill: (index: number) => void;
   isValidNumberInput: (value: string) => boolean;
+  aiJdResponse?: any;
 }
 
 const ChipSelector: React.FC<{
@@ -99,38 +83,15 @@ const SkillsRequirementsStep: React.FC<SkillsRequirementsStepProps> = ({
   handleSkillAdd,
   removeSkill,
   isValidNumberInput,
+  aiJdResponse,
 }) => {
-  const toggleDesignSkill = useCallback(
+  const toggleAiSelectedSkill = useCallback(
     (skill: string) => {
       setFormData((prev: any) => ({
         ...prev,
-        primarySkillsDesign: prev.primarySkillsDesign.includes(skill)
-          ? prev.primarySkillsDesign.filter((s: string) => s !== skill)
-          : [...prev.primarySkillsDesign, skill],
-      }));
-    },
-    [setFormData]
-  );
-
-  const toggleUxSkill = useCallback(
-    (skill: string) => {
-      setFormData((prev: any) => ({
-        ...prev,
-        primarySkillsUx: prev.primarySkillsUx.includes(skill)
-          ? prev.primarySkillsUx.filter((s: string) => s !== skill)
-          : [...prev.primarySkillsUx, skill],
-      }));
-    },
-    [setFormData]
-  );
-
-  const toggleTechnicalSkill = useCallback(
-    (skill: string) => {
-      setFormData((prev: any) => ({
-        ...prev,
-        primarySkillsTechnical: prev.primarySkillsTechnical.includes(skill)
-          ? prev.primarySkillsTechnical.filter((s: string) => s !== skill)
-          : [...prev.primarySkillsTechnical, skill],
+        aiSelectedSkills: (prev.aiSelectedSkills || []).includes(skill)
+          ? prev.aiSelectedSkills.filter((s: string) => s !== skill)
+          : [...(prev.aiSelectedSkills || []), skill],
       }));
     },
     [setFormData]
@@ -169,7 +130,7 @@ const SkillsRequirementsStep: React.FC<SkillsRequirementsStepProps> = ({
                   }));
                 }
               }}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={isLoading}
             />
             <span className="text-gray-400">-</span>
@@ -185,7 +146,7 @@ const SkillsRequirementsStep: React.FC<SkillsRequirementsStepProps> = ({
                   }));
                 }
               }}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={isLoading}
             />
             <span className="text-sm text-gray-500">Years</span>
@@ -272,35 +233,38 @@ const SkillsRequirementsStep: React.FC<SkillsRequirementsStepProps> = ({
           Primary Skills <span className="text-red-500">*</span>
         </label>
 
-        {/* Design */}
-        <div className="mb-4">
-          <p className="text-sm font-medium text-gray-600 mb-2">Design</p>
-          <ChipSelector
-            options={DESIGN_SKILLS}
-            selected={formData.primarySkillsDesign}
-            onToggle={toggleDesignSkill}
-          />
-        </div>
+        {aiJdResponse?.jd_competencies?.critical_competencies?.technical && (
+          <div className="mb-4">
+            <p className="text-sm font-medium text-gray-600 mb-2">Technical</p>
+            <ChipSelector
+              options={aiJdResponse.jd_competencies.critical_competencies.technical.map((t: any) => t.skill)}
+              selected={formData.aiSelectedSkills || []}
+              onToggle={toggleAiSelectedSkill}
+            />
+          </div>
+        )}
 
-        {/* UX Methods */}
-        <div className="mb-4">
-          <p className="text-sm font-medium text-gray-600 mb-2">UX Methods</p>
-          <ChipSelector
-            options={UX_SKILLS}
-            selected={formData.primarySkillsUx}
-            onToggle={toggleUxSkill}
-          />
-        </div>
+        {aiJdResponse?.jd_competencies?.critical_competencies?.functional && (
+          <div className="mb-4">
+            <p className="text-sm font-medium text-gray-600 mb-2">Functional</p>
+            <ChipSelector
+              options={aiJdResponse.jd_competencies.critical_competencies.functional.map((t: any) => t.competency)}
+              selected={formData.aiSelectedSkills || []}
+              onToggle={toggleAiSelectedSkill}
+            />
+          </div>
+        )}
 
-        {/* Technical */}
-        <div className="mb-4">
-          <p className="text-sm font-medium text-gray-600 mb-2">Technical</p>
-          <ChipSelector
-            options={TECHNICAL_SKILLS}
-            selected={formData.primarySkillsTechnical}
-            onToggle={toggleTechnicalSkill}
-          />
-        </div>
+        {aiJdResponse?.jd_competencies?.search_criteria?.key_search_terms && (
+          <div className="mb-4">
+            <p className="text-sm font-medium text-gray-600 mb-2">Key Search Terms</p>
+            <ChipSelector
+              options={aiJdResponse.jd_competencies.search_criteria.key_search_terms}
+              selected={formData.aiSelectedSkills || []}
+              onToggle={toggleAiSelectedSkill}
+            />
+          </div>
+        )}
       </div>
 
       {/* Custom Skills Input */}

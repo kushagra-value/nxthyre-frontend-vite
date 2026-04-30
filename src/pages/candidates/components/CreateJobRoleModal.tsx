@@ -52,8 +52,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     workApproach: "Onsite" as "Onsite" | "Remote" | "Hybrid",
     seniority: "", department: "", openings: "",
     noticePeriod: "", educationLevel: "", specifications: "",
-    primarySkillsDesign: [] as string[], primarySkillsUx: [] as string[],
-    primarySkillsTechnical: [] as string[],
+    aiSelectedSkills: [] as string[],
     mustHaveRequirements: "", niceToHaveRequirements: "",
     industryPreferences: [] as string[],
     aiInterviews: false, minExp: "", maxExp: "",
@@ -181,8 +180,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     if (!formData.maxExp.trim()) errors.push("Max experience required.");
     if (!formData.noticePeriod.trim()) errors.push("Notice period required.");
     if (!formData.educationLevel.trim()) errors.push("Education level required.");
-    const hasSkills = formData.skills.length > 0 || formData.primarySkillsDesign.length > 0 ||
-      formData.primarySkillsUx.length > 0 || formData.primarySkillsTechnical.length > 0;
+    const hasSkills = formData.skills.length > 0 || (formData.aiSelectedSkills && formData.aiSelectedSkills.length > 0);
     if (!hasSkills) errors.push("At least one skill required.");
     if (formData.minExp && formData.maxExp && parseInt(formData.minExp) > parseInt(formData.maxExp))
       errors.push("Min experience cannot exceed max.");
@@ -193,9 +191,6 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   const handleNext = async () => {
     if (currentStep === 1) {
       const e = validateStep1(); if (e.length > 0) { showToast.error(e.join(" ")); return; }
-      setCurrentStep(2);
-    } else if (currentStep === 2) {
-      const e = validateStep2(); if (e.length > 0) { showToast.error(e.join(" ")); return; }
       setIsLoading(true);
       try {
         const needsRegen = formData.uploadType !== originalUploadType ||
@@ -209,10 +204,41 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
           setBooleanSearchTerm(ai.jd_competencies?.search_criteria?.search_criteria_expression || "");
           setOriginalDescription(formData.uploadType === "paste" ? formData.jobDescription : "");
           setOriginalUploadType(formData.uploadType);
+
+          let minExp = ""; let maxExp = "";
+          const expLevels = ai.jd_competencies?.critical_competencies?.experience;
+          if (expLevels && expLevels.length > 0) {
+            const overallExp = expLevels.find((e: any) => e.requirement === "Overall professional experience") || expLevels[0];
+            const match = overallExp.minimum?.match(/(\d+)\+?\s*years?/i);
+            if (match) { minExp = match[1]; maxExp = (parseInt(match[1]) + 3).toString(); }
+          }
+
+          const implicitReqs = ai.jd_competencies?.extracted_insights?.implicit_requirements?.join(", ") || "";
+          const niceToHave = ai.technical_competencies?.join(", ") || "";
+
+          const newAiSelectedSkills: any[] = [];
+          const tech = ai.jd_competencies?.critical_competencies?.technical;
+          if (tech) newAiSelectedSkills.push(...tech.map((t: any) => t.skill));
+          const func = ai.jd_competencies?.critical_competencies?.functional;
+          if (func) newAiSelectedSkills.push(...func.map((t: any) => t.competency));
+          const search = ai.jd_competencies?.search_criteria?.key_search_terms;
+          if (search) newAiSelectedSkills.push(...search);
+
+          setFormData((prev: any) => ({
+             ...prev,
+             minExp: prev.minExp || minExp,
+             maxExp: prev.maxExp || maxExp,
+             mustHaveRequirements: prev.mustHaveRequirements || implicitReqs,
+             niceToHaveRequirements: prev.niceToHaveRequirements || niceToHave,
+             aiSelectedSkills: newAiSelectedSkills,
+          }));
         }
-        setCurrentStep(3);
-      } catch (err: any) { showToast.error(err.message || "Failed to generate AI JD"); }
+        setCurrentStep(2);
+      } catch (err: any) { showToast.error(err.message || "Failed to generate AI JD"); return; }
       finally { setIsLoading(false); }
+    } else if (currentStep === 2) {
+      const e = validateStep2(); if (e.length > 0) { showToast.error(e.join(" ")); return; }
+      setCurrentStep(3);
     }
   };
   const handleBack = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); };
@@ -221,7 +247,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
   const handlePublish = async () => {
     setIsLoading(true);
     try {
-      const allSkills = [...formData.skills, ...formData.primarySkillsDesign, ...formData.primarySkillsUx, ...formData.primarySkillsTechnical];
+      const allSkills = [...formData.skills, ...(formData.aiSelectedSkills || [])];
       const jobData: CreateJobData = {
         title: formData.title, location: formData.location,
         work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
@@ -287,7 +313,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       clientCompany: selectedWorkspaceName, title: "", skills: [], location: [],
       workApproach: "Onsite", seniority: "", department: "", openings: "",
       noticePeriod: "", educationLevel: "", specifications: "",
-      primarySkillsDesign: [], primarySkillsUx: [], primarySkillsTechnical: [],
+      aiSelectedSkills: [] as string[],
       mustHaveRequirements: "", niceToHaveRequirements: "", industryPreferences: [],
       aiInterviews: false, minExp: "", maxExp: "", minSalary: "", maxSalary: "",
       confidential: false, jobDescription: "", uploadType: "paste",
@@ -419,6 +445,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
               handleSkillInputChange={handleSkillInputChange}
               handleSkillSelect={handleSkillSelect} handleSkillAdd={handleSkillAdd}
               removeSkill={removeSkill} isValidNumberInput={isValidNumberInput}
+              aiJdResponse={aiJdResponse}
             />
           )}
           {currentStep === 3 && (
