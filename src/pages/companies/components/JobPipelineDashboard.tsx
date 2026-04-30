@@ -1420,7 +1420,7 @@ export default function JobPipelineDashboard({
 
   const getPrimaryMoveLabel = (item: CandidateListItem) => {
     const currentSlug = (item.current_stage?.slug || item.stage_slug || "").toLowerCase();
-    return currentSlug === "uncontacted" ? "Shortlist" : "Move Ahead";
+    return currentSlug === "uncontacted" ? "Shortlist" : "Next Stage";
   };
 
   const handleCopyCandidateEmail = async (item: CandidateListItem) => {

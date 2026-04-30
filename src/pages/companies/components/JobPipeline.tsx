@@ -171,6 +171,7 @@ export default function JobPipeline({
         <JobCandidateProfile
           candidate={selectedCandidate}
           jobId={jobId}
+          workspaceId={workspaceId}
           stages={stages}
           goBack={() => setSelectedCandidate(null)}
           loading={loadingCandidate}

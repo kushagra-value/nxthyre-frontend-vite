@@ -24,6 +24,7 @@ interface EventFormProps {
   initialTime?: string;
   initialCompanyId?: string;
   initialJobId?: string;
+  initialApplicationId?: string;
 }
 
 // Time options for the Start Time dropdown
@@ -140,6 +141,7 @@ export const EventForm = ({
   initialTime,
   initialCompanyId,
   initialJobId,
+  initialApplicationId,
 }: EventFormProps) => {
   // ── Company & Job state ──
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
@@ -192,6 +194,12 @@ export const EventForm = ({
       setSelectedJobId(initialJobId);
     }
   }, [isOpen, initialJobId, selectedCompanyId]);
+
+  useEffect(() => {
+    if (isOpen && initialApplicationId && selectedJobId) {
+      setFormData((prev) => ({ ...prev, applicationId: initialApplicationId }));
+    }
+  }, [isOpen, initialApplicationId, selectedJobId]);
 
   useEffect(() => {
     if (isOpen) {

@@ -37,6 +37,7 @@ import {
   getCandidateCallHistory,
   CallHistoryEntry,
 } from "../../../services/jobPipelineDashboardService";
+import { EventForm } from "../../schedules/components/EventForm";
 
 // ─── Interfaces ────────────────────────────────────────────
 
@@ -52,6 +53,7 @@ interface Activity {
 interface JobCandidateProfileProps {
   candidate: any; // Raw API response from /jobs/applications/{id}/
   jobId: number | null;
+  workspaceId?: number;
   stages: any[];
   goBack: () => void;
   loading?: boolean;
@@ -66,6 +68,7 @@ interface JobCandidateProfileProps {
 export default function JobCandidateProfile({
   candidate,
   jobId,
+  workspaceId,
   stages,
   goBack,
   loading,
@@ -140,6 +143,7 @@ export default function JobCandidateProfile({
     candidateNames?: string[];
   } | null>(null);
   const [showStageMenu, setShowStageMenu] = useState(false);
+  const [isEventFormOpen, setIsEventFormOpen] = useState(false);
 
   // ── Match Description Editing State ──
   const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
@@ -915,20 +919,20 @@ export default function JobCandidateProfile({
               </p>
             </div>
             <button
-               onClick={async () => {
-                 if (!jobId || !cand.id) return;
-                 try {
-                   const shortlistStage = stages?.find((s) => s.name.toLowerCase().includes("shortlist"));
-                   await candidateService.saveToPipeline(jobId, cand.id, shortlistStage?.id);
-                   showToast.success("Candidate shortlisted and added to pipeline");
-                   goBack();
-                 } catch (err) {
-                   showToast.error("Failed to add candidate to pipeline");
-                 }
-               }}
-               className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md whitespace-nowrap"
+              onClick={async () => {
+                if (!jobId || !cand.id) return;
+                try {
+                  const shortlistStage = stages?.find((s) => s.name.toLowerCase().includes("shortlist"));
+                  await candidateService.saveToPipeline(jobId, cand.id, shortlistStage?.id);
+                  showToast.success("Candidate shortlisted and added to pipeline");
+                  goBack();
+                } catch (err) {
+                  showToast.error("Failed to add candidate to pipeline");
+                }
+              }}
+              className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md whitespace-nowrap"
             >
-               Shortlist (Add to Pipeline)
+              Shortlist (Add to Pipeline)
             </button>
           </div>
         ) : (
@@ -1120,6 +1124,19 @@ export default function JobCandidateProfile({
                 </svg>
                 Move to Archive
               </button>
+              <button
+                onClick={() => setIsEventFormOpen(true)}
+                className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M6.66667 11.3332L6.66666 8.89798C6.66666 8.77014 6.5755 8.6665 6.46305 8.6665H6M9.08644 11.3332L9.98945 8.89928C10.0317 8.78547 9.94189 8.6665 9.81379 8.6665H8.66667" stroke="#0F47F2" stroke-linecap="round" />
+                  <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M4 5.3335H12" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+
+                Schedule Interview
+              </button>
             </div>
           </div>
         )}
@@ -1131,7 +1148,7 @@ export default function JobCandidateProfile({
           </h3>
           <div className="flex flex-col gap-4 text-sm font-medium text-slate-700">
             {jobScoreObj?.call_attention &&
-            jobScoreObj.call_attention.length > 0 ? (
+              jobScoreObj.call_attention.length > 0 ? (
               <ul className="list-disc pl-5 space-y-3 marker:text-teal-500">
                 {jobScoreObj.call_attention.map((question: any, index: any) => (
                   <li key={index} className="pl-1 leading-relaxed">
@@ -1524,11 +1541,10 @@ export default function JobCandidateProfile({
                 <button
                   key={id}
                   onClick={() => setActiveTab(id)}
-                  className={`flex-1 py-4 text-sm font-medium capitalize transition-colors flex items-center justify-center gap-2 ${
-                    activeTab === id
-                      ? "text-[#0F47F2] border-b-2 border-[#0F47F2] bg-[#F3F5F7]/30"
-                      : "text-[#8E8E93] hover:text-[#4B5563]"
-                  }`}
+                  className={`flex-1 py-4 text-sm font-medium capitalize transition-colors flex items-center justify-center gap-2 ${activeTab === id
+                    ? "text-[#0F47F2] border-b-2 border-[#0F47F2] bg-[#F3F5F7]/30"
+                    : "text-[#8E8E93] hover:text-[#4B5563]"
+                    }`}
                 >
                   {icons[id]}
                   <span className="sr-only">{id}</span>
@@ -1829,16 +1845,16 @@ export default function JobCandidateProfile({
                       const duration =
                         exp.start_date && (exp.end_date || exp.is_current)
                           ? Math.max(
-                              1,
-                              Math.round(
-                                ((exp.is_current
-                                  ? new Date()
-                                  : new Date(exp.end_date)
-                                ).getTime() -
-                                  new Date(exp.start_date).getTime()) /
-                                  (1000 * 60 * 60 * 24 * 365),
-                              ),
-                            )
+                            1,
+                            Math.round(
+                              ((exp.is_current
+                                ? new Date()
+                                : new Date(exp.end_date)
+                              ).getTime() -
+                                new Date(exp.start_date).getTime()) /
+                              (1000 * 60 * 60 * 24 * 365),
+                            ),
+                          )
                           : null;
 
                       return (
@@ -2183,11 +2199,10 @@ export default function JobCandidateProfile({
                                     ? "Hide Transcript"
                                     : "View Transcript"}
                                   <ChevronDown
-                                    className={`w-3.5 h-3.5 transition-transform ${
-                                      showTranscript === call.id
-                                        ? "rotate-180"
-                                        : ""
-                                    }`}
+                                    className={`w-3.5 h-3.5 transition-transform ${showTranscript === call.id
+                                      ? "rotate-180"
+                                      : ""
+                                      }`}
                                   />
                                 </button>
                                 {showTranscript === call.id && (
@@ -2235,9 +2250,8 @@ export default function JobCandidateProfile({
                               </div>
                             </div>
                             <ChevronDown
-                              className={`w-5 h-5 text-[#4B5563] transition-transform ${
-                                isExpanded ? "rotate-180" : ""
-                              }`}
+                              className={`w-5 h-5 text-[#4B5563] transition-transform ${isExpanded ? "rotate-180" : ""
+                                }`}
                             />
                           </div>
                         )}
@@ -2334,13 +2348,12 @@ export default function JobCandidateProfile({
                   onClick={handleFeedbackSubmit}
                   disabled={!feedbackComment.trim()}
                   className={`flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm
-                  ${
-                    !feedbackComment.trim()
+                  ${!feedbackComment.trim()
                       ? "bg-gray-300 cursor-not-allowed"
                       : pendingAction.type === "archive"
                         ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
                         : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
-                  }`}
+                    }`}
                 >
                   {pendingAction.type === "archive" ? (
                     <Archive className="w-4 h-4" />
@@ -2355,6 +2368,13 @@ export default function JobCandidateProfile({
           </div>
         )}
 
+        <EventForm
+          isOpen={isEventFormOpen}
+          onClose={() => setIsEventFormOpen(false)}
+          initialJobId={jobId?.toString()}
+          initialCompanyId={workspaceId?.toString()}
+          initialApplicationId={applicationId?.toString()}
+        />
       </div>
     </div>
   );

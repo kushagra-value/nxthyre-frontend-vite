@@ -51,7 +51,7 @@ export default function SkillsMatchTooltip({ matchedSkills, missingSkills, ancho
         left: position.left,
         position: 'fixed',
       }}
-      className="z-[9999] w-[280px] bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-[#E5E7EB] p-5 animate-in fade-in zoom-in duration-200 pointer-events-auto"
+      className="z-[9999] w-[280px] bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-[#E5E7EB] p-5"
       onMouseEnter={(e) => e.stopPropagation()}
       onMouseLeave={onClose}
     >
