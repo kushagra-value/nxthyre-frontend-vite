@@ -538,10 +538,10 @@ export default function JobPipelineDashboard({
     return true;
   });
 
-  // ── Active tab
   const [activeTab, setActiveTab] = useState<
     "pipeline" | "naukbot" | "inbound" | "linkedinbot" | "nxthyre"
   >("pipeline");
+  const [linkedinBotFilteredCount, setLinkedinBotFilteredCount] = useState<number | null>(null);
 
   const [isKanbanView, setIsKanbanView] = useState(false);
   const [draggedCandidateId, setDraggedCandidateId] = useState<number | null>(
@@ -2117,7 +2117,7 @@ export default function JobPipelineDashboard({
             {
               key: "linkedinbot" as const,
               label: "LinkedIn Bot",
-              count: jobDetails?.linkedin_bot_candidates_count ?? 0,
+              count: linkedinBotFilteredCount ?? jobDetails?.linkedin_bot_candidates_count ?? 0,
             },
             {
               key: "nxthyre" as const,
@@ -3340,7 +3340,7 @@ export default function JobPipelineDashboard({
       )}
 
       {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
-      {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} />}
+      {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} onFilterCountChange={setLinkedinBotFilteredCount} />}
       {activeTab === "inbound" && <InboundTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
       {activeTab === "nxthyre" && <NxthyreTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
 

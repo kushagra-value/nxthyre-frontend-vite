@@ -8,9 +8,10 @@ import SkillsMatchTooltip from "./SkillsMatchTooltip";
 
 interface LinkedinBotTabProps {
   jobId: number | null;
+  onFilterCountChange?: (count: number | null) => void;
 }
 
-export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
+export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinBotTabProps) {
   const [showDismiss, setShowDismiss] = useState(true);
   const [candidates, setCandidates] = useState<LinkedinBotCandidate[]>([]);
   const [loading, setLoading] = useState(false);
@@ -106,6 +107,17 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
       setTotalCount(res.count);
       if (res.summary) {
         setSummary(res.summary);
+      }
+      
+      // Determine if there are active filters (excluding search, page, etc)
+      const hasFilters = Object.keys(params).some(k => 
+        !['job_id', 'page', 'page_size', 'sort_by', 'search'].includes(k)
+      );
+
+      if (hasFilters && res.total_candidates_after_filters !== undefined) {
+        onFilterCountChange?.(res.total_candidates_after_filters);
+      } else {
+        onFilterCountChange?.(null);
       }
     } catch (error: any) {
       if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return;
