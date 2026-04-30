@@ -347,7 +347,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white relative rounded-3xl shadow-xl w-full max-w-4xl max-h-[98vh] flex flex-col py-10 overflow-hidden">
+      <div className="bg-white relative rounded-3xl shadow-xl w-full max-w-4xl max-h-[98vh] flex flex-col pt-10 overflow-hidden">
         {/* Header */}
         <div className="p-4 px-10">
 
