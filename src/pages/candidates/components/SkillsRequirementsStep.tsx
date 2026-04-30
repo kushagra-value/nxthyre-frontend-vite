@@ -204,7 +204,7 @@ const SkillsRequirementsStep: React.FC<SkillsRequirementsStepProps> = ({
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Specifications
+            Specialisations
           </label>
           <select
             value={formData.specifications}

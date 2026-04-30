@@ -190,6 +190,11 @@ export interface CreateJobData {
   ai_jd_object?: any;
   ai_jd?: any;
   technical_competencies?: string[];
+  num_positions?: number;
+  notice_period?: string;
+  poc_email?: string;
+  education_level?: string;
+  specialisations?: string;
 }
 
 export interface UploadResumesResponse {
@@ -436,6 +441,12 @@ class JobPostService {
       } else if (data.description_file) {
         formData.append("description_file", data.description_file);
       }
+      
+      if (data.num_positions !== undefined) formData.append("num_positions", String(data.num_positions));
+      if (data.notice_period) formData.append("notice_period", data.notice_period);
+      if (data.poc_email) formData.append("poc_email", data.poc_email);
+      if (data.education_level) formData.append("education_level", data.education_level);
+      if (data.specialisations) formData.append("specialisations", data.specialisations);
 
       const response = await apiClient.post("/jobs/roles/", formData, {
         headers: {

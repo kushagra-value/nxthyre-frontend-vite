@@ -61,6 +61,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     jobDescription: "", uploadType: "paste" as "paste" | "upload",
     shareThirdParty: false, codingRound: false,
     workspace: workspaceId.toString(),
+    pocEmail: "",
   });
 
   const seniorityOptions = ["JUNIOR", "SENIOR", "LEAD", "HEAD", "INTERN"];
@@ -262,6 +263,11 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
         has_ai_interview_stage: formData.aiInterviews,
         skills: allSkills, status: "ACTIVE",
         workspace: parseInt(formData.workspace), ai_jd_object: aiJdResponse,
+        num_positions: parseInt(formData.openings) || 0,
+        notice_period: formData.noticePeriod,
+        poc_email: formData.pocEmail,
+        education_level: formData.educationLevel,
+        specialisations: formData.specifications,
         ...(formData.uploadType === "paste"
           ? { description_text: formData.jobDescription }
           : { description_file: file! }),
@@ -326,6 +332,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       aiInterviews: false, minExp: "", maxExp: "", minSalary: "", maxSalary: "",
       confidential: false, jobDescription: "", uploadType: "paste",
       shareThirdParty: false, codingRound: false, workspace: workspaceId.toString(),
+      pocEmail: "",
     });
     setSkillInput(""); setLocationInput([]); setLocationSuggestions([]);
     setCompetencyInput(""); setFile(null); setCurrentStep(1);
