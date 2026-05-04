@@ -3099,7 +3099,11 @@ export default function JobPipelineDashboard({
                                             location: cand.location || "--",
                                             resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "",
                                           };
-                                          sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData }));
+                                          const candidateIds = sortedCandidates.map(c => c.candidate.id);
+                                          sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ 
+                                            candidate: callData,
+                                            candidateList: candidateIds
+                                          }));
                                           setMenuOpenId(null);
                                           window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`;
                                         }}

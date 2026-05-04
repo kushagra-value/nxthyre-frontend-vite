@@ -11,6 +11,7 @@ import {
   Play,
   CheckCircle2,
   ChevronLeft,
+  ChevronRight,
   Eye,
   X,
   XCircle,
@@ -121,12 +122,31 @@ export default function CandidateCallPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Clear session storage once we've consumed it
+  // Clear candidate from session storage once we've consumed it, but keep the list for navigation
   useEffect(() => {
     if (sessionData) {
-      sessionStorage.removeItem("_nxthyre_call_state");
+      sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ ...sessionData, candidate: null }));
     }
   }, []);
+
+  const candidateList = sessionData?.candidateList || [];
+  const currentCandidateIndex = candidateList.indexOf(candidateId || "");
+  const hasPrevCandidate = currentCandidateIndex > 0;
+  const hasNextCandidate = currentCandidateIndex !== -1 && currentCandidateIndex < candidateList.length - 1;
+
+  const handleNavigatePrev = () => {
+    if (hasPrevCandidate) {
+      const nextId = candidateList[currentCandidateIndex - 1];
+      navigate(`/call/${nextId}/${jobId || 0}?mode=manual`);
+    }
+  };
+
+  const handleNavigateNext = () => {
+    if (hasNextCandidate) {
+      const nextId = candidateList[currentCandidateIndex + 1];
+      navigate(`/call/${nextId}/${jobId || 0}?mode=manual`);
+    }
+  };
 
   // Copilot States & Tabs
   const [activeTab, setActiveTab] = useState<
@@ -777,15 +797,39 @@ export default function CandidateCallPage() {
           <div className="absolute w-[200px] h-[200px] rounded-full border border-white/40 bg-white/10"></div>
         </div>
 
-        {/* Back button */}
-        <button
-          onClick={() => {
-            navigate(`/`)
-          }}
-          className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2 z-10"
-        >
-          <ChevronLeft className="w-5 h-5" /> Back
-        </button>
+        {/* Back button and Navigation */}
+        <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-10">
+          <button
+            onClick={() => {
+              navigate(`/`)
+            }}
+            className="text-white/70 hover:text-white flex items-center gap-2"
+          >
+            <ChevronLeft className="w-5 h-5" /> Back
+          </button>
+          
+          {candidateList.length > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleNavigatePrev}
+                disabled={!hasPrevCandidate}
+                className={`p-1.5 rounded-md backdrop-blur-md transition ${hasPrevCandidate ? "bg-white/20 hover:bg-white/30 text-white" : "bg-white/5 text-white/30 cursor-not-allowed"}`}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-white/70 text-xs font-medium">
+                {currentCandidateIndex + 1} / {candidateList.length}
+              </span>
+              <button
+                onClick={handleNavigateNext}
+                disabled={!hasNextCandidate}
+                className={`p-1.5 rounded-md backdrop-blur-md transition ${hasNextCandidate ? "bg-white/20 hover:bg-white/30 text-white" : "bg-white/5 text-white/30 cursor-not-allowed"}`}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
 
         {isManual ? (
           /* ─── MANUAL CALL LEFT PANEL ─── */
@@ -1742,13 +1786,19 @@ export default function CandidateCallPage() {
                   <div key={field.key} className="flex justify-between items-center group min-h-[24px]">
                     <span className="text-slate-400">{field.label}</span>
                     {isEditingProfile ? (
-                      <input
-                        type="text"
-                        value={(editProfileData as any)[field.key]}
-                        onChange={(e) => setEditProfileData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                        className="w-[60%] text-right bg-slate-50 border border-slate-200 rounded px-2 py-0.5 font-bold text-slate-700 focus:outline-none focus:border-blue-300 transition-colors"
-                        autoFocus={field.key === "currentCtc"}
-                      />
+                      <div className="w-[60%] flex items-center justify-end gap-1">
+                        <input
+                          type={["currentCtc", "expectedCtc", "noticePeriod", "experience"].includes(field.key) ? "number" : "text"}
+                          step="any"
+                          value={(editProfileData as any)[field.key]}
+                          onChange={(e) => setEditProfileData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                          className="w-full text-right bg-slate-50 border border-slate-200 rounded px-2 py-0.5 font-bold text-slate-700 focus:outline-none focus:border-blue-300 transition-colors"
+                          autoFocus={field.key === "currentCtc"}
+                        />
+                        {(field.key === "currentCtc" || field.key === "expectedCtc") && <span className="text-slate-500 font-medium">LPA</span>}
+                        {field.key === "noticePeriod" && <span className="text-slate-500 font-medium">days</span>}
+                        {field.key === "experience" && <span className="text-slate-500 font-medium">yrs</span>}
+                      </div>
                     ) : (
                       <span className="text-slate-700 font-bold">{(candidate as any)[field.key]}</span>
                     )}
