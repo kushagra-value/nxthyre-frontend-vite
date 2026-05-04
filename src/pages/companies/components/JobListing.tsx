@@ -145,6 +145,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
     const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
+    const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
     const [menuOpenJobId, setMenuOpenJobId] = useState<number | null>(null);
@@ -1236,9 +1237,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                     <button
                                                                         onClick={() => {
                                                                             setMenuOpenJobId(null);
-                                                                            if (window.confirm("Are you sure you want to delete this job role?")) {
-                                                                                jobPostService.deleteJob(job.id).then(() => fetchJobs());
-                                                                            }
+                                                                            setShowDeleteModal(job.id);
                                                                         }}
                                                                         className="w-full text-left px-4 py-2.5 text-[15px] text-[#DC2626] hover:bg-[#FEE2E2] transition-colors font-medium"
                                                                     >
@@ -1517,6 +1516,38 @@ const JobListing: React.FC<JobListingProps> = ({
                     <div className="font-medium">{stageTooltip.name}</div>
                     <div className="text-gray-300">Active: {stageTooltip.active} · Archived: {stageTooltip.archived}</div>
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#1C1C1E] rotate-45" />
+                </div>
+            )}
+
+            {/* Delete Modal */}
+            {showDeleteModal !== null && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
+                        <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-3">Delete Job Role</h2>
+                        <p className="text-gray-600 mb-8">Are you sure you want to delete this job role? This action cannot be undone.</p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteModal(null)}
+                                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    jobPostService.deleteJob(showDeleteModal).then(() => fetchJobs());
+                                    setShowDeleteModal(null);
+                                }}
+                                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                            >
+                                Delete Role
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 
