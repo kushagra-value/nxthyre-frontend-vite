@@ -1324,7 +1324,12 @@ const JobListing: React.FC<JobListingProps> = ({
                     setShowCreateJobRole(false);
                     setSelectedDraft(null);
                     fetchJobs(); // Refresh jobs
-                    showToast.success("Job role created successfully!");
+                }}
+                onOpenPipeline={(job) => {
+                    setShowCreateJobRole(false);
+                    setSelectedDraft(null);
+                    fetchJobs();
+                    onJobSelect?.(job);
                 }}
             />
             {editingJobId && (

@@ -19,15 +19,17 @@ interface CreateJobRoleModalProps {
   handlePipelinesClick?: () => void;
   onClose: () => void;
   onJobCreated?: () => void;
+  onOpenPipeline?: (job: any) => void;
 }
 
 const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
-  isOpen, workspaceId, workspaces, draftData, handlePipelinesClick, onClose, onJobCreated,
+  isOpen, workspaceId, workspaces, draftData, handlePipelinesClick, onClose, onJobCreated, onOpenPipeline,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [createdJob, setCreatedJob] = useState<any>(null);
   const [file, setFile] = useState<File | null>(null);
   const [skillInput, setSkillInput] = useState("");
   const [skillSuggestions, setSkillSuggestions] = useState<string[]>([]);
@@ -272,9 +274,10 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
           ? { description_text: formData.jobDescription }
           : { description_file: file! }),
       };
-      await jobPostService.createJob(jobData);
+      const job = await jobPostService.createJob(jobData);
+      setCreatedJob(job);
       showToast.success("Job role created successfully!");
-      onJobCreated?.(); onClose(); setShowSuccessModal(true);
+      onJobCreated?.(); setShowSuccessModal(true);
       setCurrentStep(1); setFile(null);
     } catch (err: any) {
       const msg = err.response?.data?.description ? `Description error: ${err.response.data.description}`
@@ -379,15 +382,23 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
             <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
           <h2 className="text-2xl font-bold text-green-500 mb-3">Successfully Created!</h2>
-          <p className="text-gray-600 mb-8">Your Job role is created</p>
+          <p className="text-gray-600 mb-8">Your job role has been created successfully.</p>
           <div className="flex gap-3">
-            <button onClick={() => { setShowSuccessModal(false); onClose(); resetForm(); }}
-              className="flex-1 px-6 py-3 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 font-medium">
-              Back to Home
+            <button onClick={() => { setShowSuccessModal(false); setCreatedJob(null); onClose(); resetForm(); }}
+              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+              Close
             </button>
-            <button onClick={() => { handlePipelinesClick?.(); setShowSuccessModal(false); onClose(); resetForm(); }}
-              className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium">
-              Pipeline
+            <button onClick={() => {
+                setShowSuccessModal(false);
+                if (createdJob && onOpenPipeline) {
+                  onOpenPipeline(createdJob);
+                } else {
+                  handlePipelinesClick?.();
+                }
+                setCreatedJob(null); onClose(); resetForm();
+              }}
+              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+              Open Pipeline
             </button>
           </div>
         </div>
@@ -402,16 +413,20 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">Confirm Cancel</h2>
-          <p className="text-gray-600 mb-8">Are you sure you want to cancel? All progress will be lost.</p>
-          <div className="flex gap-3">
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Unsaved Changes</h2>
+          <p className="text-gray-600 mb-8">You have unsaved changes. What would you like to do?</p>
+          <div className="flex flex-col gap-3">
             <button onClick={() => setShowCancelModal(false)}
-              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
-              Continue Editing
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+              Continue Creating
+            </button>
+            <button onClick={() => { handleSaveDraft(); setShowCancelModal(false); onClose(); }}
+              className="w-full px-6 py-3 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 font-medium">
+              Save Draft
             </button>
             <button onClick={() => { setShowCancelModal(false); onClose(); resetForm(); }}
-              className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium">
-              Yes, Cancel
+              className="w-full px-6 py-3 border border-red-300 text-red-500 rounded-lg hover:bg-red-50 font-medium">
+              Discard
             </button>
           </div>
         </div>
