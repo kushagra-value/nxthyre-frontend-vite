@@ -30,6 +30,7 @@ export interface LinkedinBotCandidate {
 }
 
 export interface LinkedinBotCandidatesResponse {
+  total_candidates_after_filters: undefined;
   count: number;
   page: number;
   page_size: number;
