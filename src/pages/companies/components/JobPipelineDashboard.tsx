@@ -296,9 +296,9 @@ const getAttentionPill = (item: CandidateListItem, attentionTag?: { text: string
     const at = item.latest_call_at || item.latest_manual_call_at || "";
     const tags = item.latest_call_tags || item.latest_manual_call_tags;
     const note = item.latest_call_note || item.latest_manual_call_note;
-    
+
     const daysAgo = formatTimeAgo(at);
-    
+
     if (status === "completed" || status === "initiated") {
       const parts = [];
       if (tags && tags.length > 0) {
@@ -307,14 +307,14 @@ const getAttentionPill = (item: CandidateListItem, attentionTag?: { text: string
       if (note) {
         parts.push(`"${note}"`);
       }
-      
+
       if (parts.length > 0) {
         return { text: parts.join(" - "), color: "blue" };
       }
-      
+
       return { text: `Initiated ${daysAgo} ago`, color: "blue" };
     }
-    
+
     // busy, not_picked_up, wrong_number
     let label = status.replace(/_/g, " ");
     if (label === "not picked up") label = "Call not picked up";
@@ -482,7 +482,7 @@ export default function JobPipelineDashboard({
 
   const [dateRangeFilterLabel, setDateRangeFilterLabel] = useState<string>("Date Filter");
   const [isDateRangeFilterApplied, setIsDateRangeFilterApplied] = useState<boolean>(false);
-  const [dateRange, setDateRange] = useState<{from: string, to: string}>({from: "", to: ""});
+  const [dateRange, setDateRange] = useState<{ from: string, to: string }>({ from: "", to: "" });
 
   // ── Sorting
   type CandidateSortKey =
@@ -715,6 +715,7 @@ export default function JobPipelineDashboard({
   // ── Export
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [showAllSkills, setShowAllSkills] = useState(false);
 
 
 
@@ -1030,7 +1031,7 @@ export default function JobPipelineDashboard({
       limit: number = pageSize
     ) => {
       setLoadingCandidates(true);
-      
+
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -1091,7 +1092,7 @@ export default function JobPipelineDashboard({
         const response = await apiClient.get(url, {
           signal: abortControllerRef.current.signal
         });
-        
+
         const data = response.data;
 
         let candidateData: CandidateListItem[] = [];
@@ -1557,8 +1558,8 @@ export default function JobPipelineDashboard({
         } else {
           const impactedSlugs = new Set([
             ...applicationIds.map(id => {
-               if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.current_stage?.slug || draggedCandidateItemRef.current?.stage_slug;
-               return selectedCandidatesMap[id]?.current_stage?.slug || selectedCandidatesMap[id]?.stage_slug || candidates.find(c => c.id === id)?.current_stage?.slug || candidates.find(c => c.id === id)?.stage_slug;
+              if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.current_stage?.slug || draggedCandidateItemRef.current?.stage_slug;
+              return selectedCandidatesMap[id]?.current_stage?.slug || selectedCandidatesMap[id]?.stage_slug || candidates.find(c => c.id === id)?.current_stage?.slug || candidates.find(c => c.id === id)?.stage_slug;
             }).filter(Boolean),
             targetStageId ? stages.find(s => s.id === targetStageId)?.slug : null,
             type === "archive" ? "archives" : null
@@ -2061,7 +2062,7 @@ export default function JobPipelineDashboard({
                     No of Position
                   </div>
                   <div className="font-medium text-[#4B5563] mt-1">
-                    {jobDetails.count || "--"}
+                    {jobDetails.num_positions || "--"}
                   </div>
                 </div>
                 <div>
@@ -2110,14 +2111,30 @@ export default function JobPipelineDashboard({
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {jobDetails.skills && jobDetails.skills.length > 0 ? (
-                      jobDetails.skills.map((s) => (
-                        <span
-                          key={s}
-                          className="bg-[#F2F2F7] text-[#4B5563] text-[10px] px-2.5 py-0.5 rounded-full"
-                        >
-                          {s}
-                        </span>
-                      ))
+                      <>
+                        {(showAllSkills
+                          ? jobDetails.skills
+                          : jobDetails.skills.slice(0, 4)
+                        ).map((s) => (
+                          <span
+                            key={s}
+                            className="bg-[#F2F2F7] text-[#4B5563] text-[10px] px-2.5 py-0.5 rounded-full"
+                          >
+                            {s}
+                          </span>
+                        ))}
+
+                        {jobDetails.skills.length > 4 && (
+                          <button
+                            onClick={() => setShowAllSkills(!showAllSkills)}
+                            className="text-[10px] text-blue-500 ml-1"
+                          >
+                            {showAllSkills
+                              ? "Show less"
+                              : `+${jobDetails.skills.length - 4} more`}
+                          </button>
+                        )}
+                      </>
                     ) : (
                       <span className="text-[#8E8E93] text-xs">--</span>
                     )}
@@ -2397,7 +2414,7 @@ export default function JobPipelineDashboard({
                       </svg>
                       Filters
                     </button>
-                    <PipelineFilterPanel 
+                    <PipelineFilterPanel
                       isOpen={showPipelineFilterPanel}
                       onClose={() => setShowPipelineFilterPanel(false)}
                       onApply={(filters) => setPipelineFilters(filters)}
@@ -2571,7 +2588,7 @@ export default function JobPipelineDashboard({
               {stages.filter(s => s.slug !== 'archives').map((stage) => {
                 return (
                   <div key={stage.id} className="relative h-full">
-                    <PipelineKanbanColumn 
+                    <PipelineKanbanColumn
                       jobId={jobId}
                       stage={stage}
                       filters={pipelineFilters}
@@ -2827,15 +2844,15 @@ export default function JobPipelineDashboard({
                               : "--";
 
                         // CTC
-                        
 
-                          const ctcText =
+
+                        const ctcText =
                           cand.current_salary_lpa ||
                           (cand.current_salary_lpa != null
                             ? `${cand.current_salary_lpa}`
                             : "--");
 
-                          const ctcDisplay = (
+                        const ctcDisplay = (
                           <span className="flex flex-col items-start gap-1">
                             {ctcText}
                             {cand.current_take_home && (
@@ -2974,23 +2991,23 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5 whitespace-nowrap">
-                                <div className="whitespace-nowrap">
-                                  {(() => {
-                                    const pill = getAttentionPill(item, attentionTag);
-                                    if (!pill) return <span className="text-xs text-[#8E8E93]">--</span>;
-                                    const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
-                                    const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
-                                    return (
-                                      <span
-                                        className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
-                                        style={{ backgroundColor: bgColor, color: textColor }}
-                                        title={pill.text}
-                                      >
-                                        {pill.text}
-                                      </span>
-                                    );
-                                  })()}
-                                </div>
+                              <div className="whitespace-nowrap">
+                                {(() => {
+                                  const pill = getAttentionPill(item, attentionTag);
+                                  if (!pill) return <span className="text-xs text-[#8E8E93]">--</span>;
+                                  const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
+                                  const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                                  return (
+                                    <span
+                                      className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
+                                      style={{ backgroundColor: bgColor, color: textColor }}
+                                      title={pill.text}
+                                    >
+                                      {pill.text}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
                             </td>
                             <td
                               className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}
