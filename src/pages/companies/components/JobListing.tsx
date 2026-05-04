@@ -958,12 +958,12 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                     <div className="flex items-center gap-1">
                                                                         <p
                                                                             className="text-[11px] text-[#8E8E93] leading-tight truncate max-w-[180px]"
-                                                                            title={pocValue || "Set POC email..."}
+                                                                            title={`Point of contact email: ${pocValue}` || "Set POC email"}
                                                                         >
                                                                             {pocValue ? (
-                                                                                <><UserCircle className="w-3 h-3 inline-block mr-0.5 -mt-0.5" />{pocValue}</>
+                                                                                <>{pocValue}</>
                                                                             ) : (
-                                                                                <span className="italic text-gray-400">Set POC...</span>
+                                                                                <span className="italic text-gray-400">Set POC email</span>
                                                                             )}
                                                                         </p>
                                                                         <Pencil className="w-2.5 h-2.5 text-gray-300 opacity-0 group-hover/poc:opacity-100 transition-opacity shrink-0" />
