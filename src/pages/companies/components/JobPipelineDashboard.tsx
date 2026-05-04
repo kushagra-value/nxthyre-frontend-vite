@@ -1916,17 +1916,35 @@ export default function JobPipelineDashboard({
                   </div>
                 )}
               </div>
-              <div
-                className="text-sm text-[#8E8E93] mt-0.5 flex items-center gap-1 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigator.clipboard.writeText(`${jobDetails?.title}, ${jobDetails?.location} (Job ID: ${jobDetails?.id})`).then(() => showToast.success("Job ID copied"));
-                }}
-              >
-
-                {/* add a copy button here  */}
-                <Copy className="w-3.5 h-3.5 text-[#4674E5] shrink-0" />
-                JD-{jobDetails?.job_id || jobDetails?.id}
+              <div className="text-sm text-[#8E8E93] mt-0.5 flex items-center gap-3 flex-wrap">
+                <div
+                  className="flex items-center gap-1 cursor-pointer hover:text-[#4B5563] transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(`${jobDetails?.title}, ${jobDetails?.location} (Job ID: ${jobDetails?.id})`).then(() => showToast.success("Job ID copied"));
+                  }}
+                >
+                  <Copy className="w-3.5 h-3.5 text-[#4674E5] shrink-0" />
+                  JD-{jobDetails?.job_id || jobDetails?.id}
+                </div>
+                {jobDetails?.posted_by && (
+                  <>
+                    <span className="text-[#D1D1D6]">|</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[#8E8E93] text-xs font-medium">Created By:</span>
+                      <span className="text-[#4B5563] text-xs">{jobDetails.posted_by}</span>
+                    </div>
+                  </>
+                )}
+                {jobDetails?.poc_email && (
+                  <>
+                    <span className="text-[#D1D1D6]">|</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[#8E8E93] text-xs font-medium">POC:</span>
+                      <span className="text-[#4B5563] text-xs">{jobDetails.poc_email}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

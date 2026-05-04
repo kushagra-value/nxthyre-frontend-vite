@@ -70,6 +70,7 @@ export interface Job {
   num_positions?: number;
   is_flagged?: boolean;
   interview_this_week?: number;
+  poc_email?: string;
 }
 
 export interface JobsStatsCount {
@@ -643,6 +644,19 @@ class JobPostService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.detail || error.response?.data?.error || "Failed to update job status",
+      );
+    }
+  }
+
+  async updateJobPoc(jobId: number, pocEmail: string): Promise<{ poc_email: string }> {
+    try {
+      const response = await apiClient.patch(`/jobs/roles/${jobId}/poc/`, {
+        poc_email: pocEmail,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to update POC email",
       );
     }
   }

@@ -155,6 +155,11 @@ const JobListing: React.FC<JobListingProps> = ({
     const [inlineEditJobId, setInlineEditJobId] = useState<number | null>(null);
     const [inlineNoteContent, setInlineNoteContent] = useState<string>("");
     const [fetchedNotes, setFetchedNotes] = useState<Record<number, any[]>>({});
+
+    // Inline POC editing state
+    const [inlinePocEditJobId, setInlinePocEditJobId] = useState<number | null>(null);
+    const [inlinePocContent, setInlinePocContent] = useState<string>("");
+    const [pocOverrides, setPocOverrides] = useState<Record<number, string>>({});
     const menuRef = useRef<HTMLDivElement>(null);
     const [statusMenuOpenId, setStatusMenuOpenId] = useState<number | null>(null);
     const statusMenuRef = useRef<HTMLDivElement>(null);
@@ -186,6 +191,7 @@ const JobListing: React.FC<JobListingProps> = ({
         { key: 'hired', label: 'Hired', width: '80px' },
         { key: 'daysOpen', label: 'Days Open', width: '100px' },
         { key: 'status', label: 'Status', width: '100px' },
+        { key: 'poc', label: 'POC', width: '200px' },
         { key: 'note', label: 'Note', width: '300px' },
         { key: 'actions', label: 'Actions', width: '60px', alwaysVisible: true },
     ];
@@ -462,6 +468,17 @@ const JobListing: React.FC<JobListingProps> = ({
             toastUtil.success("Note saved successfully");
         } catch (error) {
             toastUtil.error("Failed to save note");
+        }
+    };
+
+    const handleSavePocEmail = async (jobId: number) => {
+        try {
+            await jobPostService.updateJobPoc(jobId, inlinePocContent.trim());
+            setPocOverrides(prev => ({ ...prev, [jobId]: inlinePocContent.trim() }));
+            setInlinePocEditJobId(null);
+            toastUtil.success("POC updated successfully");
+        } catch (error) {
+            toastUtil.error("Failed to update POC");
         }
     };
 
@@ -1041,6 +1058,54 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             </div>
                                                         </td>
                                                     );
+                                                case 'poc': {
+                                                    const pocValue = pocOverrides[job.id] !== undefined ? pocOverrides[job.id] : ((job as any).poc_email || "");
+                                                    return (
+                                                        <td key={col.key} className="px-4 py-3">
+                                                            <div
+                                                                className="group/poc relative cursor-pointer"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setInlinePocEditJobId(job.id);
+                                                                    setInlinePocContent(pocValue);
+                                                                }}
+                                                            >
+                                                                {inlinePocEditJobId === job.id ? (
+                                                                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                                                        <input
+                                                                            autoFocus
+                                                                            type="email"
+                                                                            placeholder="email@example.com"
+                                                                            className="flex-1 px-2 py-1 text-xs border rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                                                                            value={inlinePocContent}
+                                                                            onChange={(e) => setInlinePocContent(e.target.value)}
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter') handleSavePocEmail(job.id);
+                                                                                if (e.key === 'Escape') setInlinePocEditJobId(null);
+                                                                            }}
+                                                                        />
+                                                                        <button
+                                                                            onClick={() => handleSavePocEmail(job.id)}
+                                                                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                                                        >
+                                                                            <UserCheck className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <p
+                                                                            className="text-[12px] text-[#4B5563] leading-tight truncate max-w-[180px]"
+                                                                            title={pocValue || "Set POC email..."}
+                                                                        >
+                                                                            {pocValue || <span className="italic text-gray-400">Set POC email...</span>}
+                                                                        </p>
+                                                                        <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover/poc:opacity-100 transition-opacity shrink-0" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    );
+                                                }
                                                 case 'note':
                                                     return (
                                                         <td key={col.key} className="px-4 py-3">
