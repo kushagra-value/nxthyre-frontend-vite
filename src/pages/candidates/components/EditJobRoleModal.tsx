@@ -144,7 +144,9 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           location: locationFirst,
           workApproach,
           seniority: job.seniority,
-          department: departmentMap[Number(job.department_name)] || "Others",
+          department: departmentOptions.includes(job.department_name) 
+            ? job.department_name 
+            : (departmentMap[Number(job.department_name)] || "Others"),
           openings: job.num_positions?.toString() || "",
           noticePeriod: job.notice_period || "",
           educationLevel: job.education_level || "",
