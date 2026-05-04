@@ -125,6 +125,29 @@ const JobBasicsStep: React.FC<JobBasicsStepProps> = ({
         </select>
       </div>
 
+      {/* Point of Contact */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Point of Contact <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="email"
+          placeholder="Max@jupiter.com"
+          value={formData.pocEmail}
+          onChange={(e) => {
+            setFormData((prev: any) => ({
+              ...prev,
+              pocEmail: e.target.value,
+            }));
+          }}
+          className="w-full px-4 py-3 text-blue-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+          disabled={isLoading}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Point of contact from the company side to reach out.
+        </p>
+      </div>
+
       {/* Job Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -318,74 +341,54 @@ const JobBasicsStep: React.FC<JobBasicsStepProps> = ({
         </div>
       </div>
 
-      {/* Salary / CTC Range */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Salary / CTC Range{" "}
-          {formData.confidential ? "" : <span className="text-red-500">*</span>}
-        </label>
-        <div className="flex items-center space-x-2">
-          <input
-            type="text"
-            placeholder="Min e.g: 20L"
-            value={formData.minSalary}
-            onChange={(e) => {
-              if (isValidNumberInput(e.target.value)) {
-                setFormData((prev: any) => ({
-                  ...prev,
-                  minSalary: e.target.value,
-                }));
-              }
-            }}
-            className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-              formData.confidential ? "bg-gray-100 text-gray-400" : ""
-            }`}
-            disabled={isLoading || formData.confidential}
-          />
-          <span className="text-gray-400">-</span>
-          <input
-            type="text"
-            placeholder="Max e.g: 30L"
-            value={formData.maxSalary}
-            onChange={(e) => {
-              if (isValidNumberInput(e.target.value)) {
-                setFormData((prev: any) => ({
-                  ...prev,
-                  maxSalary: e.target.value,
-                }));
-              }
-            }}
-            className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-              formData.confidential ? "bg-gray-100 text-gray-400" : ""
-            }`}
-            disabled={isLoading || formData.confidential}
-          />
-        </div>
-      </div>
-
-      {/* Point of Contact & No. of Positions Row */}
+      {/* Salary / CTC Range & Number of Openings */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Point of Contact (Email) <span className="text-red-500">*</span>
+            Salary / CTC Range{" "}
+            {formData.confidential ? "" : <span className="text-red-500">*</span>}
           </label>
-          <input
-            type="email"
-            placeholder="e.g: hr@company.com"
-            value={formData.pocEmail}
-            onChange={(e) => {
-              setFormData((prev: any) => ({
-                ...prev,
-                pocEmail: e.target.value,
-              }));
-            }}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            disabled={isLoading}
-          />
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              placeholder="Min e.g: 20L"
+              value={formData.minSalary}
+              onChange={(e) => {
+                if (isValidNumberInput(e.target.value)) {
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    minSalary: e.target.value,
+                  }));
+                }
+              }}
+              className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                formData.confidential ? "bg-gray-100 text-gray-400" : ""
+              }`}
+              disabled={isLoading || formData.confidential}
+            />
+            <span className="text-gray-400">-</span>
+            <input
+              type="text"
+              placeholder="Max e.g: 30L"
+              value={formData.maxSalary}
+              onChange={(e) => {
+                if (isValidNumberInput(e.target.value)) {
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    maxSalary: e.target.value,
+                  }));
+                }
+              }}
+              className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                formData.confidential ? "bg-gray-100 text-gray-400" : ""
+              }`}
+              disabled={isLoading || formData.confidential}
+            />
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            No. of positions <span className="text-red-500">*</span>
+            Number of Openings <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
