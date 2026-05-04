@@ -324,17 +324,13 @@ export default function CandidateCallPage() {
   useEffect(() => {
     if (jobId) {
       const numericJobId = parseInt(jobId, 10);
-      Promise.all([
-        jobPostService.getJob(numericJobId),
-        jobPostService.getJobCompetencies(numericJobId),
-      ])
-        .then(([job, comp]) => {
-          setJobData(job);
-          setCompetenciesData(comp);
-        })
-        .catch((err) => {
-          console.error('Failed to fetch job data:', err);
-        });
+      jobPostService.getJob(numericJobId)
+        .then(setJobData)
+        .catch((err) => console.error('Failed to fetch job data:', err));
+        
+      jobPostService.getJobCompetencies(numericJobId)
+        .then(setCompetenciesData)
+        .catch((err) => console.error('Failed to fetch job competencies:', err));
     }
   }, [jobId]);
 
@@ -1178,7 +1174,7 @@ export default function CandidateCallPage() {
                 {/* Header */}
                 <div className="mb-8 pr-24">
                   <h2 className="text-2xl font-bold text-slate-800 tracking-tight leading-tight">
-                    {jobData?.title || candidate.headline} {jobData?.workspace_details?.name ? `V2 - ${jobData.workspace_details.name}` : ""}
+                    {jobData?.title || "Loading Job Details..."} {jobData?.workspace_details?.name ? `| ${jobData.workspace_details.name}` : ""}
                   </h2>
                 </div>
 
