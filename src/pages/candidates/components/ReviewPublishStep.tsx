@@ -93,13 +93,20 @@ const ReviewPublishStep: React.FC<ReviewPublishStepProps> = ({
           </div>
           <div className="grid grid-cols-2 border-b border-gray-200">
             <div className="px-5 py-3.5 bg-gray-50 text-sm text-gray-600 font-medium">
+              Point of Contact
+            </div>
+            <div className="px-5 py-3.5 text-sm text-gray-900 font-medium text-right">
+              {formData.pocEmail || "—"}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 border-b border-gray-200">
+            <div className="px-5 py-3.5 bg-gray-50 text-sm text-gray-600 font-medium">
               Location
             </div>
             <div className="px-5 py-3.5 text-sm text-gray-900 font-medium text-right">
               {formData.location.length > 0
                 ? formData.location.join(" · ")
-                : "—"}{" "}
-              {formData.workApproach ? `· ${formData.workApproach}` : ""}
+                : "—"}
             </div>
           </div>
           <div className="grid grid-cols-2 border-b border-gray-200">
@@ -110,7 +117,7 @@ const ReviewPublishStep: React.FC<ReviewPublishStepProps> = ({
               {formData.confidential
                 ? "Confidential"
                 : formData.minSalary && formData.maxSalary
-                  ? `₹${formData.minSalary} – ₹${formData.maxSalary} per annum`
+                  ? `₹${Number(formData.minSalary) >= 100000 ? (Number(formData.minSalary) / 100000).toFixed(0) + 'L' : formData.minSalary} – ₹${Number(formData.maxSalary) >= 100000 ? (Number(formData.maxSalary) / 100000).toFixed(0) + 'L' : formData.maxSalary} per annum`
                   : "—"}
             </div>
           </div>
@@ -126,10 +133,34 @@ const ReviewPublishStep: React.FC<ReviewPublishStepProps> = ({
           </div>
           <div className="grid grid-cols-2 border-b border-gray-200">
             <div className="px-5 py-3.5 bg-gray-50 text-sm text-gray-600 font-medium">
+              Work Approach
+            </div>
+            <div className="px-5 py-3.5 text-sm text-gray-900 font-medium text-right">
+              {formData.workApproach || "—"}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 border-b border-gray-200">
+            <div className="px-5 py-3.5 bg-gray-50 text-sm text-gray-600 font-medium">
               Openings
             </div>
             <div className="px-5 py-3.5 text-sm text-gray-900 font-medium text-right">
               {formData.openings || "—"}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 border-b border-gray-200">
+            <div className="px-5 py-3.5 bg-gray-50 text-sm text-gray-600 font-medium">
+              Education Level
+            </div>
+            <div className="px-5 py-3.5 text-sm text-gray-900 font-medium text-right">
+              {formData.educationLevel || "—"}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 border-b border-gray-200">
+            <div className="px-5 py-3.5 bg-gray-50 text-sm text-gray-600 font-medium">
+              Specifications
+            </div>
+            <div className="px-5 py-3.5 text-sm text-gray-900 font-medium text-right">
+              {formData.specifications || "—"}
             </div>
           </div>
           <div className="grid grid-cols-2">
