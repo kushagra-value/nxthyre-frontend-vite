@@ -724,6 +724,13 @@ export default function JobCandidateProfile({
                             premiumData.phone ||
                             premiumData.all_phone_numbers?.[0] ||
                             "--",
+                          experience: cand.total_experience != null ? cand.total_experience : "--",
+                          currentCtc: cand.current_salary_lpa ? `${cand.current_salary_lpa}` : "--",
+                          expectedCtc: cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--",
+                          noticePeriod: cand.notice_period_days != null ? `${cand.notice_period_days} Days` : "--",
+                          location: cand.location || "--",
+                          resumeUrl: premiumData.resume_url || cand.resume_url || "",
+                        };
                         sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData }));
                         window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`;
                       }}
