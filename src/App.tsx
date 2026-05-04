@@ -20,7 +20,6 @@ import CandidateBackGroundCheck from "./pages/candidates/components/CandidateBac
 import CandidateCallPage from "./pages/companies/components/CandidateCallPage";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import ShareCandidateListPage from "./pages/pipelines/ShareCandidateListPage";
-import ProjectSkeletonCard from "./components/skeletons/ProjectSkeletonCard";
 import { organizationService } from "./services/organizationService";
 import { User } from "./types/auth";
 import { showToast } from "./utils/toast";
@@ -381,23 +380,88 @@ function MainApp() {
   // Auth loading state
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="sticky top-0 bg-white shadow-sm z-40 animate-pulse">
-          <div className="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
-            <div className="h-10 bg-gray-200 rounded-lg w-64"></div>
-            <div className="flex items-center gap-8">
-              <div className="h-12 bg-gray-200 rounded-lg w-96"></div>
-              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-            </div>
+      <div className="flex h-screen overflow-hidden bg-[#F3F5F7]">
+        {/* Sidebar Skeleton */}
+        <aside className="hidden md:flex flex-col bg-white shrink-0 h-screen w-[248px] border-r border-[#E5E7EB] animate-pulse">
+          <div className="h-[86px] flex items-center px-[30px]">
+            <div className="w-[96px] h-[38px] bg-gray-200 rounded"></div>
           </div>
-        </div>
-        <div className="container mx-auto py-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <ProjectSkeletonCard key={i} />
+          <div className="h-0 mx-6 border-t border-[#4B5563] opacity-30"></div>
+          <div className="flex flex-col flex-1 p-6 gap-2.5">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-[52px] w-[200px] bg-gray-200 rounded-xl"></div>
             ))}
           </div>
-        </div>
+        </aside>
+        
+        {/* Main Content Skeleton */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {/* Header Skeleton */}
+          <div className="h-[88px] bg-white flex items-center justify-between px-6 shrink-0 animate-pulse border-b border-[#E5E7EB]">
+            <div className="w-48 h-8 bg-gray-200 rounded-lg"></div>
+            <div className="flex items-center gap-5">
+              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Dashboard Skeleton */}
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 flex flex-col gap-4">
+                {/* Stat Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-white rounded-xl p-5 border border-[#D1D1D6] h-[120px] flex flex-col justify-between">
+                      <div className="flex justify-between items-center w-full mb-2">
+                        <div className="w-10 h-10 rounded-lg bg-gray-200" />
+                        <div className="w-20 h-4 rounded bg-gray-200" />
+                      </div>
+                      <div className="w-16 h-3 rounded bg-gray-200 mb-1" />
+                      <div className="w-12 h-8 rounded bg-gray-200" />
+                    </div>
+                  ))}
+                </div>
+                {/* Priority Actions */}
+                <div className="bg-white rounded-xl p-5 flex flex-col gap-5 h-[600px] animate-pulse border border-[#E5E7EB]">
+                  <div className="w-48 h-6 bg-gray-200 rounded"></div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 flex-1">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={`col-${i}`} className="bg-[#F3F5F7] rounded-xl p-2.5">
+                        <div className="flex items-center justify-between px-1 py-1 mb-2">
+                          <div className="w-20 h-4 rounded bg-gray-200" />
+                          <div className="w-8 h-4 rounded bg-gray-200" />
+                        </div>
+                        {[...Array(3)].map((_, j) => (
+                          <div key={`card-${i}-${j}`} className="bg-white rounded-lg p-4 mb-2.5 h-[140px]">
+                            <div className="w-24 h-4 rounded bg-gray-200 mb-3" />
+                            <div className="w-32 h-3 rounded bg-gray-200 mb-3" />
+                            <div className="w-16 h-3 rounded bg-gray-200" />
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Right Sidebar */}
+              <aside className="w-96 hidden lg:flex flex-col gap-4 shrink-0 animate-pulse">
+                <div className="bg-white rounded-xl h-[350px] border border-[#E5E7EB] p-5">
+                  <div className="w-32 h-5 bg-gray-200 rounded mb-4"></div>
+                  <div className="w-full h-[260px] bg-gray-100 rounded-lg"></div>
+                </div>
+                <div className="bg-white rounded-xl h-[400px] border border-[#E5E7EB] p-5">
+                  <div className="w-32 h-5 bg-gray-200 rounded mb-4"></div>
+                  <div className="w-full h-[310px] bg-gray-100 rounded-lg"></div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
