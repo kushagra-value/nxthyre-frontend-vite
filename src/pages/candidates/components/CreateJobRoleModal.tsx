@@ -60,7 +60,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     mustHaveRequirements: "", niceToHaveRequirements: "",
     industryPreferences: [] as string[],
     aiInterviews: false, minExp: "", maxExp: "",
-    minSalary: "", maxSalary: "", confidential: false,
+    minSalary: "", maxSalary: "", confidential: false, salaryFormat: "INR (LPA)",
     jobDescription: "", uploadType: "paste" as "paste" | "upload",
     shareThirdParty: false, codingRound: false,
     workspace: workspaceId.toString(),
@@ -253,13 +253,30 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     setIsLoading(true);
     try {
       const allSkills = [...formData.skills, ...(formData.aiSelectedSkills || [])];
+      const convertToINRPerYear = (val: string, format: string) => {
+        if (!val || isNaN(Number(val))) return "";
+        const num = Number(val);
+        let converted = num;
+        switch (format) {
+          case "INR (LPA)": converted = num * 100000; break;
+          case "INR (₹/month)": converted = num * 12; break;
+          case "INR (₹/year)": converted = num; break;
+          case "USD ($/year)": converted = num * 83; break;
+          case "USD ($/hour)": converted = num * 2080 * 83; break;
+        }
+        return converted.toString();
+      };
+
+      const finalMinSalary = convertToINRPerYear(formData.minSalary, formData.salaryFormat);
+      const finalMaxSalary = convertToINRPerYear(formData.maxSalary, formData.salaryFormat);
+
       const jobData: CreateJobData = {
         title: formData.title, location: formData.location,
         work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
         seniority: formData.seniority, department: departmentNameToId[formData.department] || 8,
         experience_min_years: parseInt(formData.minExp) || 0,
         experience_max_years: parseInt(formData.maxExp) || 0,
-        salary_min: formData.minSalary, salary_max: formData.maxSalary,
+        salary_min: finalMinSalary, salary_max: finalMaxSalary,
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? "PRIVATE" : "PUBLIC",
         has_coding_contest_stage: formData.codingRound,
@@ -334,7 +351,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
       aiSelectedSkills: [] as string[],
       mustHaveRequirements: "", niceToHaveRequirements: "", industryPreferences: [],
       aiInterviews: false, minExp: "", maxExp: "", minSalary: "", maxSalary: "",
-      confidential: false, jobDescription: "", uploadType: "paste",
+      confidential: false, salaryFormat: "INR (LPA)", jobDescription: "", uploadType: "paste",
       shareThirdParty: false, codingRound: false, workspace: workspaceId.toString(),
       pocEmail: "",
     });

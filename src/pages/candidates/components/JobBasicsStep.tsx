@@ -349,9 +349,21 @@ const JobBasicsStep: React.FC<JobBasicsStepProps> = ({
             {formData.confidential ? "" : <span className="text-red-500">*</span>}
           </label>
           <div className="flex items-center space-x-2">
+            <select
+              value={formData.salaryFormat || "INR (LPA)"}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, salaryFormat: e.target.value }))}
+              className={`px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm outline-none ${formData.confidential ? "bg-gray-100 text-gray-400" : "bg-white text-gray-700"}`}
+              disabled={isLoading || formData.confidential}
+            >
+              <option value="INR (LPA)">INR (LPA)</option>
+              <option value="INR (₹/month)">INR (₹/month)</option>
+              <option value="INR (₹/year)">INR (₹/year)</option>
+              <option value="USD ($/year)">USD ($/year)</option>
+              <option value="USD ($/hour)">USD ($/hour)</option>
+            </select>
             <input
               type="text"
-              placeholder="Min e.g: 20L"
+              placeholder={`Min e.g: ${formData.salaryFormat === "INR (LPA)" ? "20" : "20000"}`}
               value={formData.minSalary}
               onChange={(e) => {
                 if (isValidNumberInput(e.target.value)) {
@@ -369,7 +381,7 @@ const JobBasicsStep: React.FC<JobBasicsStepProps> = ({
             <span className="text-gray-400">-</span>
             <input
               type="text"
-              placeholder="Max e.g: 30L"
+              placeholder={`Max e.g: ${formData.salaryFormat === "INR (LPA)" ? "30" : "30000"}`}
               value={formData.maxSalary}
               onChange={(e) => {
                 if (isValidNumberInput(e.target.value)) {

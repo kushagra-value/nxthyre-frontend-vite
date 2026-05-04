@@ -117,7 +117,35 @@ const ReviewPublishStep: React.FC<ReviewPublishStepProps> = ({
               {formData.confidential
                 ? "Confidential"
                 : formData.minSalary && formData.maxSalary
-                  ? `₹${Number(formData.minSalary) >= 100000 ? (Number(formData.minSalary) / 100000).toFixed(0) + 'L' : formData.minSalary} – ₹${Number(formData.maxSalary) >= 100000 ? (Number(formData.maxSalary) / 100000).toFixed(0) + 'L' : formData.maxSalary} per annum`
+                  ? (
+                      <div className="flex flex-col items-end">
+                        <span>{formData.minSalary} – {formData.maxSalary} {formData.salaryFormat || "INR (LPA)"}</span>
+                        {(formData.salaryFormat && formData.salaryFormat !== "INR (₹/year)" && formData.salaryFormat !== "INR (LPA)") ? (() => {
+                          const convertToINRPerYear = (val: string, format: string) => {
+                            if (!val || isNaN(Number(val))) return "";
+                            const num = Number(val);
+                            let converted = num;
+                            switch (format) {
+                              case "INR (₹/month)": converted = num * 12; break;
+                              case "USD ($/year)": converted = num * 83; break;
+                              case "USD ($/hour)": converted = num * 2080 * 83; break;
+                            }
+                            return converted;
+                          };
+                          const minVal = convertToINRPerYear(formData.minSalary, formData.salaryFormat);
+                          const maxVal = convertToINRPerYear(formData.maxSalary, formData.salaryFormat);
+                          const formatLPA = (val: number) => {
+                            if (val >= 100000) return (val / 100000).toFixed(1).replace(/\.0$/, '') + 'L';
+                            return val.toString();
+                          };
+                          return (
+                            <span className="text-xs text-gray-500 mt-0.5">
+                              Converted: ₹{formatLPA(Number(minVal))} – ₹{formatLPA(Number(maxVal))} per annum
+                            </span>
+                          );
+                        })() : null}
+                      </div>
+                    )
                   : "—"}
             </div>
           </div>
