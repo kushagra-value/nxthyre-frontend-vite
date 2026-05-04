@@ -797,39 +797,15 @@ export default function CandidateCallPage() {
           <div className="absolute w-[200px] h-[200px] rounded-full border border-white/40 bg-white/10"></div>
         </div>
 
-        {/* Back button and Navigation */}
-        <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-10">
-          <button
-            onClick={() => {
-              navigate(`/`)
-            }}
-            className="text-white/70 hover:text-white flex items-center gap-2"
-          >
-            <ChevronLeft className="w-5 h-5" /> Back
-          </button>
-          
-          {candidateList.length > 1 && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleNavigatePrev}
-                disabled={!hasPrevCandidate}
-                className={`p-1.5 rounded-md backdrop-blur-md transition ${hasPrevCandidate ? "bg-white/20 hover:bg-white/30 text-white" : "bg-white/5 text-white/30 cursor-not-allowed"}`}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-white/70 text-xs font-medium">
-                {currentCandidateIndex + 1} / {candidateList.length}
-              </span>
-              <button
-                onClick={handleNavigateNext}
-                disabled={!hasNextCandidate}
-                className={`p-1.5 rounded-md backdrop-blur-md transition ${hasNextCandidate ? "bg-white/20 hover:bg-white/30 text-white" : "bg-white/5 text-white/30 cursor-not-allowed"}`}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Back button */}
+        <button
+          onClick={() => {
+            navigate(`/`)
+          }}
+          className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2 z-10"
+        >
+          <ChevronLeft className="w-5 h-5" /> Back
+        </button>
 
         {isManual ? (
           /* ─── MANUAL CALL LEFT PANEL ─── */
@@ -1094,11 +1070,39 @@ export default function CandidateCallPage() {
                 </span>
               )}
             </div>
-            {!isManual && (
-              <span className="text-xs text-slate-400 font-medium">
-                {candidate.headline}
-              </span>
-            )}
+            {/* Right Side: Status and Navigation */}
+            <div className="flex flex-col items-end gap-2">
+              {!isManual && (
+                <span className="text-xs text-slate-400 font-medium">
+                  {candidate.headline}
+                </span>
+              )}
+              
+              {/* Previous / Next Candidate Navigation */}
+              {candidateList.length > 1 && (
+                <div className="flex items-center gap-3">
+                  <span className="text-slate-400 text-xs font-semibold tracking-wider uppercase">
+                    Candidate {currentCandidateIndex + 1} of {candidateList.length}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={handleNavigatePrev}
+                      disabled={!hasPrevCandidate}
+                      className={`p-1.5 rounded-md border transition-colors ${hasPrevCandidate ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600" : "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"}`}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleNavigateNext}
+                      disabled={!hasNextCandidate}
+                      className={`p-1.5 rounded-md border transition-colors ${hasNextCandidate ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600" : "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"}`}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           {/* Tab Navigation */}
           <div className="flex px-8 gap-8 border-t border-slate-100 bg-slate-50/50">
