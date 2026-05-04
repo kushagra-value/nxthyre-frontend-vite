@@ -8,9 +8,10 @@ import SkillsMatchTooltip from "./SkillsMatchTooltip";
 
 interface LinkedinBotTabProps {
   jobId: number | null;
+  onFilterCountChange?: (count: number | null) => void;
 }
 
-export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
+export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinBotTabProps) {
   const [showDismiss, setShowDismiss] = useState(true);
   const [candidates, setCandidates] = useState<LinkedinBotCandidate[]>([]);
   const [loading, setLoading] = useState(false);
@@ -106,6 +107,17 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
       setTotalCount(res.count);
       if (res.summary) {
         setSummary(res.summary);
+      }
+      
+      // Determine if there are active filters (excluding search, page, etc)
+      const hasFilters = Object.keys(params).some(k => 
+        !['job_id', 'page', 'page_size', 'sort_by', 'search'].includes(k)
+      );
+
+      if (hasFilters && res.total_candidates_after_filters !== undefined) {
+        onFilterCountChange?.(res.total_candidates_after_filters);
+      } else {
+        onFilterCountChange?.(null);
       }
     } catch (error: any) {
       if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return;
@@ -271,7 +283,7 @@ export default function LinkedinBotTab({ jobId }: LinkedinBotTabProps) {
                 disabled={toggleLoading}
                 className={`flex items-center gap-2 bg-white text-[#4F68FC] rounded-lg px-4 py-2 mb-1 cursor-pointer font-bold text-sm shadow-sm hover:bg-gray-50 transition-colors ${toggleLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <Zap className="w-4 h-4 fill-[#4F68FC]" /> {toggleLoading ? 'Triggering...' : 'Trigger Matching'}
+                <Zap className="w-4 h-4 fill-[#4F68FC]" /> {toggleLoading ? 'Sourcing...' : 'Source Candidates'}
               </button>
             </div>
           </div>

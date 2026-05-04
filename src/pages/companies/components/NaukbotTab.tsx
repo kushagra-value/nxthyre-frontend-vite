@@ -367,7 +367,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                 disabled={toggleLoading}
                 className={`flex items-center gap-2 bg-white text-[#4F68FC] rounded-lg px-4 py-2 mb-1 cursor-pointer font-bold text-sm shadow-sm hover:bg-gray-50 transition-colors ${toggleLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <Zap className="w-4 h-4 fill-[#4F68FC]" /> {toggleLoading ? 'Triggering...' : 'Trigger Sourcing'}
+                <Zap className="w-4 h-4 fill-[#4F68FC]" /> {toggleLoading ? 'Sourcing...' : 'Sourcing Candidates'}
               </button>
             </div>
           </div>

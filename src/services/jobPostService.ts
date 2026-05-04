@@ -2,6 +2,8 @@
 import apiClient from "./api";
 
 export interface Job {
+  specialisations: string;
+  education_level: string;
   job_id: number;
   notice_period: string;
   shortlisted_candidate_count: number;
@@ -70,6 +72,7 @@ export interface Job {
   num_positions?: number;
   is_flagged?: boolean;
   interview_this_week?: number;
+  poc_email?: string;
 }
 
 export interface JobsStatsCount {
@@ -190,6 +193,11 @@ export interface CreateJobData {
   ai_jd_object?: any;
   ai_jd?: any;
   technical_competencies?: string[];
+  num_positions?: number;
+  notice_period?: string;
+  poc_email?: string;
+  education_level?: string;
+  specialisations?: string;
 }
 
 export interface UploadResumesResponse {
@@ -436,6 +444,12 @@ class JobPostService {
       } else if (data.description_file) {
         formData.append("description_file", data.description_file);
       }
+      
+      if (data.num_positions !== undefined) formData.append("num_positions", String(data.num_positions));
+      if (data.notice_period) formData.append("notice_period", data.notice_period);
+      if (data.poc_email) formData.append("poc_email", data.poc_email);
+      if (data.education_level) formData.append("education_level", data.education_level);
+      if (data.specialisations) formData.append("specialisations", data.specialisations);
 
       const response = await apiClient.post("/jobs/roles/", formData, {
         headers: {
@@ -632,6 +646,19 @@ class JobPostService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.detail || error.response?.data?.error || "Failed to update job status",
+      );
+    }
+  }
+
+  async updateJobPoc(jobId: number, pocEmail: string): Promise<{ poc_email: string }> {
+    try {
+      const response = await apiClient.patch(`/jobs/roles/${jobId}/poc/`, {
+        poc_email: pocEmail,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to update POC email",
       );
     }
   }

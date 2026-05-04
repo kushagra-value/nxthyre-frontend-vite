@@ -39,6 +39,7 @@ import CreateJobRoleModal from "../../candidates/components/CreateJobRoleModal";
 import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoDrawer from "./CompanyInfoDrawer";
 import JobDateRangeFilter from "./JobDateRangeFilter";
+import JobTimelineDrawer from "./JobTimelineDrawer";
 
 interface JobListingProps {
     selectedWorkspace: MyWorkspace;
@@ -144,19 +145,27 @@ const JobListing: React.FC<JobListingProps> = ({
 
     const [showUnpublishModal, setShowUnpublishModal] = useState<number | null>(null);
     const [showPublishModal, setShowPublishModal] = useState<number | null>(null);
+    const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [statusUpdating, setStatusUpdating] = useState<number | null>(null);
     const [menuOpenJobId, setMenuOpenJobId] = useState<number | null>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, right: 0, bottom: 0, isBottom: false });
+    const [selectedDraft, setSelectedDraft] = useState<any>(null);
 
     // Inline Notes state
     const [inlineEditJobId, setInlineEditJobId] = useState<number | null>(null);
     const [inlineNoteContent, setInlineNoteContent] = useState<string>("");
     const [fetchedNotes, setFetchedNotes] = useState<Record<number, any[]>>({});
+
+    // Inline POC editing state
+    const [inlinePocEditJobId, setInlinePocEditJobId] = useState<number | null>(null);
+    const [inlinePocContent, setInlinePocContent] = useState<string>("");
+    const [pocOverrides, setPocOverrides] = useState<Record<number, string>>({});
     const menuRef = useRef<HTMLDivElement>(null);
     const [statusMenuOpenId, setStatusMenuOpenId] = useState<number | null>(null);
     const statusMenuRef = useRef<HTMLDivElement>(null);
     const [statusMenuPos, setStatusMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+    const [timelineJobId, setTimelineJobId] = useState<number | null>(null);
     const [stageTooltip, setStageTooltip] = useState<{
         visible: boolean;
         name: string;
@@ -183,6 +192,7 @@ const JobListing: React.FC<JobListingProps> = ({
         { key: 'hired', label: 'Hired', width: '80px' },
         { key: 'daysOpen', label: 'Days Open', width: '100px' },
         { key: 'status', label: 'Status', width: '100px' },
+
         { key: 'note', label: 'Note', width: '300px' },
         { key: 'actions', label: 'Actions', width: '60px', alwaysVisible: true },
     ];
@@ -326,19 +336,58 @@ const JobListing: React.FC<JobListingProps> = ({
 
     // Jobs are already sorted and filtered server-side, use directly.
     // Use the filtered count from status_counts so pagination matches the active tab.
+    
+    const getLocalDrafts = () => {
+        try {
+            const drafts = JSON.parse(localStorage.getItem('job_drafts') || '[]');
+            return drafts.filter((d: any) => d.workspaceId === selectedWorkspace.id);
+        } catch {
+            return [];
+        }
+    };
+
+    const mapDraftToJob = (draft: any): Job => {
+        return {
+            id: draft.id as any,
+            title: draft.title || 'Untitled Draft',
+            location: draft.formData?.location || [],
+            experience_min_years: parseInt(draft.formData?.minExp) || 0,
+            experience_max_years: parseInt(draft.formData?.maxExp) || 0,
+            salary_min: draft.formData?.minSalary,
+            salary_max: draft.formData?.maxSalary,
+            status: 'DRAFT',
+            is_local_draft: true,
+            num_positions: parseInt(draft.formData?.openings) || 0,
+            candidates_count: 0,
+            naukri_bot_candidates_count: 0,
+            linkedin_bot_candidates_count: 0,
+            inbound_candidates_count: 0,
+            shortlisted_candidate_count: 0,
+            hired_count: 0,
+            days_open: 0,
+            _rawDraft: draft,
+        } as any;
+    };
+
     const getFilteredTotal = (): number => {
         if (activeJobFilter === "All") return jobStatusCounts?.all ?? jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
         if (activeJobFilter === "Active") return jobStatusCounts?.active ?? filteredWorkspaceJobs.length;
         if (activeJobFilter === "Paused") return jobStatusCounts?.paused ?? filteredWorkspaceJobs.length;
         if (activeJobFilter === "Inactive") return jobStatusCounts?.inactive ?? filteredWorkspaceJobs.length;
-        if (activeJobFilter === "Draft") return jobStatusCounts?.draft ?? filteredWorkspaceJobs.length;
+        if (activeJobFilter === "Draft") {
+            return getLocalDrafts().length;
+        }
         return jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
     };
+    
+    const localDrafts = activeJobFilter === "Draft" ? getLocalDrafts().map(mapDraftToJob) : [];
+    const combinedJobs = activeJobFilter === "Draft" ? localDrafts : filteredWorkspaceJobs;
+    
     const totalJobsForPagination = getFilteredTotal();
     const totalPages = Math.max(1, Math.ceil(totalJobsForPagination / ITEMS_PER_PAGE));
-    const paginatedJobs = filteredWorkspaceJobs;
-    const startIdx = filteredWorkspaceJobs.length > 0 ? (jobCurrentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
-    const endIdx = Math.min((jobCurrentPage - 1) * ITEMS_PER_PAGE + filteredWorkspaceJobs.length, totalJobsForPagination);
+    const paginatedJobs = combinedJobs;
+    const startIdx = combinedJobs.length > 0 ? (jobCurrentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
+    const endIdx = Math.min((jobCurrentPage - 1) * ITEMS_PER_PAGE + combinedJobs.length, totalJobsForPagination);
 
     // ── Share pipeline handler ──
     const handleSharePipeline = () => {
@@ -420,6 +469,17 @@ const JobListing: React.FC<JobListingProps> = ({
             toastUtil.success("Note saved successfully");
         } catch (error) {
             toastUtil.error("Failed to save note");
+        }
+    };
+
+    const handleSavePocEmail = async (jobId: number) => {
+        try {
+            await jobPostService.updateJobPoc(jobId, inlinePocContent.trim());
+            setPocOverrides(prev => ({ ...prev, [jobId]: inlinePocContent.trim() }));
+            setInlinePocEditJobId(null);
+            toastUtil.success("POC updated successfully");
+        } catch (error) {
+            toastUtil.error("Failed to update POC");
         }
     };
 
@@ -643,7 +703,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             else if (filter === "Active") count = jobStatusCounts?.active ?? 0;
                             else if (filter === "Paused") count = jobStatusCounts?.paused ?? 0;
                             else if (filter === "Inactive") count = jobStatusCounts?.inactive ?? 0;
-                            else if (filter === "Draft") count = jobStatusCounts?.draft ?? 0;
+                            else if (filter === "Draft") count = getLocalDrafts().length ?? 0;
 
                             return (
                                 <button
@@ -809,7 +869,7 @@ const JobListing: React.FC<JobListingProps> = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F5F7]">
-                            {paginatedJobs.map((job) => {
+                            {paginatedJobs.map((job: Job) => {
                                 const daysOpen = job.days_open;
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
 
@@ -845,21 +905,75 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded border-gray-300" />
                                                         </td>
                                                     );
-                                                case 'jobTitle':
+                                                case 'jobTitle': {
+                                                    const pocValue = pocOverrides[job.id] !== undefined ? pocOverrides[job.id] : ((job as any).poc_email || "");
                                                     return (
                                                         <td key={col.key} className="px-4 py-3">
                                                             <div className="flex items-center gap-2">
                                                                 <span
                                                                     className="text-[14px] font-[600] text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] transition-colors truncate max-w-[200px]"
-                                                                    onClick={() => onJobSelect?.(job)}
+                                                                    onClick={() => {
+                                                                        if ((job as any).is_local_draft) {
+                                                                            setSelectedDraft((job as any)._rawDraft);
+                                                                        } else {
+                                                                            onJobSelect?.(job);
+                                                                        }
+                                                                    }}
                                                                     title={job.title}
                                                                 >
                                                                     {job.title}
                                                                 </span>
                                                                 {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
                                                             </div>
+                                                            {/* POC inline below job title */}
+                                                            <div
+                                                                className="group/poc mt-1 cursor-pointer"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setInlinePocEditJobId(job.id);
+                                                                    setInlinePocContent(pocValue);
+                                                                }}
+                                                            >
+                                                                {inlinePocEditJobId === job.id ? (
+                                                                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                                                        <input
+                                                                            autoFocus
+                                                                            type="email"
+                                                                            placeholder="email@example.com"
+                                                                            className="flex-1 px-2 py-0.5 text-[11px] border rounded focus:ring-1 focus:ring-blue-500 outline-none max-w-[180px]"
+                                                                            value={inlinePocContent}
+                                                                            onChange={(e) => setInlinePocContent(e.target.value)}
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter') handleSavePocEmail(job.id);
+                                                                                if (e.key === 'Escape') setInlinePocEditJobId(null);
+                                                                            }}
+                                                                        />
+                                                                        <button
+                                                                            onClick={() => handleSavePocEmail(job.id)}
+                                                                            className="p-0.5 text-blue-600 hover:bg-blue-50 rounded"
+                                                                        >
+                                                                            <UserCheck className="w-3.5 h-3.5" />
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-1">
+                                                                        <p
+                                                                            className="text-[11px] text-[#8E8E93] leading-tight truncate max-w-[180px]"
+                                                                            title={`Point of contact email: ${pocValue}` || "Set POC email"}
+                                                                        >
+                                                                            {pocValue ? (
+                                                                                <>{pocValue}</>
+                                                                            ) : (
+                                                                                <span className="italic text-gray-400">Set POC email</span>
+                                                                            )}
+                                                                        </p>
+                                                                        <Pencil className="w-2.5 h-2.5 text-gray-300 opacity-0 group-hover/poc:opacity-100 transition-opacity shrink-0" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     );
+                                                }
                                                 case 'position':
                                                     return (
                                                         <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center font-medium">
@@ -874,9 +988,15 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     );
                                                 case 'location':
                                                     return (
-                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center truncate max-w-[120px]" title={Array.isArray(job.location) ? job.location.join(', ') : job.location}>
-                                                            {Array.isArray(job.location) ? job.location[0] || 'N/A' : job.location || 'N/A'}
+                                                        <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center" title={Array.isArray(job.location) ? job.location.join(', ') : job.location}>
+                                                                {Array.isArray(job.location) && job.location.length > 0
+                                                                ? job.location.length === 1
+                                                                    ? job.location[0]
+                                                                    : `${job.location[0]} +${job.location.length - 1} more`
+                                                                : '--'
+                                                            }
                                                         </td>
+                                                        
                                                     );
                                                 case 'ctcBudget':
                                                     return (
@@ -987,6 +1107,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                             </div>
                                                         </td>
                                                     );
+
                                                 case 'note':
                                                     return (
                                                         <td key={col.key} className="px-4 py-3">
@@ -1043,7 +1164,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                         return;
                                                                     }
                                                                     const rect = e.currentTarget.getBoundingClientRect();
-                                                                    const mW = 192, mH = 380, gap = 8;
+                                                                    const mH = 380, gap = 8;
                                                                     const isBottom = rect.bottom + mH + gap > window.innerHeight;
                                                                     setMenuPos({
                                                                         top: isBottom ? 0 : rect.bottom + gap,
@@ -1086,7 +1207,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                         {fetchedNotes[job.id]?.[0] ? 'Edit Note' : 'Add Note'}
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => { setMenuOpenJobId(null); showToast.success("Timeline coming soon"); }}
+                                                                        onClick={() => { setMenuOpenJobId(null); setTimelineJobId(job.id); }}
                                                                         className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
                                                                     >
                                                                         Timeline
@@ -1116,9 +1237,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                     <button
                                                                         onClick={() => {
                                                                             setMenuOpenJobId(null);
-                                                                            if (window.confirm("Are you sure you want to delete this job role?")) {
-                                                                                jobPostService.deleteJob(job.id).then(() => fetchJobs());
-                                                                            }
+                                                                            setShowDeleteModal(job.id);
                                                                         }}
                                                                         className="w-full text-left px-4 py-2.5 text-[15px] text-[#DC2626] hover:bg-[#FEE2E2] transition-colors font-medium"
                                                                     >
@@ -1151,7 +1270,7 @@ const JobListing: React.FC<JobListingProps> = ({
                 {/* Pagination */}
                 <div className="px-5 py-4 flex items-center justify-between border-t border-[#D1D1D6]">
                     <div className="text-[13px] text-[#8E8E93]">
-                        {filteredWorkspaceJobs.length > 0
+                        {combinedJobs.length > 0
                             ? (jobPagination?.showing || `Showing ${startIdx}-${endIdx} of ${totalJobsForPagination} jobs`)
                             : 'No jobs to display'}
                     </div>
@@ -1192,14 +1311,24 @@ const JobListing: React.FC<JobListingProps> = ({
 
             </div>
             <CreateJobRoleModal
-                isOpen={showCreateJobRole}
-                onClose={() => setShowCreateJobRole(false)}
+                isOpen={showCreateJobRole || !!selectedDraft}
+                onClose={() => {
+                    setShowCreateJobRole(false);
+                    setSelectedDraft(null);
+                }}
                 workspaceId={selectedWorkspace.id}
+                draftData={selectedDraft}
                 workspaces={workspaces.map(ws => ({ id: ws.id, name: ws.name }))}
                 onJobCreated={() => {
                     setShowCreateJobRole(false);
+                    setSelectedDraft(null);
                     fetchJobs(); // Refresh jobs
-                    showToast.success("Job role created successfully!");
+                }}
+                onOpenPipeline={(job) => {
+                    setShowCreateJobRole(false);
+                    setSelectedDraft(null);
+                    fetchJobs();
+                    onJobSelect?.(job);
                 }}
             />
             {editingJobId && (
@@ -1389,6 +1518,46 @@ const JobListing: React.FC<JobListingProps> = ({
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#1C1C1E] rotate-45" />
                 </div>
             )}
+
+            {/* Delete Modal */}
+            {showDeleteModal !== null && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
+                        <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-3">Delete Job Role</h2>
+                        <p className="text-gray-600 mb-8">Are you sure you want to delete this job role? This action cannot be undone.</p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteModal(null)}
+                                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    jobPostService.deleteJob(showDeleteModal).then(() => fetchJobs());
+                                    setShowDeleteModal(null);
+                                }}
+                                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                            >
+                                Delete Role
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Timeline Drawer */}
+            <JobTimelineDrawer
+                isOpen={timelineJobId !== null}
+                onClose={() => setTimelineJobId(null)}
+                jobId={timelineJobId ?? 0}
+                jobTitle={filteredWorkspaceJobs.find(j => j.id === timelineJobId)?.title}
+            />
         </div>
     );
 };

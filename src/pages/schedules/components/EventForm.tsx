@@ -24,6 +24,7 @@ interface EventFormProps {
   initialTime?: string;
   initialCompanyId?: string;
   initialJobId?: string;
+  initialApplicationId?: string;
 }
 
 // Time options for the Start Time dropdown
@@ -140,6 +141,7 @@ export const EventForm = ({
   initialTime,
   initialCompanyId,
   initialJobId,
+  initialApplicationId,
 }: EventFormProps) => {
   // ── Company & Job state ──
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
@@ -184,6 +186,14 @@ export const EventForm = ({
   useEffect(() => {
     if (isOpen && initialCompanyId) {
       setSelectedCompanyId(initialCompanyId);
+      // We set isInitialMount to false after a short delay to allow all initial sync effects to complete
+      // without being interrupted by the reset effects.
+      const timer = setTimeout(() => {
+        isInitialMount.current = false;
+      }, 100);
+      return () => clearTimeout(timer);
+    } else if (isOpen) {
+        isInitialMount.current = false;
     }
   }, [isOpen, initialCompanyId]);
 
@@ -192,6 +202,12 @@ export const EventForm = ({
       setSelectedJobId(initialJobId);
     }
   }, [isOpen, initialJobId, selectedCompanyId]);
+
+  useEffect(() => {
+    if (isOpen && initialApplicationId && selectedJobId) {
+      setFormData((prev) => ({ ...prev, applicationId: initialApplicationId }));
+    }
+  }, [isOpen, initialApplicationId, selectedJobId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -249,7 +265,6 @@ export const EventForm = ({
   const isInitialMount = useRef(true);
   useEffect(() => {
     if (isInitialMount.current) {
-      isInitialMount.current = false;
       return;
     }
     setSelectedJobId('');
@@ -327,8 +342,9 @@ export const EventForm = ({
     fetchStages();
   }, [selectedJobId]);
 
-  // Reset applicationId when job changes
+  // Reset applicationId when job changes, but NOT on initial mount/open
   useEffect(() => {
+    if (isInitialMount.current) return;
     setFormData((prev) => ({ ...prev, applicationId: '', stageId: '', type: '' }));
   }, [selectedJobId]);
 

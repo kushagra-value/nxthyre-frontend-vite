@@ -51,6 +51,7 @@ import CompanyInfoTab from "./CompanyInfoTab";
 import NaukbotTab from "./NaukbotTab";
 import LinkedinBotTab from "./LinkedinBotTab";
 import InboundTab from "./InboundTab";
+import NxthyreTab from "./NxthyreTab";
 import AddNewStageForm from "../../pipelines/AddNewStageForm";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
@@ -295,9 +296,9 @@ const getAttentionPill = (item: CandidateListItem, attentionTag?: { text: string
     const at = item.latest_call_at || item.latest_manual_call_at || "";
     const tags = item.latest_call_tags || item.latest_manual_call_tags;
     const note = item.latest_call_note || item.latest_manual_call_note;
-    
+
     const daysAgo = formatTimeAgo(at);
-    
+
     if (status === "completed" || status === "initiated") {
       const parts = [];
       if (tags && tags.length > 0) {
@@ -306,14 +307,14 @@ const getAttentionPill = (item: CandidateListItem, attentionTag?: { text: string
       if (note) {
         parts.push(`"${note}"`);
       }
-      
+
       if (parts.length > 0) {
         return { text: parts.join(" - "), color: "blue" };
       }
-      
+
       return { text: `Initiated ${daysAgo} ago`, color: "blue" };
     }
-    
+
     // busy, not_picked_up, wrong_number
     let label = status.replace(/_/g, " ");
     if (label === "not picked up") label = "Call not picked up";
@@ -481,7 +482,7 @@ export default function JobPipelineDashboard({
 
   const [dateRangeFilterLabel, setDateRangeFilterLabel] = useState<string>("Date Filter");
   const [isDateRangeFilterApplied, setIsDateRangeFilterApplied] = useState<boolean>(false);
-  const [dateRange, setDateRange] = useState<{from: string, to: string}>({from: "", to: ""});
+  const [dateRange, setDateRange] = useState<{ from: string, to: string }>({ from: "", to: "" });
 
   // ── Sorting
   type CandidateSortKey =
@@ -559,10 +560,10 @@ export default function JobPipelineDashboard({
     return true;
   });
 
-  // ── Active tab
   const [activeTab, setActiveTab] = useState<
-    "pipeline" | "naukbot" | "inbound" | "linkedinbot"
+    "pipeline" | "naukbot" | "inbound" | "linkedinbot" | "nxthyre"
   >("pipeline");
+  const [linkedinBotFilteredCount, setLinkedinBotFilteredCount] = useState<number | null>(null);
 
   const [isKanbanView, setIsKanbanView] = useState(false);
   const [draggedCandidateId, setDraggedCandidateId] = useState<number | null>(
@@ -714,6 +715,7 @@ export default function JobPipelineDashboard({
   // ── Export
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [showAllSkills, setShowAllSkills] = useState(false);
 
 
 
@@ -1029,7 +1031,7 @@ export default function JobPipelineDashboard({
       limit: number = pageSize
     ) => {
       setLoadingCandidates(true);
-      
+
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -1090,7 +1092,7 @@ export default function JobPipelineDashboard({
         const response = await apiClient.get(url, {
           signal: abortControllerRef.current.signal
         });
-        
+
         const data = response.data;
 
         let candidateData: CandidateListItem[] = [];
@@ -1441,7 +1443,7 @@ export default function JobPipelineDashboard({
 
   const getPrimaryMoveLabel = (item: CandidateListItem) => {
     const currentSlug = (item.current_stage?.slug || item.stage_slug || "").toLowerCase();
-    return currentSlug === "uncontacted" ? "Shortlist" : "Move Ahead";
+    return currentSlug === "uncontacted" ? "Shortlist" : "Next Stage";
   };
 
   const handleCopyCandidateEmail = async (item: CandidateListItem) => {
@@ -1556,8 +1558,8 @@ export default function JobPipelineDashboard({
         } else {
           const impactedSlugs = new Set([
             ...applicationIds.map(id => {
-               if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.current_stage?.slug || draggedCandidateItemRef.current?.stage_slug;
-               return selectedCandidatesMap[id]?.current_stage?.slug || selectedCandidatesMap[id]?.stage_slug || candidates.find(c => c.id === id)?.current_stage?.slug || candidates.find(c => c.id === id)?.stage_slug;
+              if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.current_stage?.slug || draggedCandidateItemRef.current?.stage_slug;
+              return selectedCandidatesMap[id]?.current_stage?.slug || selectedCandidatesMap[id]?.stage_slug || candidates.find(c => c.id === id)?.current_stage?.slug || candidates.find(c => c.id === id)?.stage_slug;
             }).filter(Boolean),
             targetStageId ? stages.find(s => s.id === targetStageId)?.slug : null,
             type === "archive" ? "archives" : null
@@ -1688,7 +1690,7 @@ export default function JobPipelineDashboard({
           key={item.id}
           draggable={!isArchived}
           onDragStart={(e) => !isArchived && handleDragStart(e, item)}
-          className={`${isArchived ? "bg-[#F9FAFB] grayscale opacity-60 pointer-events-none" : "bg-white cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30"} border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm transition-all flex flex-col gap-3 relative ${isDisabled && !isArchived ? "opacity-60" : ""} ${isDisabled && isArchived ? "pointer-events-none opacity-40" : ""}`}
+          className={`${isArchived ? "bg-[#F9FAFB] grayscale opacity-60" : "bg-white cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30"} border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm transition-all flex flex-col gap-3 relative ${isDisabled && !isArchived ? "opacity-60" : ""} ${isDisabled && isArchived ? "opacity-40" : ""}`}
         >
           <div className="flex justify-between items-start">
             <div className="flex gap-3">
@@ -1915,17 +1917,35 @@ export default function JobPipelineDashboard({
                   </div>
                 )}
               </div>
-              <div
-                className="text-sm text-[#8E8E93] mt-0.5 flex items-center gap-1 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigator.clipboard.writeText(`${jobDetails?.title}, ${jobDetails?.location} (Job ID: ${jobDetails?.id})`).then(() => showToast.success("Job ID copied"));
-                }}
-              >
-
-                {/* add a copy button here  */}
-                <Copy className="w-3.5 h-3.5 text-[#4674E5] shrink-0" />
-                JD-{jobDetails?.job_id || jobDetails?.id}
+              <div className="text-sm text-[#8E8E93] mt-0.5 flex items-center gap-3 flex-wrap">
+                <div
+                  className="flex items-center gap-1 cursor-pointer hover:text-[#4B5563] transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(`${jobDetails?.title}, ${jobDetails?.location} (Job ID: ${jobDetails?.id})`).then(() => showToast.success("Job ID copied"));
+                  }}
+                >
+                  <Copy className="w-3.5 h-3.5 text-[#4674E5] shrink-0" />
+                  JD-{jobDetails?.job_id || jobDetails?.id}
+                </div>
+                {jobDetails?.posted_by && (
+                  <>
+                    <span className="text-[#D1D1D6]">|</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[#8E8E93] text-xs font-medium">Created By:</span>
+                      <span className="text-[#4B5563] text-xs">{jobDetails.posted_by}</span>
+                    </div>
+                  </>
+                )}
+                {jobDetails?.poc_email && (
+                  <>
+                    <span className="text-[#D1D1D6]">|</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[#8E8E93] text-xs font-medium">POC:</span>
+                      <span className="text-[#4B5563] text-xs">{jobDetails.poc_email}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -2042,7 +2062,7 @@ export default function JobPipelineDashboard({
                     No of Position
                   </div>
                   <div className="font-medium text-[#4B5563] mt-1">
-                    {jobDetails.count || "--"}
+                    {jobDetails.num_positions || "--"}
                   </div>
                 </div>
                 <div>
@@ -2091,14 +2111,30 @@ export default function JobPipelineDashboard({
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {jobDetails.skills && jobDetails.skills.length > 0 ? (
-                      jobDetails.skills.map((s) => (
-                        <span
-                          key={s}
-                          className="bg-[#F2F2F7] text-[#4B5563] text-[10px] px-2.5 py-0.5 rounded-full"
-                        >
-                          {s}
-                        </span>
-                      ))
+                      <>
+                        {(showAllSkills
+                          ? jobDetails.skills
+                          : jobDetails.skills.slice(0, 4)
+                        ).map((s) => (
+                          <span
+                            key={s}
+                            className="bg-[#F2F2F7] text-[#4B5563] text-[10px] px-2.5 py-0.5 rounded-full"
+                          >
+                            {s}
+                          </span>
+                        ))}
+
+                        {jobDetails.skills.length > 4 && (
+                          <button
+                            onClick={() => setShowAllSkills(!showAllSkills)}
+                            className="text-[10px] text-blue-500 ml-1"
+                          >
+                            {showAllSkills
+                              ? "Show less"
+                              : `+${jobDetails.skills.length - 4} more`}
+                          </button>
+                        )}
+                      </>
                     ) : (
                       <span className="text-[#8E8E93] text-xs">--</span>
                     )}
@@ -2138,7 +2174,12 @@ export default function JobPipelineDashboard({
             {
               key: "linkedinbot" as const,
               label: "LinkedIn Bot",
-              count: jobDetails?.linkedin_bot_candidates_count ?? 0,
+              count: linkedinBotFilteredCount ?? jobDetails?.linkedin_bot_candidates_count ?? 0,
+            },
+            {
+              key: "nxthyre" as const,
+              label: "Nxthyre",
+              count: jobDetails?.candidates_count ?? 0,
             },
           ].map((tab) => (
             <button
@@ -2373,7 +2414,7 @@ export default function JobPipelineDashboard({
                       </svg>
                       Filters
                     </button>
-                    <PipelineFilterPanel 
+                    <PipelineFilterPanel
                       isOpen={showPipelineFilterPanel}
                       onClose={() => setShowPipelineFilterPanel(false)}
                       onApply={(filters) => setPipelineFilters(filters)}
@@ -2547,7 +2588,7 @@ export default function JobPipelineDashboard({
               {stages.filter(s => s.slug !== 'archives').map((stage) => {
                 return (
                   <div key={stage.id} className="relative h-full">
-                    <PipelineKanbanColumn 
+                    <PipelineKanbanColumn
                       jobId={jobId}
                       stage={stage}
                       filters={pipelineFilters}
@@ -2803,15 +2844,15 @@ export default function JobPipelineDashboard({
                               : "--";
 
                         // CTC
-                        
 
-                          const ctcText =
+
+                        const ctcText =
                           cand.current_salary_lpa ||
                           (cand.current_salary_lpa != null
                             ? `${cand.current_salary_lpa}`
                             : "--");
 
-                          const ctcDisplay = (
+                        const ctcDisplay = (
                           <span className="flex flex-col items-start gap-1">
                             {ctcText}
                             {cand.current_take_home && (
@@ -2950,23 +2991,23 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5 whitespace-nowrap">
-                                <div className="whitespace-nowrap">
-                                  {(() => {
-                                    const pill = getAttentionPill(item, attentionTag);
-                                    if (!pill) return <span className="text-xs text-[#8E8E93]">--</span>;
-                                    const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
-                                    const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
-                                    return (
-                                      <span
-                                        className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
-                                        style={{ backgroundColor: bgColor, color: textColor }}
-                                        title={pill.text}
-                                      >
-                                        {pill.text}
-                                      </span>
-                                    );
-                                  })()}
-                                </div>
+                              <div className="whitespace-nowrap">
+                                {(() => {
+                                  const pill = getAttentionPill(item, attentionTag);
+                                  if (!pill) return <span className="text-xs text-[#8E8E93]">--</span>;
+                                  const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
+                                  const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                                  return (
+                                    <span
+                                      className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
+                                      style={{ backgroundColor: bgColor, color: textColor }}
+                                      title={pill.text}
+                                    >
+                                      {pill.text}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
                             </td>
                             <td
                               className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-4 py-5 shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}
@@ -3181,7 +3222,7 @@ export default function JobPipelineDashboard({
                             return (
                               <tr
                                 key={item.id}
-                                className={`grayscale opacity-50 bg-gray-50/50 hover:bg-gray-100 transition-colors ${isDisabled ? "pointer-events-none opacity-30" : ""}`}
+                                className={`grayscale opacity-50 bg-gray-50/50 hover:bg-gray-100 transition-colors ${isDisabled ? "opacity-30" : ""}`}
                               >
                                 <td className="px-4 py-5">
                                   <input
@@ -3193,12 +3234,19 @@ export default function JobPipelineDashboard({
                                   />
                                 </td>
                                 <td className="px-4 py-5 whitespace-nowrap">
-                                  <div className="flex flex-col">
-                                    <div className="font-medium text-[#8E8E93] truncate" title={cand.full_name || "--"}>
-                                      {cand.full_name || "--"}
-                                    </div>
-                                    <div className="text-xs text-[#AEAEB2] truncate" title={cand.headline || "--"}>
-                                      {cand.headline || "--"}
+                                  <div
+                                    className="cursor-pointer group"
+                                    onClick={() =>
+                                      onSelectCandidate?.(item, filteredArchivedTable, filteredArchivedTable.indexOf(item))
+                                    }
+                                  >
+                                    <div>
+                                      <div className="font-medium text-[#8E8E93] group-hover:underline group-hover:text-blue-600 transition truncate" title={cand.full_name || "--"}>
+                                        {cand.full_name || "--"}
+                                      </div>
+                                      <div className="text-xs text-[#AEAEB2] truncate" title={cand.headline || "--"}>
+                                        {cand.headline || "--"}
+                                      </div>
                                     </div>
                                     {(item as any).archive_reason && (
                                       <div className="bg-[#FEF2F2] px-2 py-1 rounded text-[10px] text-[#DC2626] font-medium mt-1.5 inline-flex items-center gap-1.5 w-fit max-w-[200px]">
@@ -3360,8 +3408,9 @@ export default function JobPipelineDashboard({
       )}
 
       {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
-      {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} />}
+      {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} onFilterCountChange={setLinkedinBotFilteredCount} />}
       {activeTab === "inbound" && <InboundTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
+      {activeTab === "nxthyre" && <NxthyreTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
 
       {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal
