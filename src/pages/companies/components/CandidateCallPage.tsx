@@ -796,7 +796,7 @@ export default function CandidateCallPage() {
         {/* Back button */}
         <button
           onClick={() => {
-            navigate(`/`)
+            navigate(-1);
           }}
           className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2 z-10"
         >
