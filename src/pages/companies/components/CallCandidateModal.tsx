@@ -14,6 +14,7 @@ export interface CallCandidateData {
   headline: string;
   phone: string;
   experience: string;
+  currentCtc: string;
   expectedCtc: string;
   location: string;
   noticePeriod: string;
@@ -332,7 +333,7 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
                 {/* Call on Platform */}
                 <button
                   onClick={handleCallOnPlatform}
-                  className="flex-1 max-w-[220px] flex flex-col items-center gap-3 px-6 py-5 rounded-xl border-2 border-[#1D4ED8] bg-[#1D4ED8]/5 text-[#1D4ED8] font-medium hover:bg-[#1D4ED8] hover:text-white transition-all group"
+                  className="flex-1 max-w-[220px] flex flex-col items-center gap-3 group px-6 py-5 rounded-xl border-2 border-[#1D4ED8] bg-[#1D4ED8]/5 text-[#1D4ED8] font-medium hover:bg-[#1D4ED8] hover:text-white transition-all group"
                 >
                   <div className="w-12 h-12 rounded-full bg-[#1D4ED8]/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
                     <PhoneCall className="w-5 h-5" />

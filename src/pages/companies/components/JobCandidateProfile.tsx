@@ -720,15 +720,6 @@ export default function JobCandidateProfile({
                             premiumData.phone ||
                             premiumData.all_phone_numbers?.[0] ||
                             "--",
-                          experience: totalExp,
-                          expectedCtc: cand.expected_ctc
-                            ? `${cand.expected_ctc} LPA`
-                            : "--",
-                          location: location || "--",
-                          noticePeriod: noticePeriod,
-                          callAttention: jobScoreObj?.call_attention || [],
-                          resumeUrl: premiumData.resume_url || undefined,
-                        };
                         sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData }));
                         window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`;
                       }}

@@ -3048,11 +3048,15 @@ export default function JobPipelineDashboard({
                                               cand.premium_data?.all_phone_numbers?.[0] ||
                                               "+91 98765 43210",
                                             experience: expYears,
-                                            expectedCtc: expectedCtc,
-                                            location: cand.location || "--",
+                                            currentCtc: cand.current_salary_lpa
+                                              ? `${cand.current_salary_lpa}`
+                                              : "--",
+                                            expectedCtc: cand.expected_ctc
+                                              ? `${cand.expected_ctc} LPA`
+                                              : "--",
                                             noticePeriod: noticePeriodText,
-                                            callAttention: callAttention,
-                                            resumeUrl: cand.premium_data?.resume_url || "",
+                                            location: cand.location || "--",
+                                            resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "",
                                           };
                                           sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData }));
                                           setMenuOpenId(null);

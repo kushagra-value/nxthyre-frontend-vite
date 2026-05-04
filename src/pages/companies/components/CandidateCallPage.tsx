@@ -113,6 +113,7 @@ export default function CandidateCallPage() {
   const [callState, setCallState] = useState<string>(initialCallState);
   const [isSaving, setIsSaving] = useState(false);
   const [isEndingCall, setIsEndingCall] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Manual recording states
   const [isManualRecording, setIsManualRecording] = useState(false);
@@ -186,16 +187,6 @@ export default function CandidateCallPage() {
     });
   };
 
-  const [followUpReason, setFollowUpReason] = useState<string | null>(null);
-
-  // Load candidate fallback if direct link
-  useEffect(() => {
-    if (!candidate && candidateId) {
-      setCandidate(DUMMY_FALLBACK);
-    }
-  }, [candidateId, candidate]);
-
-  // Profile Editing State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     currentCtc: "",
@@ -204,60 +195,103 @@ export default function CandidateCallPage() {
     location: "",
     experience: "",
   });
+  const [followUpReason, setFollowUpReason] = useState<string | null>(null);
 
   const handleStartEdit = () => {
     if (candidate) {
       setEditProfileData({
-        currentCtc: candidate.currentCtc,
-        expectedCtc: candidate.expectedCtc,
-        noticePeriod: candidate.noticePeriod,
+        currentCtc: candidate.currentCtc.replace(/[^0-9.]/g, ""),
+        expectedCtc: candidate.expectedCtc.replace(/[^0-9.]/g, ""),
+        noticePeriod: candidate.noticePeriod.replace(/[^0-9]/g, ""),
         location: candidate.location,
-        experience: candidate.experience,
+        experience: candidate.experience.replace(/[^0-9.]/g, ""),
       });
       setIsEditingProfile(true);
     }
   };
 
   const handleUpdateProfile = async () => {
-    if (!candidate?.id) return;
+    if (!candidate) return;
     try {
-      // Parse values back to numbers where expected by backend
-      const payload: any = {};
-      
-      const parsedCurrent = parseFloat(editProfileData.currentCtc.replace(/[^0-9.]/g, ""));
-      if (!isNaN(parsedCurrent)) payload.current_salary = parsedCurrent;
-      
-      const parsedExpected = parseFloat(editProfileData.expectedCtc.replace(/[^0-9.]/g, ""));
-      if (!isNaN(parsedExpected)) payload.expected_ctc = parsedExpected;
-      
-      const parsedNotice = parseInt(editProfileData.noticePeriod.replace(/[^0-9]/g, ""), 10);
-      if (!isNaN(parsedNotice)) payload.notice_period_days = parsedNotice;
-      
-      payload.location = editProfileData.location;
-      
-      const parsedExp = parseFloat(editProfileData.experience.replace(/[^0-9.]/g, ""));
-      if (!isNaN(parsedExp)) payload.exp = parsedExp;
+      const payload: Record<string, any> = {};
+      const ctcNum = parseFloat(editProfileData.currentCtc);
+      if (!isNaN(ctcNum)) payload.current_salary = ctcNum;
+      const expectedNum = editProfileData.expectedCtc.trim();
+      if (expectedNum) payload.expected_ctc = expectedNum;
+      const noticeNum = parseInt(editProfileData.noticePeriod, 10);
+      if (!isNaN(noticeNum)) payload.notice_period_days = noticeNum;
+      if (editProfileData.location.trim()) payload.location = editProfileData.location.trim();
+      const expNum = parseFloat(editProfileData.experience);
+      if (!isNaN(expNum)) payload.exp = expNum;
 
       await candidateService.updateCandidateEditableFields(candidate.id, payload);
-      
-      setCandidate(prev => prev ? {
-        ...prev,
-        currentCtc: editProfileData.currentCtc.includes("LPA") ? editProfileData.currentCtc : `${editProfileData.currentCtc} LPA`,
-        expectedCtc: editProfileData.expectedCtc.includes("LPA") ? editProfileData.expectedCtc : `${editProfileData.expectedCtc} LPA`,
-        noticePeriod: editProfileData.noticePeriod.includes("days") ? editProfileData.noticePeriod : `${editProfileData.noticePeriod} days`,
-        location: editProfileData.location,
-        experience: editProfileData.experience.includes("yrs") ? editProfileData.experience : `${editProfileData.experience} yrs`,
-      } : null);
-      
+
+      // Update local candidate state with display-formatted values
+      const updatedCandidate: CandidateCallParams = {
+        ...candidate,
+        currentCtc: !isNaN(ctcNum) ? `${ctcNum} LPA` : candidate.currentCtc,
+        expectedCtc: expectedNum ? `${expectedNum} LPA` : candidate.expectedCtc,
+        noticePeriod: !isNaN(noticeNum) ? `${noticeNum} days` : candidate.noticePeriod,
+        location: editProfileData.location.trim() || candidate.location,
+        experience: !isNaN(expNum) ? `${expNum} yrs` : candidate.experience,
+      };
+      setCandidate(updatedCandidate);
+
+      // Update sessionStorage so refreshes reflect the new data
+      try {
+        sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: updatedCandidate }));
+      } catch {}
+
       setIsEditingProfile(false);
-      showToast.success("Profile updated successfully");
-    } catch (error) {
-      showToast.error("Failed to update profile");
-      console.error(error);
+      showToast.success("Profile updated!");
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      showToast.error("Failed to update profile.");
     }
   };
 
-  // Fetch initial Role Questions on Mount
+  // Re-fetch candidate details from backend on mount to ensure persistence across refreshes
+  useEffect(() => {
+    if (!candidateId) return;
+    (async () => {
+      try {
+        const details = await candidateService.getCandidateDetails(candidateId);
+        const c = details?.candidate;
+        if (c) {
+          setCandidate((prev) => {
+            const base = prev || DUMMY_FALLBACK;
+            return {
+              ...base,
+              id: c.id || base.id,
+              name: c.full_name || base.name,
+              avatarInitials: c.full_name
+                ? c.full_name.substring(0, 2).toUpperCase()
+                : base.avatarInitials,
+              headline: c.headline || base.headline,
+              currentCtc: (c as any).current_salary != null
+                ? `${(c as any).current_salary} LPA`
+                : base.currentCtc,
+              expectedCtc: (c as any).expected_ctc
+                ? `${(c as any).expected_ctc} LPA`
+                : base.expectedCtc,
+              noticePeriod: c.notice_period_days != null
+                ? `${c.notice_period_days} days`
+                : base.noticePeriod,
+              location: c.location || base.location,
+              experience: c.total_experience != null
+                ? `${c.total_experience} yrs`
+                : base.experience,
+              phone: c.phone || c.premium_data?.phone || base.phone,
+              resumeUrl: c.premium_data?.resume_url || c.resume_url || base.resumeUrl,
+            };
+          });
+        }
+      } catch (err) {
+        console.error("Failed to re-fetch candidate details:", err);
+      }
+    })();
+  }, [candidateId]);
+
   useEffect(() => {
     if (candidate?.id && jobId) {
       getRoleQuestions(jobId, candidate.id)
