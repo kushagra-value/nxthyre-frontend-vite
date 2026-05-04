@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import JobBasicsStep from "./JobBasicsStep";
 import SkillsRequirementsStep from "./SkillsRequirementsStep";
 import ReviewPublishStep from "./ReviewPublishStep";
+import html2pdf from "html2pdf.js";
 
 interface Workspace { id: number; name: string; }
 
@@ -373,6 +374,40 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
     }
   };
 
+  const handleDownloadJD = () => {
+    if (!editableJD) {
+      toast.error("No Job Description available to download.");
+      return;
+    }
+
+    const element = document.createElement("div");
+    element.innerHTML = `
+      <div style="padding: 20px; font-family: sans-serif; color: #333;">
+        <h1 style="text-align: center; color: #0F47F2;">${formData.title || "Job Description"}</h1>
+        ${formData.clientCompany ? `<h3 style="text-align: center; color: #555;">${formData.clientCompany}</h3>` : ""}
+        <hr style="margin-top: 20px; margin-bottom: 20px; border: 0; border-top: 1px solid #eee;" />
+        <div style="line-height: 1.6;">
+          ${editableJD}
+        </div>
+      </div>
+    `;
+
+    const opt = {
+      margin:       0.5,
+      filename:     `${formData.title ? formData.title.replace(/\s+/g, '_') : 'Job_Description'}.pdf`,
+      image:        { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in' as const, format: 'letter' as const, orientation: 'portrait' as const }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      toast.success("JD downloaded successfully!");
+    }).catch((err: any) => {
+      console.error("PDF generation failed", err);
+      toast.error("Failed to generate PDF.");
+    });
+  };
+
   // ── Success Modal ──
   if (showSuccessModal) {
     return (
@@ -544,7 +579,7 @@ const CreateJobRoleModal: React.FC<CreateJobRoleModalProps> = ({
                   className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
                   <ArrowLeft className="w-4 h-4" /> Back
                 </button>
-                <button onClick={() => toast.success("JD downloaded!")}
+                <button onClick={handleDownloadJD}
                   className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
                   Download JD <Download className="w-4 h-4" />
                 </button>

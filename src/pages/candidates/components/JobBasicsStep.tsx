@@ -361,7 +361,7 @@ const JobBasicsStep: React.FC<JobBasicsStepProps> = ({
                   }));
                 }
               }}
-              className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                 formData.confidential ? "bg-gray-100 text-gray-400" : ""
               }`}
               disabled={isLoading || formData.confidential}
@@ -379,7 +379,7 @@ const JobBasicsStep: React.FC<JobBasicsStepProps> = ({
                   }));
                 }
               }}
-              className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                 formData.confidential ? "bg-gray-100 text-gray-400" : ""
               }`}
               disabled={isLoading || formData.confidential}
