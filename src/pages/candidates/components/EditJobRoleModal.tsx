@@ -1,36 +1,16 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  X,
-  Upload,
-  FileText,
-  ChevronDown,
-  RotateCcw,
-  ArrowLeft,
-  ArrowRight,
-  Underline,
-  List,
-  CheckCircle,
-  Info,
-  Check,
-  Plus,
-  Bold,
-  Italic,
-} from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { ArrowLeft, ArrowRight, CheckCircle, Send, X, Download } from "lucide-react";
 import { showToast } from "../../../utils/toast";
-import {
-  jobPostService,
-  Job,
-  CreateJobData,
-} from "../../../services/jobPostService";
+import { jobPostService, Job, CreateJobData } from "../../../services/jobPostService";
 import { candidateService } from "../../../services/candidateService";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { debounce } from "lodash";
+import toast from "react-hot-toast";
+import html2pdf from "html2pdf.js";
+import JobBasicsStep from "./JobBasicsStep";
+import SkillsRequirementsStep from "./SkillsRequirementsStep";
+import ReviewPublishStep from "./ReviewPublishStep";
 
-interface Workspace {
-  id: number;
-  name: string;
-}
+interface Workspace { id: number; name: string; }
 
 interface EditJobRoleModalProps {
   isOpen: boolean;
@@ -43,855 +23,464 @@ interface EditJobRoleModalProps {
 }
 
 const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
-  isOpen,
-  onClose,
-  workspaceId,
-  workspaces,
-  jobId,
-  onJobUpdated,
-  handlePipelinesClick,
+  isOpen, jobId, workspaceId, workspaces, handlePipelinesClick, onClose, onJobUpdated,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [formData, setFormData] = useState({
-    allowInbound: true,
-    keepPrivate: false,
-    shareExternally: false,
-    title: "",
-    skills: [] as string[],
-    location: [] as string[],
-    workApproach: "Onsite" as "Onsite" | "Remote" | "Hybrid",
-    seniority: "",
-    department: "",
-    aiInterviews: false,
-    minExp: "",
-    maxExp: "",
-    minSalary: "",
-    maxSalary: "",
-    confidential: false,
-    jobDescription: "",
-    uploadType: "paste" as "paste" | "upload",
-    codingRound: false,
-    workspace: workspaceId.toString(),
-  });
-
-  const [skillInput, setSkillInput] = useState("");
-  const [skillSuggestions, setSkillSuggestions] = useState<string[]>([]); // Added
-  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false); // Added
-  const skillSuggestionsRef = useRef<HTMLDivElement>(null);
-  const [locationInput, setLocationInput] = useState<string[]>([]);
-  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
-  const [competencyInput, setCompetencyInput] = useState("");
-  const [refinementInput, setRefinementInput] = useState("");
-  const [validationError, setValidationError] = useState("");
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const locationInputRef = useRef<HTMLInputElement>(null);
-
-  const seniorityOptions = ["JUNIOR", "SENIOR", "LEAD", "HEAD", "INTERN"];
-  const departmentOptions = [
-    "Human Resources",
-    "Marketing",
-    "Finance",
-    "Sales",
-    "Ops",
-    "Engineering",
-    "Admin",
-    "Others",
-  ];
-
-  const departmentMap: { [key: number]: string } = {
-    1: "Human Resources",
-    2: "Marketing",
-    3: "Finance",
-    4: "Sales",
-    5: "Ops",
-    6: "Engineering",
-    7: "Admin",
-    8: "Others",
-  };
-
-  const departmentNameToId: { [key: string]: number } = {
-    "Human Resources": 1,
-    Marketing: 2,
-    Finance: 3,
-    Sales: 4,
-    Ops: 5,
-    Engineering: 6,
-    Admin: 7,
-    Others: 8,
-  };
+  const [skillInput, setSkillInput] = useState("");
+  const [skillSuggestions, setSkillSuggestions] = useState<string[]>([]);
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
+  const skillSuggestionsRef = useRef<HTMLDivElement>(null);
+  const [locationInput, setLocationInput] = useState<string[]>([]);
+  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [competencyInput, setCompetencyInput] = useState<string>("");
   const [competencies, setCompetencies] = useState<string[]>([]);
   const [editableJD, setEditableJD] = useState("");
   const [aiJdResponse, setAiJdResponse] = useState<any>(null);
   const [originalDescription, setOriginalDescription] = useState("");
-  const [originalUploadType, setOriginalUploadType] = useState<
-    "paste" | "upload"
-  >("paste");
+  const [originalUploadType, setOriginalUploadType] = useState<"paste" | "upload">("paste");
+  const [booleanSearchTerm, setBooleanSearchTerm] = useState<string>("");
+  const locationInputRef = useRef<HTMLInputElement>(null);
+  const [saveDraftText, setSaveDraftText] = useState("Save Draft");
 
-  const isValidTextInput = (value: string): boolean =>
-    /^[a-zA-Z0-9, ]*$/.test(value);
+  const [formData, setFormData] = useState({
+    allowInbound: true, keepPrivate: false, shareExternally: false,
+    clientCompany: "", title: "",
+    skills: [] as string[], location: [] as string[],
+    workApproach: "Onsite" as "Onsite" | "Remote" | "Hybrid",
+    seniority: "", department: "", openings: "",
+    noticePeriod: "", educationLevel: "", specifications: "",
+    aiSelectedSkills: [] as string[],
+    mustHaveRequirements: "", niceToHaveRequirements: "",
+    industryPreferences: [] as string[],
+    aiInterviews: false, minExp: "", maxExp: "",
+    minSalary: "", maxSalary: "", confidential: false, salaryFormat: "INR (LPA)",
+    jobDescription: "", uploadType: "paste" as "paste" | "upload",
+    shareThirdParty: false, codingRound: false,
+    workspace: workspaceId.toString(),
+    pocEmail: "",
+  });
 
-  const isValidNumberInput = (value: string): boolean => /^[0-9]*$/.test(value);
+  const seniorityOptions = ["JUNIOR", "SENIOR", "LEAD", "HEAD", "INTERN"];
+  const departmentOptions = ["Human Resources", "Marketing", "Finance", "Sales", "Ops", "Engineering", "Admin", "Others"];
+  const departmentMap: { [key: number]: string } = {
+    1: "Human Resources", 2: "Marketing", 3: "Finance", 4: "Sales", 5: "Ops", 6: "Engineering", 7: "Admin", 8: "Others",
+  };
+  const departmentNameToId: { [key: string]: number } = {
+    "Human Resources": 1, Marketing: 2, Finance: 3, Sales: 4, Ops: 5, Engineering: 6, Admin: 7, Others: 8,
+  };
 
-  const MAX_SAFE_INTEGER = 999999999999;
+  const isValidTextInput = (v: string) => /^[a-zA-Z0-9, ]*$/.test(v);
+  const isValidNumberInput = (v: string) => /^[0-9]*$/.test(v);
   const MIN_DESCRIPTION_LENGTH = 10;
 
-  const RadioToggle: React.FC<{
-    label: string;
-    isSelected: boolean;
-    onClick: () => void;
-    disabled?: boolean;
-  }> = ({ label, isSelected, onClick, disabled = false }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-          flex items-center justify-start px-4 py-2 rounded-lg  text-md font-[400] transition-all duration-200
-          ${
-            isSelected
-              ? "bg-[#ECF1FF] text-blue-700"
-              : "bg-[#F0F0F0]  text-gray-700 hover:bg-gray-100"
-          }
-          ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-        `}
-    >
-      <div className="flex items-center">
-        <div
-          className={`
-              w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center transition-all duration-200
-              ${
-                isSelected
-                  ? "border-blue-500 bg-white"
-                  : "border-gray-300 bg-white"
-              }
-            `}
-        >
-          {isSelected && (
-            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-          )}
-        </div>
-        {label}
-      </div>
-    </button>
-  );
+  // ── Initialization ──
+  const loadDrafts = () => {
+    try {
+      const drafts = JSON.parse(localStorage.getItem('edit_job_drafts') || '[]');
+      const draftData = drafts.find((d: any) => d.id === jobId.toString());
+      if (draftData) {
+        setFormData(draftData.formData);
+        setAiJdResponse(draftData.aiJdResponse || null);
+        setEditableJD(draftData.editableJD || "");
+        setCompetencies(draftData.competencies || []);
+        setCurrentStep(draftData.currentStep || 1);
+        setBooleanSearchTerm(draftData.booleanSearchTerm || "");
+        setOriginalDescription(draftData.originalDescription || "");
+        setOriginalUploadType(draftData.originalUploadType || "paste");
+        return true;
+      }
+    } catch (err) {
+      console.error("Failed to load drafts", err);
+    }
+    return false;
+  };
 
-  // Updated fetchSkillSuggestions (add useCallback and debounce, like create)
+  const resetForm = () => {
+    const selectedWorkspaceName = workspaces.find((w) => w.id === workspaceId)?.name || "";
+    setFormData({
+      allowInbound: true, keepPrivate: false, shareExternally: false,
+      clientCompany: selectedWorkspaceName, title: "", skills: [], location: [],
+      workApproach: "Onsite", seniority: "", department: "", openings: "",
+      noticePeriod: "", educationLevel: "", specifications: "",
+      aiSelectedSkills: [] as string[],
+      mustHaveRequirements: "", niceToHaveRequirements: "", industryPreferences: [],
+      aiInterviews: false, minExp: "", maxExp: "", minSalary: "", maxSalary: "",
+      confidential: false, salaryFormat: "INR (LPA)", jobDescription: "", uploadType: "paste",
+      shareThirdParty: false, codingRound: false, workspace: workspaceId.toString(),
+      pocEmail: "",
+    });
+    setSkillInput(""); setLocationInput([]); setLocationSuggestions([]);
+    setCompetencyInput(""); setFile(null); setCurrentStep(1);
+    setCompetencies([]); setEditableJD(""); setAiJdResponse(null); setBooleanSearchTerm("");
+  };
+
+  useEffect(() => {
+    if (isOpen && jobId) {
+      if (loadDrafts()) return;
+
+      setIsFetching(true);
+      setIsLoading(true);
+      jobPostService.getJob(jobId).then(async (job: Job) => {
+        let workApproach: "Onsite" | "Remote" | "Hybrid" = "Onsite";
+        if (job.work_approach === "HYBRID") workApproach = "Hybrid";
+        else if (job.work_approach === "REMOTE") workApproach = "Remote";
+
+        const locationFirst = job.location.length > 0 ? [job.location[0]] : [];
+        const selectedWorkspaceName = workspaces.find((w) => w.id === job.workspace_details.id)?.name || "";
+
+        setFormData({
+          allowInbound: job.visibility === "PUBLIC",
+          keepPrivate: job.visibility === "PRIVATE",
+          shareExternally: false,
+          clientCompany: selectedWorkspaceName,
+          title: job.title,
+          skills: job.skills || [],
+          location: locationFirst,
+          workApproach,
+          seniority: job.seniority,
+          department: departmentMap[Number(job.department_name)] || "Others",
+          openings: job.num_positions?.toString() || "",
+          noticePeriod: job.notice_period || "",
+          educationLevel: job.education_level || "",
+          specifications: job.specialisations || "",
+          aiSelectedSkills: [],
+          mustHaveRequirements: "",
+          niceToHaveRequirements: "",
+          industryPreferences: [],
+          aiInterviews: job.has_ai_interview_stage || false,
+          minExp: job.experience_min_years?.toString() || "",
+          maxExp: job.experience_max_years?.toString() || "",
+          minSalary: job.salary_min ? job.salary_min.toString().replace(/.00$/, "") : "",
+          maxSalary: job.salary_max ? job.salary_max.toString().replace(/.00$/, "") : "",
+          confidential: job.is_salary_confidential,
+          salaryFormat: "INR (₹/year)", // Default for existing jobs
+          jobDescription: job.description || "",
+          uploadType: job.description ? "paste" : "upload",
+          codingRound: job.has_coding_contest_stage || false,
+          workspace: job.workspace_details.id.toString(),
+          pocEmail: job.poc_email || "",
+          shareThirdParty: false,
+        });
+
+        setOriginalDescription(job.description || "");
+        setOriginalUploadType("paste");
+        setEditableJD(job.ai_jd || "");
+        setCompetencies(job.technical_competencies || []);
+        setAiJdResponse(job.ai_jd_object || null);
+        setIsLoading(false);
+        setIsFetching(false);
+      }).catch((error) => {
+        showToast.error(error.message || "Failed to fetch job details");
+        setIsLoading(false);
+        setIsFetching(false);
+      });
+    } else if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen, jobId, workspaces]);
+
+  // ── Skill suggestions ──
   const fetchSkillSuggestions = useCallback(
     debounce(async (query: string) => {
       if (query.length >= 2) {
         try {
-          const suggestions =
-            await candidateService.getKeywordSuggestions(query);
-          const currentSkills = formData.skills.map((s) => s.toLowerCase());
-          const filteredSuggestions = suggestions.filter(
-            (suggestion: string) =>
-              !currentSkills.includes(suggestion.toLowerCase()),
-          );
-          setSkillSuggestions(filteredSuggestions);
-          setShowSkillSuggestions(filteredSuggestions.length > 0);
-        } catch (error) {
-          console.error("Error fetching skill suggestions:", error);
-          setSkillSuggestions([]);
-          setShowSkillSuggestions(false);
-          showToast.error("Failed to fetch skill suggestions");
-        }
-      } else {
-        setSkillSuggestions([]);
-        setShowSkillSuggestions(false);
-      }
-    }, 300),
-    [formData.skills],
+          const suggestions = await candidateService.getKeywordSuggestions(query);
+          const current = formData.skills.map((s) => s.toLowerCase());
+          const filtered = suggestions.filter((s: string) => !current.includes(s.toLowerCase()));
+          setSkillSuggestions(filtered);
+          setShowSkillSuggestions(filtered.length > 0);
+        } catch { setSkillSuggestions([]); setShowSkillSuggestions(false); }
+      } else { setSkillSuggestions([]); setShowSkillSuggestions(false); }
+    }, 300), [formData.skills]
   );
 
-  // Updated useEffect for click outside skills (add)
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        skillSuggestionsRef.current &&
-        !skillSuggestionsRef.current.contains(event.target as Node)
-      ) {
+    const handler = (e: MouseEvent) => {
+      if (skillSuggestionsRef.current && !skillSuggestionsRef.current.contains(e.target as Node))
         setShowSkillSuggestions(false);
-      }
     };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Updated fetchLocationSuggestions (change to Geoapify like create, add useCallback)
-  // UPDATED: Replace Geoapify fetch with jobPostService.getLocationSuggestions for consistency and to use backend API
+  const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
+    setSkillInput(v); fetchSkillSuggestions(v);
+  };
+  const handleSkillSelect = (s: string) => {
+    if (!isValidTextInput(s)) { showToast.error("Invalid characters."); return; }
+    setFormData((p) => ({ ...p, skills: [...p.skills, s.trim()] }));
+    setSkillInput(""); setSkillSuggestions([]); setShowSkillSuggestions(false);
+  };
+  const handleSkillAdd = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && skillInput.trim()) {
+      if (!isValidTextInput(skillInput)) { showToast.error("Invalid characters."); return; }
+      setFormData((p) => ({ ...p, skills: [...p.skills, skillInput.trim()] }));
+      setSkillInput(""); setSkillSuggestions([]); setShowSkillSuggestions(false);
+    }
+  };
+  const removeSkill = (i: number) => setFormData((p) => ({ ...p, skills: p.skills.filter((_, idx) => idx !== i) }));
+
+  // ── Location suggestions ──
   const fetchLocationSuggestions = useCallback(
     debounce(async (query: string) => {
-      if (query.length < 2) {
-        setLocationSuggestions([]);
-        setIsLoadingLocation(false);
-        return;
-      }
-
+      if (query.length < 2) { setLocationSuggestions([]); setIsLoadingLocation(false); return; }
       setIsLoadingLocation(true);
-      try {
-        const suggestions = await candidateService.getCitySuggestions(query);
-        setLocationSuggestions(suggestions);
-      } catch (error) {
-        console.error("Error fetching location suggestions:", error);
-        setLocationSuggestions([]);
-        showToast.error("Failed to fetch location suggestions");
-      } finally {
-        setIsLoadingLocation(false);
-      }
-    }, 300),
-    [],
+      try { setLocationSuggestions(await candidateService.getCitySuggestions(query)); }
+      catch { setLocationSuggestions([]); }
+      finally { setIsLoadingLocation(false); }
+    }, 300), []
   );
-
-  // Updated handleSkillInputChange (add replace and fetch, like create)
-  const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, "");
-    setSkillInput(value);
-    fetchSkillSuggestions(value);
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const q = e.target.value; setLocationInput([q]);
+    if (q.trim().length >= 2) fetchLocationSuggestions(q); else setLocationSuggestions([]);
+  };
+  const handleLocationAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return; e.preventDefault();
+    const v = locationInput[0]?.trim(); if (!v) return;
+    if (!isValidTextInput(v)) { showToast.error("Invalid location characters."); return; }
+    setFormData((p) => p.location.includes(v) ? p : { ...p, location: [...p.location, v] });
+    setLocationInput([]); setLocationSuggestions([]);
+  };
+  const handleLocationSelect = (loc: string) => {
+    const t = loc.trim(); if (!t || !isValidTextInput(t)) return;
+    setFormData((p) => p.location.includes(t) ? p : { ...p, location: [...p.location, t] });
+    setLocationInput([]); setLocationSuggestions([]);
   };
 
-  // Updated handleSkillSelect (add, like create)
-  const handleSkillSelect = (suggestion: string) => {
-    if (!isValidTextInput(suggestion)) {
-      showToast.error(
-        "Skills can only contain letters, numbers, commas, and spaces.",
-      );
-      return;
-    }
-    setFormData((prev) => ({
-      ...prev,
-      skills: [...prev.skills, suggestion.trim()],
-    }));
-    setSkillInput("");
-    setSkillSuggestions([]);
-    setShowSkillSuggestions(false);
+  // ── File handling ──
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f && ["text/plain"].includes(f.type)) setFile(f);
+    else showToast.error("Please upload a valid .txt file");
   };
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); e.stopPropagation();
+    const f = e.dataTransfer.files[0];
+    if (f && ["text/plain"].includes(f.type)) setFile(f);
+    else showToast.error("Please upload a valid .txt file");
+  };
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); };
 
+  // ── Validation ──
   const validateStep1 = () => {
-    const requiredFields = {
-      title: formData.title.trim(),
-      skills: formData.skills.length > 0,
-      location: formData.location,
-      seniority: formData.seniority.trim(),
-      department:
-        formData.department.trim() && departmentNameToId[formData.department],
-      minExp: formData.minExp.trim() && isValidNumberInput(formData.minExp), // String
-      maxExp: formData.maxExp.trim() && isValidNumberInput(formData.maxExp),
-      minSalary: formData.confidential
-        ? true
-        : formData.minSalary.trim() && isValidNumberInput(formData.minSalary),
-      maxSalary: formData.confidential
-        ? true
-        : formData.maxSalary.trim() && isValidNumberInput(formData.maxSalary),
-      jobDescription:
-        formData.uploadType === "paste"
-          ? formData.jobDescription.trim()
-          : !!file,
-      workspace: formData.workspace.trim(),
-    };
-
     const errors: string[] = [];
-
-    if (!requiredFields.title) errors.push("Job title is required.");
-    if (!isValidTextInput(formData.title))
-      errors.push("Job title contains invalid characters.");
-    if (!requiredFields.skills) errors.push("At least one skill is required.");
-    if (!requiredFields.location) errors.push("Location is required.");
-    if (!isValidTextInput(formData.location[0] || ""))
-      errors.push("Location contains invalid characters.");
-    if (!requiredFields.seniority) errors.push("Seniority is required.");
-    if (!requiredFields.department)
-      errors.push("Please select a valid department.");
-    if (!requiredFields.workspace) errors.push("Workspace is required.");
-    if (!requiredFields.minExp)
-      errors.push("Minimum experience is required and must be a valid number.");
-    if (!requiredFields.maxExp)
-      errors.push("Maximum experience is required and must be a valid number.");
-    if (!requiredFields.minSalary)
-      errors.push("Minimum salary is required unless confidential.");
-    if (!requiredFields.maxSalary)
-      errors.push("Maximum salary is required unless confidential.");
-    if (!requiredFields.jobDescription)
-      errors.push(
-        "Job description is required when pasting text. or uploading a file.",
-      );
-    if (!requiredFields.jobDescription)
-      errors.push(
-        "Job description is required when pasting text or uploading a file.",
-      );
-    if (
-      formData.uploadType === "paste" &&
-      formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
-    ) {
-      errors.push(
-        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
-      );
+    if (!formData.title.trim()) errors.push("Job title is required.");
+    if (!formData.seniority.trim()) errors.push("Seniority is required.");
+    if (!formData.department.trim() || !departmentNameToId[formData.department]) errors.push("Department is required.");
+    if (formData.location.length === 0) errors.push("Location is required.");
+    if (!formData.confidential) {
+      if (!formData.minSalary.trim()) errors.push("Min salary required.");
+      if (!formData.maxSalary.trim()) errors.push("Max salary required.");
     }
-
-    // Validate experience range
-    if (requiredFields.minExp && requiredFields.maxExp) {
-      const minExp = parseInt(formData.minExp);
-      const maxExp = parseInt(formData.maxExp);
-      if (isNaN(minExp) || isNaN(maxExp)) {
-        errors.push("Experience fields must be valid numbers.");
-      } else if (minExp > maxExp) {
-        errors.push(
-          "Minimum experience cannot be greater than maximum experience.",
-        );
-      } else if (
-        minExp < 0 ||
-        maxExp < 0 ||
-        minExp > MAX_SAFE_INTEGER ||
-        maxExp > MAX_SAFE_INTEGER
-      ) {
-        errors.push(
-          "Experience values must be within valid integer range (0 to 999999999999).",
-        );
-      }
-    }
-
-    // Validate salary range
-    if (
-      requiredFields.minSalary &&
-      requiredFields.maxSalary &&
-      !formData.confidential
-    ) {
-      const minSalary = parseFloat(formData.minSalary);
-      const maxSalary = parseFloat(formData.maxSalary);
-      if (isNaN(minSalary) || isNaN(maxSalary)) {
-        errors.push("Salary fields must be valid numbers.");
-      } else if (minSalary > maxSalary) {
-        errors.push("Minimum salary cannot be greater than maximum salary.");
-      } else if (
-        minSalary < 999 ||
-        maxSalary < 999 ||
-        minSalary > MAX_SAFE_INTEGER ||
-        maxSalary > MAX_SAFE_INTEGER
-      ) {
-        errors.push(
-          "Salary values must be within valid integer range (1000 to 999999999999).",
-        );
-      }
-    }
-
+    const hasJD = formData.uploadType === "paste" ? formData.jobDescription.trim().length >= MIN_DESCRIPTION_LENGTH : !!file;
+    if (!hasJD && !formData.jobDescription) errors.push("Job description is required (min 10 chars or file upload).");
     return errors;
   };
 
-  // Updated handleSkillAdd (add validation like create)
-  const handleSkillAdd = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && skillInput.trim()) {
-      if (!isValidTextInput(skillInput)) {
-        showToast.error(
-          "Skills can only contain letters, numbers, commas, and spaces.",
-        );
-        return;
-      }
-      setFormData((prev) => ({
-        ...prev,
-        skills: [...prev.skills, skillInput.trim()],
-      }));
-      setSkillInput("");
-      setSkillSuggestions([]);
-      setShowSkillSuggestions(false);
-    }
+  const validateStep2 = () => {
+    const errors: string[] = [];
+    if (!formData.minExp.trim()) errors.push("Min experience required.");
+    if (!formData.maxExp.trim()) errors.push("Max experience required.");
+    const hasSkills = formData.skills.length > 0 || (formData.aiSelectedSkills && formData.aiSelectedSkills.length > 0);
+    if (!hasSkills) errors.push("At least one skill required.");
+    if (formData.minExp && formData.maxExp && parseInt(formData.minExp) > parseInt(formData.maxExp))
+      errors.push("Min experience cannot exceed max.");
+    return errors;
   };
 
-  const removeSkill = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      skills: prev.skills.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleLocationAdd = (e: React.KeyboardEvent) => {
-    if (e.key !== "Enter") return;
-
-    const value = locationInput[0]?.trim();
-    if (!value) return;
-
-    if (!isValidTextInput(value)) {
-      showToast.error(
-        "Location can only contain letters, numbers, commas, and spaces.",
-      );
-      return;
-    }
-
-    // Prevent duplicate
-    if (formData.location.includes(value)) {
-      showToast.info("This location is already added.");
-      setLocationInput([]);
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      location: [...prev.location, value],
-    }));
-
-    setLocationInput([]);
-    setLocationSuggestions([]);
-  };
-
-  const handleLocationSelect = (location: string) => {
-    const trimmed = location.trim();
-    if (!trimmed) return;
-
-    if (!isValidTextInput(trimmed)) {
-      showToast.error(
-        "Location can only contain letters, numbers, commas, and spaces.",
-      );
-      return;
-    }
-
-    // Prevent duplicate
-    if (formData.location.includes(trimmed)) {
-      showToast.info("This location is already added.");
-      setLocationInput([]);
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      location: [...prev.location, trimmed],
-    }));
-
-    setLocationInput([]);
-    setLocationSuggestions([]);
-  };
-
-  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setLocationInput([query]);
-    fetchLocationSuggestions(query);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile && ["text/plain"].includes(selectedFile.type)) {
-      setFile(selectedFile);
-    } else {
-      showToast.error("Please upload a valid file ( .txt)");
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && ["text/plain"].includes(droppedFile.type)) {
-      setFile(droppedFile);
-    } else {
-      showToast.error("Please upload a valid file ( .txt)");
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const addCompetency = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && competencyInput.trim()) {
-      const newCompetency = competencyInput.trim();
-      setCompetencies((prev) => {
-        const updated = [...prev, newCompetency];
-        setAiJdResponse((prevAi: any) => {
-          if (prevAi) {
-            return {
-              ...prevAi,
-              technical_competencies: updated,
-            };
-          }
-          return null;
-        });
-        return updated;
-      });
-      setCompetencyInput("");
-    }
-  };
-
-  const removeCompetency = (index: number) => {
-    const newCompetencies = competencies.filter((_, i) => i !== index);
-    setCompetencies(newCompetencies);
-    setAiJdResponse((prev: any) => {
-      if (prev) {
-        return {
-          ...prev,
-          technical_competencies: newCompetencies,
-        };
-      }
-      return null;
-    });
-  };
-
+  // ── Navigation ──
   const handleNext = async () => {
-    const errors = validateStep1();
-    if (errors.length > 0) {
-      showToast.error(errors.join(" "));
-      return;
-    }
+    if (currentStep === 1) {
+      const e = validateStep1(); if (e.length > 0) { showToast.error(e.join(" ")); return; }
+      setIsLoading(true);
+      try {
+        const needsRegen = formData.uploadType !== originalUploadType ||
+          (formData.uploadType === "paste" ? formData.jobDescription !== originalDescription : true);
+        if (needsRegen && (formData.jobDescription || file)) {
+          const desc = formData.uploadType === "paste" ? formData.jobDescription : file!;
+          const ai = await jobPostService.createAiJd(desc);
+          setEditableJD(ai.job_description_markdown);
+          setCompetencies(ai.technical_competencies);
+          setAiJdResponse(ai);
+          setBooleanSearchTerm(ai.jd_competencies?.search_criteria?.search_criteria_expression || "");
+          setOriginalDescription(formData.uploadType === "paste" ? formData.jobDescription : "");
+          setOriginalUploadType(formData.uploadType);
 
-    if (formData.uploadType === "upload" && !file) {
-      showToast.error("Please upload a file for the job description.");
-      return;
-    }
+          let minExp = ""; let maxExp = "";
+          const expLevels = ai.jd_competencies?.critical_competencies?.experience;
+          if (expLevels && expLevels.length > 0) {
+            const overallExp = expLevels.find((e: any) => e.requirement === "Overall professional experience") || expLevels[0];
+            const match = overallExp.minimum?.match(/(\d+)\+?\s*years?/i);
+            if (match) { minExp = match[1]; maxExp = (parseInt(match[1]) + 3).toString(); }
+          }
 
-    setIsLoading(true);
-    try {
-      const needsRegenerate =
-        formData.uploadType !== originalUploadType ||
-        (formData.uploadType === "paste"
-          ? formData.jobDescription !== originalDescription
-          : true);
+          const implicitReqs = ai.jd_competencies?.extracted_insights?.implicit_requirements?.join(", ") || "";
+          const niceToHave = ai.technical_competencies?.join(", ") || "";
 
-      if (needsRegenerate) {
-        const description =
-          formData.uploadType === "paste" ? formData.jobDescription : file!;
-        const aiResponse = await jobPostService.createAiJd(description);
-        setEditableJD(aiResponse.job_description_markdown);
-        setCompetencies(aiResponse.technical_competencies);
-        setAiJdResponse(aiResponse);
-        // Update originals after regeneration
-        if (formData.uploadType === "paste") {
-          setOriginalDescription(formData.jobDescription);
-        } else {
-          setOriginalDescription("");
+          const newAiSelectedSkills: any[] = [];
+          const tech = ai.jd_competencies?.critical_competencies?.technical;
+          if (tech) newAiSelectedSkills.push(...tech.map((t: any) => t.skill));
+          const func = ai.jd_competencies?.critical_competencies?.functional;
+          if (func) newAiSelectedSkills.push(...func.map((t: any) => t.competency));
+          const search = ai.jd_competencies?.search_criteria?.key_search_terms;
+          if (search) newAiSelectedSkills.push(...search);
+
+          setFormData((prev: any) => ({
+             ...prev,
+             minExp: prev.minExp || minExp,
+             maxExp: prev.maxExp || maxExp,
+             mustHaveRequirements: prev.mustHaveRequirements || implicitReqs,
+             niceToHaveRequirements: prev.niceToHaveRequirements || niceToHave,
+             aiSelectedSkills: newAiSelectedSkills,
+          }));
         }
-        setOriginalUploadType(formData.uploadType);
-      }
-      setCurrentStep(2);
-    } catch (error: any) {
-      showToast.error(error.message || "Failed to generate AI JD");
-    } finally {
-      setIsLoading(false);
+        setCurrentStep(2);
+      } catch (err: any) { showToast.error(err.message || "Failed to generate AI JD"); return; }
+      finally { setIsLoading(false); }
+    } else if (currentStep === 2) {
+      const e = validateStep2(); if (e.length > 0) { showToast.error(e.join(" ")); return; }
+      setCurrentStep(3);
     }
   };
+  const handleBack = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); };
 
-  const handleBack = () => {
-    setCurrentStep(1);
-  };
-
+  // ── Update ──
   const handleUpdate = async () => {
-    const errors = validateStep1();
-    if (errors.length > 0) {
-      showToast.error(errors.join(" "));
-      return;
-    }
-
-    if (formData.uploadType === "upload" && !file) {
-      showToast.error("Please upload a file for the job description.");
-      return;
-    }
-    if (
-      formData.uploadType === "paste" &&
-      formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
-    ) {
-      showToast.error(
-        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
-      );
-      return;
-    }
-
-    let location = formData.location;
-    let isHybrid = formData.workApproach === "Hybrid";
-    if (formData.workApproach === "Remote") {
-      location = ["Remote"];
-      isHybrid = false;
-    }
-
     setIsLoading(true);
     try {
-      const jobData: Partial<CreateJobData> = {
-        title: formData.title,
-        location: location,
-        work_approach: formData.workApproach.toUpperCase() as
-          | "ONSITE"
-          | "REMOTE"
-          | "HYBRID",
-        seniority: formData.seniority,
-        department: departmentNameToId[formData.department] || 8,
-        experience_min_years: parseInt(formData.minExp) || 0, // String parse
-        experience_max_years: parseInt(formData.maxExp) || 0,
-        salary_min: formData.minSalary,
-        salary_max: formData.maxSalary,
-        is_salary_confidential: formData.confidential,
-        visibility: formData.keepPrivate ? "PRIVATE" : "PUBLIC",
-        has_coding_contest_stage: formData.codingRound,
-        has_ai_interview_stage: formData.aiInterviews,
-        skills: formData.skills,
-        status: "ACTIVE",
-        workspace: parseInt(formData.workspace),
-        ai_jd_object: aiJdResponse,
-        ai_jd: editableJD,
-        technical_competencies: competencies,
-        ...(formData.uploadType === "paste"
-          ? { description_text: formData.jobDescription }
-          : { description_file: file! }),
+      const allSkills = [...formData.skills, ...(formData.aiSelectedSkills || [])];
+      const convertToINRPerYear = (val: string, format: string) => {
+        if (!val || isNaN(Number(val))) return "";
+        const num = Number(val);
+        let converted = num;
+        switch (format) {
+          case "INR (LPA)": converted = num * 100000; break;
+          case "INR (₹/month)": converted = num * 12; break;
+          case "INR (₹/year)": converted = num; break;
+          case "USD ($/year)": converted = num * 83; break;
+          case "USD ($/hour)": converted = num * 2080 * 83; break;
+        }
+        return converted.toString();
       };
 
-      await jobPostService.updateJob(jobId, jobData);
-      showToast.success(
-        formData.keepPrivate
-          ? "Job role updated successfully!"
-          : "Job role updated and published successfully!",
-      );
-      onJobUpdated?.();
-      onClose();
-      setShowSuccessModal(true);
-      setCurrentStep(1);
-      setFile(null);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.description
-        ? `Description error: ${error.response.data.description}`
-        : error.response?.data?.description_file
-          ? `File upload error: ${error.response.data.description_file}`
-          : error.response?.data?.department
-            ? `Department error: ${error.response.data.department.join(" ")}`
-            : error.message || "Failed to update job role";
-      showToast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      const finalMinSalary = convertToINRPerYear(formData.minSalary, formData.salaryFormat);
+      const finalMaxSalary = convertToINRPerYear(formData.maxSalary, formData.salaryFormat);
 
-  const handleUpdateAndPublish = async () => {
-    const errors = validateStep1();
-    if (errors.length > 0) {
-      showToast.error(errors.join(" "));
-      return;
-    }
-
-    if (formData.uploadType === "upload" && !file) {
-      showToast.error("Please upload a file for the job description.");
-      return;
-    }
-    if (
-      formData.uploadType === "paste" &&
-      formData.jobDescription.trim().length < MIN_DESCRIPTION_LENGTH
-    ) {
-      showToast.error(
-        `Job description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
-      );
-      return;
-    }
-
-    let location = formData.location;
-    let isHybrid = formData.workApproach === "Hybrid";
-    if (formData.workApproach === "Remote") {
-      location = ["Remote"];
-      isHybrid = false;
-    }
-
-    setIsLoading(true);
-    try {
       const jobData: Partial<CreateJobData> = {
-        title: formData.title,
-        location: location,
-        seniority: formData.seniority,
-        department: departmentNameToId[formData.department] || 8,
+        title: formData.title, location: formData.location,
+        work_approach: formData.workApproach.toUpperCase() as "ONSITE" | "REMOTE" | "HYBRID",
+        seniority: formData.seniority, department: departmentNameToId[formData.department] || 8,
         experience_min_years: parseInt(formData.minExp) || 0,
         experience_max_years: parseInt(formData.maxExp) || 0,
-        salary_min: formData.minSalary,
-        salary_max: formData.maxSalary,
-        work_approach: formData.workApproach.toUpperCase() as
-          | "ONSITE"
-          | "REMOTE"
-          | "HYBRID", // Added
+        salary_min: finalMinSalary, salary_max: finalMaxSalary,
         is_salary_confidential: formData.confidential,
         visibility: formData.keepPrivate ? "PRIVATE" : "PUBLIC",
         has_coding_contest_stage: formData.codingRound,
         has_ai_interview_stage: formData.aiInterviews,
-        skills: formData.skills,
-        status: "ACTIVE",
-        workspace: parseInt(formData.workspace),
-        ai_jd_object: aiJdResponse,
+        skills: allSkills, status: "ACTIVE",
+        workspace: parseInt(formData.workspace), ai_jd_object: aiJdResponse,
+        num_positions: parseInt(formData.openings) || 0,
+        notice_period: formData.noticePeriod,
+        poc_email: formData.pocEmail,
+        education_level: formData.educationLevel,
+        specialisations: formData.specifications,
         ai_jd: editableJD,
         technical_competencies: competencies,
         ...(formData.uploadType === "paste"
           ? { description_text: formData.jobDescription }
           : { description_file: file! }),
       };
-
+      
       await jobPostService.updateJob(jobId, jobData);
-      showToast.success(
-        formData.keepPrivate
-          ? "Job role updated successfully!"
-          : "Job role updated and published successfully!",
-      );
-      onJobUpdated?.();
-      onClose();
-      setShowSuccessModal(true);
-      setCurrentStep(1);
-      setFile(null);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.description
-        ? `Description error: ${error.response.data.description}`
-        : error.response?.data?.description_file
-          ? `File upload error: ${error.response.data.description_file}`
-          : error.response?.data?.department
-            ? `Department error: ${error.response.data.department.join(" ")}`
-            : error.message || "Failed to update job role";
-      showToast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+      showToast.success("Job role updated successfully!");
+      onJobUpdated?.(); setShowSuccessModal(true);
+      setCurrentStep(1); setFile(null);
+      // Remove draft after successful update
+      const drafts = JSON.parse(localStorage.getItem('edit_job_drafts') || '[]');
+      localStorage.setItem('edit_job_drafts', JSON.stringify(drafts.filter((d: any) => d.id !== jobId.toString())));
+    } catch (err: any) {
+      const msg = err.response?.data?.description ? `Description error: ${err.response.data.description}`
+        : err.response?.data?.department ? `Department error: ${err.response.data.department.join(" ")}`
+          : err.message || "Failed to update job role";
+      showToast.error(msg);
+    } finally { setIsLoading(false); }
   };
 
   const handleRegenerate = async () => {
     setIsLoading(true);
     try {
-      const description =
-        formData.uploadType === "paste" ? formData.jobDescription : file!;
-      const aiResponse = await jobPostService.createAiJd(description);
-      setEditableJD(aiResponse.job_description_markdown);
-      setCompetencies(aiResponse.technical_competencies);
-      setAiJdResponse(aiResponse);
-      // Update originals after regeneration
-      if (formData.uploadType === "paste") {
-        setOriginalDescription(formData.jobDescription);
-      } else {
-        setOriginalDescription("");
-      }
+      const desc = formData.uploadType === "paste" ? formData.jobDescription : file!;
+      const ai = await jobPostService.createAiJd(desc);
+      setEditableJD(ai.job_description_markdown);
+      setCompetencies(ai.technical_competencies);
+      setAiJdResponse(ai);
+      setBooleanSearchTerm(ai.jd_competencies?.search_criteria?.search_criteria_expression || "");
+      setOriginalDescription(formData.uploadType === "paste" ? formData.jobDescription : "");
       setOriginalUploadType(formData.uploadType);
-    } catch (error: any) {
-      showToast.error(error.message || "Failed to regenerate AI JD");
-    } finally {
-      setIsLoading(false);
-    }
+    } catch (err: any) { showToast.error(err.message || "Failed to regenerate AI JD"); }
+    finally { setIsLoading(false); }
   };
 
   const handleCancel = () => {
-    if (formData.title || formData.skills.length > 0) {
-      setShowCancelModal(true);
-    } else {
-      onClose();
+    if (formData.title || formData.skills.length > 0) setShowCancelModal(true);
+    else onClose();
+  };
+
+  const handleSaveDraft = () => {
+    try {
+      const drafts = JSON.parse(localStorage.getItem('edit_job_drafts') || '[]');
+      const newDraft = {
+        id: jobId.toString(),
+        workspaceId: parseInt(formData.workspace) || workspaceId,
+        title: formData.title || 'Untitled Draft',
+        updatedAt: new Date().toISOString(),
+        formData: formData,
+        aiJdResponse: aiJdResponse,
+        editableJD: editableJD,
+        competencies: competencies,
+        currentStep: currentStep,
+        booleanSearchTerm: booleanSearchTerm,
+        originalDescription: originalDescription,
+        originalUploadType: originalUploadType
+      };
+      const updatedDrafts = drafts.filter((d: any) => d.id !== jobId.toString());
+      updatedDrafts.unshift(newDraft);
+      localStorage.setItem('edit_job_drafts', JSON.stringify(updatedDrafts));
+      toast.success("Draft saved!");
+      setSaveDraftText("Draft Saved!");
+      setTimeout(() => setSaveDraftText("Save Draft"), 2000);
+    } catch (err) {
+      toast.error("Failed to save draft");
     }
   };
 
-  const confirmCancel = () => {
-    setShowCancelModal(false);
-    onClose();
-    resetForm();
+  const handleDownloadJD = () => {
+    if (!editableJD) { toast.error("No Job Description available."); return; }
+    const element = document.createElement("div");
+    element.innerHTML = `
+      <div style="padding: 20px; font-family: sans-serif; color: #333;">
+        <h1 style="text-align: center; color: #0F47F2;">${formData.title || "Job Description"}</h1>
+        ${formData.clientCompany ? `<h3 style="text-align: center; color: #555;">${formData.clientCompany}</h3>` : ""}
+        <hr style="margin-top: 20px; margin-bottom: 20px; border: 0; border-top: 1px solid #eee;" />
+        <div style="line-height: 1.6;">${editableJD}</div>
+      </div>
+    `;
+    const opt = {
+      margin: 0.5, filename: `${formData.title ? formData.title.replace(/\s+/g, '_') : 'Job_Description'}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2 }, jsPDF: { unit: 'in' as const, format: 'letter' as const, orientation: 'portrait' as const }
+    };
+    html2pdf().set(opt).from(element).save().then(() => toast.success("JD downloaded successfully!")).catch(() => toast.error("Failed to generate PDF."));
   };
 
-  const handleSuccessClose = () => {
-    setShowSuccessModal(false);
-    onClose();
-    resetForm();
-  };
-  const handlePipelineButtonClick = () => {
-    handlePipelinesClick?.();
-    setShowSuccessModal(false);
-    onClose();
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      allowInbound: true,
-      keepPrivate: false,
-      title: "",
-      skills: [],
-      location: [],
-      workApproach: "Onsite",
-      seniority: "",
-      department: "",
-      aiInterviews: false,
-      minExp: "",
-      maxExp: "",
-      minSalary: "",
-      maxSalary: "",
-      confidential: false,
-      jobDescription: "",
-      uploadType: "paste",
-      codingRound: false,
-      shareExternally: false,
-      workspace: workspaceId.toString(),
-    });
-    setSkillInput("");
-    setLocationInput([]);
-    setLocationSuggestions([]);
-    setCompetencyInput("");
-    setFile(null);
-    setCurrentStep(1);
-    setValidationError("");
-    setCompetencies([]);
-    setEditableJD("");
-    setAiJdResponse(null);
-    setOriginalDescription("");
-    setOriginalUploadType("paste");
-  };
-
-  useEffect(() => {
-    if (isOpen && jobId) {
-      setIsLoading(true);
-      jobPostService
-        .getJob(jobId)
-        .then(async (job: Job) => {
-          let workApproach: "Onsite" | "Remote" | "Hybrid" = "Onsite";
-          if (job.work_approach === "HYBRID") {
-            workApproach = "Hybrid";
-          } else if (job.work_approach === "REMOTE") {
-            workApproach = "Remote";
-          } else {
-            workApproach = "Onsite";
-          }
-
-          const locationFirst =
-            job.location.length > 0 ? [job.location[0]] : [];
-
-          setFormData({
-            allowInbound: job.visibility === "PUBLIC",
-            keepPrivate: job.visibility === "PRIVATE",
-            title: job.title,
-            skills: job.skills || [],
-            location: locationFirst,
-            workApproach,
-            seniority: job.seniority,
-            department: departmentMap[Number(job.department_name)] || "Others",
-            aiInterviews: job.has_ai_interview_stage || false,
-            minExp: job.experience_min_years?.toString() || "",
-            maxExp: job.experience_max_years?.toString() || "",
-            minSalary: job.salary_min
-              ? job.salary_min.toString().replace(/.00$/, "")
-              : "",
-            maxSalary: job.salary_max
-              ? job.salary_max.toString().replace(/.00$/, "")
-              : "",
-            confidential: job.is_salary_confidential,
-            jobDescription: job.description || "",
-            uploadType: job.description ? "paste" : "upload",
-            codingRound: job.has_coding_contest_stage || false,
-            workspace: job.workspace_details.id.toString(),
-            shareExternally: false,
-          });
-          setOriginalDescription(job.description || "");
-          setOriginalUploadType("paste");
-          setEditableJD(job.ai_jd || "");
-          setCompetencies(job.technical_competencies || []);
-          setAiJdResponse(job.ai_jd_object || null);
-          setIsLoading(false);
-          setIsFetching(false);
-        })
-        .catch((error) => {
-          showToast.error(error.message || "Failed to fetch job details");
-        })
-        .finally(() => {
-          setIsLoading(false);
-          setIsFetching(false);
-        });
-    }
-  }, [isOpen, jobId, workspaces]);
-
+  // ── Success Modal ──
   if (showSuccessModal) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
@@ -899,22 +488,16 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
-          <h2 className="text-2xl font-bold text-green-500 mb-3">
-            Successfully Updated!
-          </h2>
-          <p className="text-gray-600 mb-8">Your Job role is updated</p>
+          <h2 className="text-2xl font-bold text-green-500 mb-3">Successfully Updated!</h2>
+          <p className="text-gray-600 mb-8">Your job role has been updated successfully.</p>
           <div className="flex gap-3">
-            <button
-              onClick={handleSuccessClose}
-              className="flex-1 px-6 py-3 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors font-medium"
-            >
-              Back to Home
+            <button onClick={() => { setShowSuccessModal(false); onClose(); resetForm(); }}
+              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+              Close
             </button>
-            <button
-              onClick={handlePipelineButtonClick}
-              className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-            >
-              Pipeline
+            <button onClick={() => { setShowSuccessModal(false); handlePipelinesClick?.(); onClose(); resetForm(); }}
+              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+              Open Pipeline
             </button>
           </div>
         </div>
@@ -924,29 +507,25 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Cancel Confirmation Modal
+  // ── Cancel Modal ──
   if (showCancelModal) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">
-            Confirm Cancel
-          </h2>
-          <p className="text-gray-600 mb-8">
-            Are you sure you want to cancel? All progress will be lost.
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowCancelModal(false)}
-              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-            >
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Unsaved Changes</h2>
+          <p className="text-gray-600 mb-8">You have unsaved changes. What would you like to do?</p>
+          <div className="flex flex-col gap-3">
+            <button onClick={() => setShowCancelModal(false)}
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
               Continue Editing
             </button>
-            <button
-              onClick={confirmCancel}
-              className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
-            >
-              Yes, Cancel
+            <button onClick={() => { handleSaveDraft(); setShowCancelModal(false); onClose(); }}
+              className="w-full px-6 py-3 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 font-medium">
+              Save Draft
+            </button>
+            <button onClick={() => { setShowCancelModal(false); onClose(); resetForm(); }}
+              className="w-full px-6 py-3 border border-red-300 text-red-500 rounded-lg hover:bg-red-50 font-medium">
+              Discard
             </button>
           </div>
         </div>
@@ -954,706 +533,128 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     );
   }
 
-  if (isFetching) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading job details...</p>
-        </div>
-      </div>
-    );
-  }
+  const stepLabels = ["Job Basics", "Skills & Requirements", "Review & Publish"];
+  const stepDescriptions = [
+    "Start with the fundamental details. This powers AI sourcing and JD generation.",
+    "Define the ideal candidate profile. AI will use these to score and match candidates.",
+    "Everything looks good? Review the summary and publish / create the job.",
+  ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white relative rounded-2xl shadow-xl w-full max-w-6xl max-h-[98vh]  flex flex-col overflow-hidden">
-        <div className="p-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <button
-                onClick={handleCancel}
-                className="p-1 hover:bg-gray-100 rounded-lg mr-4"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-              </button>
-              <span className="text-md font-medium text-gray-900">
-                Edit Job Role
-              </span>
-            </div>
-
-            <button
-              onClick={handleCancel}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-
-          {/* Progress Indicator */}
-          <div className="w-1/2 bg-white absolute z-10 top-24 left-1/2 transform -translate-x-1/2 -translate-y-1/2  flex flex-col items-center justify-center space-x-4">
-            <div className="flex items-center space-x-64">
-              <div className="flex flex-col justify-center gap-2 items-center">
-                <span
-                  className={`ml-2 text-sm ${
-                    currentStep >= 1
-                      ? "text-blue-500 font-medium"
-                      : "text-gray-500"
-                  }`}
-                >
-                  Basic Info
-                </span>
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
-                ></div>
-              </div>
-              <div className="flex flex-col justify-center gap-2 items-center">
-                <span
-                  className={`ml-2 text-sm ${
-                    currentStep >= 2
-                      ? "text-blue-500 font-medium"
-                      : "text-gray-500"
-                  }`}
-                >
-                  Update and Refine JD
-                </span>
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                  }`}
-                ></div>
-              </div>
-            </div>
-            <div className="relative top-[-6px] right-[25px]">
-              <div
-                className={`w-[351px] h-px ${
-                  currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"
-                }`}
-              ></div>
-            </div>
-            <div className="flex-1 overflow-y-auto mt-2 pr-10">
-              {currentStep === 1 ? (
-                <div className="text-center mb-2">
-                  <h2 className="text-md font-[400] text-gray-900 mb-2">
-                    Add Basic Details
-                  </h2>
-                  <p className="text-gray-500 text-sm">
-                    Fill out the basic information of the job
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center mb-8">
-                  <h2 className="text-md font-[400] text-gray-900 mb-2">
-                    Update JD
-                  </h2>
-                  <p className="text-gray-500 text-sm">
-                    Refine information of the job
-                  </p>
-                </div>
-              )}
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" onClick={handleCancel}>
+      <div className="bg-white relative rounded-3xl shadow-xl w-full max-w-4xl max-h-[98vh] flex flex-col pt-6 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="p-4 px-10">
+          <button onClick={handleCancel} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
+            <X className="w-6 h-6" />
+          </button>
+          {/* 3-Step Progress */}
+          <div className="flex flex-col items-start">
+            <div className="text-start">
+              <h2 className="text-md font-semibold text-gray-900 uppercase tracking-wide">
+                {stepLabels[currentStep - 1]}
+              </h2>
+              <p className="text-gray-500 text-sm mt-1">{stepDescriptions[currentStep - 1]}</p>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-72">
-          {currentStep === 1 ? (
-            <div className="space-y-6 mt-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Add to Workspace <span className="text-red-500">*</span>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Default workspace selected. Choose another to switch.
-                  </p>
-                </label>
-                <select
-                  value={formData.workspace}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      workspace: e.target.value,
-                    }))
-                  }
-                  className="w-full px-3 py-2 text-blue-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isLoading}
-                >
-                  <option value="">Select workspace</option>
-                  {workspaces.map((workspace) => (
-                    <option key={workspace.id} value={workspace.id}>
-                      {workspace.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Job Title <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="AI Research Engineer"
-                  value={formData.title}
-                  onChange={(e) => {
-                    if (isValidTextInput(e.target.value)) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        title: e.target.value,
-                      }));
-                    }
-                  }}
-                  className="w-full px-4 py-3 text-blue-500 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Add Skills <span className="text-red-500">*</span>
-                </label>
-                <div className="relative border border-gray-300 rounded-lg px-4 pt-2 pb-2">
-                  <input
-                    type="text"
-                    placeholder="Type skill and Press Enter"
-                    value={skillInput}
-                    onChange={handleSkillInputChange} // Updated
-                    onKeyPress={handleSkillAdd} // Updated
-                    className="w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 mb-3"
-                    disabled={isLoading}
-                  />
-                  {showSkillSuggestions &&
-                    skillSuggestions.length > 0 && ( // Added
-                      <div
-                        ref={skillSuggestionsRef}
-                        className="absolute left-0 z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto"
-                      >
-                        {skillSuggestions.map((suggestion, index) => (
-                          <div
-                            key={index}
-                            onClick={() => handleSkillSelect(suggestion)}
-                            className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
-                          >
-                            {suggestion}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  <div className="flex flex-wrap gap-2">
-                    {formData.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center"
-                      >
-                        <X
-                          className="w-3 h-3 mr-1 cursor-pointer"
-                          onClick={() => removeSkill(index)}
-                        />
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Location <span className="text-red-500">*</span>
-                </label>
-                <div className="relative border border-gray-300 rounded-lg px-4 pt-3 pb-3 min-h-[42px]">
-                  {/* Selected locations as removable tags */}
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {formData.location.map((loc, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-                      >
-                        {loc}
-                        <X
-                          className="w-3.5 h-3.5 ml-1.5 cursor-pointer text-blue-600 hover:text-blue-900"
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              location: prev.location.filter(
-                                (_, i) => i !== index,
-                              ),
-                            }))
-                          }
-                        />
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Input */}
-                  <input
-                    type="text"
-                    ref={locationInputRef}
-                    placeholder={
-                      formData.location.length === 0
-                        ? "Type location and press Enter"
-                        : "Add another location..."
-                    }
-                    value={locationInput[0] || ""}
-                    onChange={handleLocationChange}
-                    onKeyPress={handleLocationAdd}
-                    className="w-full border-none outline-none text-sm text-blue-600 placeholder-gray-400 bg-transparent"
-                    disabled={isLoading}
-                  />
-
-                  {/* Suggestions */}
-                  {locationInput[0]?.length >= 2 &&
-                    (isLoadingLocation || locationSuggestions.length > 0) && (
-                      <div className="absolute left-0 z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto shadow-lg">
-                        {isLoadingLocation ? (
-                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                            Loading locations...
-                          </div>
-                        ) : (
-                          locationSuggestions.map((suggestion, index) => (
-                            <div
-                              key={index}
-                              className={`px-4 py-3 text-md cursor-pointer ${
-                                formData.location.includes(suggestion)
-                                  ? "text-gray-400 bg-gray-50 pointer-events-none"
-                                  : "text-gray-700 hover:bg-blue-100"
-                              }`}
-                              onClick={() => {
-                                if (!formData.location.includes(suggestion)) {
-                                  handleLocationSelect(suggestion);
-                                }
-                              }}
-                            >
-                              {suggestion}
-                              {formData.location.includes(suggestion) && (
-                                <span className="ml-2 text-xs text-gray-500">
-                                  (already added)
-                                </span>
-                              )}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Seniority <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.seniority}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        seniority: e.target.value,
-                      }))
-                    }
-                    className="w-full px-3 py-2 text-blue-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mr-3"
-                    disabled={isLoading}
-                  >
-                    <option value="">Select seniority</option>
-                    {seniorityOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Department <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.department}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        department: e.target.value,
-                      }))
-                    }
-                    className="w-full px-3 py-2 text-blue-600 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={isLoading}
-                  >
-                    <option value="">Select department</option>
-                    {departmentOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Work Approach as Radio Buttons */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Work Approach <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  <RadioToggle
-                    label="Onsite"
-                    isSelected={formData.workApproach === "Onsite"}
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        workApproach: "Onsite",
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                  <RadioToggle
-                    label="Remote"
-                    isSelected={formData.workApproach === "Remote"}
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        workApproach: "Remote",
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                  <RadioToggle
-                    label="Hybrid"
-                    isSelected={formData.workApproach === "Hybrid"}
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        workApproach: "Hybrid",
-                      }))
-                    }
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Enter Exp Range (In Years){" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      placeholder="Min exp"
-                      value={formData.minExp} // String
-                      onChange={(e) => {
-                        if (isValidNumberInput(e.target.value)) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            minExp: e.target.value, // String
-                          }));
-                        }
-                      }}
-                      className="flex-1 px-3 py-2 border border-gray-300 text-blue-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={isLoading}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Max exp"
-                      value={formData.maxExp} // String
-                      onChange={(e) => {
-                        if (isValidNumberInput(e.target.value)) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            maxExp: e.target.value, // String
-                          }));
-                        }
-                      }}
-                      className="flex-1 px-3 py-2 border border-gray-300 text-blue-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-12">
-                  <label className="block flex text-sm font-medium text-gray-700 mb-2">
-                    Enter Salary Range{" "}
-                    {formData.confidential ? (
-                      ""
-                    ) : (
-                      <span className="text-red-500">*</span>
-                    )}
-                  </label>
-                  <div className="flex w-full space-x-2">
-                    <input
-                      type="text"
-                      placeholder="Min salary"
-                      value={formData.minSalary}
-                      onChange={(e) => {
-                        if (isValidNumberInput(e.target.value)) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            minSalary: e.target.value,
-                          }));
-                        }
-                      }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500  ${
-                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                      }`}
-                      disabled={isLoading || formData.confidential}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Max salary"
-                      value={formData.maxSalary}
-                      onChange={(e) => {
-                        if (isValidNumberInput(e.target.value)) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            maxSalary: e.target.value,
-                          }));
-                        }
-                      }}
-                      className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg text-blue-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        formData.confidential ? "bg-gray-100 text-gray-400" : ""
-                      }`}
-                      disabled={isLoading || formData.confidential}
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          confidential: !prev.confidential,
-                        }))
-                      }
-                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-md font-[400] transition-all duration-200 ${
-                        formData.confidential
-                          ? "bg-[#ECF1FF] text-blue-600"
-                          : "bg-[#F0F0F0] text-gray-400"
-                      }`}
-                      disabled={isLoading}
-                    >
-                      {formData.confidential ? (
-                        <>
-                          <div className="flex items-center justify-center w-5 h-5 border border-blue-600 rounded-full">
-                            <Check className="w-3 h-3 text-blue-600" />
-                          </div>
-                          Confidential
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-4 h-4 text-gray-400" />
-                          Confidential
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center space-x-4 mb-3">
-                  <span className="text-sm font-medium text-gray-700">
-                    Add Job Description <span className="text-red-500">*</span>
-                  </span>
-                  <div className="flex bg-gray-100 rounded-lg p-1">
-                    <button
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          uploadType: "paste",
-                          jobDescription: "",
-                        }))
-                      }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        formData.uploadType === "paste"
-                          ? "bg-white text-blue-600 shadow-sm"
-                          : "text-gray-600"
-                      }`}
-                      disabled={isLoading}
-                    >
-                      Paste Text
-                    </button>
-                    <button
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          uploadType: "upload",
-                          jobDescription: "",
-                        }))
-                      }
-                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                        formData.uploadType === "upload"
-                          ? "bg-white text-blue-600 shadow-sm"
-                          : "text-gray-600"
-                      }`}
-                      disabled={isLoading}
-                    >
-                      Upload File
-                    </button>
-                  </div>
-                </div>
-
-                {formData.uploadType === "paste" ? (
-                  <textarea
-                    placeholder="Paste your job description here..."
-                    value={formData.jobDescription}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        jobDescription: e.target.value,
-                      }))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-32 resize-none"
-                    disabled={isLoading}
-                  />
-                ) : (
-                  <div
-                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
-                    onDrop={handleDrop}
-                    onDragOver={handleDragOver}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">
-                      {file
-                        ? `Selected file: ${file.name}`
-                        : "Drag and drop your job description file here"}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      or click to browse (.txt)
-                    </p>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      accept=".txt"
-                      onChange={handleFileChange}
-                      disabled={isLoading}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
+        {/* Step Content */}
+        <div className="flex-1 overflow-y-auto px-10 mt-2 pb-6">
+          {isFetching ? (
+            <div className="flex items-center justify-center h-full">Loading job details...</div>
           ) : (
-            <div className="space-y-6">
-              <div className="text-center mb-8">
-                <h2 className="text-md font-[400] text-gray-900 mb-2">
-                  Summary of JD
-                </h2>
-                <p className="text-gray-500 text-sm">
-                  Verification of the JD and submission of the job
-                </p>
-              </div>
-
-              {/* AI-Generated Job Description */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    AI-Generated Job Description
-                  </h3>
-                  <button
-                    onClick={() => handleRegenerate}
-                    className="flex items-center px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-sm"
-                    disabled={isLoading}
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Regenerate
-                  </button>
-                </div>
-                <div className="border border-gray-300 rounded-lg p-4">
-                  <CKEditor
-                    editor={ClassicEditor}
-                    data={editableJD}
-                    onChange={(event: any, editor: any) => {
-                      const data = editor.getData();
-                      setEditableJD(data);
-                      setAiJdResponse((prev: any) => ({
-                        ...prev,
-                        job_description_markdown: data,
-                      }));
-                    }}
-                    config={{
-                      toolbar: [
-                        "bold",
-                        "italic",
-                        "link",
-                        "bulletedList",
-                        "numberedList",
-                        "undo",
-                        "redo",
-                      ],
-                    }}
-                    className="rounded-lg"
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
-              {/* Key Competencies */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Key Competencies
-                </h3>
-                <div className="border border-gray-300 rounded-lg p-4">
-                  <input
-                    type="text"
-                    placeholder="Type competency..."
-                    value={competencyInput}
-                    onChange={(e) => setCompetencyInput(e.target.value)}
-                    onKeyPress={addCompetency}
-                    className="w-full border-none outline-none text-sm placeholder-gray-400 mb-3"
-                    disabled={isLoading}
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {competencies.map((competency, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center"
-                      >
-                        <X
-                          className="w-3 h-3 mr-1 cursor-pointer"
-                          onClick={() => removeCompetency(index)}
-                        />
-                        {competency}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <>
+              {currentStep === 1 && (
+                <JobBasicsStep
+                  formData={formData} setFormData={setFormData} workspaces={workspaces}
+                  isLoading={isLoading} file={file} setFile={setFile}
+                  locationInput={locationInput} setLocationInput={setLocationInput}
+                  locationSuggestions={locationSuggestions} isLoadingLocation={isLoadingLocation}
+                  handleLocationChange={handleLocationChange} handleLocationAdd={handleLocationAdd}
+                  handleLocationSelect={handleLocationSelect} locationInputRef={locationInputRef}
+                  isValidTextInput={isValidTextInput} isValidNumberInput={isValidNumberInput}
+                  handleFileChange={handleFileChange} handleDrop={handleDrop} handleDragOver={handleDragOver}
+                  seniorityOptions={seniorityOptions} departmentOptions={departmentOptions}
+                />
+              )}
+              {currentStep === 2 && (
+                <SkillsRequirementsStep
+                  formData={formData} setFormData={setFormData} isLoading={isLoading}
+                  skillInput={skillInput} setSkillInput={setSkillInput}
+                  skillSuggestions={skillSuggestions} showSkillSuggestions={showSkillSuggestions}
+                  skillSuggestionsRef={skillSuggestionsRef}
+                  handleSkillInputChange={handleSkillInputChange}
+                  handleSkillSelect={handleSkillSelect} handleSkillAdd={handleSkillAdd}
+                  removeSkill={removeSkill} isValidNumberInput={isValidNumberInput}
+                  aiJdResponse={aiJdResponse}
+                />
+              )}
+              {currentStep === 3 && (
+                <ReviewPublishStep
+                  formData={formData} isLoading={isLoading}
+                  editableJD={editableJD} setEditableJD={setEditableJD}
+                  aiJdResponse={aiJdResponse} setAiJdResponse={setAiJdResponse}
+                  competencies={competencies} setCompetencies={setCompetencies}
+                  competencyInput={competencyInput} setCompetencyInput={setCompetencyInput}
+                  booleanSearchTerm={booleanSearchTerm} handleRegenerate={handleRegenerate}
+                />
+              )}
+            </>
           )}
         </div>
 
-        {/* Sticky Footer with Action Buttons */}
-        <div className="border-t border-gray-200 py-4 bg-white rounded-b-2xl">
-          {currentStep === 1 ? (
-            <div className="flex justify-center">
-              <button
-                onClick={handleNext}
-                className="w-1/2 px-6 py-2 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center"
-                disabled={isLoading}
-              >
-                {isLoading ? "Loading..." : "Next Step"}
-                <ArrowRight className="w-4 h-4 ml-2" />
+        {/* Footer */}
+        <div className="border-t border-gray-200 px-10 py-4 bg-white rounded-b-2xl">
+          {currentStep === 1 && (
+            <div className="flex justify-between items-center">
+              <button onClick={handleSaveDraft}
+                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+                {saveDraftText}
+              </button>
+              <button onClick={handleNext} disabled={isLoading || isFetching}
+                className="px-8 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2">
+                {isLoading ? "Loading..." : "Continue to Next Step"} <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-          ) : (
-            <div className="flex flex-col gap-4 items-center">
-              <button
-                onClick={
-                  formData.keepPrivate ? handleUpdate : handleUpdateAndPublish
-                }
-                className="w-1/2 px-8 py-3 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center"
-                disabled={isLoading}
-              >
-                {isLoading
-                  ? "Loading..."
-                  : formData.allowInbound
-                    ? "Update & Publish"
-                    : "Update"}
+          )}
+          {currentStep === 2 && (
+            <div className="flex justify-between items-center">
+              <div className="flex gap-3">
+                <button onClick={handleBack} disabled={isLoading}
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4" /> Back
+                </button>
+                <button onClick={handleSaveDraft}
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+                  {saveDraftText}
+                </button>
+              </div>
+              <button onClick={handleNext} disabled={isLoading}
+                className="px-8 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2">
+                {isLoading ? "Loading..." : "Continue to Next Step"} <ArrowRight className="w-4 h-4" />
               </button>
-
-              <button
-                onClick={handleBack}
-                className="w-1/2 px-8 py-3 border border-blue-700 text-blue-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
-                disabled={isLoading}
-              >
-                Back
+            </div>
+          )}
+          {currentStep === 3 && (
+            <div className="flex justify-between items-center">
+              <div className="flex gap-3">
+                <button onClick={handleBack} disabled={isLoading}
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4" /> Back
+                </button>
+                <button onClick={handleDownloadJD}
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
+                  Download JD <Download className="w-4 h-4" />
+                </button>
+                <button onClick={handleSaveDraft}
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+                  {saveDraftText}
+                </button>
+              </div>
+              <button onClick={handleUpdate} disabled={isLoading}
+                className="px-8 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2">
+                {isLoading ? "Updating..." : "Update Job"} <Send className="w-4 h-4" />
               </button>
             </div>
           )}
