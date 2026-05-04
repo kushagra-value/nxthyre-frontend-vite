@@ -183,7 +183,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     } else if (!isOpen) {
       resetForm();
     }
-  }, [isOpen, jobId, workspaces]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, jobId]);
 
   // ── Skill suggestions ──
   const fetchSkillSuggestions = useCallback(
@@ -560,7 +561,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
         </div>
 
         {/* Step Content */}
-        <div className="flex-1 overflow-y-auto px-10 mt-2 pb-6">
+        <div className="flex-1 overflow-y-auto min-h-0 px-10 mt-2 pb-6">
           {isFetching ? (
             <div className="flex items-center justify-center h-full">Loading job details...</div>
           ) : (
