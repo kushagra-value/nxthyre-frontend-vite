@@ -81,6 +81,7 @@ export interface CallHistoryEntry {
   tags: string[] | null;
   checklist_data: any;
   skills_data: any;
+  role_questions_data: any;
   created_at: string;
   recording: CallRecording | null;
   follow_ups: CallFollowUp[];
@@ -100,6 +101,7 @@ export interface ScheduleFollowUpPayload {
   duration_seconds?: number;
   tags?: string[];
   checklist_data?: Record<string, any>;
+  skills_data?: Record<string, boolean>;
   call_log_id?: number;
 }
 
@@ -125,6 +127,7 @@ export interface CallLogPayload {
   tags?: string[];
   checklist_data?: Record<string, any>;
   skills_data?: Record<string, boolean>;
+  role_questions_data?: any;
   call_mode?: "platform" | "manual";
 }
 

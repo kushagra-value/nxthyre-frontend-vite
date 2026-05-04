@@ -8,6 +8,7 @@ interface PriorityCardProps {
   statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' | 'green';
   isDone?: boolean;
   latestCallNote?: string | null;
+  latestCallTags?: string[] | null;
   onClick?: () => void;
 }
 
@@ -20,7 +21,7 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
   green: { bg: 'bg-[#E7F9F0]', text: 'text-[#00B69B]' },
 };
 
-export default function PriorityCard({ name, role, company, daysAgo, status, statusColor, isDone, latestCallNote, onClick }: PriorityCardProps) {
+export default function PriorityCard({ name, role, company, daysAgo, status, statusColor, isDone, latestCallNote, latestCallTags, onClick }: PriorityCardProps) {
   const colors = isDone ? statusStyles.green : (statusStyles[statusColor] || statusStyles.grey);
   // const status = split the status string by "-" and store the first one 
   const status_tag = status.split("-")[0];
@@ -57,10 +58,23 @@ export default function PriorityCard({ name, role, company, daysAgo, status, sta
           )}
         </div>
       </div>
-      {latestCallNote && (
-        <div className="bg-slate-50 border border-slate-100 rounded p-2 text-[10px] text-slate-500 italic flex items-start gap-1">
-          <span className="text-slate-400">💬</span>
-          <span className="leading-tight">{latestCallNote}</span>
+      {(latestCallNote || (latestCallTags && latestCallTags.length > 0)) && (
+        <div className="bg-slate-50 border border-slate-100 rounded p-2 text-[10px] text-slate-500 italic flex items-start gap-1 flex-col">
+          {latestCallTags && latestCallTags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-1">
+              {latestCallTags.map(tag => (
+                <span key={tag} className="bg-white border border-slate-200 px-1.5 py-0.5 rounded text-[9px] text-slate-600 not-italic">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          {latestCallNote && (
+            <div className="flex items-start gap-1 w-full">
+              <span className="text-slate-400">💬</span>
+              <span className="leading-tight">{latestCallNote}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

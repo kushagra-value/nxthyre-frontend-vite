@@ -110,6 +110,7 @@ export interface PriorityActionItem {
   current_stage_name: string;
   action_taken: string | null;
   latest_call_note?: string | null;
+  latest_call_tags?: string[] | null;
   latest_call_status?: string | null;
   archive_stage_id?: number;
   next_stage_id?: number;

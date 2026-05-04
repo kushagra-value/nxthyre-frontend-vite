@@ -1,3 +1,4 @@
+import { jobPostService, Job } from '../../../services/jobPostService';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { showToast } from "../../../utils/toast";
@@ -12,6 +13,7 @@ import {
   ChevronLeft,
   Eye,
   X,
+  XCircle,
   FastForward,
   MessageSquare,
   PhoneCall,
@@ -19,7 +21,10 @@ import {
   Phone,
   RotateCcw,
   FileText,
+  Edit2,
+  Check,
 } from "lucide-react";
+import { candidateService } from "../../../services/candidateService";
 import {
   initiateCall,
   getCallStatus,
@@ -97,7 +102,7 @@ export default function CandidateCallPage() {
 
   // Manual call states
   const [manualCallConnected, setManualCallConnected] = useState(false);
-  const [manualActiveTab, setManualActiveTab] = useState<"roleQuestions" | "resume">("roleQuestions");
+  const [manualActiveTab, setManualActiveTab] = useState<"jobDescription" | "roleQuestions" | "resume">("jobDescription");
 
   // Call States
   const [seconds, setSeconds] = useState(0);
@@ -127,6 +132,8 @@ export default function CandidateCallPage() {
     "roleQuestions" | "transcript" | "quickNotes"
   >("roleQuestions");
   const [roleQuestions, setRoleQuestions] = useState<RoleQuestion[]>([]);
+  const [jobData, setJobData] = useState<Job | null>(null);
+  const [competenciesData, setCompetenciesData] = useState<any>(null);
   const [transcripts, setTranscripts] = useState<LiveTranscript[]>([]);
 
   // Job ID ::
@@ -142,14 +149,22 @@ export default function CandidateCallPage() {
     location: false,
   });
 
-  // const [skillsChecklist, setSkillsChecklist] = useState({
-  //   figma: false,
-  //   uxResearch: false,
-  //   designSystems: false,
-  //   b2c: false,
-  //   stakeholder: false,
-  //   mobileFirst: false,
-  // });
+  const [skillsChecklist, setSkillsChecklist] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const dynamicSkills = jobData?.skills?.length ? jobData.skills : (jobData?.technical_competencies?.length ? jobData.technical_competencies : []);
+    if (dynamicSkills.length > 0) {
+      setSkillsChecklist((prev) => {
+        const initial: Record<string, boolean> = { ...prev };
+        dynamicSkills.forEach((skill) => {
+          if (initial[skill] === undefined) {
+            initial[skill] = false;
+          }
+        });
+        return initial;
+      });
+    }
+  }, [jobData?.skills, jobData?.technical_competencies]);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const transcriptPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -180,6 +195,68 @@ export default function CandidateCallPage() {
     }
   }, [candidateId, candidate]);
 
+  // Profile Editing State
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editProfileData, setEditProfileData] = useState({
+    currentCtc: "",
+    expectedCtc: "",
+    noticePeriod: "",
+    location: "",
+    experience: "",
+  });
+
+  const handleStartEdit = () => {
+    if (candidate) {
+      setEditProfileData({
+        currentCtc: candidate.currentCtc,
+        expectedCtc: candidate.expectedCtc,
+        noticePeriod: candidate.noticePeriod,
+        location: candidate.location,
+        experience: candidate.experience,
+      });
+      setIsEditingProfile(true);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!candidate?.id) return;
+    try {
+      // Parse values back to numbers where expected by backend
+      const payload: any = {};
+      
+      const parsedCurrent = parseFloat(editProfileData.currentCtc.replace(/[^0-9.]/g, ""));
+      if (!isNaN(parsedCurrent)) payload.current_salary = parsedCurrent;
+      
+      const parsedExpected = parseFloat(editProfileData.expectedCtc.replace(/[^0-9.]/g, ""));
+      if (!isNaN(parsedExpected)) payload.expected_ctc = parsedExpected;
+      
+      const parsedNotice = parseInt(editProfileData.noticePeriod.replace(/[^0-9]/g, ""), 10);
+      if (!isNaN(parsedNotice)) payload.notice_period_days = parsedNotice;
+      
+      payload.location = editProfileData.location;
+      
+      const parsedExp = parseFloat(editProfileData.experience.replace(/[^0-9.]/g, ""));
+      if (!isNaN(parsedExp)) payload.exp = parsedExp;
+
+      await candidateService.updateCandidateEditableFields(candidate.id, payload);
+      
+      setCandidate(prev => prev ? {
+        ...prev,
+        currentCtc: editProfileData.currentCtc.includes("LPA") ? editProfileData.currentCtc : `${editProfileData.currentCtc} LPA`,
+        expectedCtc: editProfileData.expectedCtc.includes("LPA") ? editProfileData.expectedCtc : `${editProfileData.expectedCtc} LPA`,
+        noticePeriod: editProfileData.noticePeriod.includes("days") ? editProfileData.noticePeriod : `${editProfileData.noticePeriod} days`,
+        location: editProfileData.location,
+        experience: editProfileData.experience.includes("yrs") ? editProfileData.experience : `${editProfileData.experience} yrs`,
+      } : null);
+      
+      setIsEditingProfile(false);
+      showToast.success("Profile updated successfully");
+    } catch (error) {
+      showToast.error("Failed to update profile");
+      console.error(error);
+    }
+  };
+
   // Fetch initial Role Questions on Mount
   useEffect(() => {
     if (candidate?.id && jobId) {
@@ -188,6 +265,24 @@ export default function CandidateCallPage() {
         .catch(console.error);
     }
   }, [candidate?.id, jobId]);
+
+  // Fetch Job Data & Competencies for the JD tab
+  useEffect(() => {
+    if (jobId) {
+      const numericJobId = parseInt(jobId, 10);
+      Promise.all([
+        jobPostService.getJob(numericJobId),
+        jobPostService.getJobCompetencies(numericJobId),
+      ])
+        .then(([job, comp]) => {
+          setJobData(job);
+          setCompetenciesData(comp);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch job data:', err);
+        });
+    }
+  }, [jobId]);
 
   // ─── Register Plivo Browser SDK (WebRTC) ─────────────
   useEffect(() => {
@@ -417,6 +512,8 @@ export default function CandidateCallPage() {
       }
       setCallState("completed");
       setIsPaused(true);
+      // Auto-save when call ends
+      setTimeout(() => handleSaveNotes(true), 500);
     } catch (err) {
       console.error("Failed to end call:", err);
       // Still mark as completed locally
@@ -499,6 +596,8 @@ export default function CandidateCallPage() {
               await processManualRecording(formData);
               console.log("Audio recording submitted successfully.");
               showToast.success("Recording saved and processing...");
+              // Auto-save call log when recording stops
+              handleSaveNotes(true);
             } catch (err) {
               console.error("Failed to submit manual recording audio:", err);
             }
@@ -511,9 +610,10 @@ export default function CandidateCallPage() {
         mediaRecorder.start();
         isManualRecordingRef.current = true;
         setIsManualRecording(true);
-      } catch (err) {
-        console.error("Failed to start media recorder:", err);
-        alert("Failed to access microphone. Please check permissions.");
+      } catch (err: any) {
+        if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+          showToast.error("Microphone access failed. Please check permissions.");
+        }
       }
     }
   };
@@ -526,9 +626,9 @@ export default function CandidateCallPage() {
     };
   }, []);
 
-  const handleSaveNotes = useCallback(async () => {
+  const handleSaveNotes = useCallback(async (isSilent = false) => {
     if (!candidate) return;
-    setIsSaving(true);
+    if (!isSilent) setIsSaving(true);
     let finalCallUuid = callUuid;
     try {
       const callLogRes = await saveCallLog({
@@ -538,18 +638,23 @@ export default function CandidateCallPage() {
         duration_seconds: seconds,
         tags: activeTags.length > 0 ? activeTags : undefined,
         checklist_data: checklist,
+        skills_data: skillsChecklist,
+        role_questions_data: roleQuestions.reduce((acc, q) => {
+          acc[q.id] = q;
+          return acc;
+        }, {} as Record<number, any>),
         call_mode: isManual ? "manual" : "platform",
         call_status: isManual && manualCallConnected ? "completed" : undefined
       });
       
       finalCallUuid = callLogRes.call_uuid || finalCallUuid;
       
-      alert("Notes and checklist saved successfully!");
+      if (!isSilent) showToast.success("Notes and checklist saved!");
     } catch (err) {
       console.error("Failed to save notes:", err);
-      alert("Failed to save notes. Please try again.");
+      if (!isSilent) showToast.error("Failed to save notes. Please try again.");
     } finally {
-      setIsSaving(false);
+      if (!isSilent) setIsSaving(false);
     }
   }, [
     candidate,
@@ -558,22 +663,30 @@ export default function CandidateCallPage() {
     seconds,
     activeTags,
     checklist,
-    isManual
+    skillsChecklist,
+    roleQuestions,
+    isManual,
+    manualCallConnected
   ]);
 
   const toggleTag = (tag: string) => {
-    setActiveTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    );
+    setActiveTags((prev) => {
+      const next = prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
+      // Save immediately in background
+      setTimeout(() => handleSaveNotes(true), 100);
+      return next;
+    });
   };
 
   const toggleChecklist = (key: keyof typeof checklist) => {
-    setChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
+    setChecklist((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      setTimeout(() => handleSaveNotes(true), 100);
+      return next;
+    });
   };
 
-  // const toggleSkills = (key: keyof typeof skillsChecklist) => {
-  //   setSkillsChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
-  // };
+  
 
   const handleEvaluateQuestion = async (
     qId: number,
@@ -594,14 +707,13 @@ export default function CandidateCallPage() {
       </div>
     );
 
-  const tags = [
-    "Interested",
-    "Follow Up",
-    "CTC Mismatch",
-    "Notice Long",
-    "Strong fit",
+  const tagsList = [
+    { id: "Follow up", label: "Follow up", icon: "⏰" },
+    { id: "Interested", label: "Interested", icon: "✅" },
+    { id: "Strong Fit", label: "Strong Fit", icon: "⭐" },
+    { id: "Didn't pick up", label: "Didn't pick up", icon: "☎️" },
+    { id: "CTC Mismatch", label: "CTC Mismatch", icon: "💰" },
   ];
-
   const statusLabel =
     callState === "completed"
       ? "CALL ENDED"
@@ -619,20 +731,23 @@ export default function CandidateCallPage() {
       : "text-[#22C55E]";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
+    <div className="flex flex-col lg:flex-row w-screen h-screen overflow-hidden bg-slate-50 text-slate-800 font-sans">
       {/* LEFT COLUMN */}
-      <div className="w-[35%] lg:w-[40%] xl:w-[45%] min-w-[340px] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-y-auto custom-scrollbar p-6 md:p-8 shrink-0">
+      <div className="w-full lg:w-[20%] h-full flex flex-col items-center justify-center bg-[#1D4ED8] relative text-white overflow-hidden p-6 shrink-0 z-10 transition-all">
         {/* Visual Audio Rings */}
         <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none fixed">
           <div className="w-[800px] h-[800px] rounded-full border border-white/20"></div>
           <div className="absolute w-[600px] h-[600px] rounded-full border border-white/20"></div>
           <div className="absolute w-[400px] h-[400px] rounded-full border border-white/20"></div>
           <div className="absolute w-[300px] h-[300px] rounded-full border border-white/30 bg-white/5"></div>
+          <div className="absolute w-[200px] h-[200px] rounded-full border border-white/40 bg-white/10"></div>
         </div>
 
         {/* Back button */}
         <button
-          onClick={() => window.location.href = "/"}
+          onClick={() => {
+            navigate(`/`)
+          }}
           className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2 z-10"
         >
           <ChevronLeft className="w-5 h-5" /> Back
@@ -640,103 +755,41 @@ export default function CandidateCallPage() {
 
         {isManual ? (
           /* ─── MANUAL CALL LEFT PANEL ─── */
-          <div className="z-10 flex flex-col items-center w-full max-w-sm">
+          <div className="z-10 flex flex-col items-center w-full max-w-sm mt-16 pb-[300px]">
             <div className="relative mb-4">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] text-3xl md:text-4xl font-semibold shadow-2xl">
-                {candidate.avatarInitials}
+              <div className="w-[80px] h-[80px] lg:w-[100px] lg:h-[100px] rounded-full bg-white flex items-center justify-center text-[#0F47F2] text-2xl lg:text-3xl font-medium shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] transition-all">
+                {candidate.avatarInitials || "UN"}
               </div>
-              {manualCallConnected && (
-                <div className="absolute top-1 right-1 md:top-2 md:right-2 w-4 h-4 md:w-5 md:h-5 bg-red-500 rounded-full border-2 border-[#1D4ED8]"></div>
-              )}
+              <div className="absolute bottom-1 right-1 lg:right-2 w-4 h-4 lg:w-5 lg:h-5 bg-[#FF383C] rounded-full shadow-[0px_2px_10px_4px_rgba(0,0,0,0.25)] border-[2px] border-[#1D4ED8] z-10 transition-all"></div>
             </div>
 
-            <h1 className="text-xl md:text-2xl font-semibold mb-1 text-center">{candidate.name}</h1>
-            <div className="text-white text-sm md:text-base font-medium mb-2 flex items-center justify-center gap-1.5 opacity-90">
-              <Phone className="w-3.5 h-3.5" />
-              <span>{candidate.phone || "No phone provided"}</span>
-            </div>
-            <p className="text-blue-200 text-xs md:text-sm mb-3 text-center">{candidate.headline}</p>
+            <h1 className="text-lg font-medium mb-0 text-center text-[#F3F5F7] mt-1 transition-all break-words leading-tight px-2">{candidate.name || "Unknown Candidate"}</h1>
+            <p className="text-[#F3F5F7] text-[11px] mb-4 text-center leading-snug px-2 opacity-80">{candidate.headline || "Product Designer"}</p>
 
-            {/* Candidate Info */}
-            <div className="bg-white/10 rounded-xl p-3 mb-4 w-full grid grid-cols-2 gap-2 text-[10px] md:text-xs">
-              <div>
-                <span className="text-white/50 block">CURRENT CTC</span>
-                <span className="font-semibold">{candidate.currentCtc}</span>
-              </div>
-              <div>
-                <span className="text-white/50 block">EXPECTED</span>
-                <span className="font-semibold">{candidate.expectedCtc}</span>
-              </div>
-              <div>
-                <span className="text-white/50 block">NOTICE</span>
-                <span className="font-semibold">{candidate.noticePeriod}</span>
-              </div>
-              <div>
-                <span className="text-white/50 block">AI SCORE</span>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#22C55E] rounded-full" style={{ width: "84%" }}></div>
-                  </div>
-                  <span className="font-semibold">84%</span>
-                </div>
-              </div>
+            <div className="bg-[#BFDBFE] rounded-full px-3 flex items-center justify-center w-fit h-[28px] mb-3 transition-all shadow-sm">
+              <span className="text-[#0F47F2] font-medium text-xs lg:text-sm transition-all tracking-tight">
+                {candidate.phone || "No phone provided"}
+              </span>
+            </div>
+
+            <div className="bg-transparent px-2 flex items-center justify-center gap-1.5 mb-6 h-[24px]">
+              <span className="text-[#00C8B3] text-[10px] font-bold uppercase tracking-[0.04em]">
+                · ON MANUAL CALL
+              </span>
             </div>
 
             {!manualCallConnected ? (
-              /* Pre-connection: outcome buttons */
-              <div className="flex flex-col items-center gap-2 w-full">
-                {/* Call on Nxthyre button */}
+              <div className="flex flex-col items-center mt-4">
                 <button
                   onClick={() => {
-                    // Bypass React Router transition for speed
-                    sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate }));
-                    window.location.href = `/call/${candidate.id}/${jobId}?mode=platform`;
+                    if (!callUuid) setCallUuid(crypto.randomUUID());
+                    setManualCallConnected(true);
                   }}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-white/30 bg-white/10 text-white font-semibold text-xs hover:bg-white/20 transition-colors backdrop-blur-sm"
+                  className="w-[40px] h-[40px] lg:w-[48px] lg:h-[48px] rounded-full bg-[#10B981] flex items-center justify-center hover:bg-[#059669] transition-transform active:scale-95 border border-white/20 shadow-lg shadow-green-900/30"
                 >
-                  <PhoneCall className="w-3.5 h-3.5" />
-                  <span className="text-[#22C55E] font-bold text-[10px] uppercase">nxt</span>{" "}
-                  Call on Nxthyre
+                  <Phone className="w-4 h-4 lg:w-5 lg:h-5 text-white fill-current" />
                 </button>
-
-                <div className="flex items-center gap-1.5 mt-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]"></span>
-                  <span className="text-[#22C55E] text-[11px] md:text-xs font-bold uppercase tracking-wider">ON MANUAL CALL</span>
-                </div>
-
-                <p className="text-white text-[13px] md:text-[14px] mt-1 mb-1">Did Candidate Picked Call?</p>
-
-                {/* Outcome buttons */}
-                <div className="flex gap-2 justify-center mb-1 w-full flex-wrap">
-                  {["Not Picked up", "Number Busy", "Wrong Number", "Completed", "Failed"].map((reason) => (
-                    <button
-                      key={reason}
-                      onClick={() => setFollowUpReason(reason)}
-                      className="px-4 py-1.5 rounded-full text-[12px] font-medium border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors"
-                    >
-                      {reason}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Outcome buttons row 3 */}
-                <div className="flex gap-2 justify-center w-full mt-1">
-                  <button
-                    onClick={() => {
-                      if (!callUuid) setCallUuid(crypto.randomUUID());
-                      setManualCallConnected(true);
-                    }}
-                    className="px-4 py-2 rounded-full text-[12px] font-bold bg-[#22C55E] text-white hover:bg-[#16A34A] transition-colors shadow-lg shadow-green-500/30 flex items-center gap-1.5"
-                  >
-                    <PhoneIncoming className="w-3.5 h-3.5" /> Picked Up
-                  </button>
-                  <button
-                    onClick={() => window.location.href = "/"}
-                    className="px-4 py-2 rounded-full text-[12px] font-bold border border-white/40 bg-transparent text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" /> Call Back again
-                  </button>
-                </div>
+                <span className="text-[#F3F5F7] font-normal text-xs mt-2 tracking-wide">Start Call</span>
               </div>
             ) : (
               /* Post-connection: timer + controls */
@@ -778,11 +831,11 @@ export default function CandidateCallPage() {
                           toggleManualRecording();
                         }
                       }}
-                      className="w-16 h-16 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95"
+                      className="w-14 h-14 rounded-full bg-red-500 text-white shadow-xl shadow-red-500/40 flex items-center justify-center hover:bg-red-600 transition hover:scale-105 active:scale-95"
                     >
-                      <PhoneOff className="w-6 h-6" />
+                      <PhoneOff className="w-5 h-5" />
                     </button>
-                    <span className="text-xs text-white uppercase tracking-widest font-semibold">
+                    <span className="text-[10px] text-white uppercase tracking-widest font-semibold">
                       End Call
                     </span>
                   </div>
@@ -795,6 +848,49 @@ export default function CandidateCallPage() {
                   )}
               </div>
             )}
+            
+            {/* QUICK NOTES - pinned to bottom of left panel */}
+            <div className="absolute bottom-0 left-0 right-0 bg-white z-20">
+              <div className="px-4 py-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm">📝</span>
+                  <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Quick Notes</span>
+                </div>
+                
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {tagsList.map((tag) => (
+                    <button
+                      key={tag.id}
+                      onClick={() => toggleTag(tag.id)}
+                      className={`px-3 py-1.5 rounded-full text-[11px] whitespace-nowrap transition-colors border border-dashed flex items-center gap-1.5 ${
+                        activeTags.includes(tag.id) 
+                          ? "bg-blue-50 text-blue-600 border-blue-400" 
+                          : "bg-white text-slate-500 border-slate-300 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span>{tag.icon}</span>
+                      <span>{tag.label}</span>
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add key notes"
+                    className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-500"
+                  />
+                  <button
+                    onClick={() => handleSaveNotes()}
+                    disabled={isSaving}
+                    className="bg-[#0F47F2] text-white rounded-xl px-5 py-2 text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 min-w-[70px]"
+                  >
+                    {isSaving ? "..." : "Add"}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           /* ─── PLATFORM CALL LEFT PANEL (original) ─── */
@@ -898,9 +994,9 @@ export default function CandidateCallPage() {
       </div>
 
       {/* RIGHT COLUMN: RECRUITER ASSISTANT PANEL */}
-      <div className={`flex-1 flex ${isManual && manualCallConnected ? "flex-row" : "flex-col"} h-full overflow-hidden bg-white shadow-xl shadow-slate-200`}>
+      <div className={`w-[80%] flex ${isManual ? "flex-col lg:flex-row" : "flex-col"} h-full overflow-hidden bg-white shadow-xl shadow-slate-200 relative`}>
         {/* Main content area */}
-        <div className={`flex flex-col ${isManual && manualCallConnected ? "flex-1 min-w-0" : "h-full"} overflow-hidden`}>
+        <div className={`flex flex-col ${isManual ? "w-[75%] min-w-0 h-full" : "h-full w-full"} overflow-hidden`}>
         {/* Header & Candidate Summary Strip */}
         <div className="bg-white border-b border-slate-200 shrink-0">
           <div className="h-[80px] flex items-center justify-between px-8">
@@ -931,8 +1027,9 @@ export default function CandidateCallPage() {
             {isManual ? (
               /* Manual mode tabs: Candidate Resume | Role Questions */
               <>
-                {(["roleQuestions", "resume"] as const).map((tab) => {
+                {(["jobDescription", "roleQuestions", "resume"] as const).map((tab) => {
                   const labels = {
+                    jobDescription: "Job Description",
                     roleQuestions: "Role Questions",
                     resume: "Candidate Resume",
                   };
@@ -979,11 +1076,96 @@ export default function CandidateCallPage() {
           </div>
         </div>
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar bg-slate-50/30">
+        <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto px-4 md:px-8 py-6 custom-scrollbar bg-slate-50/30">
           {/* MANUAL MODE TABS */}
+          {isManual && manualActiveTab === "jobDescription" && (
+            <div className="flex flex-col h-full w-full max-w-4xl mx-auto break-words pb-10">
+              <div className="bg-white border border-slate-200 rounded-[24px] shadow-sm p-8 md:p-10 w-full relative">
+                
+                {/* Floating Avatars (Premium touch from design)
+                <div className="absolute top-8 right-8 flex -space-x-3 group cursor-pointer">
+                  <div className="w-12 h-12 rounded-full border-4 border-white shadow-xl overflow-hidden transition-transform group-hover:-translate-x-1">
+                    <img src="https://i.pravatar.cc/150?u=1" alt="Recruiter 1" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="w-12 h-12 rounded-full border-4 border-white shadow-xl overflow-hidden transition-transform group-hover:translate-x-1">
+                    <img src="https://i.pravatar.cc/150?u=2" alt="Recruiter 2" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -inset-2 bg-blue-500/10 rounded-full blur-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div> */}
+
+                {/* Header */}
+                <div className="mb-8 pr-24">
+                  <h2 className="text-2xl font-bold text-slate-800 tracking-tight leading-tight">
+                    {jobData?.title || candidate.headline} {jobData?.workspace_details?.name ? `V2 - ${jobData.workspace_details.name}` : ""}
+                  </h2>
+                </div>
+
+                {/* Job Summary Section */}
+                <div className="mb-10">
+                  <h3 className="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-wider">Job Summary</h3>
+                  <div className="flex flex-col gap-1.5">
+                    {[
+                      { label: "Job Title", value: jobData?.title },
+                      { label: "Company", value: jobData?.workspace_details?.name },
+                      { label: "Location", value: jobData?.location?.join(' · ') || "Hybrid" },
+                      { label: "Salary Range", value: jobData?.salary_min ? `₹${jobData.salary_min}L – ₹${jobData.salary_max}L per annum` : "Not disclosed" },
+                      { label: "Experience", value: jobData?.experience_min_years ? `${jobData.experience_min_years}–${jobData.experience_max_years} years` : "Not specified" },
+                      { label: "Openings", value: jobData?.No_of_opening_or_positions_ || jobData?.num_positions || "1" },
+                      { label: "Notice Period", value: jobData?.notice_period || "30 Days" },
+                    ].map((row, i) => (
+                      <div key={i} className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl hover:bg-[#F1F5F9] transition-colors group">
+                        <span className="text-sm text-slate-500 font-medium">{row.label}</span>
+                        <span className="text-sm text-slate-800 font-semibold group-hover:text-blue-600 transition-colors">{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Primary Skills Section */}
+                <div className="mb-10 bg-[#F4F7FF] rounded-2xl p-6 border border-[#E0E7FF]/50">
+                  <h3 className="text-sm font-semibold text-slate-500 mb-5 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    Primary Skills
+                  </h3>
+                  <div className="flex flex-wrap gap-2.5">
+                    {(jobData?.skills?.length ? jobData.skills : ["React", "TypeScript", "Node.js"]).map((skill, i) => (
+                      <span 
+                        key={i} 
+                        className="px-5 py-2.5 bg-white rounded-xl text-sm text-blue-600 font-bold shadow-sm border border-blue-100 hover:border-blue-300 hover:shadow-md transition-all cursor-default"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Must Have Section */}
+                <div className="bg-[#FFF1F2] rounded-2xl p-6 border border-[#FFE4E6]">
+                  <h3 className="text-sm font-bold text-rose-600 mb-5 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                    Must Have
+                  </h3>
+                  <ul className="space-y-4">
+                    {(competenciesData?.the_core_expectation?.length 
+                      ? competenciesData.the_core_expectation 
+                      : (jobData?.description?.split('\n').filter(l => l.includes('Must') || l.includes('experience')).slice(0, 3) || ["Strong technical knowledge and problem-solving skills"])
+                    ).map((item: string, i: number) => (
+                      <li key={i} className="flex items-start gap-3 group">
+                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-rose-400 transition-colors shrink-0" />
+                        <p className="text-sm text-slate-600 leading-relaxed group-hover:text-slate-900 transition-colors">
+                          {item}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+              </div>
+            </div>
+          )}
           {isManual && manualActiveTab === "resume" && (
             <div className="flex flex-col h-full max-w-4xl mx-auto">
-              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-white border border-slate-200 rounded-xl overflow-auto shadow-sm">
                 <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50/50">
                   <div>
                     <h3 className="text-sm font-bold text-slate-800">Candidate Resume View</h3>
@@ -995,7 +1177,7 @@ export default function CandidateCallPage() {
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="h-[60vh] bg-white">
+                <div className="h-[calc(100vh-160px)] bg-white">
                   {candidate.resumeUrl ? (() => {
                     const url = candidate.resumeUrl;
                     const ext = url.split(".").pop()?.toLowerCase() || "";
@@ -1085,21 +1267,41 @@ export default function CandidateCallPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <button
+                        onClick={() => handleEvaluateQuestion(q.id, "convinced")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-300 shadow-sm" : "bg-white text-slate-500 hover:bg-green-50 hover:text-green-600 border-slate-200"}`}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Convinced
+                      </button>
+                      <button
+                        onClick={() => handleEvaluateQuestion(q.id, "not_convinced")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-300 shadow-sm" : "bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 border-slate-200"}`}
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> Not Convinced
+                      </button>
+                      <button
                         onClick={() => handleEvaluateQuestion(q.id, "skipped")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50 border-slate-200"}`}
                       >
                         <FastForward className="w-3.5 h-3.5" /> Skip
                       </button>
                     </div>
-                    {q.ai_score_percentage !== null && (
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Score</span>
-                        <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500" style={{ width: `${q.ai_score_percentage}%` }}></div>
+                    <div className="flex items-center gap-4">
+                      {q.status === "convinced" && (
+                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Score: 100%</span>
+                      )}
+                      {q.status === "not_convinced" && (
+                        <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
+                      )}
+                      {/* {q.ai_score_percentage !== null && (
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Score</span>
+                          <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-blue-500" style={{ width: `${q.ai_score_percentage}%` }}></div>
+                          </div>
+                          <span className="text-sm font-bold text-blue-700">{q.ai_score_percentage}%</span>
                         </div>
-                        <span className="text-sm font-bold text-blue-700">{q.ai_score_percentage}%</span>
-                      </div>
-                    )}
+                      )} */}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1150,33 +1352,51 @@ export default function CandidateCallPage() {
                   <div className="h-px bg-slate-100 my-1"></div>
                   {/* Actions & AI Score */}
                   <div className="flex items-center justify-between">
-                    {/* Action Buttons */}
                     <div className="flex items-center gap-3">
                       <button
+                        onClick={() => handleEvaluateQuestion(q.id, "convinced")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-300 shadow-sm" : "bg-white text-slate-500 hover:bg-green-50 hover:text-green-600 border-slate-200"}`}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Convinced
+                      </button>
+                      <button
+                        onClick={() => handleEvaluateQuestion(q.id, "not_convinced")}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-300 shadow-sm" : "bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 border-slate-200"}`}
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> Not Convinced
+                      </button>
+                      <button
                         onClick={() => handleEvaluateQuestion(q.id, "skipped")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50 border-slate-200"}`}
                       >
                         <FastForward className="w-3.5 h-3.5" /> Skip
                       </button>
                     </div>
 
-                    {/* AI Score */}
-                    {q.ai_score_percentage !== null && (
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                          AI Score
-                        </span>
-                        <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-blue-500"
-                            style={{ width: `${q.ai_score_percentage}%` }}
-                          ></div>
+                    <div className="flex items-center gap-4">
+                      {q.status === "convinced" && (
+                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Score: 100%</span>
+                      )}
+                      {q.status === "not_convinced" && (
+                        <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
+                      )}
+                      {/* {q.ai_score_percentage !== null && (
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            AI Score
+                          </span>
+                          <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-blue-500"
+                              style={{ width: `${q.ai_score_percentage}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm font-bold text-blue-700">
+                            {q.ai_score_percentage}%
+                          </span>
                         </div>
-                        <span className="text-sm font-bold text-blue-700">
-                          {q.ai_score_percentage}%
-                        </span>
-                      </div>
-                    )}
+                      )} */}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1260,17 +1480,19 @@ export default function CandidateCallPage() {
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
+                    onBlur={() => handleSaveNotes(true)}
                     placeholder="Add key points here during the call"
                     className="w-full h-24 bg-white border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:outline-none rounded-xl p-4 text-sm transition-all resize-none shadow-sm"
                   />
                   <div className="flex flex-wrap gap-2 mt-4">
-                    {tags.map((tag) => (
+                    {tagsList.map((tag) => (
                       <button
-                        key={tag}
-                        onClick={() => toggleTag(tag)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${activeTags.includes(tag) ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
+                        key={tag.id}
+                        onClick={() => toggleTag(tag.id)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border border-dashed transition-all flex items-center gap-1.5 ${activeTags.includes(tag.id) ? "bg-blue-50 text-blue-600 border-blue-400 shadow-sm" : "bg-white text-slate-500 border-slate-300 hover:bg-slate-50"}`}
                       >
-                        {tag}
+                        <span>{tag.icon}</span>
+                        <span>{tag.label}</span>
                       </button>
                     ))}
                   </div>
@@ -1433,60 +1655,25 @@ export default function CandidateCallPage() {
         </>
         )}
         </div>
-        {/* Fixed Footer for Save */}
+        {/* Fixed Footer for Save - Platform mode only */}
+        {!isManual && (
         <div className="w-full shrink-0 border-t border-slate-100 py-3 px-6 bg-white flex flex-col justify-center z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-          {isManual ? (
-            <div className="flex flex-col gap-3 w-full">
-              <div className="flex items-center justify-between w-full">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                  📝 QUICK NOTES
-                </span>
-                <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
-                  {tags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all flex items-center gap-1.5 ${activeTags.includes(tag) ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
-                    >
-                      {tag === "Interested" ? <span className="text-green-500">✅</span> : tag === "Follow Up" ? <span className="text-red-500">⏰</span> : tag === "CTC Mismatch" ? <span>💰</span> : tag === "Strong fit" ? <span className="text-yellow-500">⭐</span> : null}
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-3 w-full">
-                <input
-                  type="text"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add key notes while on the call..."
-                  className="flex-1 h-10 bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
-                />
-                <button
-                  onClick={handleSaveNotes}
-                  disabled={isSaving}
-                  className="h-10 px-6 bg-[#1D4ED8] text-white font-semibold text-sm rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2 shrink-0"
-                >
-                  💾 Save
-                </button>
-              </div>
-            </div>
-          ) : (
+          
             <div className="flex items-center w-full">
               <button
-                onClick={handleSaveNotes}
+                onClick={() => handleSaveNotes()}
                 disabled={isSaving}
                 className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50"
               >
                 {isSaving ? "Saving..." : "Save Call Wrap-up Data"}
               </button>
             </div>
-          )}
         </div>
+        )}
         </div>
         {/* RIGHT SIDEBAR for manual mode */}
-        {isManual && manualCallConnected && (
-          <div className="w-[280px] shrink-0 border-l border-slate-200 bg-white overflow-y-auto">
+        {isManual && (
+          <div className="w-[25%] shrink-0 border-l border-slate-200 bg-white overflow-x-hidden overflow-y-auto custom-scrollbar flex flex-col justify-between">
             {/* Candidate Header */}
             <div className="p-5 border-b border-slate-100">
               <div className="flex items-center justify-between mb-1">
@@ -1500,13 +1687,39 @@ export default function CandidateCallPage() {
 
             {/* Profile Info */}
             <div className="p-5 border-b border-slate-100">
-              <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest mb-4">PROFILE INFO</h5>
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest">PROFILE INFO</h5>
+                <button 
+                  onClick={isEditingProfile ? handleUpdateProfile : handleStartEdit}
+                  className={`p-1.5 rounded-md transition-colors ${isEditingProfile ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100" : "bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50"}`}
+                >
+                  {isEditingProfile ? <Check className="w-3.5 h-3.5" /> : <Edit2 className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+              
               <div className="flex flex-col gap-3 text-xs">
-                <div className="flex justify-between"><span className="text-slate-400">Current CTC</span><span className="text-slate-700 font-bold">{candidate.currentCtc}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Expected CTC</span><span className="text-slate-700 font-bold">{candidate.expectedCtc}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Notice Period</span><span className="text-slate-700 font-bold">{candidate.noticePeriod}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Location</span><span className="text-slate-700 font-bold">{candidate.location}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Experience</span><span className="text-slate-700 font-bold">{candidate.experience}</span></div>
+                {[
+                  { label: "Current CTC", key: "currentCtc" },
+                  { label: "Expected CTC", key: "expectedCtc" },
+                  { label: "Notice Period", key: "noticePeriod" },
+                  { label: "Location", key: "location" },
+                  { label: "Experience", key: "experience" },
+                ].map((field) => (
+                  <div key={field.key} className="flex justify-between items-center group min-h-[24px]">
+                    <span className="text-slate-400">{field.label}</span>
+                    {isEditingProfile ? (
+                      <input
+                        type="text"
+                        value={(editProfileData as any)[field.key]}
+                        onChange={(e) => setEditProfileData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                        className="w-[60%] text-right bg-slate-50 border border-slate-200 rounded px-2 py-0.5 font-bold text-slate-700 focus:outline-none focus:border-blue-300 transition-colors"
+                        autoFocus={field.key === "currentCtc"}
+                      />
+                    ) : (
+                      <span className="text-slate-700 font-bold">{(candidate as any)[field.key]}</span>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -1522,27 +1735,40 @@ export default function CandidateCallPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-3 text-xs">
-                {[
-                  { name: "Figma / Design Tools", score: "3/5", checked: true, color: "bg-blue-600" },
-                  { name: "Hi-fi wireframing", score: null, checked: true, color: "bg-red-500" },
-                  { name: "Auto layout & constraints", score: null, checked: true, color: "bg-red-500" },
-                  { name: "Hug / Fill / Fixed sizing", score: null, checked: true, color: "bg-yellow-500" },
-                  { name: "Prototyping & interactions", score: null, checked: false, color: "bg-slate-200" },
-                  { name: "Variables & tokens", score: null, checked: false, color: "bg-slate-200" },
-                ].map((skill) => (
-                  <label key={skill.name} className="flex items-center gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={skill.checked}
-                      readOnly
-                      className={`w-4 h-4 rounded border-slate-300 ${skill.checked ? "accent-blue-600" : ""}`}
-                    />
-                    <span className={`w-1.5 h-1.5 rounded-full ${skill.color}`}></span>
-                    <span className={`flex-1 ${skill.checked ? "text-slate-700" : "text-slate-400"}`}>{skill.name}</span>
-                    {skill.score && <span className="text-slate-400 font-medium">{skill.score}</span>}
-                  </label>
-                ))}
+                {(() => {
+                  const dynamicSkills = jobData?.skills?.length ? jobData.skills : (jobData?.technical_competencies?.length ? jobData.technical_competencies : ["Figma / Design Tools", "Hi-fi wireframing", "Auto layout & constraints"]);
+                  return dynamicSkills.map((skill, index) => {
+                    const isChecked = skillsChecklist[skill] || false;
+                    // Assign colors based on index or just use a default
+                    const colors = ["bg-blue-600", "bg-red-500", "bg-yellow-500", "bg-emerald-500", "bg-purple-500", "bg-pink-500", "bg-indigo-500", "bg-orange-500"];
+                    const color = isChecked ? colors[index % colors.length] : "bg-slate-200";
+                    
+                    return (
+                      <label key={skill} className="flex items-center gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => setSkillsChecklist(prev => ({ ...prev, [skill]: !prev[skill] }))}
+                          className={`w-4 h-4 rounded border-slate-300 ${isChecked ? "accent-blue-600" : ""}`}
+                        />
+                        <span className={`w-1.5 h-1.5 rounded-full ${color}`}></span>
+                        <span className={`flex-1 ${isChecked ? "text-slate-700" : "text-slate-400"}`}>{skill}</span>
+                      </label>
+                    );
+                  });
+                })()}
               </div>
+            </div>
+
+            {/* Save Checklist Footer Button */}
+            <div className="p-5 mt-auto">
+              <button
+                onClick={() => handleSaveNotes()}
+                disabled={isSaving}
+                className="w-full bg-[#1D4ED8] text-white font-bold py-3 rounded-lg text-xs hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save Notes & Checklist"}
+              </button>
             </div>
           </div>
         )}
@@ -1553,12 +1779,16 @@ export default function CandidateCallPage() {
         <CallCandidateModal
           isOpen={!!followUpReason}
           onClose={() => window.location.href = "/"} // Navigate cleanly back to pipeline board after follow up
-          candidate={candidate}
+          candidate={candidate ? {
+            ...candidate,
+            phone: candidate.phone || "",
+          } : null}
           jobId={jobId ? parseInt(jobId, 10) : undefined}
           initialStep="noAnswer"
           initialReason={followUpReason}
           initialNote={notes}
           initialTags={activeTags}
+          initialSkills={skillsChecklist}
           callMode="manual"
         />
       )}
