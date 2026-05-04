@@ -185,6 +185,7 @@ export default function JobPipeline({
           }
           currentIndex={currentCandidateIndex}
           totalCandidates={candidateList.length}
+          candidateList={candidateList}
         />
       ) : (
         <JobPipelineDashboard

@@ -64,6 +64,7 @@ interface JobCandidateProfileProps {
   onNavigateNext?: () => void;
   currentIndex?: number;
   totalCandidates?: number;
+  candidateList?: any[];
 }
 
 // ─── Component ─────────────────────────────────────────────
@@ -79,6 +80,7 @@ export default function JobCandidateProfile({
   onNavigateNext,
   currentIndex,
   totalCandidates,
+  candidateList,
 }: JobCandidateProfileProps) {
   // Extract data from the raw API response
   const cand = candidate?.candidate || {};
@@ -731,7 +733,11 @@ export default function JobCandidateProfile({
                           location: cand.location || "--",
                           resumeUrl: premiumData.resume_url || cand.resume_url || "",
                         };
-                        sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData }));
+                        const candidateIds = candidateList?.map(c => c?.candidate?.id || c?.id).filter(Boolean) || [];
+                        sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ 
+                          candidate: callData,
+                          candidateList: candidateIds.length > 0 ? candidateIds : [cand.id]
+                        }));
                         window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`;
                       }}
                       className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition"
