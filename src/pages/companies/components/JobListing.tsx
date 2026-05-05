@@ -1521,7 +1521,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
             {/* Delete Modal */}
             {showDeleteModal !== null && (() => {
-                const jobToDelete = combinedJobs.find(j => j.id === showDeleteModal);
+                const jobToDelete = combinedJobs.find((j: { id: number; }) => j.id === showDeleteModal);
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
                         <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
