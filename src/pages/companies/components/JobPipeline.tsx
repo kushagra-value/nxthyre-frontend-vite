@@ -16,12 +16,52 @@ export default function JobPipeline({
   workspaces,
   onJobUpdated,
 }: JobPipelineProps) {
-  const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<any>(() => {
+    if (jobId) {
+      const saved = sessionStorage.getItem(`_nxthyre_selected_candidate_${jobId}`);
+      try { return saved ? JSON.parse(saved) : null; } catch { return null; }
+    }
+    return null;
+  });
   const [loadingCandidate, setLoadingCandidate] = useState(false);
   // Track candidate list for pagination
-  const [candidateList, setCandidateList] = useState<any[]>([]);
+  const [candidateList, setCandidateList] = useState<any[]>(() => {
+    if (jobId) {
+      const saved = sessionStorage.getItem(`_nxthyre_candidate_list_${jobId}`);
+      try { return saved ? JSON.parse(saved) : []; } catch { return []; }
+    }
+    return [];
+  });
   const [currentCandidateIndex, setCurrentCandidateIndex] =
-    useState<number>(-1);
+    useState<number>(() => {
+      if (jobId) {
+        const saved = sessionStorage.getItem(`_nxthyre_candidate_index_${jobId}`);
+        return saved ? parseInt(saved, 10) : -1;
+      }
+      return -1;
+    });
+
+  useEffect(() => {
+    if (jobId) {
+      if (selectedCandidate) {
+        sessionStorage.setItem(`_nxthyre_selected_candidate_${jobId}`, JSON.stringify(selectedCandidate));
+      } else {
+        sessionStorage.removeItem(`_nxthyre_selected_candidate_${jobId}`);
+      }
+    }
+  }, [selectedCandidate, jobId]);
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_candidate_list_${jobId}`, JSON.stringify(candidateList));
+    }
+  }, [candidateList, jobId]);
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_candidate_index_${jobId}`, currentCandidateIndex.toString());
+    }
+  }, [currentCandidateIndex, jobId]);
 
   const [stages, setStages] = useState<Stage[]>([]);
 
@@ -72,10 +112,13 @@ export default function JobPipeline({
     if (jobId != null) {
       fetchStages(jobId);
     }
-    // Reset candidate selection when jobId changes
-    setSelectedCandidate(null);
-    setCandidateList([]);
-    setCurrentCandidateIndex(-1);
+    // Only reset if we don't have a persisted state for THIS jobId
+    const savedCand = sessionStorage.getItem(`_nxthyre_selected_candidate_${jobId}`);
+    if (!savedCand) {
+      setSelectedCandidate(null);
+      setCandidateList([]);
+      setCurrentCandidateIndex(-1);
+    }
   }, [jobId, fetchStages]);
 
   // Fetch full candidate details from the application endpoint or candidates endpoint

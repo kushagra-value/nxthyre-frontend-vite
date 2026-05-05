@@ -404,7 +404,22 @@ export default function JobPipelineDashboard({
   // ── Stages
   const [stages, setStages] = useState<Stage[]>([]);
   const [loadingStages, setLoadingStages] = useState(false);
-  const [activeStageSlug, setActiveStageSlug] = useState<string | null>(null);
+  const [activeStageSlug, setActiveStageSlug] = useState<string | null>(() => {
+    if (jobId) {
+      return sessionStorage.getItem(`_nxthyre_active_stage_${jobId}`);
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (jobId) {
+      if (activeStageSlug) {
+        sessionStorage.setItem(`_nxthyre_active_stage_${jobId}`, activeStageSlug);
+      } else {
+        sessionStorage.removeItem(`_nxthyre_active_stage_${jobId}`);
+      }
+    }
+  }, [activeStageSlug, jobId]);
   const [showAddStageForm, setShowAddStageForm] = useState(false);
   const [archivedCandidates, setArchivedCandidates] = useState<any[]>([]);
   const [kanbanRefreshCounters, setKanbanRefreshCounters] = useState<Record<string, number>>({});
@@ -441,9 +456,33 @@ export default function JobPipelineDashboard({
   });
 
   // ── Pagination & search
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (jobId) {
+      const saved = sessionStorage.getItem(`_nxthyre_current_page_${jobId}`);
+      return saved ? parseInt(saved, 10) : 1;
+    }
+    return 1;
+  });
   const pageSize = 10;
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (jobId) {
+      return sessionStorage.getItem(`_nxthyre_search_query_${jobId}`) || "";
+    }
+    return "";
+  });
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_current_page_${jobId}`, currentPage.toString());
+    }
+  }, [currentPage, jobId]);
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_search_query_${jobId}`, searchQuery);
+    }
+  }, [searchQuery, jobId]);
+
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
@@ -562,10 +601,33 @@ export default function JobPipelineDashboard({
 
   const [activeTab, setActiveTab] = useState<
     "pipeline" | "naukbot" | "inbound" | "linkedinbot" | "nxthyre"
-  >("pipeline");
+  >(() => {
+    if (jobId) {
+      return (sessionStorage.getItem(`_nxthyre_active_tab_${jobId}`) as any) || "pipeline";
+    }
+    return "pipeline";
+  });
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_active_tab_${jobId}`, activeTab);
+    }
+  }, [activeTab, jobId]);
+
   const [linkedinBotFilteredCount, setLinkedinBotFilteredCount] = useState<number | null>(null);
 
-  const [isKanbanView, setIsKanbanView] = useState(false);
+  const [isKanbanView, setIsKanbanView] = useState(() => {
+    if (jobId) {
+      return sessionStorage.getItem(`_nxthyre_is_kanban_${jobId}`) === "true";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_is_kanban_${jobId}`, isKanbanView.toString());
+    }
+  }, [isKanbanView, jobId]);
   const [draggedCandidateId, setDraggedCandidateId] = useState<number | null>(
     null,
   );
