@@ -54,11 +54,23 @@ const DeleteWorkspaceModal: React.FC<DeleteWorkspaceModalProps> = ({
 
                 {/* Content */}
                 <div className="p-6">
-                    <div className="flex items-start gap-4 p-4 bg-red-50 rounded-lg border border-red-100 mb-2">
-                        <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                        <div className="text-sm text-red-800">
-                            <p className="font-semibold mb-1">Warning: Irreversible Action</p>
-                            <p>Are you sure you want to delete <strong>{workspace.name}</strong>? This action will permanently remove the company and all associated data.</p>
+                    <div className="flex flex-col gap-4 mb-2">
+                        <div className="flex items-start gap-4 p-4 bg-red-50 rounded-lg border border-red-100">
+                            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                            <div className="text-sm text-red-800">
+                                <p className="font-semibold mb-1">Warning: Irreversible Action</p>
+                                <p>Are you sure you want to delete <strong>{workspace.name}</strong>? This action will permanently remove the company and all associated data.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                            <div className="text-sm text-slate-700 w-full">
+                                <p className="font-semibold mb-2">Associated data that will be deleted:</p>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li><strong>{workspace.jobs_count || 0}</strong> job roles</li>
+                                    <li><strong>{workspace.candidates_in_workspace_count || 0}</strong> candidates</li>
+                                    <li>All pipeline and interview data</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
