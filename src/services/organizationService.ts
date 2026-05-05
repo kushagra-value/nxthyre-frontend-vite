@@ -451,7 +451,7 @@ class OrganizationService {
     }
   }
 
-  async updateWorkspace(workspaceId: number, data: { name?: string; status?: string }): Promise<MyWorkspace> {
+  async updateWorkspace(workspaceId: number, data: { name?: string; status?: string; company_data?: { website?: string; description?: string; logo?: string; } }): Promise<MyWorkspace> {
     try {
       const response = await apiClient.patch(
         `/organization/workspaces/${workspaceId}/`,
@@ -461,6 +461,16 @@ class OrganizationService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.detail || error.response?.data?.error || "Failed to update workspace"
+      );
+    }
+  }
+
+  async deleteWorkspace(workspaceId: number): Promise<void> {
+    try {
+      await apiClient.delete(`/organization/workspaces/${workspaceId}/`);
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to delete workspace"
       );
     }
   }
