@@ -219,6 +219,43 @@ export interface JobNote {
   updated_at: string;
 }
 
+export interface JobTimelineEvent {
+  id: string;
+  date: string;
+  title: string;
+  description: string | null;
+  event_type: "NOTE_ADDED" | "STAGE_MOVED" | "CANDIDATE_SHORTLISTED" | "CANDIDATE_HIRED" | string;
+  created_by: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  candidate?: {
+    id: string;
+    name: string;
+  } | null;
+}
+
+export interface JobTimelineSummary {
+  total_activities: number;
+  notes: number;
+  shortlisted: number;
+  hired: number;
+}
+
+export interface JobTimelineResponse {
+  success: boolean;
+  data: {
+    summary: JobTimelineSummary;
+    timeline: JobTimelineEvent[];
+    pagination: {
+      page: number;
+      limit: number;
+      has_more: boolean;
+    };
+  };
+}
+
 class JobPostService {
   private getDefaultStatsCount(): JobsStatsCount {
     return {
@@ -787,6 +824,22 @@ class JobPostService {
       return response.data?.designations || [];
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch designation list");
+    }
+  }
+
+  async getJobTimeline(jobId: number, tab: string = "notes", page: number = 1, limit: number = 10): Promise<JobTimelineResponse> {
+    try {
+      const response = await apiClient.get(`/jobs/roles/timelines/`, {
+        params: {
+          job_id: jobId,
+          tab,
+          page,
+          limit,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch job timeline");
     }
   }
 }

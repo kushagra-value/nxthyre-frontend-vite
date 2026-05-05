@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X, Trash2, Loader2, MessageSquare, ChevronUp, ChevronDown } from "lucide-react";
-import { jobPostService, JobNote } from "../../../services/jobPostService";
+import { X, Trash2, Loader2, MessageSquare } from "lucide-react";
+import { jobPostService, JobTimelineEvent, JobTimelineSummary } from "../../../services/jobPostService";
 import { showToast } from "../../../utils/toast";
 
 const NotesIcon = () => (
@@ -28,59 +28,6 @@ const HiredIcon = () => (
     </svg>
 );
 
-// ── Dummy data ──
-
-const DUMMY_NOTES = [
-    { id: 101, content: "Immediate notice period extended to 45 days", created_by_name: "Sana", created_at: "2026-01-22T10:30:00Z" },
-    { id: 102, content: "Budget is increased upto 25 LPA", created_by_name: "Sana", created_at: "2026-01-08T14:00:00Z" },
-    { id: 103, content: "Specific candidates from Pharma industry add on plus", created_by_name: "Sana", created_at: "2026-01-04T09:15:00Z" },
-    { id: 104, content: "2 Position are required as of now", created_by_name: "Sana", created_at: "2025-12-21T11:00:00Z" },
-    { id: 105, content: "Client prefers candidates with React + Node.js stack", created_by_name: "Ravi", created_at: "2025-12-15T16:00:00Z" },
-];
-
-interface ShortlistGroup {
-    id: number;
-    summary: string;
-    count: number;
-    date: string;
-    people: { name: string; time: string }[];
-}
-
-const DUMMY_SHORTLISTED: ShortlistGroup[] = [
-    {
-        id: 201, summary: "Gopikrishnan B and 9 more people moved to Shortlist stage", count: 10, date: "2026-01-20T05:45:00Z",
-        people: [
-            { name: "Gopikrishnan B", time: "5:45 AM" }, { name: "Priya Sharma", time: "5:45 AM" },
-            { name: "Ankit Verma", time: "5:44 AM" }, { name: "Meera Nair", time: "5:44 AM" },
-            { name: "Rohit Kumar", time: "5:43 AM" }, { name: "Sneha Patel", time: "5:43 AM" },
-            { name: "Vikram Singh", time: "5:42 AM" }, { name: "Deepa Iyer", time: "5:42 AM" },
-            { name: "Arjun Das", time: "5:41 AM" }, { name: "Kavita Rao", time: "5:41 AM" },
-        ],
-    },
-    {
-        id: 202, summary: "Shikha and 2 more people moved to Shortlist stage", count: 3, date: "2026-01-18T10:30:00Z",
-        people: [
-            { name: "Shikha Gupta", time: "10:30 AM" }, { name: "Amit Joshi", time: "10:29 AM" },
-            { name: "Neha Kapoor", time: "10:28 AM" },
-        ],
-    },
-];
-
-interface HiredEntry {
-    id: number;
-    summary: string;
-    date: string;
-    people: { name: string; role: string; company: string; time: string }[];
-}
-
-const DUMMY_HIRED: HiredEntry[] = [
-    {
-        id: 301, summary: "Hendric Ferguson hired for Software Engineer in Jupiter", date: "2026-01-15T14:00:00Z",
-        people: [{ name: "Hendric Ferguson", role: "Software Engineer", company: "Jupiter", time: "2:00 PM" }],
-    },
-];
-
-// ── Component ──
 
 interface JobTimelineDrawerProps {
     isOpen: boolean;
@@ -91,14 +38,53 @@ interface JobTimelineDrawerProps {
 
 const JobTimelineDrawer: React.FC<JobTimelineDrawerProps> = ({ isOpen, onClose, jobId }) => {
     const [activeTab, setActiveTab] = useState<"notes" | "shortlisted" | "hired">("notes");
-    const [notes, setNotes] = useState<JobNote[]>([]);
+    const [events, setEvents] = useState<JobTimelineEvent[]>([]);
+    const [summary, setSummary] = useState<JobTimelineSummary>({ total_activities: 0, notes: 0, shortlisted: 0, hired: 0 });
     const [isLoading, setIsLoading] = useState(false);
-    const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    
     const drawerRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const isLoadingRef = useRef(false);
 
     useEffect(() => {
-        if (isOpen && jobId) { fetchNotes(); } else { setNotes([]); setActiveTab("notes"); setExpandedIds(new Set()); }
-    }, [isOpen, jobId]);
+        isLoadingRef.current = isLoading;
+    }, [isLoading]);
+
+    const fetchTimeline = async (pageNum: number, currentTab: string, append: boolean = false) => {
+        if (!jobId) return;
+        setIsLoading(true);
+        try {
+            const res = await jobPostService.getJobTimeline(jobId, currentTab, pageNum, 10);
+            if (res.success && res.data) {
+                setSummary(res.data.summary);
+                setEvents(prev => append ? [...prev, ...res.data.timeline] : res.data.timeline);
+                setHasMore(res.data.pagination.has_more);
+                setPage(pageNum);
+            }
+        } catch (error) {
+            console.error("Failed to fetch timeline", error);
+            showToast.error("Failed to load timeline events.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isOpen && jobId) {
+            setEvents([]);
+            setPage(1);
+            setHasMore(false);
+            fetchTimeline(1, activeTab, false);
+        } else {
+            setEvents([]);
+            setActiveTab("notes");
+            setSummary({ total_activities: 0, notes: 0, shortlisted: 0, hired: 0 });
+            setPage(1);
+            setHasMore(false);
+        }
+    }, [isOpen, jobId, activeTab]);
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -106,50 +92,33 @@ const JobTimelineDrawer: React.FC<JobTimelineDrawerProps> = ({ isOpen, onClose, 
         return () => document.removeEventListener("keydown", handler);
     }, [isOpen, onClose]);
 
-    const fetchNotes = async () => {
-        setIsLoading(true);
-        try {
-            const data = await jobPostService.getJobNotes(jobId);
-            setNotes(data && data.length > 0 ? data : []);
-        } catch { /* fallback to empty */ } finally { setIsLoading(false); }
-    };
-
-    // Use real notes if available, else dummy
-    const displayNotes = notes.length > 0 ? notes.map(n => ({
-        id: n.id, content: n.content, author: n.created_by_name || "User", date: n.created_at,
-    })) : DUMMY_NOTES.map(n => ({
-        id: n.id, content: n.content, author: n.created_by_name, date: n.created_at,
-    }));
-
-    const handleDeleteNote = async (noteId: number) => {
-        // Only delete real notes
-        if (notes.find(n => n.id === noteId)) {
-            try {
-                await jobPostService.deleteJobNote(jobId, noteId);
-                setNotes(notes.filter(n => n.id !== noteId));
-                showToast.success("Note deleted");
-            } catch { showToast.error("Failed to delete note"); }
-        } else {
-            showToast.success("Note deleted");
+    const handleScroll = () => {
+        if (!scrollContainerRef.current || isLoadingRef.current || !hasMore) return;
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+        if (scrollHeight - scrollTop - clientHeight < 50) {
+            fetchTimeline(page + 1, activeTab, true);
         }
     };
 
-    const toggleExpand = (id: number) => {
-        setExpandedIds(prev => {
-            const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
-            return next;
-        });
+    const handleDeleteNote = async (eventId: string) => {
+        try {
+            // Extract numeric ID if prefixed, or just parse it
+            const numericId = parseInt(eventId.replace(/\D/g, ''), 10) || parseInt(eventId, 10);
+            await jobPostService.deleteJobNote(jobId, numericId);
+            setEvents(events.filter(e => e.id !== eventId));
+            setSummary(prev => ({ ...prev, total_activities: Math.max(0, prev.total_activities - 1), notes: Math.max(0, prev.notes - 1) }));
+            showToast.success("Note deleted");
+        } catch { 
+            showToast.error("Failed to delete note"); 
+        }
     };
 
     const formatDate = (d: string) => new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
-    const totalActivities = displayNotes.length + DUMMY_SHORTLISTED.length + DUMMY_HIRED.length;
-
     const tabs = [
-        { key: "notes" as const, label: "Notes", count: displayNotes.length, icon: <NotesIcon /> },
-        { key: "shortlisted" as const, label: "Shortlisted", count: DUMMY_SHORTLISTED.reduce((a, g) => a + g.count, 0), icon: <ShortlistedIcon /> },
-        { key: "hired" as const, label: "Hired", count: DUMMY_HIRED.length, icon: <HiredIcon /> },
+        { key: "notes" as const, label: "Notes", count: summary.notes, icon: <NotesIcon /> },
+        { key: "shortlisted" as const, label: "Shortlisted", count: summary.shortlisted, icon: <ShortlistedIcon /> },
+        { key: "hired" as const, label: "Hired", count: summary.hired, icon: <HiredIcon /> },
     ];
 
     if (!isOpen) return null;
@@ -164,7 +133,7 @@ const JobTimelineDrawer: React.FC<JobTimelineDrawerProps> = ({ isOpen, onClose, 
                     <div className="flex items-start justify-between">
                         <div>
                             <h2 className="text-[18px] font-semibold text-[#1C1C1E]">Timeline</h2>
-                            <p className="text-[13px] text-[#8E8E93] mt-0.5">{totalActivities} total activities</p>
+                            <p className="text-[13px] text-[#8E8E93] mt-0.5">{summary.total_activities} total activities</p>
                         </div>
                         <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E5E7EB] text-[#8E8E93] hover:text-[#1C1C1E] hover:bg-[#F9FAFB] transition-all">
                             <X className="w-4 h-4" />
@@ -187,143 +156,91 @@ const JobTimelineDrawer: React.FC<JobTimelineDrawerProps> = ({ isOpen, onClose, 
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    {isLoading ? (
-                        <div className="flex items-center justify-center p-12 text-[#AEAEB2]"><Loader2 className="w-6 h-6 animate-spin" /></div>
-                    ) : (
-                        <div className="px-6 py-4">
-                            <p className="text-[11px] font-semibold uppercase text-[#8E8E93] tracking-wider mb-4">
-                                {activeTab === "notes" ? "NOTES" : activeTab === "shortlisted" ? "SHORTLISTED" : "HIRED"}
-                            </p>
+                <div 
+                    className="flex-1 overflow-y-auto custom-scrollbar" 
+                    ref={scrollContainerRef}
+                    onScroll={handleScroll}
+                >
+                    <div className="px-6 py-4">
+                        <p className="text-[11px] font-semibold uppercase text-[#8E8E93] tracking-wider mb-4">
+                            {activeTab === "notes" ? "NOTES" : activeTab === "shortlisted" ? "SHORTLISTED" : "HIRED"}
+                        </p>
 
-                            {/* ── NOTES TAB ── */}
-                            {activeTab === "notes" && (
-                                displayNotes.length === 0 ? (
-                                    <EmptyState text="No notes yet" sub="Add notes to track important updates for this job." />
-                                ) : (
-                                    <div className="flex flex-col">
-                                        {displayNotes.map((note, i) => (
-                                            <div key={note.id}>
-                                                <div className="py-4 group">
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-[13px] font-medium text-[#0F47F2] mb-1.5">{formatDate(note.date)}</p>
-                                                            <p className="text-[15px] font-medium text-[#1C1C1E] leading-snug mb-1">{note.content}</p>
-                                                            <p className="text-[12px] text-[#AEAEB2]">{note.author} added this note</p>
+                        {events.length === 0 && !isLoading ? (
+                            <EmptyState 
+                                text={`No ${activeTab} activities`} 
+                                sub={activeTab === "notes" ? "Add notes to track important updates for this job." : `${activeTab} candidates will appear here.`} 
+                            />
+                        ) : (
+                            <div className="flex flex-col">
+                                {events.map((event, i) => {
+                                    const isNote = event.event_type === "NOTE_ADDED";
+                                    const isShortlist = event.event_type === "CANDIDATE_SHORTLISTED" || activeTab === "shortlisted";
+                                    const isHired = event.event_type === "CANDIDATE_HIRED" || activeTab === "hired";
+                                    
+                                    let Icon = NotesIcon;
+                                    let iconBg = "bg-[#F3F5F7]";
+                                    let iconColor = "text-[#6B7280]";
+                                    
+                                    if (isShortlist) {
+                                        Icon = ShortlistedIcon;
+                                        iconBg = "bg-[#EBFFEE]";
+                                        iconColor = "text-[#14AE5C]";
+                                    } else if (isHired) {
+                                        Icon = HiredIcon;
+                                        iconBg = "bg-[#E7EDFF]";
+                                        iconColor = "text-[#0F47F2]";
+                                    }
+
+                                    return (
+                                        <div key={event.id}>
+                                            <div className="py-4 group">
+                                                <div className="flex items-start gap-3">
+                                                    {activeTab !== "notes" && (
+                                                        <div className={`w-8 h-8 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center shrink-0 mt-0.5`}>
+                                                            <Icon />
                                                         </div>
-                                                        <button onClick={() => handleDeleteNote(note.id)} className="p-2 text-[#D1D1D6] hover:text-[#DC2626] hover:bg-[#FEE2E2] rounded-lg transition-all opacity-0 group-hover:opacity-100 ml-3 shrink-0" title="Delete note">
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        {activeTab === "notes" ? (
+                                                            <p className="text-[13px] font-medium text-[#0F47F2] mb-1.5">{formatDate(event.date)}</p>
+                                                        ) : (
+                                                            <p className="text-[10px] text-[#AEAEB2] mb-0.5">{formatDate(event.date)}</p>
+                                                        )}
+                                                        <p className="text-[15px] font-medium text-[#1C1C1E] leading-snug mb-1">{event.title}</p>
+                                                        {event.description && (
+                                                            <p className={`text-[12px] ${activeTab === "notes" ? "text-[#1C1C1E] font-medium mb-1" : "text-[#AEAEB2]"}`}>
+                                                                {event.description}
+                                                            </p>
+                                                        )}
+                                                        {activeTab === "notes" && event.created_by?.name && (
+                                                            <p className="text-[12px] text-[#AEAEB2]">{event.created_by.name} added this note</p>
+                                                        )}
+                                                    </div>
+                                                    {isNote && (
+                                                        <button 
+                                                            onClick={() => handleDeleteNote(event.id)} 
+                                                            className="p-2 text-[#D1D1D6] hover:text-[#DC2626] hover:bg-[#FEE2E2] rounded-lg transition-all opacity-0 group-hover:opacity-100 ml-3 shrink-0" 
+                                                            title="Delete note"
+                                                        >
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
-                                                    </div>
+                                                    )}
                                                 </div>
-                                                {i < displayNotes.length - 1 && <div className="h-px bg-[#F0F0F0]" />}
                                             </div>
-                                        ))}
+                                            {i < events.length - 1 && <div className="h-px bg-[#F0F0F0]" />}
+                                        </div>
+                                    );
+                                })}
+                                
+                                {isLoading && (
+                                    <div className="flex items-center justify-center p-4 text-[#AEAEB2]">
+                                        <Loader2 className="w-6 h-6 animate-spin" />
                                     </div>
-                                )
-                            )}
-
-                            {/* ── SHORTLISTED TAB ── */}
-                            {activeTab === "shortlisted" && (
-                                DUMMY_SHORTLISTED.length === 0 ? (
-                                    <EmptyState text="No shortlisted activities" sub="Shortlisted candidates will appear here." />
-                                ) : (
-                                    <div className="flex flex-col">
-                                        {DUMMY_SHORTLISTED.map((group, i) => {
-                                            const isExpanded = expandedIds.has(group.id);
-                                            return (
-                                                <div key={group.id}>
-                                                    <div className="py-4">
-                                                        <div className="flex items-start gap-3">
-                                                            <div className="w-8 h-8 rounded-lg bg-[#EBFFEE] flex items-center justify-center shrink-0 mt-0.5">
-                                                                <ShortlistedIcon />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-[15px] font-medium text-[#1C1C1E] leading-snug mb-1">{group.summary}</p>
-                                                                <button onClick={() => toggleExpand(group.id)} className="flex items-center gap-1 text-[13px] font-medium text-[#14AE5C] hover:text-[#0D8A44] transition-colors">
-                                                                    {isExpanded ? "Hide" : "View Shortlist"}
-                                                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                                                                </button>
-                                                            </div>
-                                                            <span className="shrink-0 w-7 h-7 rounded-full bg-[#EBFFEE] text-[#14AE5C] text-[12px] font-bold flex items-center justify-center">{group.count}</span>
-                                                        </div>
-
-                                                        {/* Expanded people list */}
-                                                        {isExpanded && (
-                                                            <div className="ml-11 mt-3 border-l-2 border-[#E5E7EB] pl-4 flex flex-col gap-3">
-                                                                {group.people.map((p, pi) => (
-                                                                    <div key={pi} className="flex items-start gap-3">
-                                                                        <div className="w-8 h-8 rounded-lg bg-[#EBFFEE] flex items-center justify-center shrink-0">
-                                                                            <ShortlistedIcon />
-                                                                        </div>
-                                                                        <div>
-                                                                            <p className="text-[10px] text-[#AEAEB2] mb-0.5">{p.time}</p>
-                                                                            <p className="text-[14px] font-semibold text-[#1C1C1E]">{p.name}</p>
-                                                                            <p className="text-[12px] text-[#14AE5C]">Shortlisted · {p.time}</p>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    {i < DUMMY_SHORTLISTED.length - 1 && <div className="h-px bg-[#F0F0F0]" />}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )
-                            )}
-
-                            {/* ── HIRED TAB ── */}
-                            {activeTab === "hired" && (
-                                DUMMY_HIRED.length === 0 ? (
-                                    <EmptyState text="No hired activities" sub="Hired candidates will appear here." />
-                                ) : (
-                                    <div className="flex flex-col">
-                                        {DUMMY_HIRED.map((entry, i) => {
-                                            const isExpanded = expandedIds.has(entry.id);
-                                            return (
-                                                <div key={entry.id}>
-                                                    <div className="py-4">
-                                                        <div className="flex items-start gap-3">
-                                                            <div className="w-8 h-8 rounded-lg bg-[#E7EDFF] flex items-center justify-center shrink-0 mt-0.5">
-                                                                <HiredIcon />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-[15px] font-medium text-[#1C1C1E] leading-snug mb-1">{entry.summary}</p>
-                                                                <button onClick={() => toggleExpand(entry.id)} className="flex items-center gap-1 text-[13px] font-medium text-[#14AE5C] hover:text-[#0D8A44] transition-colors">
-                                                                    {isExpanded ? "Hide" : "View"}
-                                                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
-                                                        {isExpanded && (
-                                                            <div className="ml-11 mt-3 border-l-2 border-[#E5E7EB] pl-4 flex flex-col gap-3">
-                                                                {entry.people.map((p, pi) => (
-                                                                    <div key={pi} className="flex items-start gap-3">
-                                                                        <div className="w-8 h-8 rounded-lg bg-[#E7EDFF] flex items-center justify-center shrink-0">
-                                                                            <HiredIcon />
-                                                                        </div>
-                                                                        <div>
-                                                                            <p className="text-[10px] text-[#AEAEB2] mb-0.5">{p.time}</p>
-                                                                            <p className="text-[14px] font-semibold text-[#1C1C1E]">{p.name}</p>
-                                                                            <p className="text-[12px] text-[#0F47F2]">{p.role} at {p.company}</p>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    {i < DUMMY_HIRED.length - 1 && <div className="h-px bg-[#F0F0F0]" />}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )
-                            )}
-                        </div>
-                    )}
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
             <style>{`@keyframes slideInRight{from{transform:translateX(100%)}to{transform:translateX(0)}}`}</style>

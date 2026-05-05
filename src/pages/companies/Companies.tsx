@@ -38,6 +38,8 @@ import { showToast } from "../../utils/toast";
 import CompanyInfoDrawer from "./components/CompanyInfoDrawer";
 import JobListing from "./components/JobListing";
 import JobPipeline from "./components/JobPipeline";
+import EditWorkspaceModal from "./components/EditWorkspaceModal";
+import DeleteWorkspaceModal from "./components/DeleteWorkspaceModal";
 import {
     companyStatCards,
     companyTableRows,
@@ -157,6 +159,9 @@ export default function Companies() {
     const [showCreateJobRole, setShowCreateJobRole] = useState(false);
     const [showEditJobRole, setShowEditJobRole] = useState(false);
     const [editingJobId, setEditingJobId] = useState<number | null>(null);
+
+    const [editModalWorkspace, setEditModalWorkspace] = useState<MyWorkspace | null>(null);
+    const [deleteModalWorkspace, setDeleteModalWorkspace] = useState<MyWorkspace | null>(null);
 
     const [infoWorkspace, setInfoWorkspace] = useState<MyWorkspace | null>(null);
     const [companyResearchData, setCompanyResearchData] = useState<CompanyResearchData | null>(null);
@@ -1075,8 +1080,8 @@ export default function Companies() {
                                                                         style={{ top: menuPos.top, left: menuPos.left }}
                                                                     >
                                                                         <button onClick={() => { setMenuOpenId(null); const match = workspaces.find(w => w.id === row.workspaceId); if (match) setInfoWorkspace(match); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> View Details</button>
-                                                                        <button onClick={() => { setMenuOpenId(null); showToast.success("Edit coming soon"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit</button>
-                                                                        <button onClick={() => { setMenuOpenId(null); showToast.success("Delete coming soon"); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Delete</button>
+                                                                        <button onClick={() => { setMenuOpenId(null); const match = workspaces.find(w => w.id === row.workspaceId); if (match) setEditModalWorkspace(match); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit</button>
+                                                                        <button onClick={() => { setMenuOpenId(null); const match = workspaces.find(w => w.id === row.workspaceId); if (match) setDeleteModalWorkspace(match); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Delete</button>
                                                                         <div className="h-[1px] bg-gray-100 my-1"></div>
                                                                         <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Active"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Active</button>
                                                                         <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Paused"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Pause</button>
@@ -1157,6 +1162,20 @@ export default function Companies() {
             <PendingRequestsModal
                 isOpen={showPendingModal}
                 onClose={() => setShowPendingModal(false)}
+            />
+
+            <EditWorkspaceModal
+                isOpen={!!editModalWorkspace}
+                onClose={() => setEditModalWorkspace(null)}
+                onSuccess={() => fetchWorkspaces()}
+                workspace={editModalWorkspace}
+            />
+
+            <DeleteWorkspaceModal
+                isOpen={!!deleteModalWorkspace}
+                onClose={() => setDeleteModalWorkspace(null)}
+                onSuccess={() => fetchWorkspaces()}
+                workspace={deleteModalWorkspace}
             />
 
             <CompanyInfoDrawer
