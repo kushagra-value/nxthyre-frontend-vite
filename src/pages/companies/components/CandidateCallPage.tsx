@@ -1811,12 +1811,12 @@ export default function CandidateCallPage() {
             <div className="p-5">
               <div className="flex items-center justify-between mb-4">
                 <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest">SKILL ASSESSMENT</h5>
-                <div className="flex items-center gap-1.5">
+                {/* <div className="flex items-center gap-1.5">
                   <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 rounded-full" style={{ width: "20%" }}></div>
                   </div>
                   <span className="text-xs text-slate-400 font-medium">1/5</span>
-                </div>
+                </div> */}
               </div>
               <div className="flex flex-col gap-3 text-xs">
                 {(() => {
