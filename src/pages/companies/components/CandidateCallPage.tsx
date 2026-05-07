@@ -562,8 +562,6 @@ export default function CandidateCallPage() {
       }
       setCallState("completed");
       setIsPaused(true);
-      // Auto-save when call ends
-      setTimeout(() => handleSaveNotes(true), 500);
     } catch (err) {
       console.error("Failed to end call:", err);
       // Still mark as completed locally
@@ -676,11 +674,30 @@ export default function CandidateCallPage() {
     };
   }, []);
 
+  const lastSavedDataRef = useRef<string>("");
   const callUuidRef = useRef<string | null>(initialCallUuid);
   const isSavingRef = useRef(false);
 
   const handleSaveNotes = useCallback(async (isSilent = false) => {
     if (!candidate || isSavingRef.current) return;
+
+    // Compare current state with last saved to avoid redundant saves
+    const currentData = JSON.stringify({
+      notes,
+      activeTags,
+      checklist,
+      skillsChecklist,
+      roleQuestionsData: roleQuestions.reduce((acc, q) => {
+        acc[q.id] = q;
+        return acc;
+      }, {} as Record<number, any>)
+    });
+
+    if (currentData === lastSavedDataRef.current && callUuidRef.current) {
+      console.log("No changes detected, skipping save.");
+      return;
+    }
+
     if (!isSilent) setIsSaving(true);
     isSavingRef.current = true;
     
@@ -707,6 +724,7 @@ export default function CandidateCallPage() {
       if (callLogRes.call_uuid) {
         callUuidRef.current = callLogRes.call_uuid;
         setCallUuid(callLogRes.call_uuid);
+        lastSavedDataRef.current = currentData; // Update last saved state
       }
       
       if (!isSilent) showToast.success("Notes and checklist saved!");
@@ -728,16 +746,6 @@ export default function CandidateCallPage() {
     isManual,
     manualCallConnected
   ]);
-
-  // Debounced auto-save when interaction data changes
-  useEffect(() => {
-    if (!candidate) return;
-    const timer = setTimeout(() => {
-      // Only auto-save if something has actually changed or we are in manual mode initializing
-      handleSaveNotes(true);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [notes, activeTags, checklist, skillsChecklist, candidate, handleSaveNotes]);
 
   const toggleTag = (tag: string) => {
     setActiveTags((prev) => {
@@ -812,8 +820,7 @@ export default function CandidateCallPage() {
 
         {/* Back button */}
         <button
-          onClick={async () => {
-            await handleSaveNotes(true);
+          onClick={() => {
             navigate(-1);
           }}
           className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2 z-10"
@@ -1576,7 +1583,6 @@ export default function CandidateCallPage() {
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    onBlur={() => handleSaveNotes(true)}
                     placeholder="Add key points here during the call"
                     className="w-full h-24 bg-white border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:outline-none rounded-xl p-4 text-sm transition-all resize-none shadow-sm"
                   />
