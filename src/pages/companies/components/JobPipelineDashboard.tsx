@@ -2186,11 +2186,11 @@ export default function JobPipelineDashboard({
               label: "LinkedIn Bot",
               count: linkedinBotFilteredCount ?? jobDetails?.linkedin_bot_candidates_count ?? 0,
             },
-            {
-              key: "nxthyre" as const,
-              label: "Nxthyre",
-              count: jobDetails?.candidates_count ?? 0,
-            },
+            // {
+            //   key: "nxthyre" as const,
+            //   label: "Nxthyre",
+            //   count: jobDetails?.candidates_count ?? 0,
+            // },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -3418,7 +3418,7 @@ export default function JobPipelineDashboard({
       {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
       {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} onFilterCountChange={setLinkedinBotFilteredCount} />}
       {activeTab === "inbound" && <InboundTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
-      {activeTab === "nxthyre" && <NxthyreTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
+      {/* {activeTab === "nxthyre" && <NxthyreTab jobId={jobId} onSelectCandidate={onSelectCandidate} />} */}
 
       {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal
