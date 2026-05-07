@@ -54,81 +54,7 @@ const getIconForType = (type: string) => {
   return { icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF' };
 };
 
-/** Build grouped summaries from flat activities (fallback). */
-function buildGroupedFromFlat(activities: DailyActivityItemAPI[]): DailyActivityGroupedItem[] {
-  const groups: Record<string, DailyActivityItemAPI[]> = {};
-  activities.forEach(a => {
-    const key = a.type;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(a);
-  });
 
-  const labelMap: Record<string, (items: DailyActivityItemAPI[]) => string> = {
-    call: (items) => items.length === 1 ? `Called ${items[0].title.replace('Called ', '')}` : `Called ${items[0].title.replace('Called ', '')} and ${items.length - 1} others`,
-    'call-cancel': (items) => items.length === 1 ? items[0].title : `${items[0].title} and ${items.length - 1} others`,
-    'follow-up': (items) => {
-      const name = items[0].title.replace('Follow-up — ', '');
-      return items.length === 1 ? `Follow-up with ${name}` : `${name} and ${items.length - 1} more people followed up`;
-    },
-    shortlist: (items) => {
-      const name = items[0].title.replace(' shortlisted', '');
-      return items.length === 1 ? `${name} moved to Shortlist stage` : `${name} and ${items.length - 1} more people moved to Shortlist stage`;
-    },
-    hired: (items) => {
-      const name = items[0].title;
-      return items.length === 1 ? name : `${name} and ${items.length - 1} others`;
-    },
-  };
-
-  const actionMap: Record<string, string> = {
-    call: 'View call log',
-    'call-cancel': 'View call log',
-    'follow-up': 'View Follow-ups',
-    shortlist: 'View Shortlist',
-    hired: 'View',
-  };
-
-  return Object.entries(groups).map(([type, items]) => {
-    const { color, bg } = getIconForType(type);
-    const buildLabel = labelMap[type] || ((arr: DailyActivityItemAPI[]) => `${arr.length} ${type} activities`);
-    return {
-      id: `group-${type}`,
-      type,
-      icon_type: type,
-      title: buildLabel(items),
-      action_label: actionMap[type] || 'View',
-      action_type: 'view',
-      count: items.length,
-      category_color: color,
-      category_bg: bg,
-    };
-  });
-}
-
-/** Build detail items from flat activities (fallback). */
-function buildDetailsFromFlat(activities: DailyActivityItemAPI[], typeFilter: string[]): DailyActivityDetailItem[] {
-  return activities
-    .filter(a => typeFilter.includes(a.type))
-    .map(a => {
-      const timePart = a.time?.split('·').pop()?.trim() || a.time || '';
-      const namePart = a.title.replace('Called ', '').replace('Follow-up — ', '').replace(' shortlisted', '');
-      let actionLabel: string | undefined;
-      if (a.type === 'call') actionLabel = 'View Call Note';
-      if (a.type === 'call-cancel') actionLabel = 'Call Back';
-      return {
-        id: a.id,
-        time: timePart,
-        candidate_name: namePart,
-        company_name: '',
-        job_role: '',
-        type: a.type,
-        detail_text: a.time,
-        detail_color: a.category_color,
-        action_label: actionLabel,
-        action_type: a.type === 'call' ? 'view_call_note' : a.type === 'call-cancel' ? 'call_back' : undefined,
-      };
-    });
-}
 
 /** Get all detail items for a given group type from data. */
 function getDetailsForGroupType(data: DailyActivitiesResponse, groupType: string): DailyActivityDetailItem[] {
@@ -136,14 +62,12 @@ function getDetailsForGroupType(data: DailyActivitiesResponse, groupType: string
   const matchingTab = TAB_CONFIG.find(t => t.typeMatch.includes(groupType));
   if (!matchingTab) return [];
 
-  // Try new API fields first
-  if (matchingTab.key === 'call' && data.calls?.length) return data.calls;
-  if (matchingTab.key === 'follow-up' && data.follow_ups?.length) return data.follow_ups;
-  if (matchingTab.key === 'shortlist' && data.shortlisted?.length) return data.shortlisted;
-  if (matchingTab.key === 'hired' && data.hired?.length) return data.hired;
+  if (matchingTab.key === 'call') return data.calls || [];
+  if (matchingTab.key === 'follow-up') return data.follow_ups || [];
+  if (matchingTab.key === 'shortlist') return data.shortlisted || [];
+  if (matchingTab.key === 'hired') return data.hired || [];
 
-  // Fallback from flat activities
-  return buildDetailsFromFlat(data.activities, matchingTab.typeMatch);
+  return [];
 }
 
 
@@ -163,19 +87,18 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
 
   const groupedItems = useMemo(() => {
     if (!data) return [];
-    if (data.grouped_activities && data.grouped_activities.length > 0) return data.grouped_activities;
-    return buildGroupedFromFlat(data.activities);
+    return data.grouped_activities || [];
   }, [data]);
 
   const getDetailItems = (tabKey: TabKey): DailyActivityDetailItem[] => {
     if (!data || tabKey === 'all') return [];
     const cfg = TAB_CONFIG.find(t => t.key === tabKey);
     if (!cfg) return [];
-    if (tabKey === 'call' && data.calls?.length) return data.calls;
-    if (tabKey === 'follow-up' && data.follow_ups?.length) return data.follow_ups;
-    if (tabKey === 'shortlist' && data.shortlisted?.length) return data.shortlisted;
-    if (tabKey === 'hired' && data.hired?.length) return data.hired;
-    return buildDetailsFromFlat(data.activities, cfg.typeMatch);
+    if (tabKey === 'call') return data.calls || [];
+    if (tabKey === 'follow-up') return data.follow_ups || [];
+    if (tabKey === 'shortlist') return data.shortlisted || [];
+    if (tabKey === 'hired') return data.hired || [];
+    return [];
   };
 
   if (!isOpen) return null;
@@ -317,7 +240,7 @@ function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number 
         </div>
 
         {/* Action button */}
-        {item.action_label && (
+        {item.action_label && (item.action_type !== 'view_call_note' || item.call_note) && (
           <button
             onClick={() => {
               if (item.action_type === 'view_call_note' && item.call_note) setShowNote(!showNote);
