@@ -2324,35 +2324,35 @@ export default function JobPipelineDashboard({
                 {/* Stage pills — horizontally scrollable, shrinks to give room to the action buttons */}
                 <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
                   <div className="flex items-center gap-2 flex-nowrap">
-                  <button
-                    onClick={() => setActiveStageSlug(null)}
-                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
-                      ? "bg-[#0F47F2] text-white"
-                      : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
-                      }`}
-                  >
-                    All ({totalPipelineCandidates})
-                  </button>
+                    <button
+                      onClick={() => setActiveStageSlug(null)}
+                      className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
+                        ? "bg-[#0F47F2] text-white"
+                        : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                        }`}
+                    >
+                      All ({totalPipelineCandidates})
+                    </button>
 
-                  {loadingStages
-                    ? Array.from({ length: 5 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex-shrink-0 w-28 h-8 bg-gray-200 rounded-full animate-pulse"
-                      />
-                    ))
-                    : stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).map((stage) => (
-                      <button
-                        key={stage.id}
-                        onClick={() => setActiveStageSlug(stage.slug)}
-                        className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
-                          ? "bg-[#0F47F2] text-white"
-                          : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
-                          }`}
-                      >
-                        {stage.name} ({stageCounts[stage.slug] !== undefined ? stageCounts[stage.slug] : stage.candidate_count})
-                      </button>
-                    ))}
+                    {loadingStages
+                      ? Array.from({ length: 5 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex-shrink-0 w-28 h-8 bg-gray-200 rounded-full animate-pulse"
+                        />
+                      ))
+                      : stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).map((stage) => (
+                        <button
+                          key={stage.id}
+                          onClick={() => setActiveStageSlug(stage.slug)}
+                          className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
+                            ? "bg-[#0F47F2] text-white"
+                            : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                            }`}
+                        >
+                          {stage.name} ({stageCounts[stage.slug] !== undefined ? stageCounts[stage.slug] : stage.candidate_count})
+                        </button>
+                      ))}
                   </div>
                 </div>
 
@@ -2460,7 +2460,7 @@ export default function JobPipelineDashboard({
                     onClick={() => {
                       setIsKanbanView(true);
                     }}
-                    className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors px-3 py-2 rounded-sm border border-[#D1D1D6] text-xs"
+                    className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors px-3 py-2 rounded-lg border border-[#D1D1D6] text-xs"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <g clipPath="url(#clip0_360_5915)">
@@ -2478,7 +2478,7 @@ export default function JobPipelineDashboard({
                   </button>
                   <button
                     onClick={() => setShowAddStageForm(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-full hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-lg hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add Stage
                   </button>
