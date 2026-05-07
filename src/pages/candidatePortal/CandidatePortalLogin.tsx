@@ -166,7 +166,7 @@ const CandidatePortalLogin = () => {
             </div>
             
             {/* Dummy Skeleton representing the dashboard */}
-            <div className="p-6 space-y-6 opacity-60 pointer-events-none select-none">
+            <div className="p-6 space-y-6 opacity-40 pointer-events-none select-none">
               {/* Stepper Skeleton */}
               <div className="space-y-4 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gray-200">
                  <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
