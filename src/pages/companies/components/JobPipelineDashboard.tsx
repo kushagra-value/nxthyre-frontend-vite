@@ -372,7 +372,7 @@ const statusColor = (
 
 // ─── Hidden Stages ────────────────────────────────────────────
 // Stage names (case-insensitive) that should never appear in the pipeline UI
-const HIDDEN_STAGE_NAMES = ["invites-sent", "applied"];
+const HIDDEN_STAGE_NAMES = ["invites sent", "applied"];
 
 const isHiddenStage = (stage: Stage) =>
   HIDDEN_STAGE_NAMES.some((name) => stage.name.toLowerCase() === name);
