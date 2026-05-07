@@ -2765,7 +2765,7 @@ export default function JobPipelineDashboard({
                     ].map((h) => (
                       <th
                         key={h}
-                        className="text-left px-4 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
+                        className="text-left px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
                         onClick={() => handleSort(h as CandidateSortKey)}
                       >
                         <div className="flex items-center">
@@ -2773,7 +2773,7 @@ export default function JobPipelineDashboard({
                         </div>
                       </th>
                     ))}
-                    <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">
+                    <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-right select-none whitespace-nowrap">
                       Actions
                     </th>
                   </tr>

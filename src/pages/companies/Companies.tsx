@@ -746,48 +746,26 @@ export default function Companies() {
                                         </button>
                                     ))}
                                 </div>
-                                <button className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs" title="Feature Coming Soon" disabled>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g clip-path="url(#clip0_263_2492)">
-                                            <path d="M6.00016 14.6668H10.0002C13.3335 14.6668 14.6668 13.3335 14.6668 10.0002V6.00016C14.6668 2.66683 13.3335 1.3335 10.0002 1.3335H6.00016C2.66683 1.3335 1.3335 2.66683 1.3335 6.00016V10.0002C1.3335 13.3335 2.66683 14.6668 6.00016 14.6668Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M8 1.3335V14.6668" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M1.3335 6.3335H8.00016" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M8 9.66699H14.6667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                        </g>
-                                        <defs>
-                                            <clipPath id="clip0_263_2492">
-                                                <rect width="16" height="16" fill="white" />
-                                            </clipPath>
-                                        </defs>
-                                    </svg>
-                                    Grid View
-                                </button>
-                            </div>
-
-                            <div className="flex flex-wrap items-center justify-between bg-white p-4 border-y-[0.5px] border-[#D1D1D6]">
-                                {/* Search */}
-                                <div className="relative w-full max-w-[240px]">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search for companies"
-                                        value={searchQuery}
-                                        onChange={(e) => {
-                                            setSearchQuery(e.target.value);
-                                            setCurrentPage(1);
-                                        }}
-                                        className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow"
-                                        style={{ border: "1px solid #E5E7EB" }}
-                                    />
-                                </div>
-
                                 <div className="flex items-center gap-2 flex-wrap">
 
-
+                                    <div className="relative w-full max-w-[240px]">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search for companies"
+                                            value={searchQuery}
+                                            onChange={(e) => {
+                                                setSearchQuery(e.target.value);
+                                                setCurrentPage(1);
+                                            }}
+                                            className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow"
+                                            style={{ border: "1px solid #E5E7EB" }}
+                                        />
+                                    </div>
 
                                     {/* Date Picker Mock */}
-                                    <button
-                                        className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                                    {/* <button
+                                        className="flex items-center hidden gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
                                         title="Feature Coming Soon"
                                         disabled
                                     >
@@ -798,7 +776,7 @@ export default function Companies() {
                                             <path d="M4 5.3335H12" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         24 Feb, 2026
-                                    </button>
+                                    </button> */}
 
                                     {/* Add Company Split Button */}
                                     <div className="flex items-center relative">
@@ -840,7 +818,25 @@ export default function Companies() {
                                         )}
                                     </div>
                                 </div>
+                                {/* <button className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs" title="Feature Coming Soon" disabled>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g clip-path="url(#clip0_263_2492)">
+                                            <path d="M6.00016 14.6668H10.0002C13.3335 14.6668 14.6668 13.3335 14.6668 10.0002V6.00016C14.6668 2.66683 13.3335 1.3335 10.0002 1.3335H6.00016C2.66683 1.3335 1.3335 2.66683 1.3335 6.00016V10.0002C1.3335 13.3335 2.66683 14.6668 6.00016 14.6668Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M8 1.3335V14.6668" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M1.3335 6.3335H8.00016" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M8 9.66699H14.6667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                        </g>
+                                        <defs>
+                                            <clipPath id="clip0_263_2492">
+                                                <rect width="16" height="16" fill="white" />
+                                            </clipPath>
+                                        </defs>
+                                    </svg>
+                                    Grid View
+                                </button> */}
                             </div>
+
+                            
 
                             <section
                                 className=" overflow-hidden"
@@ -852,60 +848,60 @@ export default function Companies() {
                                         <thead className="bg-[#F9FAFB]">
                                             <tr>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider"
                                                     onClick={() => handleSort('name')}
                                                 >
                                                     <div className="flex items-center">Company <SortIcon columnKey="name" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
                                                     onClick={() => handleSort('totalJobs')}
                                                 >
                                                     <div className="flex items-center justify-center">Total Jobs <SortIcon columnKey="totalJobs" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
                                                     onClick={() => handleSort('activeJobs' as any)}
                                                 >
                                                     <div className="flex items-center justify-center">Active Jobs <SortIcon columnKey={'activeJobs' as any} /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
                                                     onClick={() => handleSort('createdDate' as any)}
                                                 >
                                                     <div className="flex items-center justify-center">Created Date <SortIcon columnKey={'createdDate' as any} /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
                                                     onClick={() => handleSort('totalCandidates')}
                                                 >
                                                     <div className="flex items-center justify-center">Candidates <SortIcon columnKey="totalCandidates" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
                                                     onClick={() => handleSort('shortlisted')}
                                                 >
                                                     <div className="flex items-center justify-center">Shortlisted <SortIcon columnKey="shortlisted" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
                                                     onClick={() => handleSort('hired')}
                                                 >
                                                     <div className="flex items-center justify-center">Hired <SortIcon columnKey="hired" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
                                                     onClick={() => handleSort('lastActiveDate')}
                                                 >
                                                     <div className="flex items-center justify-center">Last Active Date <SortIcon columnKey="lastActiveDate" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors text-center"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
                                                     onClick={() => handleSort('status')}
                                                 >
                                                     <div className="flex items-center justify-center">Status <SortIcon columnKey="status" /></div>
                                                 </th>
-                                                <th className="px-6 py-4 text-[13px] font-normal text-[#AEAEB2] text-center">
+                                                <th className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center">
                                                 </th>
 
                                             </tr>
@@ -1087,8 +1083,8 @@ export default function Companies() {
                                                                         <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Paused"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Pause</button>
                                                                         <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Inactive"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Inactive</button>
                                                                     </div>
-                                                                                                )}
-                                                                                            </td>
+                                                                )}
+                                                            </td>
                                                         </tr>
                                                     );
                                                 })
