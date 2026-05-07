@@ -676,10 +676,17 @@ export default function CandidateCallPage() {
     };
   }, []);
 
+  const callUuidRef = useRef<string | null>(initialCallUuid);
+  const isSavingRef = useRef(false);
+
   const handleSaveNotes = useCallback(async (isSilent = false) => {
-    if (!candidate) return;
+    if (!candidate || isSavingRef.current) return;
     if (!isSilent) setIsSaving(true);
-    let finalCallUuid = callUuid;
+    isSavingRef.current = true;
+    
+    // Always use the latest UUID from the ref
+    const finalCallUuid = callUuidRef.current;
+    
     try {
       const callLogRes = await saveCallLog({
         call_uuid: finalCallUuid || undefined,
@@ -697,18 +704,21 @@ export default function CandidateCallPage() {
         call_status: isManual && manualCallConnected ? "completed" : undefined
       });
       
-      finalCallUuid = callLogRes.call_uuid || finalCallUuid;
+      if (callLogRes.call_uuid) {
+        callUuidRef.current = callLogRes.call_uuid;
+        setCallUuid(callLogRes.call_uuid);
+      }
       
       if (!isSilent) showToast.success("Notes and checklist saved!");
     } catch (err) {
       console.error("Failed to save notes:", err);
       if (!isSilent) showToast.error("Failed to save notes. Please try again.");
     } finally {
+      isSavingRef.current = false;
       if (!isSilent) setIsSaving(false);
     }
   }, [
     candidate,
-    callUuid,
     notes,
     seconds,
     activeTags,
@@ -719,11 +729,19 @@ export default function CandidateCallPage() {
     manualCallConnected
   ]);
 
+  // Debounced auto-save when interaction data changes
+  useEffect(() => {
+    if (!candidate) return;
+    const timer = setTimeout(() => {
+      // Only auto-save if something has actually changed or we are in manual mode initializing
+      handleSaveNotes(true);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [notes, activeTags, checklist, skillsChecklist, candidate, handleSaveNotes]);
+
   const toggleTag = (tag: string) => {
     setActiveTags((prev) => {
       const next = prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
-      // Save immediately in background
-      setTimeout(() => handleSaveNotes(true), 100);
       return next;
     });
   };
@@ -731,7 +749,6 @@ export default function CandidateCallPage() {
   const toggleChecklist = (key: keyof typeof checklist) => {
     setChecklist((prev) => {
       const next = { ...prev, [key]: !prev[key] };
-      setTimeout(() => handleSaveNotes(true), 100);
       return next;
     });
   };
