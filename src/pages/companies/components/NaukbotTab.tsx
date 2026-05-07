@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import NViteModal from "./NViteModal";
 import NaukbotFilterPanel, { NaukbotFiltersState, EMPTY_NAUKBOT_FILTERS } from "./NaukbotFilterPanel";
 import SkillsMatchTooltip from "./SkillsMatchTooltip";
+import { getAttentionPill } from "../../../utils/candidateAttention";
 
 interface NaukbotTabProps {
   jobId: number | null;
@@ -539,14 +540,15 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                 {renderSortableHeader('Expected CTC', 'expected_ctc')}
                 {renderSortableHeader('Notice Period', 'notice_period')}
                 {renderSortableHeader('Skills Match', 'skills_match', 'center')}
+                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">Attention</th>
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
                {loading ? (
-                   <tr><td colSpan={10} className="py-12 text-center text-[#8E8E93]">Loading...</td></tr>
+                   <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">Loading...</td></tr>
                ) : candidates.length === 0 ? (
-                   <tr><td colSpan={10} className="py-12 text-center text-[#8E8E93]">No candidates found</td></tr>
+                   <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">No candidates found</td></tr>
                ) : candidates.map((item) => {
                   const scoreColor = item.ai_score >= 80 ? "#00C8B3" : item.ai_score >= 60 ? "#F59E0B" : "#EA580C";
                   const skillsColor = item.skills_match.matched >= (item.skills_match.total * 0.8) ? "#009951" : "#EA580C";
@@ -594,6 +596,26 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                         />
                       )}
                     </td>
+                    <td className="px-6 py-6 whitespace-nowrap border-transparent">
+                        <div className="flex justify-center">
+                          {(() => {
+                            const attentionTag = (item as any).status_tags?.find((t: any) => t.text);
+                            const pill = getAttentionPill(item as any, attentionTag);
+                            if (!pill) return <span className="text-xs text-[#8E8E93]">--</span>;
+                            const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
+                            const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                            return (
+                              <span
+                                className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
+                                style={{ backgroundColor: bgColor, color: textColor }}
+                                title={pill.text}
+                              >
+                                {pill.text}
+                              </span>
+                            );
+                          })()}
+                        </div>
+                     </td>
                     <td className="px-6 py-6 border-transparent">
                       <div className="flex justify-end gap-2">
                         <button 
