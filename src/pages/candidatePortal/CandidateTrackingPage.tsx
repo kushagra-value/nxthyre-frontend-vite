@@ -128,6 +128,7 @@ const CandidateTrackingPage = () => {
   
   const [jobData, setJobData] = useState<any>(null);
   const [candidateData, setCandidateData] = useState<any>(null);
+  const [applicationData, setApplicationData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -139,23 +140,44 @@ const CandidateTrackingPage = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        const promises: Promise<any>[] = [];
+
+        // Fetch candidate details
         if (candidateId) {
-          const candidateRes = await candidateService.getCandidateDetails(candidateId);
-          setCandidateData(candidateRes);
+          promises.push(
+            candidateService.getCandidateDetails(candidateId)
+              .then(res => setCandidateData(res))
+              .catch(err => console.error("Error fetching candidate:", err))
+          );
         }
+
+        // Fetch job details
         if (jobId) {
-          const jobRes = await jobPostService.getJob(parseInt(jobId));
-          setJobData(jobRes);
+          promises.push(
+            jobPostService.getJob(parseInt(jobId))
+              .then(res => setJobData(res))
+              .catch(err => console.error("Error fetching job:", err))
+          );
         }
-        // Assuming application ID fetch is handled if needed
+
+        // Fetch application details
+        if (applicationId) {
+          promises.push(
+            apiClient.get(`/jobs/applications/${applicationId}/`)
+              .then(res => setApplicationData(res.data))
+              .catch(err => console.error("Error fetching application:", err))
+          );
+        }
+
+        await Promise.all(promises);
       } catch (error) {
-        console.error("Error fetching candidate/job data", error);
+        console.error("Error fetching portal data", error);
       } finally {
         setIsLoading(false);
       }
     };
     fetchData();
-  }, [jobId, candidateId]);
+  }, [jobId, candidateId, applicationId]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,24 +207,35 @@ const CandidateTrackingPage = () => {
     );
   }
 
-  // Fallbacks using mock data if APIs return null or missing fields
-  const displayCandidate = candidateData || MOCK_CANDIDATE;
-  const cName = displayCandidate.full_name || displayCandidate.name || MOCK_CANDIDATE.name;
-  const cEmail = displayCandidate.email || MOCK_CANDIDATE.email;
-  const cPhone = displayCandidate.phone || displayCandidate.phone_number || MOCK_CANDIDATE.phone;
-  const cExp = displayCandidate.experience_years ? `${displayCandidate.experience_years} yrs exp` : MOCK_CANDIDATE.experience;
-  const cLoc = displayCandidate.location || MOCK_CANDIDATE.location;
-  const cCTC = displayCandidate.current_salary_lpa ? `₹${displayCandidate.current_salary_lpa} LPA` : MOCK_CANDIDATE.currentCTC;
-  const cNotice = displayCandidate.notice_period_summary || MOCK_CANDIDATE.noticePeriod;
-  const cLinked = displayCandidate.linkedin_url || MOCK_CANDIDATE.linkedIn;
+  // Candidate API response nests data under `candidate` key
+  const rawCandidate = candidateData?.candidate || candidateData || {};
+  const cName = rawCandidate.full_name || MOCK_CANDIDATE.name;
+  const cEmail = rawCandidate.email || rawCandidate.premium_data?.email || MOCK_CANDIDATE.email;
+  const cPhone = rawCandidate.phone || rawCandidate.premium_data?.phone || MOCK_CANDIDATE.phone;
+  const cExp = rawCandidate.total_experience != null ? `${rawCandidate.total_experience} yrs exp` : MOCK_CANDIDATE.experience;
+  const cLoc = rawCandidate.location || MOCK_CANDIDATE.location;
+  const cCurrentSalary = rawCandidate.current_salary ? `₹${rawCandidate.current_salary} LPA` : MOCK_CANDIDATE.currentCTC;
+  const cExpectedCTC = rawCandidate.expected_ctc ? `₹${rawCandidate.expected_ctc} LPA` : MOCK_CANDIDATE.expectedCTC;
+  const cNotice = rawCandidate.notice_period_days != null ? `${rawCandidate.notice_period_days} days notice` : MOCK_CANDIDATE.noticePeriod;
+  const cLinked = rawCandidate.premium_data?.linkedin_url || MOCK_CANDIDATE.linkedIn;
+  const cHeadline = rawCandidate.headline || "";
 
+  // Job API response is flat
   const displayJob = jobData || MOCK_JOB;
   const jTitle = displayJob.title || MOCK_JOB.title;
   const jCompany = displayJob.organization_details?.name || displayJob.company || MOCK_JOB.company;
-  const jLoc = displayJob.location?.join(", ") || MOCK_JOB.location;
-  const jBudget = displayJob.salary_max ? `₹${displayJob.salary_min}-${displayJob.salary_max} LPA` : MOCK_JOB.budget;
-  const jEmployment = displayJob.employment || displayJob.work_approach || MOCK_JOB.employment;
-  const jDomain = displayJob.domain || displayJob.department_name || MOCK_JOB.domain;
+  const jLoc = Array.isArray(displayJob.location) ? displayJob.location.join(", ") : (displayJob.location || MOCK_JOB.location);
+  // Salary values from API are raw numbers (e.g. 100000.00) — convert to LPA
+  const formatSalaryLPA = (val: string | number | null) => {
+    if (!val) return null;
+    const num = typeof val === "string" ? parseFloat(val) : val;
+    return (num / 100000).toFixed(1);
+  };
+  const jBudget = displayJob.salary_max
+    ? `₹${formatSalaryLPA(displayJob.salary_min)}-${formatSalaryLPA(displayJob.salary_max)} LPA`
+    : MOCK_JOB.budget;
+  const jEmployment = displayJob.work_approach || MOCK_JOB.employment;
+  const jDomain = displayJob.department_name || MOCK_JOB.domain;
   const jSkills = displayJob.skills || MOCK_JOB.skills;
 
   return (
@@ -264,7 +297,7 @@ const CandidateTrackingPage = () => {
                         {cLoc}
                       </span>
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
-                        {cCTC} CTC
+                        {cCurrentSalary} CTC
                       </span>
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
                         {cNotice}
@@ -545,11 +578,11 @@ const CandidateTrackingPage = () => {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Current CTC</label>
-                  <input type="text" defaultValue={cCTC} className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
+                  <input type="text" defaultValue={cCurrentSalary} className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Expected CTC</label>
-                  <input type="text" defaultValue={displayCandidate.expectedCTC || MOCK_CANDIDATE.expectedCTC} className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
+                  <input type="text" defaultValue={cExpectedCTC} className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Notice Period</label>
