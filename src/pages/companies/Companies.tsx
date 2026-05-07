@@ -9,26 +9,16 @@ import {
 import { jobPostService, Job, JobsApiResponse } from "../../services/jobPostService";
 import dashboardService, {
     SidebarData,
-    SidebarImmediateAction,
-    SidebarActivityGroup,
 } from "../../services/dashboardService";
 import {
     Search,
     ChevronLeft,
     ChevronRight,
-    Eye,
     Plus,
-    DownloadCloud,
-    Calendar,
     ChevronDown,
-    Star,
-    ArrowRight,
-    LayoutGrid,
     ArrowUp,
     ArrowDown,
     ArrowUpDown,
-    PlusCircle,
-    UserCheck,
     MoreHorizontal,
 } from "lucide-react";
 import CreateWorkspaceModal from "./components/CreateWorkspaceModal";
@@ -41,7 +31,6 @@ import JobPipeline from "./components/JobPipeline";
 import EditWorkspaceModal from "./components/EditWorkspaceModal";
 import DeleteWorkspaceModal from "./components/DeleteWorkspaceModal";
 import {
-    companyStatCards,
     companyTableRows,
     CompanyTableRow,
 } from "./companiesData";
@@ -54,84 +43,7 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
     Inactive: { bg: "bg-[#F3F5F7]", text: "text-[#8E8E93]" },
 };
 
-const PlayIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13.6057 6.23503C15.0203 7.00431 15.0203 8.99565 13.6057 9.76491L5.06441 14.4096C3.68957 15.1573 2 14.1842 2 12.6447V3.35525C2 1.81577 3.68957 0.842659 5.06441 1.5903L13.6057 6.23503Z" stroke="#14AE5C" />
-    </svg>
-);
 
-const TotalCompaniesIcon = () => (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" strokeOpacity="0.2" strokeWidth="0.5" />
-        <path d="M28.6667 28.6665H12" stroke="#0F47F2" strokeLinecap="round" />
-        <path d="M27.8336 28.6667V15.3333C27.8336 13.762 27.8336 12.9763 27.3455 12.4882C26.8573 12 26.0717 12 24.5002 12H22.8336C21.2622 12 20.4766 12 19.9884 12.4882C19.5955 12.8811 19.5188 13.4669 19.5039 14.5" stroke="#0F47F2" />
-        <path d="M22.8335 28.6667V17.8333C22.8335 16.262 22.8335 15.4763 22.3453 14.9882C21.8572 14.5 21.0715 14.5 19.5002 14.5H16.1668C14.5955 14.5 13.8098 14.5 13.3217 14.9882C12.8335 15.4763 12.8335 16.262 12.8335 17.8333V28.6667" stroke="#0F47F2" />
-        <path d="M17.8335 28.6665V26.1665" stroke="#0F47F2" strokeLinecap="round" />
-        <path d="M15.3335 17H20.3335" stroke="#0F47F2" strokeLinecap="round" />
-        <path d="M15.3335 19.5H20.3335" stroke="#0F47F2" strokeLinecap="round" />
-        <path d="M15.3335 22H20.3335" stroke="#0F47F2" strokeLinecap="round" />
-    </svg>
-);
-
-const ActiveCompaniesIcon = () => (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" strokeOpacity="0.2" strokeWidth="0.5" />
-        <path d="M28.6667 28.6665H12" stroke="#0F47F2" strokeLinecap="round" />
-        <path d="M27.8336 28.6667V15.3333C27.8336 13.762 27.8336 12.9763 27.3455 12.4882C26.8573 12 26.0717 12 24.5002 12H22.8336C21.2622 12 20.4766 12 19.9884 12.4882C19.5955 12.8811 19.5188 13.4669 19.5039 14.5" stroke="#0F47F2" />
-        <path d="M22.8335 28.6667V17.8333C22.8335 16.262 22.8335 15.4763 22.3453 14.9882C21.8572 14.5 21.0715 14.5 19.5002 14.5H16.1668C14.5955 14.5 13.8098 14.5 13.3217 14.9882C12.8335 15.4763 12.8335 16.262 12.8335 17.8333V28.6667" stroke="#0F47F2" />
-        <path d="M17.8335 28.6665V26.1665" stroke="#0F47F2" strokeLinecap="round" />
-        <path d="M15.3335 17H20.3335" stroke="#0F47F2" strokeLinecap="round" />
-        <path d="M15.3335 19.5H20.3335" stroke="#0F47F2" strokeLinecap="round" />
-        <path d="M15.3335 22H20.3335" stroke="#0F47F2" strokeLinecap="round" />
-        <circle cx="28" cy="12" r="2.75" fill="#14AE5C" stroke="white" strokeWidth="0.5" />
-    </svg>
-);
-
-const TotalOpenJobsIcon = () => (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" strokeOpacity="0.2" strokeWidth="0.5" />
-        <path d="M20 22.5L20 23.75" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M12.5 19.167L12.6274 21.553C12.7643 24.5645 12.8327 26.0702 13.799 26.9936C14.7654 27.917 16.2726 27.917 19.2872 27.917H20.7128C23.7274 27.917 25.2346 27.917 26.201 26.9936C27.1673 26.0702 27.2357 24.5645 27.3726 21.553L27.5 19.167" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M12.3726 18.7025C13.7887 21.3954 16.9826 22.5 19.9999 22.5C23.0173 22.5 26.2112 21.3954 27.6273 18.7025C28.3032 17.4171 27.7914 15 26.1266 15H13.8733C12.2084 15 11.6966 17.4171 12.3726 18.7025Z" stroke="#0F47F2" />
-        <path d="M23.3332 15.0002L23.2596 14.7426C22.8929 13.4592 22.7096 12.8176 22.2731 12.4505C21.8366 12.0835 21.2568 12.0835 20.0973 12.0835H19.9024C18.7428 12.0835 18.1631 12.0835 17.7266 12.4505C17.2901 12.8176 17.1068 13.4592 16.7401 14.7426L16.6665 15.0002" stroke="#0F47F2" />
-    </svg>
-);
-
-const ImmediateActionsIcon = () => (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" strokeOpacity="0.2" strokeWidth="0.5" />
-        <path d="M18.8923 28.1051L11.8952 21.108C11.2732 20.486 11.2732 19.5142 11.8952 18.8923L18.8923 11.8952C19.5142 11.2732 20.486 11.2732 21.108 11.8952L28.1051 18.8923C28.7271 19.5142 28.7271 20.486 28.1051 21.108L21.108 28.1051C20.486 28.7271 19.4754 28.7271 18.8923 28.1051Z" fill="#FFCC00" />
-        <path d="M19.0479 23.4016C19.0479 23.285 19.0867 23.1683 19.1256 23.0517C19.1645 22.9351 19.2422 22.8574 19.32 22.7796C19.3977 22.7019 19.5143 22.6241 19.6309 22.5852C19.7476 22.5464 19.8642 22.5075 20.0197 22.5075C20.1752 22.5075 20.2918 22.5464 20.4084 22.5852C20.525 22.6241 20.6416 22.7019 20.7194 22.7796C20.7971 22.8574 20.8749 22.9351 20.9137 23.0517C20.9526 23.1683 20.9915 23.285 20.9915 23.4016C20.9915 23.5182 20.9526 23.6348 20.9137 23.7514C20.8749 23.868 20.7971 23.9458 20.7194 24.0235C20.6416 24.1013 20.525 24.179 20.4084 24.2179C20.2918 24.2568 20.1752 24.2956 20.0197 24.2956C19.8642 24.2956 19.7476 24.2568 19.6309 24.2179C19.5143 24.179 19.4366 24.1013 19.32 24.0235C19.2422 23.9458 19.1645 23.868 19.1256 23.7514C19.0867 23.6348 19.0479 23.5571 19.0479 23.4016ZM20.6805 21.6134H19.2811L19.0867 15.7437H20.8749L20.6805 21.6134Z" fill="white" />
-    </svg>
-);
-
-const PauseIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g clipPath="url(#clip0_519_5988)">
-            <path d="M1.16699 3.49999C1.16699 2.40004 1.16699 1.85007 1.5087 1.50837C1.85041 1.16666 2.40038 1.16666 3.50032 1.16666C4.60027 1.16666 5.15024 1.16666 5.49195 1.50837C5.83366 1.85007 5.83366 2.40004 5.83366 3.49999V10.5C5.83366 11.5999 5.83366 12.1499 5.49195 12.4916C5.15024 12.8333 4.60027 12.8333 3.50032 12.8333C2.40038 12.8333 1.85041 12.8333 1.5087 12.4916C1.16699 12.1499 1.16699 11.5999 1.16699 10.5V3.49999Z" stroke="#4B5563" />
-            <path d="M8.16699 3.49999C8.16699 2.40004 8.16699 1.85007 8.50871 1.50837C8.85043 1.16666 9.40039 1.16666 10.5003 1.16666C11.6003 1.16666 12.1502 1.16666 12.4919 1.50837C12.8337 1.85007 12.8337 2.40004 12.8337 3.49999V10.5C12.8337 11.5999 12.8337 12.1499 12.4919 12.4916C12.1502 12.8333 11.6003 12.8333 10.5003 12.8333C9.40039 12.8333 8.85043 12.8333 8.50871 12.4916C8.16699 12.1499 8.16699 11.5999 8.16699 10.5V3.49999Z" stroke="#4B5563" />
-        </g>
-        <defs>
-            <clipPath id="clip0_519_5988">
-                <rect width="14" height="14" fill="white" />
-            </clipPath>
-        </defs>
-    </svg>
-);
-
-const StopIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g clipPath="url(#clip0_519_4750)">
-            <path d="M7.99967 14.6666C11.6816 14.6666 14.6663 11.6819 14.6663 7.99998C14.6663 4.31808 11.6816 1.33331 7.99967 1.33331C4.31778 1.33331 1.33301 4.31808 1.33301 7.99998C1.33301 11.6819 4.31778 14.6666 7.99967 14.6666Z" stroke="#8E8E93" />
-            <path d="M5.33301 7.99998C5.33301 6.74291 5.33301 6.11436 5.72353 5.72384C6.11405 5.33331 6.74261 5.33331 7.99967 5.33331C9.25674 5.33331 9.88527 5.33331 10.2758 5.72384C10.6663 6.11436 10.6663 6.74291 10.6663 7.99998C10.6663 9.25705 10.6663 9.88558 10.2758 10.2761C9.88527 10.6666 9.25674 10.6666 7.99967 10.6666C6.74261 10.6666 6.11405 10.6666 5.72353 10.2761C5.33301 9.88558 5.33301 9.25705 5.33301 7.99998Z" stroke="#8E8E93" />
-        </g>
-        <defs>
-            <clipPath id="clip0_519_4750">
-                <rect width="16" height="16" fill="white" />
-            </clipPath>
-        </defs>
-    </svg>
-);
 
 export default function Companies() {
     const { isAuthenticated } = useAuth();
@@ -197,9 +109,7 @@ export default function Companies() {
     // Sidebar API state
     const [sidebarData, setSidebarData] = useState<SidebarData | null>(null);
     const [sidebarLoading, setSidebarLoading] = useState(false);
-    const [sidebarActivityView, setSidebarActivityView] = useState('Today');
 
-    const [isActionView, setIsActionView] = useState(true);
     const [selectedWorkspace, setSelectedWorkspace] = useState<MyWorkspace | null>(null);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [allJobs, setAllJobs] = useState<Job[]>([]);
