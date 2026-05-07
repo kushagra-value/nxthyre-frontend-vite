@@ -146,22 +146,22 @@ const CandidateTrackingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-12 font-sans">
+    <div className="h-screen bg-[#F8FAFC] font-sans flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex items-center">
+      <header className="bg-white border-b border-gray-200 px-8 py-4 shrink-0 z-50">
+        <div className="max-w-7xl mx-10 flex items-center">
           <div className="flex items-center gap-2 text-blue-600 font-bold text-2xl tracking-tight">
             nxt<span className="text-gray-900">+</span>hyre
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <main className="flex-1 w-full mx-auto px-4 sm:px-8 lg:px-12 pt-6 pb-6 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
           
           {/* Left Column (Profile, Job Info, My Details) */}
-          <div className="lg:col-span-7 relative overflow-hidden rounded-xl">
-            <div className="space-y-8 pb-4">
+          <div className="lg:col-span-7 relative rounded-xl h-full flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto space-y-8 pb-4 pr-2">
               {/* Profile Card */}
               <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -368,94 +368,96 @@ const CandidateTrackingPage = () => {
           </div>
 
           {/* Right Column (Interview Journey) */}
-          <div className="lg:col-span-5 space-y-8">
-            <div className="text-xs font-bold text-gray-400 tracking-widest uppercase mb-4 px-2">Interview Journey</div>
+          <div className="lg:col-span-5 h-full flex flex-col overflow-hidden">
+            <div className="text-xs font-bold text-gray-400 tracking-widest uppercase mb-4 px-2 shrink-0">Interview Journey</div>
 
             {/* Pipeline Progress Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm sticky top-24">
-              <div className="flex justify-between items-center mb-8">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex-1 flex flex-col overflow-hidden">
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
                 <h2 className="text-base font-semibold text-gray-900">Pipeline Progress</h2>
                 <span className="text-sm text-gray-500 font-medium">Round 2 of 4</span>
               </div>
 
-              <div className="relative pl-4 md:pl-6 space-y-0 before:absolute before:inset-0 before:ml-8 md:before:ml-10 before:-translate-x-px before:h-full before:w-0.5 before:bg-gray-200">
-                {MOCK_PIPELINE.map((stage, index) => {
-                  const isCompleted = stage.status === "completed";
-                  const isNext = stage.status === "next";
-                  const isPending = stage.status === "pending";
-                  
-                  return (
-                    <div key={stage.id} className="relative flex items-start group pb-8 last:pb-0">
-                      {/* Timeline Node */}
-                      <div className={`absolute -left-4 md:-left-4 mt-1.5 w-8 h-8 rounded-full border-2 bg-white flex items-center justify-center shrink-0 z-10 
-                        ${isCompleted ? "border-green-400 text-green-500" : isNext ? "border-blue-400 border-[3px]" : "border-gray-200"}`}>
-                        {isCompleted && <CheckCircle2 className="w-5 h-5 fill-green-50 text-green-500" />}
-                        {isNext && <div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>}
-                      </div>
-
-                      <div className="ml-10 w-full">
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className={`text-base font-medium ${isPending ? 'text-gray-400' : 'text-gray-900'}`}>
-                            {stage.title}
-                          </h3>
-                          {isNext && (
-                            <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-blue-100">Next</span>
-                          )}
+              <div className="p-6 overflow-y-auto flex-1 pr-4">
+                <div className="relative pl-4 md:pl-6 space-y-0 before:absolute before:inset-0 before:ml-8 md:before:ml-10 before:-translate-x-px before:h-full before:w-0.5 before:bg-gray-200">
+                  {MOCK_PIPELINE.map((stage, index) => {
+                    const isCompleted = stage.status === "completed";
+                    const isNext = stage.status === "next";
+                    const isPending = stage.status === "pending";
+                    
+                    return (
+                      <div key={stage.id} className="relative flex items-start group pb-8 last:pb-0">
+                        {/* Timeline Node */}
+                        <div className={`absolute -left-4 md:-left-4 mt-1.5 w-8 h-8 rounded-full border-2 bg-white flex items-center justify-center shrink-0 z-10 
+                          ${isCompleted ? "border-green-400 text-green-500" : isNext ? "border-blue-400 border-[3px]" : "border-gray-200"}`}>
+                          {isCompleted && <CheckCircle2 className="w-5 h-5 fill-green-50 text-green-500" />}
+                          {isNext && <div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>}
                         </div>
 
-                        {isCompleted && (
-                          <>
-                            <p className="text-sm text-gray-500 mb-3">
-                              Completed · {stage.date} · {stage.duration} · {stage.interviewer}
-                            </p>
-                            <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 text-sm text-gray-700 flex items-start gap-2">
-                              <span className="font-semibold text-blue-900 shrink-0">{stage.noteStatus}</span>
-                              <span className="text-gray-400">—</span>
-                              <span>{stage.notes}</span>
-                            </div>
-                          </>
-                        )}
+                        <div className="ml-10 w-full">
+                          <div className="flex items-center gap-3 mb-1">
+                            <h3 className={`text-base font-medium ${isPending ? 'text-gray-400' : 'text-gray-900'}`}>
+                              {stage.title}
+                            </h3>
+                            {isNext && (
+                              <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-blue-100">Next</span>
+                            )}
+                          </div>
 
-                        {isNext && stage.details && (
-                          <>
-                            <p className="text-sm text-gray-500 mb-3">Scheduled · {stage.date}</p>
-                            <div className="bg-orange-50/50 border border-orange-100/60 rounded-xl p-5 shadow-sm">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-3">
-                                  <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
-                                    <Calendar className="w-4 h-4 text-orange-500" />
-                                    {stage.details.dateFull}
+                          {isCompleted && (
+                            <>
+                              <p className="text-sm text-gray-500 mb-3">
+                                Completed · {stage.date} · {stage.duration} · {stage.interviewer}
+                              </p>
+                              <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 text-sm text-gray-700 flex items-start gap-2">
+                                <span className="font-semibold text-blue-900 shrink-0">{stage.noteStatus}</span>
+                                <span className="text-gray-400">—</span>
+                                <span>{stage.notes}</span>
+                              </div>
+                            </>
+                          )}
+
+                          {isNext && stage.details && (
+                            <>
+                              <p className="text-sm text-gray-500 mb-3">Scheduled · {stage.date}</p>
+                              <div className="bg-orange-50/50 border border-orange-100/60 rounded-xl p-5 shadow-sm">
+                                <div className="grid grid-cols-1 gap-4">
+                                  <div className="space-y-3">
+                                    <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
+                                      <Calendar className="w-4 h-4 text-orange-500" />
+                                      {stage.details.dateFull}
+                                    </div>
+                                    <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
+                                      <Clock4 className="w-4 h-4 text-orange-500" />
+                                      {stage.details.time} <span className="text-gray-400 font-normal ml-1">({stage.details.duration})</span>
+                                    </div>
                                   </div>
-                                  <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
-                                    <Clock4 className="w-4 h-4 text-orange-500" />
-                                    {stage.details.time} <span className="text-gray-400 font-normal ml-1">({stage.details.duration})</span>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
-                                    <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-500 shrink-0">AK</div>
-                                    <span>{stage.details.interviewer} <span className="text-gray-400 font-normal ml-1">, {stage.details.interviewerRole}</span></span>
-                                  </div>
-                                  <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
-                                    <Video className="w-4 h-4 text-orange-500" />
-                                    <span>{stage.details.platform} <span className="text-gray-400 font-normal ml-1">· {stage.details.platformNotes}</span></span>
+                                  <div className="space-y-3">
+                                    <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
+                                      <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-500 shrink-0">AK</div>
+                                      <span>{stage.details.interviewer} <span className="text-gray-400 font-normal ml-1">, {stage.details.interviewerRole}</span></span>
+                                    </div>
+                                    <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
+                                      <Video className="w-4 h-4 text-orange-500" />
+                                      <span>{stage.details.platform} <span className="text-gray-400 font-normal ml-1">· {stage.details.platformNotes}</span></span>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          </>
-                        )}
+                            </>
+                          )}
 
-                        {isPending && stage.notes && (
-                          <p className="text-sm text-gray-400 mt-1">Pending — {stage.notes}</p>
-                        )}
-                        {isPending && !stage.notes && (
-                          <p className="text-sm text-gray-400 mt-1">Pending</p>
-                        )}
+                          {isPending && stage.notes && (
+                            <p className="text-sm text-gray-400 mt-1">Pending — {stage.notes}</p>
+                          )}
+                          {isPending && !stage.notes && (
+                            <p className="text-sm text-gray-400 mt-1">Pending</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
