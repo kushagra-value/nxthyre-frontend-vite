@@ -22,10 +22,10 @@ const CandidatePortalLogin = () => {
     // Auto-fill if params are present
     const appParam = searchParams.get("applicationId");
     const trackingParam = searchParams.get("trackingId");
-    
+
     if (appParam) setApplicationId(appParam);
     if (trackingParam) setTrackingKey(trackingParam);
-    
+
     // Optional: auto-submit if both are present
     // if (appParam && trackingParam) {
     //   handleAuthenticate(appParam, trackingParam);
@@ -63,7 +63,7 @@ const CandidatePortalLogin = () => {
       </div>
 
       <div className="max-w-5xl w-full flex flex-col md:flex-row gap-6 relative z-10 items-stretch">
-        
+
         {/* Left Side: Login Form */}
         <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-10 w-full md:w-1/2 flex flex-col justify-center border border-gray-100">
           <div className="flex items-center gap-3 mb-2">
@@ -144,7 +144,7 @@ const CandidatePortalLogin = () => {
 
         {/* Right Side: System Notice & Preview */}
         <div className="w-full md:w-1/2 flex flex-col gap-4">
-          
+
           {/* System Notice */}
           <div className="bg-[#EBF3FF] rounded-xl p-5 border border-blue-100 flex items-start gap-3">
             <Info className="text-blue-600 shrink-0 mt-0.5" size={20} />
@@ -159,37 +159,37 @@ const CandidatePortalLogin = () => {
           {/* Blurred Interface Preview */}
           <div className="bg-white rounded-xl border border-gray-100 flex-1 overflow-hidden relative shadow-sm h-64 md:h-auto">
             <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-10 flex items-end justify-end p-4">
-               <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 tracking-wider">
-                  <CircleDot size={10} className="text-green-500 fill-green-500" />
-                  SYS_ONLINE
-               </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 tracking-wider">
+                <CircleDot size={10} className="text-green-500 fill-green-500" />
+                SYS_ONLINE
+              </div>
             </div>
-            
+
             {/* Dummy Skeleton representing the dashboard */}
-            <div className="p-6 space-y-6 opacity-40 pointer-events-none select-none">
+            <div className="p-6 space-y-6 opacity-20 pointer-events-none select-none">
               {/* Stepper Skeleton */}
               <div className="space-y-4 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gray-200">
-                 <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white bg-blue-100 text-blue-600 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm"></div>
-                    <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-4 rounded border border-gray-100 bg-gray-50">
-                       <div className="h-3 w-24 bg-gray-200 rounded mb-2"></div>
-                       <div className="h-2 w-48 bg-gray-200 rounded"></div>
-                    </div>
-                 </div>
-                 <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white bg-gray-100 text-gray-500 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm"></div>
-                    <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-4 rounded border border-gray-100 bg-gray-50">
-                       <div className="h-3 w-32 bg-gray-200 rounded mb-2"></div>
-                       <div className="h-2 w-56 bg-gray-200 rounded"></div>
-                    </div>
-                 </div>
+                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white bg-blue-100 text-blue-600 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm"></div>
+                  <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-4 rounded border border-gray-100 bg-gray-50">
+                    <div className="h-3 w-24 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-2 w-48 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white bg-gray-100 text-gray-500 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm"></div>
+                  <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-4 rounded border border-gray-100 bg-gray-50">
+                    <div className="h-3 w-32 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-2 w-56 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
               </div>
 
               {/* Data grid skeleton */}
               <div className="border border-gray-100 rounded-lg p-4">
                 <div className="flex justify-between items-center mb-4 border-b border-gray-50 pb-2">
-                   <div className="h-3 w-32 bg-gray-200 rounded"></div>
-                   <div className="h-4 w-12 bg-gray-200 rounded-full"></div>
+                  <div className="h-3 w-32 bg-gray-200 rounded"></div>
+                  <div className="h-4 w-12 bg-gray-200 rounded-full"></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
