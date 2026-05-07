@@ -2320,11 +2320,13 @@ export default function JobPipelineDashboard({
             /* ═══════════ TABLE VIEW TOOLBAR ═══════════ */
             <>
               {/* Stage pills row */}
-              <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
-                <div className="flex items-center gap-2 flex-wrap">
+              <div className="mx-8 mt-4 flex items-center gap-3 bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
+                {/* Stage pills — horizontally scrollable, shrinks to give room to the action buttons */}
+                <div className="flex-1 min-w-0 overflow-x-auto scrollbar-none">
+                  <div className="flex items-center gap-2 flex-nowrap">
                   <button
                     onClick={() => setActiveStageSlug(null)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
+                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
                       ? "bg-[#0F47F2] text-white"
                       : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
                       }`}
@@ -2336,14 +2338,14 @@ export default function JobPipelineDashboard({
                     ? Array.from({ length: 5 }).map((_, i) => (
                       <div
                         key={i}
-                        className="w-28 h-8 bg-gray-200 rounded-full animate-pulse"
+                        className="flex-shrink-0 w-28 h-8 bg-gray-200 rounded-full animate-pulse"
                       />
                     ))
                     : stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).map((stage) => (
                       <button
                         key={stage.id}
                         onClick={() => setActiveStageSlug(stage.slug)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
+                        className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
                           ? "bg-[#0F47F2] text-white"
                           : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
                           }`}
@@ -2351,44 +2353,41 @@ export default function JobPipelineDashboard({
                         {stage.name} ({stageCounts[stage.slug] !== undefined ? stageCounts[stage.slug] : stage.candidate_count})
                       </button>
                     ))}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="mx-8 flex flex-wrap items-center justify-between bg-white p-4 border border-b-0 border-[#E5E7EB]">
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-[240px]">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-                        <input
-                          type="text"
-                          placeholder="Search for Candidates"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
-                        />
-                        {suggestions.length > 0 && (
-                          <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
-                            {suggestions.map((sug) => (
-                              <div
-                                key={sug.id}
-                                className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
-                                onClick={() => handleSuggestionSelect(sug)}
-                              >
-                                {sug.name}
-                              </div>
-                            ))}
+                <div className="flex-shrink-0 flex items-center gap-2">
+
+                  <div className="relative w-[240px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                    <input
+                      type="text"
+                      placeholder="Search for Candidates"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
+                    />
+                    {suggestions.length > 0 && (
+                      <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                        {suggestions.map((sug) => (
+                          <div
+                            key={sug.id}
+                            className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
+                            onClick={() => handleSuggestionSelect(sug)}
+                          >
+                            {sug.name}
                           </div>
-                        )}
+                        ))}
                       </div>
-
-                    </div>
-
+                    )}
                   </div>
+
                   <div className="relative">
                     <button
                       ref={pipelineFilterButtonRef}
                       title="Filters"
                       onClick={() => setShowPipelineFilterPanel(!showPipelineFilterPanel)}
-                      className={`flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium transition-colors ${showPipelineFilterPanel ? "text-[#0F47F2] border-[#0F47F2]" : "text-[#AEAEB2] hover:bg-[#F3F5F7]"}`}
+                      className={`flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium transition-colors ${showPipelineFilterPanel ? "text-[#AEAEB2] border-[#0F47F2]" : "text-[#AEAEB2] hover:bg-[#F3F5F7]"}`}
                     >
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M2 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -2461,7 +2460,7 @@ export default function JobPipelineDashboard({
                     onClick={() => {
                       setIsKanbanView(true);
                     }}
-                    className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
+                    className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors px-3 py-2 rounded-sm border border-[#D1D1D6] text-xs"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <g clipPath="url(#clip0_360_5915)">
@@ -2488,7 +2487,7 @@ export default function JobPipelineDashboard({
                 </div>
               </div>
 
-              {/* Search + Actions row */}
+
 
             </>
           )}
