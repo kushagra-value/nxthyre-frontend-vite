@@ -43,14 +43,25 @@ const CandidatePortalLogin = () => {
 
   const handleAuthenticate = (appId: string, trackKey: string) => {
     setIsLoading(true);
-    // Simulate authentication
+    // Simulate authentication API call
     setTimeout(() => {
       setIsLoading(false);
-      // For now, redirect to a mock URL or pass them as params
-      // In a real scenario, the backend would return candidateId and jobId
-      const mockJobId = searchParams.get("jobId") || "mock-job-id";
-      const mockCandidateId = searchParams.get("candidateId") || "mock-candidate-uuid";
-      navigate(`/candidate-tracking/${mockJobId}/${appId}/${mockCandidateId}?trackingId=${trackKey}`);
+      
+      // Dummy response structure from the imagined API
+      const dummyResponse = {
+        success: true,
+        data: {
+          // The API returns the specific URL to redirect the candidate to
+          redirect_url: `/candidate-tracking/1/${appId}/uuid-candidate-1234?trackingId=${trackKey}`
+        }
+      };
+
+      // Redirect using the URL coming in the response
+      if (dummyResponse.success && dummyResponse.data.redirect_url) {
+        navigate(dummyResponse.data.redirect_url);
+      } else {
+        showToast.error("Failed to authenticate.");
+      }
     }, 1000);
   };
 
