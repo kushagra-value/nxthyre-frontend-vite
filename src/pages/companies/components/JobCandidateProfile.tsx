@@ -1148,44 +1148,6 @@ export default function JobCandidateProfile({
           </div>
         )}
 
-        {/* Call Attention Questions */}
-        <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">
-          <h3 className="text-xs text-teal-500 mb-6 font-semibold uppercase tracking-widest">
-            Questions to Ask
-          </h3>
-          <div className="flex flex-col gap-4 text-sm font-medium text-slate-700">
-            {jobScoreObj?.call_attention &&
-              jobScoreObj.call_attention.length > 0 ? (
-              <ul className="list-disc pl-5 space-y-3 marker:text-teal-500">
-                {jobScoreObj.call_attention.map((question: any, index: any) => (
-                  <li key={index} className="pl-1 leading-relaxed">
-                    {question}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="italic text-slate-500 text-sm">
-                No specific questions prepared for this candidate.
-              </p>
-            )}
-          </div>
-          {/* <div className="flex flex-col gap-4 text-sm font-medium text-slate-700">
-            {candidate.callAttention && candidate.callAttention.length > 0 ? (
-              <ul className="list-disc pl-5 space-y-3 marker:text-teal-500">
-                {candidate.callAttention.map((question: any, index: any) => (
-                  <li key={index} className="pl-1 leading-relaxed">
-                    {question}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="italic text-slate-500 text-sm">
-                No specific questions prepared for this candidate.
-              </p>
-            )}
-          </div> */}
-        </div>
-
         {/* ── Quick Fit Summary (Signals) ── */}
         {quickFitSummary.length > 0 && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
@@ -1290,39 +1252,6 @@ export default function JobCandidateProfile({
           </div>
         )}
 
-        {/* ── Profile Summary ── */}
-        <div className="bg-white rounded-xl p-8 shadow-sm">
-          <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
-            PROFILE SUMMARY
-          </h3>
-          <p className="text-sm leading-relaxed text-[#4B5563]">
-            {profileSummary || "No summary available."}
-          </p>
-        </div>
-
-        {/* ── Gaps & Risks ── */}
-        <div className="bg-white rounded-xl p-8 shadow-sm">
-          <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
-            GAPS / RISK
-          </h3>
-          <div className="flex flex-col gap-3">
-            {(jobScoreObj.gaps_risks || []).length > 0 ? (
-              jobScoreObj.gaps_risks.map((gap: string, i: number) => (
-                <div
-                  key={i}
-                  className="bg-[#F3F5F7] p-4 rounded-lg text-sm text-[#4B5563]"
-                >
-                  {gap}
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-[#AEAEB2]">
-                No major risks identified.
-              </p>
-            )}
-          </div>
-        </div>
-
         {/* ── Additional AI Sections ── */}
         {matchScore.description && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
@@ -1375,6 +1304,39 @@ export default function JobCandidateProfile({
             )}
           </div>
         )}
+
+        {/* ── Gaps & Risks ── */}
+        <div className="bg-white rounded-xl p-8 shadow-sm">
+          <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
+            GAPS / RISK
+          </h3>
+          <div className="flex flex-col gap-3">
+            {(jobScoreObj.gaps_risks || []).length > 0 ? (
+              jobScoreObj.gaps_risks.map((gap: string, i: number) => (
+                <div
+                  key={i}
+                  className="bg-[#F3F5F7] p-4 rounded-lg text-sm text-[#4B5563]"
+                >
+                  {gap}
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-[#AEAEB2]">
+                No major risks identified.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* ── Profile Summary ── */}
+        <div className="bg-white rounded-xl p-8 shadow-sm">
+          <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
+            PROFILE SUMMARY
+          </h3>
+          <p className="text-sm leading-relaxed text-[#4B5563]">
+            {profileSummary || "No summary available."}
+          </p>
+        </div>
 
         {aiSummary && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
