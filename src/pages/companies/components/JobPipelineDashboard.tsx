@@ -2354,12 +2354,109 @@ export default function JobPipelineDashboard({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <div className="mx-8 flex flex-wrap items-center justify-between bg-white p-4 border border-b-0 border-[#E5E7EB]">
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-[240px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                        <input
+                          type="text"
+                          placeholder="Search for Candidates"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
+                        />
+                        {suggestions.length > 0 && (
+                          <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                            {suggestions.map((sug) => (
+                              <div
+                                key={sug.id}
+                                className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
+                                onClick={() => handleSuggestionSelect(sug)}
+                              >
+                                {sug.name}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+
+                  </div>
+                  <div className="relative">
+                    <button
+                      ref={pipelineFilterButtonRef}
+                      title="Filters"
+                      onClick={() => setShowPipelineFilterPanel(!showPipelineFilterPanel)}
+                      className={`flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium transition-colors ${showPipelineFilterPanel ? "text-[#0F47F2] border-[#0F47F2]" : "text-[#AEAEB2] hover:bg-[#F3F5F7]"}`}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M5.33301 6H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M2 10H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M5.33301 14H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                    <PipelineFilterPanel
+                      isOpen={showPipelineFilterPanel}
+                      onClose={() => setShowPipelineFilterPanel(false)}
+                      onApply={(filters) => setPipelineFilters(filters)}
+                      initialFilters={pipelineFilters}
+                      anchorRef={pipelineFilterButtonRef}
+                      jobId={jobId}
+                    />
+                  </div>
                   <button
-                    onClick={() => setShowAddStageForm(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-full hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2"
+                    onClick={() => {
+                      const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
+                      window.open(url, "_blank");
+                    }}
+                    title="Share Pipeline"
+                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
                   >
-                    <Plus className="w-3.5 h-3.5" /> Add Stage
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g clipPath="url(#clip0_360_5904_tbl)">
+                        <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="#374151" strokeLinecap="round" />
+                        <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_360_5904_tbl">
+                          <rect width="16" height="16" fill="white" />
+                        </clipPath>
+                      </defs>
+                    </svg>
                   </button>
+                  <button
+                    onClick={() => {
+                      if (selectedIds.size === 0) {
+                        showToast.error("Please select at least one candidate to export");
+                        return;
+                      }
+                      setShowExportDialog(true);
+                    }}
+                    title="Export CSV"
+                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                  >
+                    <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                  <DateRangeFilter
+                    valueLabel={dateRangeFilterLabel}
+                    isFilterApplied={isDateRangeFilterApplied}
+                    onApply={(payload) => {
+                      setDateRangeFilterLabel(payload.label);
+                      setIsDateRangeFilterApplied(true);
+                      setDateRange({ from: payload.createdAfter || "", to: payload.createdBefore || "" });
+                    }}
+                    onClear={() => {
+                      setDateRangeFilterLabel("Date Filter");
+                      setIsDateRangeFilterApplied(false);
+                      setDateRange({ from: "", to: "" });
+                    }}
+                  />
+
                   <button
                     onClick={() => {
                       setIsKanbanView(true);
@@ -2379,114 +2476,20 @@ export default function JobPipelineDashboard({
                         </clipPath>
                       </defs>
                     </svg>
-                    Kanban
                   </button>
+                  <button
+                    onClick={() => setShowAddStageForm(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-full hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Stage
+                  </button>
+
+
                 </div>
               </div>
 
               {/* Search + Actions row */}
-              <div className="mx-8 flex flex-wrap items-center justify-between bg-white p-4 border border-b-0 border-[#E5E7EB]">
-                <div className="flex items-center gap-3">
-                  <div className="relative w-[240px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-                    <input
-                      type="text"
-                      placeholder="Search for Candidates"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
-                    />
-                    {suggestions.length > 0 && (
-                      <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
-                        {suggestions.map((sug) => (
-                          <div
-                            key={sug.id}
-                            className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
-                            onClick={() => handleSuggestionSelect(sug)}
-                          >
-                            {sug.name}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <button
-                      ref={pipelineFilterButtonRef}
-                      onClick={() => setShowPipelineFilterPanel(!showPipelineFilterPanel)}
-                      className={`flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium transition-colors ${showPipelineFilterPanel ? "text-[#0F47F2] border-[#0F47F2]" : "text-[#AEAEB2] hover:bg-[#F3F5F7]"}`}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M5.33301 6H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M2 10H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M5.33301 14H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      Filters
-                    </button>
-                    <PipelineFilterPanel
-                      isOpen={showPipelineFilterPanel}
-                      onClose={() => setShowPipelineFilterPanel(false)}
-                      onApply={(filters) => setPipelineFilters(filters)}
-                      initialFilters={pipelineFilters}
-                      anchorRef={pipelineFilterButtonRef}
-                      jobId={jobId}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
-                      window.open(url, "_blank");
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <g clipPath="url(#clip0_360_5904_tbl)">
-                        <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="#374151" strokeLinecap="round" />
-                        <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_360_5904_tbl">
-                          <rect width="16" height="16" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-                    Share Pipeline
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (selectedIds.size === 0) {
-                        showToast.error("Please select at least one candidate to export");
-                        return;
-                      }
-                      setShowExportDialog(true);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
-                  >
-                    <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Export CSV
-                  </button>
-                  <DateRangeFilter
-                    valueLabel={dateRangeFilterLabel}
-                    isFilterApplied={isDateRangeFilterApplied}
-                    onApply={(payload) => {
-                      setDateRangeFilterLabel(payload.label);
-                      setIsDateRangeFilterApplied(true);
-                      setDateRange({ from: payload.createdAfter || "", to: payload.createdBefore || "" });
-                    }}
-                    onClear={() => {
-                      setDateRangeFilterLabel("Date Filter");
-                      setIsDateRangeFilterApplied(false);
-                      setDateRange({ from: "", to: "" });
-                    }}
-                  />
-                </div>
-              </div>
+
             </>
           )}
 
