@@ -370,6 +370,13 @@ const statusColor = (
   return { bg: "bg-[#F2F2F7]", dot: "bg-[#8E8E93]", text: "text-[#4B5563]" };
 };
 
+// ─── Hidden Stages ────────────────────────────────────────────
+// Stage names (case-insensitive) that should never appear in the pipeline UI
+const HIDDEN_STAGE_NAMES = ["invites-sent", "applied"];
+
+const isHiddenStage = (stage: Stage) =>
+  HIDDEN_STAGE_NAMES.some((name) => stage.name.toLowerCase() === name);
+
 // ─── Component ─────────────────────────────────────────────────
 
 export default function JobPipelineDashboard({
@@ -970,7 +977,9 @@ export default function JobPipelineDashboard({
         const data: Stage[] = response.data;
         const filtered = data.filter(
           (s) =>
-            s.slug !== "archives" && !s.name.toLowerCase().includes("archive"),
+            s.slug !== "archives" &&
+            !s.name.toLowerCase().includes("archive") &&
+            !isHiddenStage(s),
         );
         const sorted = filtered.sort((a, b) => a.sort_order - b.sort_order);
         setStages(sorted);
@@ -1430,7 +1439,7 @@ export default function JobPipelineDashboard({
   };
 
   const nonArchiveStages = stages
-    .filter((s) => s.slug !== "archives" && !s.name.toLowerCase().includes("archive"))
+    .filter((s) => s.slug !== "archives" && !s.name.toLowerCase().includes("archive") && !isHiddenStage(s))
     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
   const getNextStageForItem = (item: CandidateListItem) => {
@@ -1666,6 +1675,7 @@ export default function JobPipelineDashboard({
   const totalPipelineCandidates = stages.reduce(
     (sum, s) => {
       if (s.slug === "archives") return sum;
+      if (isHiddenStage(s)) return sum;
       return sum + (stageCounts[s.slug] !== undefined ? stageCounts[s.slug] : (s.candidate_count || 0));
     },
     0,
@@ -2329,7 +2339,7 @@ export default function JobPipelineDashboard({
                         className="w-28 h-8 bg-gray-200 rounded-full animate-pulse"
                       />
                     ))
-                    : stages.filter(s => s.slug !== 'archives').map((stage) => (
+                    : stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).map((stage) => (
                       <button
                         key={stage.id}
                         onClick={() => setActiveStageSlug(stage.slug)}
@@ -2585,7 +2595,7 @@ export default function JobPipelineDashboard({
          ═══════════════════════════════════════════════════════ */}
           {isKanbanView ? (
             <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch">
-              {stages.filter(s => s.slug !== 'archives').map((stage) => {
+              {stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).map((stage) => {
                 return (
                   <div key={stage.id} className="relative h-full">
                     <PipelineKanbanColumn
@@ -2596,7 +2606,7 @@ export default function JobPipelineDashboard({
                       searchQuery={searchQuery}
                       onDragOver={handleDragOver}
                       onDrop={handleDrop}
-                      stageBarColor={stageBarColors[stages.filter(s => s.slug !== 'archives').indexOf(stage) % stageBarColors.length]}
+                      stageBarColor={stageBarColors[stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).indexOf(stage) % stageBarColors.length]}
                       stageMenuOpenId={stageMenuOpenId}
                       setStageMenuOpenId={setStageMenuOpenId}
                       onEditStage={setStageToEdit}
