@@ -370,6 +370,13 @@ const statusColor = (
   return { bg: "bg-[#F2F2F7]", dot: "bg-[#8E8E93]", text: "text-[#4B5563]" };
 };
 
+// ─── Hidden Stages ────────────────────────────────────────────
+// Stage names (case-insensitive) that should never appear in the pipeline UI
+const HIDDEN_STAGE_NAMES = ["invites sent", "applied"];
+
+const isHiddenStage = (stage: Stage) =>
+  HIDDEN_STAGE_NAMES.some((name) => stage.name.toLowerCase() === name);
+
 // ─── Component ─────────────────────────────────────────────────
 
 export default function JobPipelineDashboard({
@@ -1032,7 +1039,9 @@ export default function JobPipelineDashboard({
         const data: Stage[] = response.data;
         const filtered = data.filter(
           (s) =>
-            s.slug !== "archives" && !s.name.toLowerCase().includes("archive"),
+            s.slug !== "archives" &&
+            !s.name.toLowerCase().includes("archive") &&
+            !isHiddenStage(s),
         );
         const sorted = filtered.sort((a, b) => a.sort_order - b.sort_order);
         setStages(sorted);
@@ -1492,7 +1501,7 @@ export default function JobPipelineDashboard({
   };
 
   const nonArchiveStages = stages
-    .filter((s) => s.slug !== "archives" && !s.name.toLowerCase().includes("archive"))
+    .filter((s) => s.slug !== "archives" && !s.name.toLowerCase().includes("archive") && !isHiddenStage(s))
     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
   const getNextStageForItem = (item: CandidateListItem) => {
@@ -1728,6 +1737,7 @@ export default function JobPipelineDashboard({
   const totalPipelineCandidates = stages.reduce(
     (sum, s) => {
       if (s.slug === "archives") return sum;
+      if (isHiddenStage(s)) return sum;
       return sum + (stageCounts[s.slug] !== undefined ? stageCounts[s.slug] : (s.candidate_count || 0));
     },
     0,
@@ -2372,73 +2382,44 @@ export default function JobPipelineDashboard({
             /* ═══════════ TABLE VIEW TOOLBAR ═══════════ */
             <>
               {/* Stage pills row */}
-              <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    onClick={() => setActiveStageSlug(null)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
-                      ? "bg-[#0F47F2] text-white"
-                      : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
-                      }`}
-                  >
-                    All ({totalPipelineCandidates})
-                  </button>
+              <div className="mx-8 mt-4 flex items-center gap-3 bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
+                {/* Stage pills — horizontally scrollable, shrinks to give room to the action buttons */}
+                <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
+                  <div className="flex items-center gap-2 flex-nowrap">
+                    <button
+                      onClick={() => setActiveStageSlug(null)}
+                      className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
+                        ? "bg-[#0F47F2] text-white"
+                        : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                        }`}
+                    >
+                      All ({totalPipelineCandidates})
+                    </button>
 
-                  {loadingStages
-                    ? Array.from({ length: 5 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="w-28 h-8 bg-gray-200 rounded-full animate-pulse"
-                      />
-                    ))
-                    : stages.filter(s => s.slug !== 'archives').map((stage) => (
-                      <button
-                        key={stage.id}
-                        onClick={() => setActiveStageSlug(stage.slug)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
-                          ? "bg-[#0F47F2] text-white"
-                          : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
-                          }`}
-                      >
-                        {stage.name} ({stageCounts[stage.slug] !== undefined ? stageCounts[stage.slug] : stage.candidate_count})
-                      </button>
-                    ))}
+                    {loadingStages
+                      ? Array.from({ length: 5 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex-shrink-0 w-28 h-8 bg-gray-200 rounded-full animate-pulse"
+                        />
+                      ))
+                      : stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).map((stage) => (
+                        <button
+                          key={stage.id}
+                          onClick={() => setActiveStageSlug(stage.slug)}
+                          className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === stage.slug
+                            ? "bg-[#0F47F2] text-white"
+                            : "text-[#AEAEB2] bg-white hover:bg-[#F3F5F7] border border-[#D1D1D6]"
+                            }`}
+                        >
+                          {stage.name} ({stageCounts[stage.slug] !== undefined ? stageCounts[stage.slug] : stage.candidate_count})
+                        </button>
+                      ))}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowAddStageForm(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-full hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Add Stage
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsKanbanView(true);
-                    }}
-                    className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <g clipPath="url(#clip0_360_5915)">
-                        <path d="M5.99967 14.6668H9.99967C13.333 14.6668 14.6663 13.3335 14.6663 10.0002V6.00016C14.6663 2.66683 13.333 1.3335 9.99967 1.3335H5.99967C2.66634 1.3335 1.33301 2.66683 1.33301 6.00016V10.0002C1.33301 13.3335 2.66634 14.6668 5.99967 14.6668Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M8 1.3335V14.6668" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M1.33301 6.3335H7.99967" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M8 9.66699H14.6667" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_360_5915">
-                          <rect width="16" height="16" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-                    Kanban
-                  </button>
-                </div>
-              </div>
+                <div className="flex-shrink-0 flex items-center gap-2">
 
-              {/* Search + Actions row */}
-              <div className="mx-8 flex flex-wrap items-center justify-between bg-white p-4 border border-b-0 border-[#E5E7EB]">
-                <div className="flex items-center gap-3">
                   <div className="relative w-[240px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
                     <input
@@ -2462,11 +2443,13 @@ export default function JobPipelineDashboard({
                       </div>
                     )}
                   </div>
+
                   <div className="relative">
                     <button
                       ref={pipelineFilterButtonRef}
+                      title="Filters"
                       onClick={() => setShowPipelineFilterPanel(!showPipelineFilterPanel)}
-                      className={`flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium transition-colors ${showPipelineFilterPanel ? "text-[#0F47F2] border-[#0F47F2]" : "text-[#AEAEB2] hover:bg-[#F3F5F7]"}`}
+                      className={`flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium transition-colors ${showPipelineFilterPanel ? "text-[#AEAEB2] border-[#0F47F2]" : "text-[#AEAEB2] hover:bg-[#F3F5F7]"}`}
                     >
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M2 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -2474,7 +2457,6 @@ export default function JobPipelineDashboard({
                         <path d="M2 10H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M5.33301 14H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      Filters
                     </button>
                     <PipelineFilterPanel
                       isOpen={showPipelineFilterPanel}
@@ -2485,13 +2467,12 @@ export default function JobPipelineDashboard({
                       jobId={jobId}
                     />
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
                       const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
                       window.open(url, "_blank");
                     }}
+                    title="Share Pipeline"
                     className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2505,7 +2486,6 @@ export default function JobPipelineDashboard({
                         </clipPath>
                       </defs>
                     </svg>
-                    Share Pipeline
                   </button>
                   <button
                     onClick={() => {
@@ -2515,13 +2495,13 @@ export default function JobPipelineDashboard({
                       }
                       setShowExportDialog(true);
                     }}
+                    title="Export CSV"
                     className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
                   >
                     <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
                       <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    Export CSV
                   </button>
                   <DateRangeFilter
                     valueLabel={dateRangeFilterLabel}
@@ -2537,8 +2517,40 @@ export default function JobPipelineDashboard({
                       setDateRange({ from: "", to: "" });
                     }}
                   />
+
+                  <button
+                    onClick={() => {
+                      setIsKanbanView(true);
+                    }}
+                    className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors px-3 py-2 rounded-lg border border-[#D1D1D6] text-xs"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g clipPath="url(#clip0_360_5915)">
+                        <path d="M5.99967 14.6668H9.99967C13.333 14.6668 14.6663 13.3335 14.6663 10.0002V6.00016C14.6663 2.66683 13.333 1.3335 9.99967 1.3335H5.99967C2.66634 1.3335 1.33301 2.66683 1.33301 6.00016V10.0002C1.33301 13.3335 2.66634 14.6668 5.99967 14.6668Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M8 1.3335V14.6668" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M1.33301 6.3335H7.99967" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M8 9.66699H14.6667" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_360_5915">
+                          <rect width="16" height="16" fill="white" />
+                        </clipPath>
+                      </defs>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setShowAddStageForm(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-lg hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Stage
+                  </button>
+
+
                 </div>
               </div>
+
+
+
             </>
           )}
 
@@ -2647,7 +2659,7 @@ export default function JobPipelineDashboard({
          ═══════════════════════════════════════════════════════ */}
           {isKanbanView ? (
             <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch">
-              {stages.filter(s => s.slug !== 'archives').map((stage) => {
+              {stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).map((stage) => {
                 return (
                   <div key={stage.id} className="relative h-full">
                     <PipelineKanbanColumn
@@ -2658,7 +2670,7 @@ export default function JobPipelineDashboard({
                       searchQuery={searchQuery}
                       onDragOver={handleDragOver}
                       onDrop={handleDrop}
-                      stageBarColor={stageBarColors[stages.filter(s => s.slug !== 'archives').indexOf(stage) % stageBarColors.length]}
+                      stageBarColor={stageBarColors[stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).indexOf(stage) % stageBarColors.length]}
                       stageMenuOpenId={stageMenuOpenId}
                       setStageMenuOpenId={setStageMenuOpenId}
                       onEditStage={setStageToEdit}
@@ -2817,7 +2829,7 @@ export default function JobPipelineDashboard({
                     ].map((h) => (
                       <th
                         key={h}
-                        className="text-left px-4 py-4 text-[13px] font-normal text-[#AEAEB2] cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
+                        className="text-left px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
                         onClick={() => handleSort(h as CandidateSortKey)}
                       >
                         <div className="flex items-center">
@@ -2825,7 +2837,7 @@ export default function JobPipelineDashboard({
                         </div>
                       </th>
                     ))}
-                    <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-4 py-4 text-[13px] font-normal text-[#AEAEB2] text-right select-none whitespace-nowrap">
+                    <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-right select-none whitespace-nowrap">
                       Actions
                     </th>
                   </tr>
