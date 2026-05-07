@@ -52,7 +52,8 @@ const CandidatePortalLogin = () => {
         success: true,
         data: {
           // The API returns the specific URL to redirect the candidate to
-          redirect_url: `/candidate-tracking/1/${appId}/uuid-candidate-1234?trackingId=${trackKey}`
+          // Using real IDs: job_id=225, application_id=3413, candidate_id=UUID
+          redirect_url: `/candidate-tracking/225/${appId}/0e70dafa-fc49-4662-b899-af6936dd641a?trackingId=${trackKey}`
         }
       };
 
