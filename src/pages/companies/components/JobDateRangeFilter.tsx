@@ -119,13 +119,13 @@ const JobDateRangeFilter: React.FC<JobDateRangeFilterProps> = ({
       <button
         onClick={() => setOpen((prev) => !prev)}
         className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors"
+        title="Filter by Date"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M1.6665 8.16216C1.6665 5.25729 1.6665 3.80486 2.50125 2.90243C3.336 2 4.6795 2 7.3665 2H8.63317C11.3202 2 12.6637 2 13.4984 2.90243C14.3332 3.80486 14.3332 5.25729 14.3332 8.16216V8.5045C14.3332 11.4094 14.3332 12.8618 13.4984 13.7642C12.6637 14.6667 11.3202 14.6667 8.63317 14.6667H7.3665C4.6795 14.6667 3.336 14.6667 2.50125 13.7642C1.6665 12.8618 1.6665 11.4094 1.6665 8.5045V8.16216Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M4 5.3335H12" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        {valueLabel}
       </button>
 
       {open && (

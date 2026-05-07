@@ -336,7 +336,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
     // Jobs are already sorted and filtered server-side, use directly.
     // Use the filtered count from status_counts so pagination matches the active tab.
-    
+
     const getLocalDrafts = () => {
         try {
             const drafts = JSON.parse(localStorage.getItem('job_drafts') || '[]');
@@ -379,10 +379,10 @@ const JobListing: React.FC<JobListingProps> = ({
         }
         return jobPagination?.total_jobs_count_in_workspace ?? filteredWorkspaceJobs.length;
     };
-    
+
     const localDrafts = activeJobFilter === "Draft" ? getLocalDrafts().map(mapDraftToJob) : [];
     const combinedJobs = activeJobFilter === "Draft" ? localDrafts : filteredWorkspaceJobs;
-    
+
     const totalJobsForPagination = getFilteredTotal();
     const totalPages = Math.max(1, Math.ceil(totalJobsForPagination / ITEMS_PER_PAGE));
     const paginatedJobs = combinedJobs;
@@ -719,10 +719,10 @@ const JobListing: React.FC<JobListingProps> = ({
                             );
                         })}
                     </div>
-                    <button
+                    {/* <button
                         disabled
-                        title="Feature coming Soon"
-                        className="flex items-center gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
+                        title="Grid view Feature coming Soon"
+                        className="flex items-center hidden gap-2 px-3 py-2 border border-[#AEAEB2] rounded-md text-xs text-[#AEAEB2] opacity-50 cursor-not-allowed"
                     >
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g clip-path="url(#clip0_1077_15886)">
@@ -737,37 +737,33 @@ const JobListing: React.FC<JobListingProps> = ({
                                 </clipPath>
                             </defs>
                         </svg>
-                        Grid View
-                    </button>
-                </div>
-
-                {/* Search & Actions row */}
-                <div className="p-4 border-b border-[#C7C7CC] flex items-center justify-between gap-4">
-                    <div className="relative w-full max-w-[248px]">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-                        <input
-                            type="text"
-                            placeholder="Search for Jobs"
-                            value={jobSearchQuery}
-                            onChange={(e) => setJobSearchQuery(e.target.value)}
-                            className="w-full h-9 pl-10 pr-4 bg-white border border-[#AEAEB2] rounded-[6px] text-xs text-[#4B5563] focus:outline-none" // UPDATED: rounded-[6px] + height match
-                        />
-                    </div>
-
+                        
+                    </button> */}
                     <div className="flex items-center gap-3">
                         {/* Column Visibility Filter */}
+                        <div className="relative w-full max-w-[248px]">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                            <input
+                                type="text"
+                                placeholder="Search for Jobs"
+                                value={jobSearchQuery}
+                                onChange={(e) => setJobSearchQuery(e.target.value)}
+                                className="w-full h-9 pl-10 pr-4 bg-white border border-[#AEAEB2] rounded-[6px] text-xs text-[#4B5563] focus:outline-none" // UPDATED: rounded-[6px] + height match
+                            />
+                        </div>
                         <div className="relative" ref={columnFilterRef}>
                             <button
                                 onClick={() => setShowColumnFilter(!showColumnFilter)}
                                 className={`flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs transition-colors
                                     ${showColumnFilter ? 'bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]' : 'text-[#AEAEB2] hover:bg-gray-50'}`}
+                                title="Column Filter"
                             >
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M3.3335 2V11.3333M8.00016 4.66667V14M12.6668 9.33333V14M12.6668 6.66667V2" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
                                     <path d="M3.33333 11.3333C3.06963 11.3333 2.81184 11.4115 2.59257 11.558C2.37331 11.7045 2.20241 11.9128 2.10149 12.1564C2.00058 12.4001 1.97417 12.6681 2.02562 12.9268C2.07707 13.1854 2.20405 13.423 2.39052 13.6095C2.57699 13.7959 2.81457 13.9229 3.07321 13.9744C3.33185 14.0258 3.59994 13.9994 3.84358 13.8985C4.08721 13.7976 4.29545 13.6267 4.44196 13.4074C4.58847 13.1882 4.66667 12.9304 4.66667 12.6667C4.66667 12.313 4.52619 11.9739 4.27614 11.7239C4.02609 11.4738 3.68696 11.3333 3.33333 11.3333ZM8 2C7.73629 2 7.47851 2.0782 7.25924 2.22471C7.03998 2.37122 6.86908 2.57945 6.76816 2.82309C6.66724 3.06672 6.64084 3.33481 6.69229 3.59345C6.74373 3.8521 6.87072 4.08967 7.05719 4.27614C7.24366 4.46261 7.48124 4.5896 7.73988 4.64105C7.99852 4.69249 8.26661 4.66609 8.51025 4.56517C8.75388 4.46426 8.96212 4.29336 9.10863 4.07409C9.25514 3.85483 9.33333 3.59704 9.33333 3.33333C9.33333 2.97971 9.19286 2.64057 8.94281 2.39052C8.69276 2.14048 8.35362 2 8 2ZM12.6667 6.66667C12.403 6.66667 12.1452 6.74487 11.9259 6.89137C11.7066 7.03788 11.5357 7.24612 11.4348 7.48976C11.3339 7.73339 11.3075 8.00148 11.359 8.26012C11.4104 8.51876 11.5374 8.75634 11.7239 8.94281C11.9103 9.12928 12.1479 9.25627 12.4065 9.30771C12.6652 9.35916 12.9333 9.33276 13.1769 9.23184C13.4205 9.13092 13.6288 8.96003 13.7753 8.74076C13.9218 8.52149 14 8.26371 14 8C14 7.64638 13.8595 7.30724 13.6095 7.05719C13.3594 6.80714 13.0203 6.66667 12.6667 6.66667Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
 
-                                Column Filters
+
                             </button>
                             {showColumnFilter && (
                                 <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[10001] py-2 max-h-[400px] overflow-y-auto">
@@ -790,6 +786,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         <button
                             onClick={handleSharePipeline}
                             className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
+                            title="Share Pipeline"
                         >
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <g clip-path="url(#clip0_1077_15875)">
@@ -802,7 +799,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                     </clipPath>
                                 </defs>
                             </svg>
-                            Share Pipeline
+
                         </button>
 
                         <button
@@ -827,6 +824,8 @@ const JobListing: React.FC<JobListingProps> = ({
 
                     </div>
                 </div>
+
+
 
                 <div className="overflow-x-auto overflow-y-visible custom-scrollbar">
                     <table className="w-full text-left border-collapse" style={{ minWidth: `${totalTableWidth}px` }}>
@@ -989,14 +988,14 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 case 'location':
                                                     return (
                                                         <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center" title={Array.isArray(job.location) ? job.location.join(', ') : job.location}>
-                                                                {Array.isArray(job.location) && job.location.length > 0
+                                                            {Array.isArray(job.location) && job.location.length > 0
                                                                 ? job.location.length === 1
                                                                     ? job.location[0]
                                                                     : `${job.location[0]} +${job.location.length - 1} more`
                                                                 : '--'
                                                             }
                                                         </td>
-                                                        
+
                                                     );
                                                 case 'ctcBudget':
                                                     return (
