@@ -2322,7 +2322,7 @@ export default function JobPipelineDashboard({
               {/* Stage pills row */}
               <div className="mx-8 mt-4 flex items-center gap-3 bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
                 {/* Stage pills — horizontally scrollable, shrinks to give room to the action buttons */}
-                <div className="flex-1 min-w-0 overflow-x-auto scrollbar-none">
+                <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
                   <div className="flex items-center gap-2 flex-nowrap">
                   <button
                     onClick={() => setActiveStageSlug(null)}
