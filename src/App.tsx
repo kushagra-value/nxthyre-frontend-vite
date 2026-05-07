@@ -38,6 +38,8 @@ import JobPipeline from "./pages/companies/components/JobPipeline";
 import Companies from "./pages/companies/Companies";
 import SchedulePage from "./pages/schedules/SchedulePage";
 import CandidateSearch from "./pages/candidates/CandidateSearch";
+import CandidatePortalLogin from "./pages/candidatePortal/CandidatePortalLogin";
+import CandidateTrackingPage from "./pages/candidatePortal/CandidateTrackingPage";
 
 function MainApp() {
   const navigate = useNavigate();
@@ -544,6 +546,8 @@ function MainApp() {
         />
         <Route path="/invite" element={<InvitePage />} />
         <Route path="/terms-and-policies" element={<TermsAndConditions />} />
+        <Route path="/candidate-portal/login" element={<CandidatePortalLogin />} />
+        <Route path="/candidate-tracking/:jobId/:applicationId/:candidateId" element={<CandidateTrackingPage />} />
         <Route
           path="/settings"
           element={
