@@ -11,6 +11,7 @@ import {
   Play,
   CheckCircle2,
   ChevronLeft,
+  ChevronRight,
   Eye,
   X,
   XCircle,
@@ -113,6 +114,7 @@ export default function CandidateCallPage() {
   const [callState, setCallState] = useState<string>(initialCallState);
   const [isSaving, setIsSaving] = useState(false);
   const [isEndingCall, setIsEndingCall] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Manual recording states
   const [isManualRecording, setIsManualRecording] = useState(false);
@@ -120,12 +122,31 @@ export default function CandidateCallPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Clear session storage once we've consumed it
+  // Clear candidate from session storage once we've consumed it, but keep the list for navigation
   useEffect(() => {
     if (sessionData) {
-      sessionStorage.removeItem("_nxthyre_call_state");
+      sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ ...sessionData, candidate: null }));
     }
   }, []);
+
+  const candidateList = sessionData?.candidateList || [];
+  const currentCandidateIndex = candidateList.indexOf(candidateId || "");
+  const hasPrevCandidate = currentCandidateIndex > 0;
+  const hasNextCandidate = currentCandidateIndex !== -1 && currentCandidateIndex < candidateList.length - 1;
+
+  const handleNavigatePrev = () => {
+    if (hasPrevCandidate) {
+      const nextId = candidateList[currentCandidateIndex - 1];
+      navigate(`/call/${nextId}/${jobId || 0}?mode=manual`);
+    }
+  };
+
+  const handleNavigateNext = () => {
+    if (hasNextCandidate) {
+      const nextId = candidateList[currentCandidateIndex + 1];
+      navigate(`/call/${nextId}/${jobId || 0}?mode=manual`);
+    }
+  };
 
   // Copilot States & Tabs
   const [activeTab, setActiveTab] = useState<
@@ -186,16 +207,6 @@ export default function CandidateCallPage() {
     });
   };
 
-  const [followUpReason, setFollowUpReason] = useState<string | null>(null);
-
-  // Load candidate fallback if direct link
-  useEffect(() => {
-    if (!candidate && candidateId) {
-      setCandidate(DUMMY_FALLBACK);
-    }
-  }, [candidateId, candidate]);
-
-  // Profile Editing State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     currentCtc: "",
@@ -204,60 +215,103 @@ export default function CandidateCallPage() {
     location: "",
     experience: "",
   });
+  const [followUpReason, setFollowUpReason] = useState<string | null>(null);
 
   const handleStartEdit = () => {
     if (candidate) {
       setEditProfileData({
-        currentCtc: candidate.currentCtc,
-        expectedCtc: candidate.expectedCtc,
-        noticePeriod: candidate.noticePeriod,
+        currentCtc: candidate.currentCtc.replace(/[^0-9.]/g, ""),
+        expectedCtc: candidate.expectedCtc.replace(/[^0-9.]/g, ""),
+        noticePeriod: candidate.noticePeriod.replace(/[^0-9]/g, ""),
         location: candidate.location,
-        experience: candidate.experience,
+        experience: candidate.experience.replace(/[^0-9.]/g, ""),
       });
       setIsEditingProfile(true);
     }
   };
 
   const handleUpdateProfile = async () => {
-    if (!candidate?.id) return;
+    if (!candidate) return;
     try {
-      // Parse values back to numbers where expected by backend
-      const payload: any = {};
-      
-      const parsedCurrent = parseFloat(editProfileData.currentCtc.replace(/[^0-9.]/g, ""));
-      if (!isNaN(parsedCurrent)) payload.current_salary = parsedCurrent;
-      
-      const parsedExpected = parseFloat(editProfileData.expectedCtc.replace(/[^0-9.]/g, ""));
-      if (!isNaN(parsedExpected)) payload.expected_ctc = parsedExpected;
-      
-      const parsedNotice = parseInt(editProfileData.noticePeriod.replace(/[^0-9]/g, ""), 10);
-      if (!isNaN(parsedNotice)) payload.notice_period_days = parsedNotice;
-      
-      payload.location = editProfileData.location;
-      
-      const parsedExp = parseFloat(editProfileData.experience.replace(/[^0-9.]/g, ""));
-      if (!isNaN(parsedExp)) payload.exp = parsedExp;
+      const payload: Record<string, any> = {};
+      const ctcNum = parseFloat(editProfileData.currentCtc);
+      if (!isNaN(ctcNum)) payload.current_salary = ctcNum;
+      const expectedNum = editProfileData.expectedCtc.trim();
+      if (expectedNum) payload.expected_ctc = expectedNum;
+      const noticeNum = parseInt(editProfileData.noticePeriod, 10);
+      if (!isNaN(noticeNum)) payload.notice_period_days = noticeNum;
+      if (editProfileData.location.trim()) payload.location = editProfileData.location.trim();
+      const expNum = parseFloat(editProfileData.experience);
+      if (!isNaN(expNum)) payload.exp = expNum;
 
       await candidateService.updateCandidateEditableFields(candidate.id, payload);
-      
-      setCandidate(prev => prev ? {
-        ...prev,
-        currentCtc: editProfileData.currentCtc.includes("LPA") ? editProfileData.currentCtc : `${editProfileData.currentCtc} LPA`,
-        expectedCtc: editProfileData.expectedCtc.includes("LPA") ? editProfileData.expectedCtc : `${editProfileData.expectedCtc} LPA`,
-        noticePeriod: editProfileData.noticePeriod.includes("days") ? editProfileData.noticePeriod : `${editProfileData.noticePeriod} days`,
-        location: editProfileData.location,
-        experience: editProfileData.experience.includes("yrs") ? editProfileData.experience : `${editProfileData.experience} yrs`,
-      } : null);
-      
+
+      // Update local candidate state with display-formatted values
+      const updatedCandidate: CandidateCallParams = {
+        ...candidate,
+        currentCtc: !isNaN(ctcNum) ? `${ctcNum} LPA` : candidate.currentCtc,
+        expectedCtc: expectedNum ? `${expectedNum} LPA` : candidate.expectedCtc,
+        noticePeriod: !isNaN(noticeNum) ? `${noticeNum} days` : candidate.noticePeriod,
+        location: editProfileData.location.trim() || candidate.location,
+        experience: !isNaN(expNum) ? `${expNum} yrs` : candidate.experience,
+      };
+      setCandidate(updatedCandidate);
+
+      // Update sessionStorage so refreshes reflect the new data
+      try {
+        sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: updatedCandidate }));
+      } catch {}
+
       setIsEditingProfile(false);
-      showToast.success("Profile updated successfully");
-    } catch (error) {
-      showToast.error("Failed to update profile");
-      console.error(error);
+      showToast.success("Profile updated!");
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      showToast.error("Failed to update profile.");
     }
   };
 
-  // Fetch initial Role Questions on Mount
+  // Re-fetch candidate details from backend on mount to ensure persistence across refreshes
+  useEffect(() => {
+    if (!candidateId) return;
+    (async () => {
+      try {
+        const details = await candidateService.getCandidateDetails(candidateId);
+        const c = details?.candidate;
+        if (c) {
+          setCandidate((prev) => {
+            const base = prev || DUMMY_FALLBACK;
+            return {
+              ...base,
+              id: c.id || base.id,
+              name: c.full_name || base.name,
+              avatarInitials: c.full_name
+                ? c.full_name.substring(0, 2).toUpperCase()
+                : base.avatarInitials,
+              headline: c.headline || base.headline,
+              currentCtc: (c as any).current_salary != null
+                ? `${(c as any).current_salary} LPA`
+                : base.currentCtc,
+              expectedCtc: (c as any).expected_ctc
+                ? `${(c as any).expected_ctc} LPA`
+                : base.expectedCtc,
+              noticePeriod: c.notice_period_days != null
+                ? `${c.notice_period_days} days`
+                : base.noticePeriod,
+              location: c.location || base.location,
+              experience: c.total_experience != null
+                ? `${c.total_experience} yrs`
+                : base.experience,
+              phone: c.phone || c.premium_data?.phone || base.phone,
+              resumeUrl: c.premium_data?.resume_url || c.resume_url || base.resumeUrl,
+            };
+          });
+        }
+      } catch (err) {
+        console.error("Failed to re-fetch candidate details:", err);
+      }
+    })();
+  }, [candidateId]);
+
   useEffect(() => {
     if (candidate?.id && jobId) {
       getRoleQuestions(jobId, candidate.id)
@@ -270,17 +324,13 @@ export default function CandidateCallPage() {
   useEffect(() => {
     if (jobId) {
       const numericJobId = parseInt(jobId, 10);
-      Promise.all([
-        jobPostService.getJob(numericJobId),
-        jobPostService.getJobCompetencies(numericJobId),
-      ])
-        .then(([job, comp]) => {
-          setJobData(job);
-          setCompetenciesData(comp);
-        })
-        .catch((err) => {
-          console.error('Failed to fetch job data:', err);
-        });
+      jobPostService.getJob(numericJobId)
+        .then(setJobData)
+        .catch((err) => console.error('Failed to fetch job data:', err));
+        
+      jobPostService.getJobCompetencies(numericJobId)
+        .then(setCompetenciesData)
+        .catch((err) => console.error('Failed to fetch job competencies:', err));
     }
   }, [jobId]);
 
@@ -746,7 +796,7 @@ export default function CandidateCallPage() {
         {/* Back button */}
         <button
           onClick={() => {
-            navigate(`/`)
+            navigate(-1);
           }}
           className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2 z-10"
         >
@@ -1016,11 +1066,39 @@ export default function CandidateCallPage() {
                 </span>
               )}
             </div>
-            {!isManual && (
-              <span className="text-xs text-slate-400 font-medium">
-                {candidate.headline}
-              </span>
-            )}
+            {/* Right Side: Status and Navigation */}
+            <div className="flex flex-col items-end gap-2">
+              {!isManual && (
+                <span className="text-xs text-slate-400 font-medium">
+                  {candidate.headline}
+                </span>
+              )}
+              
+              {/* Previous / Next Candidate Navigation */}
+              {candidateList.length > 1 && (
+                <div className="flex items-center gap-3">
+                  <span className="text-slate-400 text-xs font-semibold tracking-wider uppercase">
+                    Candidate {currentCandidateIndex + 1} of {candidateList.length}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={handleNavigatePrev}
+                      disabled={!hasPrevCandidate}
+                      className={`p-1.5 rounded-md border transition-colors ${hasPrevCandidate ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600" : "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"}`}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleNavigateNext}
+                      disabled={!hasNextCandidate}
+                      className={`p-1.5 rounded-md border transition-colors ${hasNextCandidate ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600" : "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"}`}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           {/* Tab Navigation */}
           <div className="flex px-8 gap-8 border-t border-slate-100 bg-slate-50/50">
@@ -1096,7 +1174,7 @@ export default function CandidateCallPage() {
                 {/* Header */}
                 <div className="mb-8 pr-24">
                   <h2 className="text-2xl font-bold text-slate-800 tracking-tight leading-tight">
-                    {jobData?.title || candidate.headline} {jobData?.workspace_details?.name ? `V2 - ${jobData.workspace_details.name}` : ""}
+                    {jobData?.title || "Loading Job Details..."} {jobData?.workspace_details?.name ? `| ${jobData.workspace_details.name}` : ""}
                   </h2>
                 </div>
 
@@ -1708,13 +1786,19 @@ export default function CandidateCallPage() {
                   <div key={field.key} className="flex justify-between items-center group min-h-[24px]">
                     <span className="text-slate-400">{field.label}</span>
                     {isEditingProfile ? (
-                      <input
-                        type="text"
-                        value={(editProfileData as any)[field.key]}
-                        onChange={(e) => setEditProfileData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                        className="w-[60%] text-right bg-slate-50 border border-slate-200 rounded px-2 py-0.5 font-bold text-slate-700 focus:outline-none focus:border-blue-300 transition-colors"
-                        autoFocus={field.key === "currentCtc"}
-                      />
+                      <div className="w-[60%] flex items-center justify-end gap-1">
+                        <input
+                          type={["currentCtc", "expectedCtc", "noticePeriod", "experience"].includes(field.key) ? "number" : "text"}
+                          step="any"
+                          value={(editProfileData as any)[field.key]}
+                          onChange={(e) => setEditProfileData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                          className="w-full text-right bg-slate-50 border border-slate-200 rounded px-2 py-0.5 font-bold text-slate-700 focus:outline-none focus:border-blue-300 transition-colors"
+                          autoFocus={field.key === "currentCtc"}
+                        />
+                        {(field.key === "currentCtc" || field.key === "expectedCtc") && <span className="text-slate-500 font-medium">LPA</span>}
+                        {field.key === "noticePeriod" && <span className="text-slate-500 font-medium">days</span>}
+                        {field.key === "experience" && <span className="text-slate-500 font-medium">yrs</span>}
+                      </div>
                     ) : (
                       <span className="text-slate-700 font-bold">{(candidate as any)[field.key]}</span>
                     )}
@@ -1727,12 +1811,12 @@ export default function CandidateCallPage() {
             <div className="p-5">
               <div className="flex items-center justify-between mb-4">
                 <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest">SKILL ASSESSMENT</h5>
-                <div className="flex items-center gap-1.5">
+                {/* <div className="flex items-center gap-1.5">
                   <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 rounded-full" style={{ width: "20%" }}></div>
                   </div>
                   <span className="text-xs text-slate-400 font-medium">1/5</span>
-                </div>
+                </div> */}
               </div>
               <div className="flex flex-col gap-3 text-xs">
                 {(() => {

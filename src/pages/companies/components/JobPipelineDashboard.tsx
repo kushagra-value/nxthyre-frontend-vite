@@ -411,7 +411,22 @@ export default function JobPipelineDashboard({
   // ── Stages
   const [stages, setStages] = useState<Stage[]>([]);
   const [loadingStages, setLoadingStages] = useState(false);
-  const [activeStageSlug, setActiveStageSlug] = useState<string | null>(null);
+  const [activeStageSlug, setActiveStageSlug] = useState<string | null>(() => {
+    if (jobId) {
+      return sessionStorage.getItem(`_nxthyre_active_stage_${jobId}`);
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (jobId) {
+      if (activeStageSlug) {
+        sessionStorage.setItem(`_nxthyre_active_stage_${jobId}`, activeStageSlug);
+      } else {
+        sessionStorage.removeItem(`_nxthyre_active_stage_${jobId}`);
+      }
+    }
+  }, [activeStageSlug, jobId]);
   const [showAddStageForm, setShowAddStageForm] = useState(false);
   const [archivedCandidates, setArchivedCandidates] = useState<any[]>([]);
   const [kanbanRefreshCounters, setKanbanRefreshCounters] = useState<Record<string, number>>({});
@@ -448,9 +463,33 @@ export default function JobPipelineDashboard({
   });
 
   // ── Pagination & search
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (jobId) {
+      const saved = sessionStorage.getItem(`_nxthyre_current_page_${jobId}`);
+      return saved ? parseInt(saved, 10) : 1;
+    }
+    return 1;
+  });
   const pageSize = 10;
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (jobId) {
+      return sessionStorage.getItem(`_nxthyre_search_query_${jobId}`) || "";
+    }
+    return "";
+  });
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_current_page_${jobId}`, currentPage.toString());
+    }
+  }, [currentPage, jobId]);
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_search_query_${jobId}`, searchQuery);
+    }
+  }, [searchQuery, jobId]);
+
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
   >([]);
@@ -569,10 +608,33 @@ export default function JobPipelineDashboard({
 
   const [activeTab, setActiveTab] = useState<
     "pipeline" | "naukbot" | "inbound" | "linkedinbot" | "nxthyre"
-  >("pipeline");
+  >(() => {
+    if (jobId) {
+      return (sessionStorage.getItem(`_nxthyre_active_tab_${jobId}`) as any) || "pipeline";
+    }
+    return "pipeline";
+  });
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_active_tab_${jobId}`, activeTab);
+    }
+  }, [activeTab, jobId]);
+
   const [linkedinBotFilteredCount, setLinkedinBotFilteredCount] = useState<number | null>(null);
 
-  const [isKanbanView, setIsKanbanView] = useState(false);
+  const [isKanbanView, setIsKanbanView] = useState(() => {
+    if (jobId) {
+      return sessionStorage.getItem(`_nxthyre_is_kanban_${jobId}`) === "true";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (jobId) {
+      sessionStorage.setItem(`_nxthyre_is_kanban_${jobId}`, isKanbanView.toString());
+    }
+  }, [isKanbanView, jobId]);
   const [draggedCandidateId, setDraggedCandidateId] = useState<number | null>(
     null,
   );
@@ -1751,7 +1813,7 @@ export default function JobPipelineDashboard({
                           className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
                           style={{ top: menuPos.top, left: menuPos.left }}
                         >
-                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
+                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"),currentCtc: cand.current_ctc || "--", expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
                           <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
                           <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
                           <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
@@ -3101,13 +3163,21 @@ export default function JobPipelineDashboard({
                                               cand.premium_data?.all_phone_numbers?.[0] ||
                                               "+91 98765 43210",
                                             experience: expYears,
-                                            expectedCtc: expectedCtc,
-                                            location: cand.location || "--",
+                                            currentCtc: cand.current_salary_lpa
+                                              ? `${cand.current_salary_lpa}`
+                                              : "--",
+                                            expectedCtc: cand.expected_ctc
+                                              ? `${cand.expected_ctc} LPA`
+                                              : "--",
                                             noticePeriod: noticePeriodText,
-                                            callAttention: callAttention,
-                                            resumeUrl: cand.premium_data?.resume_url || "",
+                                            location: cand.location || "--",
+                                            resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "",
                                           };
-                                          sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callData }));
+                                          const candidateIds = sortedCandidates.map(c => c.candidate.id);
+                                          sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ 
+                                            candidate: callData,
+                                            candidateList: candidateIds
+                                          }));
                                           setMenuOpenId(null);
                                           window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`;
                                         }}
