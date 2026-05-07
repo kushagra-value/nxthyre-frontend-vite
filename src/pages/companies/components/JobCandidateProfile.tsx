@@ -2051,10 +2051,18 @@ export default function JobCandidateProfile({
                   </div>
                 ) : (
                   callHistory.map((call) => {
+                    const hasInteraction = 
+                      !!call.note || 
+                      (call.tags && call.tags.length > 0) ||
+                      (call.skills_data && Object.keys(call.skills_data).length > 0) ||
+                      (call.checklist_data && Object.values(call.checklist_data).some(v => v === true));
+
                     const isAnswered =
                       call.call_status === "answered" ||
                       call.call_status === "completed" ||
-                      (call.call_mode === "manual" && (call.duration_seconds > 0 || call.recording?.transcript));
+                      (call.call_mode === "manual" && (call.duration_seconds > 0 || call.recording?.transcript)) ||
+                      hasInteraction;
+
                     const isExpanded = expandedCallId === call.id;
                     const { main: summaryBullets, nextSteps } =
                       parseSummaryBullets(call.recording?.summary || null);
@@ -2070,7 +2078,7 @@ export default function JobCandidateProfile({
                         </div>
 
                         {isAnswered ? (
-                          /* ── Answered Call Card ── */
+                          /* ── Answered / Interaction Call Card ── */
                           <div className="border border-[#E5E7EB] rounded-xl p-5">
                             <div className="flex justify-between items-start mb-5">
                               <div className="flex items-center gap-4">
@@ -2079,13 +2087,15 @@ export default function JobCandidateProfile({
                                 </div>
                                 <div>
                                   <p className="text-[13px] font-bold text-[#4B5563]">
-                                    {call.call_type === "outgoing"
-                                      ? "Outgoing"
-                                      : "Incoming"}{" "}
-                                    Call on {formatTime(call.created_at)}
+                                    {call.call_status === "answered" || call.call_status === "completed" || call.duration_seconds > 0
+                                      ? (call.call_type === "outgoing" ? "Outgoing Call" : "Incoming Call")
+                                      : "Recruiter Interaction"}{" "}
+                                    on {formatTime(call.created_at)}
                                   </p>
                                   <p className="text-[11px] text-[#AEAEB2] mt-0.5">
-                                    {formatDuration(call.duration_seconds)}
+                                    {call.duration_seconds > 0 
+                                      ? formatDuration(call.duration_seconds)
+                                      : (call.call_mode === "manual" ? "Manual Mode" : "Platform Mode")}
                                   </p>
                                 </div>
                               </div>
@@ -2113,6 +2123,51 @@ export default function JobCandidateProfile({
                                 </div>
                               )}
                             </div>
+
+                            {/* ── Interaction Data (Notes, Tags, Skills) ── */}
+                            {hasInteraction && (
+                              <div className="mb-6 space-y-4">
+                                {call.note && (
+                                  <div>
+                                    <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-2 tracking-widest">Note</h5>
+                                    <p className="text-xs text-[#4B5563] bg-slate-50/50 p-3 rounded-lg border border-slate-100 leading-relaxed italic">
+                                      "{call.note}"
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {call.tags && call.tags.length > 0 && (
+                                  <div>
+                                    <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-2 tracking-widest">Tags</h5>
+                                    <div className="flex flex-wrap gap-2">
+                                      {call.tags.map(tag => (
+                                        <span key={tag} className="px-2 py-1 bg-blue-50 text-[#0F47F2] text-[10px] font-bold rounded-md border border-blue-100">
+                                          {tag}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {((call.skills_data && Object.keys(call.skills_data).length > 0) || (call.checklist_data && Object.values(call.checklist_data).some(v => v === true))) && (
+                                  <div>
+                                    <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-2 tracking-widest">Skills & Checklist</h5>
+                                    <div className="flex flex-wrap gap-2">
+                                      {call.skills_data && Object.entries(call.skills_data).map(([skill, val]) => val && (
+                                        <span key={skill} className="px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded-md border border-green-100 flex items-center gap-1">
+                                          <Check className="w-3 h-3" /> {skill}
+                                        </span>
+                                      ))}
+                                      {call.checklist_data && Object.entries(call.checklist_data).map(([key, val]) => val && (
+                                        <span key={key} className="px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-md border border-indigo-100 flex items-center gap-1">
+                                          <Check className="w-3 h-3" /> {key.replace(/([A-Z])/g, ' $1').trim()}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
 
                             {/* Role Questions Evaluation Summary */}
                             {call.role_questions_data && (
