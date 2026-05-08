@@ -73,6 +73,9 @@ export interface Job {
   is_flagged?: boolean;
   interview_this_week?: number;
   poc_email?: string;
+  performance_status?: "ON_TRACK" | "NEEDS_ATTENTION" | "AT_RISK";
+  performance_summary?: string;
+  performance_summary_updated_at?: string;
 }
 
 export interface JobsStatsCount {

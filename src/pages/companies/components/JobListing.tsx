@@ -297,6 +297,35 @@ const JobListing: React.FC<JobListingProps> = ({
         }
     };
 
+    const renderHealthIndicator = (job: Job) => {
+        if (!job.performance_status) return null;
+
+        let color = "#16A34A"; // ON_TRACK
+        let label = "On Track";
+        if (job.performance_status === "NEEDS_ATTENTION") {
+            color = "#F59E0B";
+            label = "Needs Attention";
+        } else if (job.performance_status === "AT_RISK") {
+            color = "#DC2626";
+            label = "At Risk";
+        }
+
+        return (
+            <div
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white border border-gray-100 shadow-sm shrink-0"
+                title={job.performance_summary || label}
+            >
+                <div
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ backgroundColor: color }}
+                />
+                <span className="text-[10px] font-medium text-[#4B5563] uppercase tracking-tight">
+                    {label}
+                </span>
+            </div>
+        );
+    };
+
     // Sorting is now handled server-side via the `ordering` query param.
     // handleSort maps UI column keys to backend ordering values and delegates to parent.
     const handleSort = (key: string) => {
@@ -923,6 +952,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                     {job.title}
                                                                 </span>
                                                                 {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
+                                                                {renderHealthIndicator(job)}
                                                             </div>
                                                             {/* POC inline below job title */}
                                                             <div
