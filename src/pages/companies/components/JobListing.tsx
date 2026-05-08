@@ -179,6 +179,7 @@ const JobListing: React.FC<JobListingProps> = ({
         visible: boolean;
         summary: string;
         status: string;
+        updatedAt?: string;
         top: number;
         left: number;
     }>({ visible: false, summary: "", status: "", top: 0, left: 0 });
@@ -328,6 +329,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         visible: true,
                         status: label,
                         summary: job.performance_summary || "No assessment summary available yet.",
+                        updatedAt: job.performance_summary_updated_at,
                         top: rect.top,
                         left: rect.left + rect.width / 2
                     });
@@ -1647,6 +1649,19 @@ const JobListing: React.FC<JobListingProps> = ({
                         <p className="leading-relaxed font-medium">
                             {healthTooltip.summary}
                         </p>
+                        {healthTooltip.updatedAt && (
+                            <div className="mt-2 pt-1 border-t border-white/5 text-[9px] text-white/40 flex items-center gap-1">
+                                <Calendar className="w-2.5 h-2.5" />
+                                <span>
+                                    Last evaluated: {new Date(healthTooltip.updatedAt).toLocaleDateString(undefined, { 
+                                        month: 'short', 
+                                        day: 'numeric', 
+                                        hour: '2-digit', 
+                                        minute: '2-digit' 
+                                    })}
+                                </span>
+                            </div>
+                        )}
                         {/* Arrow */}
                         <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1C1C1E]" />
                     </div>
