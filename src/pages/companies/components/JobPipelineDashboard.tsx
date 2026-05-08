@@ -1895,7 +1895,7 @@ export default function JobPipelineDashboard({
                   </h4>
                   {isAscendionWorkspace &&
                     stageSlug === "uncontacted" &&
-                    verifiedNonDuplicateIds.has(cand.id) && (
+                    (verifiedNonDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === false) && (
                       <div title="Not a duplicate in Ascendion portal">
                         <Check
                           className="w-4 h-4 text-green-600 shrink-0"
@@ -3061,7 +3061,7 @@ export default function JobPipelineDashboard({
                         const showAscendionUncontacted =
                           isAscendionWorkspace && currentSlug === "uncontacted";
                         const isVerifiedNonDuplicate =
-                          verifiedNonDuplicateIds.has(cand.id);
+                          verifiedNonDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === false;
                         const isAscendionDupChecking =
                           ascendionCheckingIds.has(cand.id);
 
