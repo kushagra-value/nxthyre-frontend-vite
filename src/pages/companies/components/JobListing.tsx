@@ -307,7 +307,7 @@ const JobListing: React.FC<JobListingProps> = ({
     };
 
     const renderHealthIndicator = (job: Job) => {
-        if (!job.performance_status) return null;
+        if (!job.performance_status || !job.performance_summary) return null;
 
         let color = "#16A34A"; // ON_TRACK
         let label = "On Track";
