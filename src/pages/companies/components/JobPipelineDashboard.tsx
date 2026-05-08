@@ -133,6 +133,7 @@ interface CandidateListItem {
       source: string | null;
       original_platform: string | null;
     } | null;
+    is_ascendion_duplicate?: boolean | null;
   };
   stage_slug: string;
   status_tags: {
@@ -191,6 +192,9 @@ interface CandidateListItem {
     scheduled_time: string;
   } | null;
 }
+
+const isAscendionWorkspaceName = (name?: string | null) =>
+  (name || "").toLowerCase().includes("ascendion");
 
 // ─── Props ─────────────────────────────────────────────────────
 
@@ -389,6 +393,52 @@ export default function JobPipelineDashboard({
   onRefreshStages,
 }: JobPipelineDashboardProps) {
   const navigate = useNavigate();
+
+  const isAscendionWorkspace = React.useMemo(() => {
+    const wsName = workspaces.find((w) => w.id === workspaceId)?.name;
+    return isAscendionWorkspaceName(wsName);
+  }, [workspaces, workspaceId]);
+
+  const [ascendionCheckingIds, setAscendionCheckingIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  const ascendionNonDupStorageKey = React.useMemo(() => {
+    if (!jobId) return null;
+    return `_nxthyre_ascendion_nondup_${jobId}`;
+  }, [jobId]);
+
+  const [verifiedNonDuplicateIds, setVerifiedNonDuplicateIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  useEffect(() => {
+    if (!ascendionNonDupStorageKey) {
+      setVerifiedNonDuplicateIds(new Set());
+      return;
+    }
+    try {
+      const raw = sessionStorage.getItem(ascendionNonDupStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) {
+        setVerifiedNonDuplicateIds(
+          new Set(parsed.filter((v) => typeof v === "string")),
+        );
+      } else {
+        setVerifiedNonDuplicateIds(new Set());
+      }
+    } catch {
+      setVerifiedNonDuplicateIds(new Set());
+    }
+  }, [ascendionNonDupStorageKey]);
+
+  useEffect(() => {
+    if (!ascendionNonDupStorageKey) return;
+    sessionStorage.setItem(
+      ascendionNonDupStorageKey,
+      JSON.stringify(Array.from(verifiedNonDuplicateIds)),
+    );
+  }, [ascendionNonDupStorageKey, verifiedNonDuplicateIds]);
   // ── Job details
   const [jobDetails, setJobDetails] = useState<Job | null>(null);
   const [loadingJob, setLoadingJob] = useState(false);
@@ -1196,6 +1246,65 @@ export default function JobPipelineDashboard({
     [pipelineFilters, dateRange, sortConfig, pageSize],
   );
 
+  const runAscendionDuplicateCheck = useCallback(
+    async (candidateId: string) => {
+      if (!jobId) return;
+
+      setAscendionCheckingIds((prev) => new Set(prev).add(candidateId));
+      try {
+        const res = await apiClient.post("/candidates/ascendion/check-duplicate/", {
+          candidate_id: candidateId,
+          job_id: jobId,
+        });
+
+        const isDup = res.data?.is_duplicate;
+        if (isDup === true) {
+          showToast.error("Duplicate in Ascendion portal");
+        } else if (isDup === false) {
+          showToast.success("Not a duplicate in Ascendion portal");
+          setVerifiedNonDuplicateIds((prev) => {
+            const next = new Set(prev);
+            next.add(candidateId);
+            return next;
+          });
+        } else {
+          showToast.info("Ascendion duplicate check completed");
+        }
+
+        // Refresh pipeline + archives (duplicate candidates may be auto-archived)
+        if (isKanbanView) {
+          triggerKanbanRefresh(["uncontacted"]);
+        } else {
+          fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
+        }
+        fetchArchivedCandidates(jobId);
+      } catch (err: any) {
+        showToast.error(
+          err?.response?.data?.detail ||
+            err?.message ||
+            "Failed to check Ascendion duplicate",
+        );
+      } finally {
+        setAscendionCheckingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(candidateId);
+          return next;
+        });
+      }
+    },
+    [
+      jobId,
+      fetchCandidates,
+      fetchArchivedCandidates,
+      triggerKanbanRefresh,
+      isKanbanView,
+      activeStageSlug,
+      currentPage,
+      searchQuery,
+      pageSize,
+    ],
+  );
+
   useEffect(() => {
     if (jobId != null) {
       if (!isKanbanView) {
@@ -1784,6 +1893,15 @@ export default function JobPipelineDashboard({
                   >
                     {cand.full_name || "--"}
                   </h4>
+                  {isAscendionWorkspace &&
+                    stageSlug === "uncontacted" &&
+                    verifiedNonDuplicateIds.has(cand.id) && (
+                      <div title="Not a duplicate in Ascendion portal">
+                        <Check
+                          className="w-4 h-4 text-green-600 shrink-0"
+                        />
+                      </div>
+                    )}
                   {isArchived ? (
                     <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
                   ) : (
@@ -1816,6 +1934,29 @@ export default function JobPipelineDashboard({
                           <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"),currentCtc: cand.current_ctc || "--", expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
                           <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
                           <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
+                          {isAscendionWorkspace && stageSlug === "uncontacted" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                runAscendionDuplicateCheck(cand.id);
+                                setMenuOpenId(null);
+                              }}
+                              disabled={
+                                verifiedNonDuplicateIds.has(cand.id) ||
+                                ascendionCheckingIds.has(cand.id)
+                              }
+                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
+                              title={
+                                verifiedNonDuplicateIds.has(cand.id)
+                                  ? "Already verified as not duplicate"
+                                  : "Check Ascendion portal duplicate"
+                              }
+                            >
+                              {ascendionCheckingIds.has(cand.id)
+                                ? "Checking..."
+                                : "Check dup"}
+                            </button>
+                          )}
                           <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
                           <button onClick={(e) => { e.stopPropagation(); setShiftStageItem(item); setShiftStageTargetId(null); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">Shift to Stage</button>
                           <button onClick={(e) => { e.stopPropagation(); navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, { state: { shareOption: "full_profile", resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "" } }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Share Profile</button>
@@ -1937,6 +2078,10 @@ export default function JobPipelineDashboard({
       setCallModalCandidate,
       setCandidateEditing,
       setShowCandidateEditModal,
+      isAscendionWorkspace,
+      verifiedNonDuplicateIds,
+      ascendionCheckingIds,
+      runAscendionDuplicateCheck,
       handleCopyCandidateEmail,
       getNextStageForItem,
       showToast,
@@ -2908,6 +3053,17 @@ export default function JobPipelineDashboard({
                         const callAttention =
                           item.job_score?.call_attention || [];
                         const isDisabled = selectionType === "ARCHIVED";
+                        const currentSlug = (
+                          item.current_stage?.slug ||
+                          item.stage_slug ||
+                          ""
+                        ).toLowerCase();
+                        const showAscendionUncontacted =
+                          isAscendionWorkspace && currentSlug === "uncontacted";
+                        const isVerifiedNonDuplicate =
+                          verifiedNonDuplicateIds.has(cand.id);
+                        const isAscendionDupChecking =
+                          ascendionCheckingIds.has(cand.id);
 
                         // Experience — handle both numeric total_experience and string like "1+ years exp"
                         const expYears =
@@ -3004,8 +3160,17 @@ export default function JobPipelineDashboard({
                                 }
                               >
                                 <div>
-                                  <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition truncate">
-                                    {cand.full_name || "--"}
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition truncate">
+                                      {cand.full_name || "--"}
+                                    </div>
+                                    {showAscendionUncontacted && isVerifiedNonDuplicate && (
+                                      <div title="Not a duplicate in Ascendion portal">
+                                        <Check
+                                          className="w-4 h-4 text-green-600 shrink-0"
+                                        />
+                                      </div>
+                                    )}
                                   </div>
                                   <div className="text-xs text-[#727272] truncate">
                                     {cand.headline || "--"}
@@ -3088,6 +3253,20 @@ export default function JobPipelineDashboard({
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex justify-end items-center gap-2">
+                                {showAscendionUncontacted && (
+                                  <button
+                                    onClick={() => runAscendionDuplicateCheck(cand.id)}
+                                    disabled={isVerifiedNonDuplicate || isAscendionDupChecking}
+                                    className="h-8 px-2.5 rounded-md text-[11px] font-medium border border-[#D1D1D6] text-[#4B5563] bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-colors whitespace-nowrap"
+                                    title={
+                                      isVerifiedNonDuplicate
+                                        ? "Already verified as not duplicate"
+                                        : "Check Ascendion portal duplicate"
+                                    }
+                                  >
+                                    {isAscendionDupChecking ? "Checking..." : "Check dup"}
+                                  </button>
+                                )}
 
                                 <button
                                   onClick={() => {
@@ -3487,7 +3666,13 @@ export default function JobPipelineDashboard({
 
       {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
       {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} onFilterCountChange={setLinkedinBotFilteredCount} />}
-      {activeTab === "inbound" && <InboundTab jobId={jobId} onSelectCandidate={onSelectCandidate} />}
+      {activeTab === "inbound" && (
+        <InboundTab
+          jobId={jobId}
+          isAscendionWorkspace={isAscendionWorkspace}
+          onSelectCandidate={onSelectCandidate}
+        />
+      )}
       {/* {activeTab === "nxthyre" && <NxthyreTab jobId={jobId} onSelectCandidate={onSelectCandidate} />} */}
 
       {/* ═══════════════════════════════════════════════════════

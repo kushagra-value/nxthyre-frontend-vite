@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check } from "lucide-react";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
@@ -7,6 +7,7 @@ import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } fro
 
 interface InboundTabProps {
   jobId: number | null;
+  isAscendionWorkspace: boolean;
   onSelectCandidate?: (
     candidate: any,
     allCandidates?: any[],
@@ -69,7 +70,7 @@ function buildFilterPayload(filters: PipelineFiltersState): Record<string, any> 
   return payload;
 }
 
-export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps) {
+export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandidate }: InboundTabProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [candidates, setCandidates] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -84,6 +85,42 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [pipelineFilters, setPipelineFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
+
+  const ascendionNonDupStorageKey = jobId ? `_nxthyre_ascendion_nondup_${jobId}` : null;
+  const [ascendionCheckingIds, setAscendionCheckingIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [verifiedNonDuplicateIds, setVerifiedNonDuplicateIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  useEffect(() => {
+    if (!ascendionNonDupStorageKey) {
+      setVerifiedNonDuplicateIds(new Set());
+      return;
+    }
+    try {
+      const raw = sessionStorage.getItem(ascendionNonDupStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) {
+        setVerifiedNonDuplicateIds(
+          new Set(parsed.filter((v) => typeof v === "string")),
+        );
+      } else {
+        setVerifiedNonDuplicateIds(new Set());
+      }
+    } catch {
+      setVerifiedNonDuplicateIds(new Set());
+    }
+  }, [ascendionNonDupStorageKey]);
+
+  useEffect(() => {
+    if (!ascendionNonDupStorageKey) return;
+    sessionStorage.setItem(
+      ascendionNonDupStorageKey,
+      JSON.stringify(Array.from(verifiedNonDuplicateIds)),
+    );
+  }, [ascendionNonDupStorageKey, verifiedNonDuplicateIds]);
 
   // Count active filters for badge
   const activeFilterCount = (() => {
@@ -135,6 +172,48 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
       setLoading(false);
     }
   };
+
+  const runAscendionDuplicateCheck = useCallback(
+    async (candidateId: string) => {
+      if (!jobId) return;
+      setAscendionCheckingIds((prev) => new Set(prev).add(candidateId));
+      try {
+        const res = await apiClient.post("/candidates/ascendion/check-duplicate/", {
+          candidate_id: candidateId,
+          job_id: jobId,
+        });
+
+        const isDup = res.data?.is_duplicate;
+        if (isDup === true) {
+          showToast.error("Duplicate in Ascendion portal");
+        } else if (isDup === false) {
+          showToast.success("Not a duplicate in Ascendion portal");
+          setVerifiedNonDuplicateIds((prev) => {
+            const next = new Set(prev);
+            next.add(candidateId);
+            return next;
+          });
+        } else {
+          showToast.info("Ascendion duplicate check completed");
+        }
+
+        fetchInboundCandidates(currentPage);
+      } catch (err: any) {
+        showToast.error(
+          err?.response?.data?.detail ||
+            err?.message ||
+            "Failed to check Ascendion duplicate",
+        );
+      } finally {
+        setAscendionCheckingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(candidateId);
+          return next;
+        });
+      }
+    },
+    [jobId, currentPage, fetchInboundCandidates],
+  );
 
   const toggleSelection = (id: string) => {
     setSelectedCandidates((prev) => {
@@ -279,7 +358,15 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
                       />
                     </td>
                     <td className="px-6 py-6 border-transparent">
-                      <div className="font-semibold text-[14px] text-[#4B5563]">{item.full_name}</div>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="font-semibold text-[14px] text-[#4B5563] truncate">{item.full_name}</div>
+                        {isAscendionWorkspace && verifiedNonDuplicateIds.has(item.id) && (
+                          <Check
+                            className="w-4 h-4 text-green-600 shrink-0"
+                            title="Not a duplicate in Ascendion portal"
+                          />
+                        )}
+                      </div>
                       <div className="text-[13px] text-[#8E8E93] mt-0.5">{item.headline || "-"}</div>
                     </td>
                     <td className="px-6 py-6 border-transparent">
@@ -301,6 +388,28 @@ export default function InboundTab({ jobId, onSelectCandidate }: InboundTabProps
                     </td>
                     <td className="px-6 py-6 border-transparent">
                       <div className="flex justify-end gap-3 z-10 flex-row">
+                        {isAscendionWorkspace && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              runAscendionDuplicateCheck(item.id);
+                            }}
+                            disabled={
+                              verifiedNonDuplicateIds.has(item.id) ||
+                              ascendionCheckingIds.has(item.id)
+                            }
+                            className="flex items-center gap-2 bg-white border border-[#D1D1D6] text-[#4B5563] px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition whitespace-nowrap"
+                            title={
+                              verifiedNonDuplicateIds.has(item.id)
+                                ? "Already verified as not duplicate"
+                                : "Check Ascendion portal duplicate"
+                            }
+                          >
+                            {ascendionCheckingIds.has(item.id)
+                              ? "Checking..."
+                              : "Check dup"}
+                          </button>
+                        )}
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
