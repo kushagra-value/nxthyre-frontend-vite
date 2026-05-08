@@ -175,6 +175,14 @@ const JobListing: React.FC<JobListingProps> = ({
         left: number;
     }>({ visible: false, name: "", active: 0, archived: 0, top: 0, left: 0 });
 
+    const [healthTooltip, setHealthTooltip] = useState<{
+        visible: boolean;
+        summary: string;
+        status: string;
+        top: number;
+        left: number;
+    }>({ visible: false, summary: "", status: "", top: 0, left: 0 });
+
     // --- Column Visibility Filter ---
     const ALL_COLUMNS = [
         { key: 'checkbox', label: 'Checkbox', width: '40px', alwaysVisible: true },
@@ -242,6 +250,7 @@ const JobListing: React.FC<JobListingProps> = ({
             setStatusMenuOpenId(null);
             setShowColumnFilter(false);
             setStageTooltip((prev) => ({ ...prev, visible: false }));
+            setHealthTooltip((prev) => ({ ...prev, visible: false }));
         };
         document.addEventListener("mousedown", handleClickOutside);
         window.addEventListener("scroll", handleScroll, true);
@@ -312,8 +321,18 @@ const JobListing: React.FC<JobListingProps> = ({
 
         return (
             <div
-                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white border border-gray-100 shadow-sm shrink-0"
-                title={job.performance_summary || label}
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white border border-gray-100 shadow-sm shrink-0 cursor-help"
+                onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHealthTooltip({
+                        visible: true,
+                        status: label,
+                        summary: job.performance_summary || "No assessment summary available yet.",
+                        top: rect.top,
+                        left: rect.left + rect.width / 2
+                    });
+                }}
+                onMouseLeave={() => setHealthTooltip(prev => ({ ...prev, visible: false }))}
             >
                 <div
                     className="w-2 h-2 rounded-full animate-pulse"
@@ -1601,6 +1620,39 @@ const JobListing: React.FC<JobListingProps> = ({
                 jobId={timelineJobId ?? 0}
                 jobTitle={filteredWorkspaceJobs.find(j => j.id === timelineJobId)?.title}
             />
+
+            {/* Health Tooltip */}
+            {healthTooltip.visible && createPortal(
+                <div
+                    className="fixed z-[10001] pointer-events-none"
+                    style={{
+                        top: healthTooltip.top - 8,
+                        left: healthTooltip.left,
+                        transform: 'translate(-50%, -100%)'
+                    }}
+                >
+                    <div className="bg-[#1C1C1E] text-white text-[12px] py-2 px-3 rounded-lg shadow-xl max-w-[250px] relative animate-in fade-in zoom-in duration-150">
+                        <div className="flex items-center gap-2 mb-1 border-b border-white/10 pb-1">
+                            <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ 
+                                    backgroundColor: healthTooltip.status === "On Track" ? "#16A34A" : 
+                                                    healthTooltip.status === "Needs Attention" ? "#F59E0B" : "#DC2626" 
+                                }} 
+                            />
+                            <span className="font-bold uppercase text-[10px] tracking-wider text-white/90">
+                                {healthTooltip.status}
+                            </span>
+                        </div>
+                        <p className="leading-relaxed font-medium">
+                            {healthTooltip.summary}
+                        </p>
+                        {/* Arrow */}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1C1C1E]" />
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 };
