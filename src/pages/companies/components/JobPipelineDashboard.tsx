@@ -60,7 +60,7 @@ import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } fro
 import DateRangeFilter from "./DateRangeFilter";
 import PipelineKanbanColumn from "./PipelineKanbanColumn";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
-import { getAttentionPill, formatTimeAgo } from "../../../utils/candidateAttention";
+import { getAttentionPill, formatTimeAgo, formatMovedDate } from "../../../utils/candidateAttention";
 
 // ─── Interfaces ────────────────────────────────────────────────
 
@@ -3154,20 +3154,7 @@ export default function JobPipelineDashboard({
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex justify-end items-center gap-2">
-                                {showAscendionUncontacted && (
-                                  <button
-                                    onClick={() => runAscendionDuplicateCheck(cand.id)}
-                                    disabled={isVerifiedNonDuplicate || isAscendionDupChecking}
-                                    className="h-8 px-2.5 rounded-md text-[11px] font-medium border border-[#D1D1D6] text-[#4B5563] bg-white hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition-colors whitespace-nowrap"
-                                    title={
-                                      isVerifiedNonDuplicate
-                                        ? "Already verified as not duplicate"
-                                        : "Check Ascendion portal duplicate"
-                                    }
-                                  >
-                                    {isAscendionDupChecking ? "Checking..." : "Check dup"}
-                                  </button>
-                                )}
+
 
                                 <button
                                   onClick={() => {
@@ -3286,6 +3273,24 @@ export default function JobPipelineDashboard({
                                       >
                                         Copy Mail ID
                                       </button>
+                                      {showAscendionUncontacted && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            runAscendionDuplicateCheck(cand.id);
+                                            setMenuOpenId(null);
+                                          }}
+                                          disabled={isVerifiedNonDuplicate || isAscendionDupChecking}
+                                          className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
+                                          title={
+                                            isVerifiedNonDuplicate
+                                              ? "Already verified as not duplicate"
+                                              : "Check Ascendion portal duplicate"
+                                          }
+                                        >
+                                          {isAscendionDupChecking ? "Checking..." : "Check dup"}
+                                        </button>
+                                      )}
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();

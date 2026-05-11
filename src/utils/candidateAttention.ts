@@ -89,3 +89,36 @@ export const getAttentionPill = (
 
   return null;
 };
+
+export const formatMovedDate = (statusTags?: { text: string; color: string }[]): string => {
+  if (!statusTags || statusTags.length === 0) return "0d";
+
+  const movedTag = statusTags.find(tag =>
+    tag.text.toLowerCase().includes("moved") ||
+    tag.text.toLowerCase().includes("added")
+  );
+
+  if (!movedTag) return "0d";
+
+  const text = movedTag.text.toLowerCase();
+
+  if (text.includes("today")) return "0d";
+  if (text.includes("yesterday")) return "1d";
+
+  // Extract date from strings like "Moved on 31 Mar 2026" or "Moved 31 Mar 2026"
+  const dateParts = movedTag.text.replace(/Moved on |Added on |Moved |Added /i, "").trim();
+  const pastDate = new Date(dateParts);
+
+  if (isNaN(pastDate.getTime())) return "0d";
+
+  const now = new Date();
+  // Clear time parts to compare only dates
+  now.setHours(0, 0, 0, 0);
+  const midnightPast = new Date(pastDate);
+  midnightPast.setHours(0, 0, 0, 0);
+
+  const diffInMs = now.getTime() - midnightPast.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  return `${Math.max(0, diffInDays)}d`;
+};

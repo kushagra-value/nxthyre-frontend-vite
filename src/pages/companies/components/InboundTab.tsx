@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check, MoreHorizontal } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
@@ -81,6 +82,31 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
   const pageSize = 10;
   
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+  const navigate = useNavigate();
+
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpenId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleCopyCandidateEmail = async (item: any) => {
+    const email = item.premium_data?.email || item.premium_data?.all_emails?.[0] || "";
+    if (!email) {
+      showToast.error("Candidate email not available");
+      return;
+    }
+    await navigator.clipboard.writeText(email);
+    showToast.success("Email copied");
+  };
 
   // Filter panel state
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -363,10 +389,11 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="font-semibold text-[14px] text-[#4B5563] truncate">{item.full_name}</div>
                         {isAscendionWorkspace && verifiedNonDuplicateIds.has(item.id) && (
-                          <Check
-                            className="w-4 h-4 text-green-600 shrink-0"
-                            title="Not a duplicate in Ascendion portal"
-                          />
+                          <div title="Not a duplicate in Ascendion portal">
+                            <Check
+                              className="w-4 h-4 text-green-600 shrink-0"
+                            />
+                          </div>
                         )}
                       </div>
                       <div className="text-[13px] text-[#8E8E93] mt-0.5">{item.headline || "-"}</div>
@@ -408,30 +435,8 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                         })()}
                       </div>
                     </td>
-                    <td className="px-6 py-6 border-transparent">
-                      <div className="flex justify-end gap-3 z-10 flex-row">
-                        {isAscendionWorkspace && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              runAscendionDuplicateCheck(item.id);
-                            }}
-                            disabled={
-                              verifiedNonDuplicateIds.has(item.id) ||
-                              ascendionCheckingIds.has(item.id)
-                            }
-                            className="flex items-center gap-2 bg-white border border-[#D1D1D6] text-[#4B5563] px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white transition whitespace-nowrap"
-                            title={
-                              verifiedNonDuplicateIds.has(item.id)
-                                ? "Already verified as not duplicate"
-                                : "Check Ascendion portal duplicate"
-                            }
-                          >
-                            {ascendionCheckingIds.has(item.id)
-                              ? "Checking..."
-                              : "Check dup"}
-                          </button>
-                        )}
+                    <td className="px-6 py-6 border-transparent" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-end items-center gap-2 z-10 flex-row">
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
@@ -449,6 +454,126 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                         >
                           <Plus className="w-3.5 h-3.5" /> Shortlist
                         </button>
+                        
+                        <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (menuOpenId === item.id) {
+                                setMenuOpenId(null);
+                                return;
+                              }
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const menuWidth = 192;
+                              const menuHeight = 180;
+                              const gap = 8;
+                              const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
+                              const preferredTop = openUp
+                                ? rect.top - menuHeight - gap
+                                : rect.bottom + gap;
+                              const top = Math.min(
+                                Math.max(8, preferredTop),
+                                Math.max(8, window.innerHeight - menuHeight - 8)
+                              );
+                              let left = rect.right - menuWidth;
+                              if (left < 8) left = 8;
+                              if (left + menuWidth > window.innerWidth - 8) {
+                                left = window.innerWidth - menuWidth - 8;
+                              }
+                              setMenuPos({ top, left });
+                              setMenuOpenId(item.id);
+                            }}
+                            className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
+                            title="Options"
+                          >
+                            <MoreHorizontal className="w-4 h-4 text-[#4B5563]" />
+                          </button>
+
+                          {menuOpenId === item.id && (
+                            <div
+                              className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                              style={{ top: menuPos.top, left: menuPos.left }}
+                            >
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const callData = {
+                                    id: item.id,
+                                    name: item.full_name || "Unknown",
+                                    avatarInitials: item.full_name
+                                      ? item.full_name.substring(0, 2).toUpperCase()
+                                      : "UN",
+                                    headline: item.headline || "--",
+                                    phone:
+                                      item.premium_data?.phone ||
+                                      item.premium_data?.all_phone_numbers?.[0] ||
+                                      "+91 98765 43210",
+                                    experience: item.experience_years || "--",
+                                    currentCtc: item.current_salary_lpa || "--",
+                                    expectedCtc: item.expected_ctc || "--",
+                                    noticePeriod: item.notice_period_summary || "--",
+                                    location: item.location || "--",
+                                    resumeUrl: item.premium_data?.resume_url || item.resume_url || "",
+                                  };
+                                  const candidateIds = candidates.map(c => c.id);
+                                  sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ 
+                                    candidate: callData,
+                                    candidateList: candidateIds
+                                  }));
+                                  setMenuOpenId(null);
+                                  window.location.href = `/call/${item.id}/${jobId || 0}?mode=manual`;
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                              >
+                                Call
+                              </button>
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await handleCopyCandidateEmail(item);
+                                  setMenuOpenId(null);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                              >
+                                Copy Mail ID
+                              </button>
+                              {isAscendionWorkspace && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    runAscendionDuplicateCheck(item.id);
+                                    setMenuOpenId(null);
+                                  }}
+                                  disabled={verifiedNonDuplicateIds.has(item.id) || ascendionCheckingIds.has(item.id)}
+                                  className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
+                                  title={
+                                    verifiedNonDuplicateIds.has(item.id)
+                                      ? "Already verified as not duplicate"
+                                      : "Check Ascendion portal duplicate"
+                                  }
+                                >
+                                  {ascendionCheckingIds.has(item.id) ? "Checking..." : "Check dup"}
+                                </button>
+                              )}
+                              <div className="h-px bg-[#F3F5F7] my-1" />
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/candidate-profiles/${item.id}?job_id=${jobId}`, {
+                                    state: {
+                                      shareOption: "full_profile",
+                                      resumeUrl: item.premium_data?.resume_url || item.resume_url || ""
+                                    }
+                                  });
+                                  setMenuOpenId(null);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                              >
+                                Share Profile
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
