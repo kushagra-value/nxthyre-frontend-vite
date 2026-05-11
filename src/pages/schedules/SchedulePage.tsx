@@ -76,7 +76,7 @@ export default function SchedulePage() {
   const [sidebarEvents, setSidebarEvents] = useState<ScheduleEvent[]>([]);
   const [calendarActivities, setCalendarActivities] = useState<CalendarDayActivity[]>([]);
   const [counts, setCounts] = useState({ all: 0, scheduled: 0, completed: 0, overdue: 0, cancelled: 0 });
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
   const [allJobs, setAllJobs] = useState<AllRoleOption[]>([]);
