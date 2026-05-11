@@ -544,7 +544,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                 <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Notice Period</th>
                 <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Source</th>
                 <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Attention</th>
-                <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Action</th>
+                <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
@@ -623,7 +623,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                         })()}
                       </div>
                     </td>
-                    <td className="px-6 py-6 border-transparent" onClick={(e) => e.stopPropagation()}>
+                    <td className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-6 py-6 border-transparent shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`} onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end items-center gap-2 z-10 flex-row">
                         <button
                           onClick={async (e) => {

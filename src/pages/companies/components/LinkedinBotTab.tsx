@@ -451,7 +451,7 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                 {renderSortableHeader('Notice Period', 'notice_period')}
                 {renderSortableHeader('Skills Match', 'skills_match', 'center')}
                 <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Attention</th>
-                <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Actions</th>
+                <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
@@ -473,12 +473,12 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                       />
                     </td>
                     <td className="px-6 py-6 border-transparent">
-                      <div className="font-semibold text-[14px] text-[#4B5563]">
+                      <div className="font-semibold text-[14px] text-[#4B5563] truncate max-w-[180px]">
                         {item.linkedin_url ? (
-                          <a href={item.linkedin_url} target="_blank" rel="noreferrer" className="hover:text-[#0F47F2] transition-colors">{item.name}</a>
-                        ) : item.name}
+                          <a href={item.linkedin_url} target="_blank" rel="noreferrer" className="hover:text-[#0F47F2] transition-colors" title={item.name}>{item.name}</a>
+                        ) : <span title={item.name}>{item.name}</span>}
                       </div>
-                      <div className="text-[13px] text-[#8E8E93] mt-0.5">{item.current_title || "--"} • {item.current_company || "--"}</div>
+                      <div className="text-[13px] text-[#8E8E93] mt-0.5 truncate max-w-[180px]" title={`${item.current_title || "--"} • ${item.current_company || "--"}`}>{item.current_title || "--"} • {item.current_company || "--"}</div>
                     </td>
                     <td className="px-6 py-6 border-transparent">
                        <div className="relative w-10 h-10 mx-auto">
@@ -489,7 +489,7 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                           <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{item.ai_score || 0}</div>
                         </div>
                     </td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.location || "--"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years ? `${Number(item.experience_years).toFixed(1)} Years` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
@@ -530,7 +530,7 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                         })()}
                       </div>
                     </td>
-                    <td className="px-6 py-6 border-transparent">
+                    <td className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-6 py-6 border-transparent shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}>
                       <div className="flex justify-end items-center gap-3 z-10 flex-row">
                         {item.linkedin_url && (
                           <button 
