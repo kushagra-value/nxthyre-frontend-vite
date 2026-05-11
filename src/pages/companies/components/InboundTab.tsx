@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check, MoreHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check, MoreHorizontal, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
@@ -576,7 +576,12 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                     <td className="px-6 py-6 border-transparent min-w-0 max-w-[200px]">
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="font-semibold text-[14px] text-[#4B5563] truncate" title={item.full_name}>{item.full_name}</div>
-                        {isAscendionWorkspace && verifiedNonDuplicateIds.has(item.id) && (
+                        {isAscendionWorkspace && ascendionCheckingIds.has(item.id) && (
+                          <div title="Checking for duplicates...">
+                            <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
+                          </div>
+                        )}
+                        {isAscendionWorkspace && !ascendionCheckingIds.has(item.id) && verifiedNonDuplicateIds.has(item.id) && (
                           <div title="Not a duplicate in Ascendion portal">
                             <Check
                               className="w-4 h-4 text-green-600 shrink-0"

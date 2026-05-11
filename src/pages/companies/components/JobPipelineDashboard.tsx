@@ -14,6 +14,7 @@ import {
   X,
   Archive,
   Check,
+  Loader2,
   Plus,
   Maximize2,
   Minimize2,
@@ -1796,11 +1797,18 @@ export default function JobPipelineDashboard({
                   </h4>
                   {isAscendionWorkspace &&
                     stageSlug === "uncontacted" &&
-                    (verifiedNonDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === false) && (
+                    (verifiedNonDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === false) && !ascendionCheckingIds.has(cand.id) && (
                       <div title="Not a duplicate in Ascendion portal">
                         <Check
                           className="w-4 h-4 text-green-600 shrink-0"
                         />
+                      </div>
+                    )}
+                  {isAscendionWorkspace &&
+                    stageSlug === "uncontacted" &&
+                    ascendionCheckingIds.has(cand.id) && (
+                      <div title="Checking for duplicates...">
+                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
                       </div>
                     )}
                   {isArchived ? (
@@ -3065,7 +3073,12 @@ export default function JobPipelineDashboard({
                                     <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition truncate">
                                       {cand.full_name || "--"}
                                     </div>
-                                    {showAscendionUncontacted && isVerifiedNonDuplicate && (
+                                    {showAscendionUncontacted && ascendionCheckingIds.has(cand.id) && (
+                                      <div title="Checking for duplicates...">
+                                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
+                                      </div>
+                                    )}
+                                    {showAscendionUncontacted && isVerifiedNonDuplicate && !ascendionCheckingIds.has(cand.id) && (
                                       <div title="Not a duplicate in Ascendion portal">
                                         <Check
                                           className="w-4 h-4 text-green-600 shrink-0"
