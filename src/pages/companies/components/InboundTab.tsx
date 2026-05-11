@@ -4,6 +4,7 @@ import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
 import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } from "./PipelineFilterPanel";
+import { getAttentionPill } from "../../../utils/candidateAttention";
 
 interface InboundTabProps {
   jobId: number | null;
@@ -328,17 +329,18 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Expected CTC</th>
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Notice Period</th>
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">Source</th>
+                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">Attention</th>
                 <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
                {loading ? (
                  <tr>
-                   <td colSpan={9} className="px-6 py-12 text-center text-[#8E8E93]">Loading candidates...</td>
+                   <td colSpan={11} className="px-6 py-12 text-center text-[#8E8E93]">Loading candidates...</td>
                  </tr>
                ) : candidates.length === 0 ? (
                  <tr>
-                   <td colSpan={9} className="px-6 py-12 text-center text-[#8E8E93]">No candidates found.</td>
+                   <td colSpan={11} className="px-6 py-12 text-center text-[#8E8E93]">No candidates found.</td>
                  </tr>
                ) : (() => {
                  const inboundCandidatesMapped = candidates.map(c => ({ id: null, candidate: { ...c, application_type: "inbound" }, application_type: "inbound" }));
@@ -385,6 +387,26 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                     <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent">{item.notice_period_summary || "-"}</td>
                     <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center">
                        {item.source?.source?.replace("_", " ") || "-"}
+                    </td>
+                    <td className="px-6 py-6 whitespace-nowrap border-transparent">
+                      <div className="flex justify-center">
+                        {(() => {
+                          const attentionTag = item.status_tags?.find((t: any) => t.text);
+                          const pill = getAttentionPill(item, attentionTag);
+                          if (!pill) return <span className="text-xs text-[#8E8E93]">--</span>;
+                          const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
+                          const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                          return (
+                            <span
+                              className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
+                              style={{ backgroundColor: bgColor, color: textColor }}
+                              title={pill.text}
+                            >
+                              {pill.text}
+                            </span>
+                          );
+                        })()}
+                      </div>
                     </td>
                     <td className="px-6 py-6 border-transparent">
                       <div className="flex justify-end gap-3 z-10 flex-row">

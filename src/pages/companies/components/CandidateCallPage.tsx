@@ -562,8 +562,6 @@ export default function CandidateCallPage() {
       }
       setCallState("completed");
       setIsPaused(true);
-      // Auto-save when call ends
-      setTimeout(() => handleSaveNotes(true), 500);
     } catch (err) {
       console.error("Failed to end call:", err);
       // Still mark as completed locally
@@ -676,10 +674,36 @@ export default function CandidateCallPage() {
     };
   }, []);
 
+  const lastSavedDataRef = useRef<string>("");
+  const callUuidRef = useRef<string | null>(initialCallUuid);
+  const isSavingRef = useRef(false);
+
   const handleSaveNotes = useCallback(async (isSilent = false) => {
-    if (!candidate) return;
+    if (!candidate || isSavingRef.current) return;
+
+    // Compare current state with last saved to avoid redundant saves
+    const currentData = JSON.stringify({
+      notes,
+      activeTags,
+      checklist,
+      skillsChecklist,
+      roleQuestionsData: roleQuestions.reduce((acc, q) => {
+        acc[q.id] = q;
+        return acc;
+      }, {} as Record<number, any>)
+    });
+
+    if (currentData === lastSavedDataRef.current && callUuidRef.current) {
+      console.log("No changes detected, skipping save.");
+      return;
+    }
+
     if (!isSilent) setIsSaving(true);
-    let finalCallUuid = callUuid;
+    isSavingRef.current = true;
+    
+    // Always use the latest UUID from the ref
+    const finalCallUuid = callUuidRef.current;
+    
     try {
       const callLogRes = await saveCallLog({
         call_uuid: finalCallUuid || undefined,
@@ -697,18 +721,22 @@ export default function CandidateCallPage() {
         call_status: isManual && manualCallConnected ? "completed" : undefined
       });
       
-      finalCallUuid = callLogRes.call_uuid || finalCallUuid;
+      if (callLogRes.call_uuid) {
+        callUuidRef.current = callLogRes.call_uuid;
+        setCallUuid(callLogRes.call_uuid);
+        lastSavedDataRef.current = currentData; // Update last saved state
+      }
       
       if (!isSilent) showToast.success("Notes and checklist saved!");
     } catch (err) {
       console.error("Failed to save notes:", err);
       if (!isSilent) showToast.error("Failed to save notes. Please try again.");
     } finally {
+      isSavingRef.current = false;
       if (!isSilent) setIsSaving(false);
     }
   }, [
     candidate,
-    callUuid,
     notes,
     seconds,
     activeTags,
@@ -722,8 +750,6 @@ export default function CandidateCallPage() {
   const toggleTag = (tag: string) => {
     setActiveTags((prev) => {
       const next = prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
-      // Save immediately in background
-      setTimeout(() => handleSaveNotes(true), 100);
       return next;
     });
   };
@@ -731,7 +757,6 @@ export default function CandidateCallPage() {
   const toggleChecklist = (key: keyof typeof checklist) => {
     setChecklist((prev) => {
       const next = { ...prev, [key]: !prev[key] };
-      setTimeout(() => handleSaveNotes(true), 100);
       return next;
     });
   };
@@ -795,8 +820,7 @@ export default function CandidateCallPage() {
 
         {/* Back button */}
         <button
-          onClick={async () => {
-            await handleSaveNotes(true);
+          onClick={() => {
             navigate(-1);
           }}
           className="absolute top-6 left-6 text-white/70 hover:text-white flex items-center gap-2 z-10"
@@ -1559,7 +1583,6 @@ export default function CandidateCallPage() {
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    onBlur={() => handleSaveNotes(true)}
                     placeholder="Add key points here during the call"
                     className="w-full h-24 bg-white border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:outline-none rounded-xl p-4 text-sm transition-all resize-none shadow-sm"
                   />

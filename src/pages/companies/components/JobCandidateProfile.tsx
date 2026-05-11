@@ -2318,39 +2318,7 @@ export default function JobCandidateProfile({
                                 </div>
                               )}
                           </div>
-                        ) : (
-                          /* ── Not Answered / Failed Call Card ── */
-                          <div
-                            className="border border-[#E5E7EB] rounded-xl p-4 flex items-center justify-between hover:border-[#0F47F2] transition cursor-pointer"
-                            onClick={() =>
-                              setExpandedCallId(isExpanded ? null : call.id)
-                            }
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-full bg-[#FEE9E7] flex items-center justify-center shrink-0">
-                                <PhoneOff className="w-4 h-4 text-[#DC2626]" />
-                              </div>
-                              <div>
-                                <p className="text-[13px] font-bold text-[#DC2626]">
-                                  {call.call_status === "not_answered"
-                                    ? "Not answered"
-                                    : call.call_status === "busy"
-                                      ? "Busy"
-                                      : "Call failed"}
-                                </p>
-                                <p className="text-[11px] text-[#AEAEB2] mt-0.5">
-                                  {call.duration_seconds > 0
-                                    ? `Rang for ${formatDuration(call.duration_seconds)}`
-                                    : `${call.call_type === "outgoing" ? "Outgoing" : "Incoming"} at ${formatTime(call.created_at)}`}
-                                </p>
-                              </div>
-                            </div>
-                            <ChevronDown
-                              className={`w-5 h-5 text-[#4B5563] transition-transform ${isExpanded ? "rotate-180" : ""
-                                }`}
-                            />
-                          </div>
-                        )}
+                        ) : null}
                       </div>
                     );
                   })

@@ -175,6 +175,15 @@ const JobListing: React.FC<JobListingProps> = ({
         left: number;
     }>({ visible: false, name: "", active: 0, archived: 0, top: 0, left: 0 });
 
+    const [healthTooltip, setHealthTooltip] = useState<{
+        visible: boolean;
+        summary: string;
+        status: string;
+        updatedAt?: string;
+        top: number;
+        left: number;
+    }>({ visible: false, summary: "", status: "", top: 0, left: 0 });
+
     // --- Column Visibility Filter ---
     const ALL_COLUMNS = [
         { key: 'checkbox', label: 'Checkbox', width: '40px', alwaysVisible: true },
@@ -242,6 +251,7 @@ const JobListing: React.FC<JobListingProps> = ({
             setStatusMenuOpenId(null);
             setShowColumnFilter(false);
             setStageTooltip((prev) => ({ ...prev, visible: false }));
+            setHealthTooltip((prev) => ({ ...prev, visible: false }));
         };
         document.addEventListener("mousedown", handleClickOutside);
         window.addEventListener("scroll", handleScroll, true);
@@ -295,6 +305,46 @@ const JobListing: React.FC<JobListingProps> = ({
         } catch {
             toastUtil.error("Failed to update flag status");
         }
+    };
+
+    const renderHealthIndicator = (job: Job) => {
+        if (!job.performance_status || !job.performance_summary) return null;
+
+        let color = "#16A34A"; // ON_TRACK
+        let label = "On Track";
+        if (job.performance_status === "NEEDS_ATTENTION") {
+            color = "#F59E0B";
+            label = "Needs Attention";
+        } else if (job.performance_status === "AT_RISK") {
+            color = "#DC2626";
+            label = "At Risk";
+        }
+
+        return (
+            <div
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white border border-gray-100 shadow-sm shrink-0 cursor-help"
+                onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setHealthTooltip({
+                        visible: true,
+                        status: label,
+                        summary: job.performance_summary || "No assessment summary available yet.",
+                        updatedAt: job.performance_summary_updated_at,
+                        top: rect.top,
+                        left: rect.left + rect.width / 2
+                    });
+                }}
+                onMouseLeave={() => setHealthTooltip(prev => ({ ...prev, visible: false }))}
+            >
+                <div
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ backgroundColor: color }}
+                />
+                <span className="text-[10px] font-medium text-[#4B5563] uppercase tracking-tight">
+                    {label}
+                </span>
+            </div>
+        );
     };
 
     // Sorting is now handled server-side via the `ordering` query param.
@@ -923,6 +973,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                     {job.title}
                                                                 </span>
                                                                 {job.is_flagged && <Flag className="w-3.5 h-3.5 text-[#DC2626] fill-[#DC2626] shrink-0" />}
+                                                                {renderHealthIndicator(job)}
                                                             </div>
                                                             {/* POC inline below job title */}
                                                             <div
@@ -1571,6 +1622,52 @@ const JobListing: React.FC<JobListingProps> = ({
                 jobId={timelineJobId ?? 0}
                 jobTitle={filteredWorkspaceJobs.find(j => j.id === timelineJobId)?.title}
             />
+
+            {/* Health Tooltip */}
+            {healthTooltip.visible && createPortal(
+                <div
+                    className="fixed z-[10001] pointer-events-none"
+                    style={{
+                        top: healthTooltip.top - 8,
+                        left: healthTooltip.left,
+                        transform: 'translate(-50%, -100%)'
+                    }}
+                >
+                    <div className="bg-[#1C1C1E] text-white text-[12px] py-2 px-3 rounded-lg shadow-xl max-w-[250px] relative animate-in fade-in zoom-in duration-150">
+                        <div className="flex items-center gap-2 mb-1 border-b border-white/10 pb-1">
+                            <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ 
+                                    backgroundColor: healthTooltip.status === "On Track" ? "#16A34A" : 
+                                                    healthTooltip.status === "Needs Attention" ? "#F59E0B" : "#DC2626" 
+                                }} 
+                            />
+                            <span className="font-bold uppercase text-[10px] tracking-wider text-white/90">
+                                {healthTooltip.status}
+                            </span>
+                        </div>
+                        <p className="leading-relaxed font-medium">
+                            {healthTooltip.summary}
+                        </p>
+                        {healthTooltip.updatedAt && (
+                            <div className="mt-2 pt-1 border-t border-white/5 text-[9px] text-white/40 flex items-center gap-1">
+                                <Calendar className="w-2.5 h-2.5" />
+                                <span>
+                                    Last evaluated: {new Date(healthTooltip.updatedAt).toLocaleDateString(undefined, { 
+                                        month: 'short', 
+                                        day: 'numeric', 
+                                        hour: '2-digit', 
+                                        minute: '2-digit' 
+                                    })}
+                                </span>
+                            </div>
+                        )}
+                        {/* Arrow */}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1C1C1E]" />
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 };
