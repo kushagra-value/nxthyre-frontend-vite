@@ -88,6 +88,194 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
+  // -- Candidate Edit Modal State --
+  const [showCandidateEditModal, setShowCandidateEditModal] = useState(false);
+  const [candidateEditing, setCandidateEditing] = useState<any | null>(null);
+  const [candidateEditForm, setCandidateEditForm] = useState({
+    notice_period_days: "",
+    current_ctc_lpa: "",
+    expected_ctc_lpa: "",
+    current_take_home: "",
+    last_working_day: "",
+    location: "",
+    exp: "",
+  });
+
+  useEffect(() => {
+    if (showCandidateEditModal && candidateEditing) {
+      const cand = candidateEditing; // InboundTab candidates are raw candidate objects
+
+      const extractNum = (val: any) => {
+        if (val == null) return "";
+        const match = val.toString().match(/[\d.]+/);
+        return match ? match[0] : "";
+      };
+
+      let noticePeriodDays = cand.notice_period_days?.toString() || "";
+      if (!noticePeriodDays && cand.notice_period_summary) {
+        if (cand.notice_period_summary.toLowerCase().includes("immediate")) {
+          noticePeriodDays = "0";
+        } else {
+          const match = cand.notice_period_summary.match(/\d+/);
+          if (match) noticePeriodDays = match[0];
+        }
+      }
+
+      setCandidateEditForm({
+        notice_period_days: noticePeriodDays,
+        current_ctc_lpa: extractNum(cand.current_salary_lpa || cand.current_salary),
+        expected_ctc_lpa: extractNum(cand.expected_ctc),
+        current_take_home: extractNum(cand.current_take_home),
+        last_working_day: cand.last_working_day || "",
+        location: cand.location || "",
+        exp: extractNum(cand.total_experience ?? cand.experience_years),
+      });
+    }
+  }, [showCandidateEditModal, candidateEditing]);
+
+  useEffect(() => {
+    if (!showCandidateEditModal) {
+      setCandidateEditForm({
+        notice_period_days: "",
+        current_ctc_lpa: "",
+        expected_ctc_lpa: "",
+        current_take_home: "",
+        last_working_day: "",
+        location: "",
+        exp: "",
+      });
+    }
+  }, [showCandidateEditModal]);
+
+  const handleCandidateEditSave = async () => {
+    if (!candidateEditing) return;
+
+    const uuid = candidateEditing.id;
+    const payload: any = {};
+    let valid = true;
+
+    if (candidateEditForm.notice_period_days !== "") {
+      const days = parseInt(candidateEditForm.notice_period_days, 10);
+      if (isNaN(days) || days < 0) {
+        showToast.error("Notice period must be a non-negative number");
+        valid = false;
+      } else {
+        payload.notice_period_days = days;
+      }
+    }
+
+    if (candidateEditForm.current_ctc_lpa !== "") {
+      const lpa = parseFloat(candidateEditForm.current_ctc_lpa);
+      if (isNaN(lpa) || lpa < 0) {
+        showToast.error("Current CTC must be a non-negative number");
+        valid = false;
+      } else {
+        payload.current_salary = lpa;
+      }
+    }
+
+    if (candidateEditForm.expected_ctc_lpa !== "") {
+      const lpa = parseFloat(candidateEditForm.expected_ctc_lpa);
+      if (isNaN(lpa) || lpa < 0) {
+        showToast.error("Expected CTC must be a non-negative number");
+        valid = false;
+      } else {
+        payload.expected_ctc = lpa.toString();
+      }
+    }
+
+    if (candidateEditForm.current_take_home !== "") {
+      const val = parseFloat(candidateEditForm.current_take_home);
+      if (isNaN(val) || val < 0) {
+        showToast.error("Current take home must be a non-negative number");
+        valid = false;
+      } else {
+        payload.current_take_home = val;
+      }
+    }
+
+    if (candidateEditForm.last_working_day !== "") {
+      payload.last_working_day = candidateEditForm.last_working_day;
+    }
+
+    if (candidateEditForm.location !== "") {
+      payload.location = candidateEditForm.location.trim();
+    }
+
+    if (candidateEditForm.exp !== "") {
+      const val = parseFloat(candidateEditForm.exp);
+      if (isNaN(val) || val < 0) {
+        showToast.error("Experience must be a non-negative number");
+        valid = false;
+      } else {
+        payload.exp = val;
+      }
+    }
+
+    if (!valid) return;
+
+    if (Object.keys(payload).length === 0) {
+      showToast.info("No changes to save");
+      setShowCandidateEditModal(false);
+      return;
+    }
+
+    try {
+      await apiClient.patch(`/candidates/${uuid}/editable-fields/`, payload);
+
+      setCandidates((prev) =>
+        prev.map((c) => {
+          if (c.id === uuid) {
+            const updatedCand = { ...c };
+            if (payload.notice_period_days !== undefined) {
+              updatedCand.notice_period_days = payload.notice_period_days;
+              updatedCand.notice_period_summary =
+                payload.notice_period_days === 0
+                  ? "Immediate"
+                  : `${payload.notice_period_days} days`;
+            }
+            if (payload.current_salary !== undefined) {
+              const lpaStr =
+                payload.current_salary % 1 === 0
+                  ? `${payload.current_salary}`
+                  : payload.current_salary.toFixed(1);
+              updatedCand.current_salary_lpa = lpaStr;
+            }
+            if (payload.expected_ctc !== undefined) {
+              const lpaVal = parseFloat(payload.expected_ctc);
+              const lpaStr =
+                lpaVal % 1 === 0 ? `${lpaVal}` : lpaVal.toFixed(1);
+              updatedCand.expected_ctc = lpaStr;
+            }
+            if (payload.current_take_home !== undefined) {
+              updatedCand.current_take_home = payload.current_take_home;
+            }
+            if (payload.last_working_day !== undefined) {
+              updatedCand.last_working_day = payload.last_working_day;
+            }
+            if (payload.location !== undefined) {
+              updatedCand.location = payload.location;
+            }
+            if (payload.exp !== undefined) {
+              updatedCand.total_experience = payload.exp;
+              updatedCand.experience_years = `${payload.exp} years`;
+            }
+            return updatedCand;
+          }
+          return c;
+        }),
+      );
+
+      showToast.success("Candidate details updated successfully");
+      setShowCandidateEditModal(false);
+    } catch (error: any) {
+      console.error("Edit save error:", error);
+      showToast.error(
+        error.response?.data?.detail || "Failed to update candidate details",
+      );
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -528,6 +716,17 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                                 Call
                               </button>
                               <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCandidateEditing(item);
+                                  setShowCandidateEditModal(true);
+                                  setMenuOpenId(null);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                              >
+                                Edit Details
+                              </button>
+                              <button
                                 onClick={async (e) => {
                                   e.stopPropagation();
                                   await handleCopyCandidateEmail(item);
@@ -613,6 +812,327 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
             </div>
         </div>
       </div>
+      
+      {showCandidateEditModal && candidateEditing && (
+        <div
+          className="fixed inset-0 z-[1002] flex items-center justify-center bg-black/25 backdrop-blur-sm"
+          onClick={() => setShowCandidateEditModal(false)}
+        >
+          <div
+            className="bg-white flex flex-col"
+            style={{
+              width: 553,
+              maxHeight: "90vh",
+              borderRadius: 10,
+              boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div
+              className="w-full shrink-0"
+              style={{ borderBottom: "0.5px solid #AEAEB2" }}
+            >
+              <div
+                className="flex items-center justify-between"
+                style={{ padding: "20px 24px" }}
+              >
+                <span
+                  className="font-medium text-gray-600"
+                  style={{ fontSize: 16, lineHeight: "19px" }}
+                >
+                  Edit Candidate Details
+                </span>
+                <button
+                  className="flex items-center justify-center bg-transparent border-none p-0 cursor-pointer hover:opacity-60"
+                  onClick={() => setShowCandidateEditModal(false)}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="#4B5563"
+                      strokeWidth="1"
+                    />
+                    <path
+                      d="M8.46 8.46L15.54 15.54M15.54 8.46L8.46 15.54"
+                      stroke="#4B5563"
+                      strokeWidth="1"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto">
+              <div
+                className="w-full"
+                style={{
+                  borderBottom: "0.5px solid #AEAEB2",
+                  padding: "20px 24px",
+                }}
+              >
+                <div
+                  className="flex items-center justify-between"
+                  style={{ marginBottom: 30 }}
+                >
+                  <div className="flex flex-col" style={{ gap: 10 }}>
+                    <h3
+                      className="m-0 font-medium text-black"
+                      style={{ fontSize: 20, lineHeight: "24px" }}
+                    >
+                      {candidateEditing.full_name || "Unknown Candidate"}
+                    </h3>
+                    <p
+                      className="m-0 text-xs font-normal"
+                      style={{ color: "#0F47F2", lineHeight: "14px" }}
+                    >
+                      {candidateEditing.headline || "--"}
+                    </p>
+                  </div>
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0"
+                    style={{ background: "#0F47F2" }}
+                  >
+                    {candidateEditing.full_name
+                      ? candidateEditing.full_name
+                        .substring(0, 2)
+                        .toUpperCase()
+                      : "CA"}
+                  </div>
+                </div>
+
+                <div
+                  className="flex items-start justify-between"
+                  style={{ gap: 67 }}
+                >
+                  <div
+                    className="flex flex-col"
+                    style={{ gap: 5, minWidth: 120 }}
+                  >
+                    <span
+                      className="text-sm font-normal"
+                      style={{ color: "#8E8E93", lineHeight: "17px" }}
+                    >
+                      Experience
+                    </span>
+                    <span
+                      className="font-medium text-gray-600"
+                      style={{ fontSize: 16, lineHeight: "19px" }}
+                    >
+                      {candidateEditing.total_experience != null
+                        ? `${candidateEditing.total_experience} Years`
+                        : candidateEditing.experience_years || "--"}
+                    </span>
+                  </div>
+                  <div
+                    className="flex flex-col"
+                    style={{ gap: 5, minWidth: 120 }}
+                  >
+                    <span
+                      className="text-sm font-normal"
+                      style={{ color: "#8E8E93", lineHeight: "17px" }}
+                    >
+                      Location
+                    </span>
+                    <span
+                      className="font-medium text-gray-600"
+                      style={{ fontSize: 16, lineHeight: "19px" }}
+                    >
+                      {candidateEditing.location || "N/A"}
+                    </span>
+                  </div>
+                  <div
+                    className="flex flex-col"
+                    style={{ gap: 5, minWidth: 120 }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Editable Fields */}
+              <div className="w-full" style={{ padding: "24px" }}>
+                <h4
+                  className="m-0 font-medium text-sm uppercase text-gray-600"
+                  style={{ lineHeight: "17px", marginBottom: 20 }}
+                >
+                  Update Details
+                </h4>
+                <div className="grid grid-cols-2 gap-x-12 gap-y-8">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Current CTC (LPA)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={candidateEditForm.current_ctc_lpa}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          current_ctc_lpa: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 15.5"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Expected CTC (LPA)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={candidateEditForm.expected_ctc_lpa}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          expected_ctc_lpa: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 20"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Current Take Home (LPA)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={candidateEditForm.current_take_home}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          current_take_home: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 12"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Notice Period (Days)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={candidateEditForm.notice_period_days}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          notice_period_days: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 30"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Experience (Years)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={candidateEditForm.exp}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          exp: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 4.5"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Last Working Day
+                    </label>
+                    <input
+                      type="date"
+                      value={candidateEditForm.last_working_day}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          last_working_day: e.target.value,
+                        })
+                      }
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 col-span-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      value={candidateEditForm.location}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          location: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. Bengaluru"
+                      className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div
+              className="flex items-center justify-end shrink-0"
+              style={{
+                padding: "20px 24px",
+                borderTop: "0.5px solid #AEAEB2",
+                gap: 12,
+              }}
+            >
+              <button
+                className="flex items-center justify-center cursor-pointer bg-white text-sm font-normal transition-opacity hover:opacity-75"
+                style={{
+                  height: 37,
+                  border: "0.5px solid #D1D1D6",
+                  borderRadius: 5,
+                  padding: "0 20px",
+                  color: "#4B5563",
+                }}
+                onClick={() => setShowCandidateEditModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex items-center justify-center cursor-pointer text-sm font-normal transition-opacity hover:opacity-90 active:scale-95 shadow-sm"
+                style={{
+                  height: 37,
+                  background: "#0F47F2",
+                  border: "none",
+                  borderRadius: 5,
+                  padding: "0 24px",
+                  color: "white",
+                }}
+                onClick={handleCandidateEditSave}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
