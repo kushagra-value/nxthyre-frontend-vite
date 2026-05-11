@@ -295,7 +295,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     return (
       <th 
         key={column}
-        className={`group px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap cursor-pointer hover:bg-[#F9FAFB] hover:text-[#4B5563] transition-colors select-none ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`}
+        className={`group px-6 py-4 text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap cursor-pointer hover:bg-black/5 transition-colors select-none ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`}
         onClick={() => handleSort(column)}
       >
         <div className={`flex items-center gap-1 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : ''}`}>
@@ -521,7 +521,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
         {/* Table View */}
         <div className="bg-white border-x border-t border-[#E5E7EB] overflow-hidden">
           <table className="w-full text-left border-collapse">
-            <thead className="border-b border-[#E5E7EB]">
+            <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
               <tr>
                 <th className="w-12 px-6 py-4">
                   <input 
@@ -540,8 +540,8 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                 {renderSortableHeader('Expected CTC', 'expected_ctc')}
                 {renderSortableHeader('Notice Period', 'notice_period')}
                 {renderSortableHeader('Skills Match', 'skills_match', 'center')}
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">Attention</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-right">Actions</th>
+                <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Attention</th>
+                <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">

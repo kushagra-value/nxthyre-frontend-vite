@@ -524,7 +524,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
         {/* Table View */}
         <div className="bg-white border-x border-t border-[#E5E7EB] overflow-hidden">
           <table className="w-full text-left border-collapse">
-            <thead className="border-b border-[#E5E7EB]">
+            <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
               <tr>
                 <th className="w-12 px-6 py-4">
                   <input 
@@ -535,16 +535,16 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                     className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
                   />
                 </th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Candidate</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">Match Score</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Location</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Exp</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">CTC</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Expected CTC</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap">Notice Period</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">Source</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-center">Attention</th>
-                <th className="px-6 py-4 text-[13px] font-normal text-[#8E8E93] whitespace-nowrap text-right">Action</th>
+                <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Candidate</th>
+                <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Match Score</th>
+                <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Location</th>
+                <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Exp</th>
+                <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">CTC</th>
+                <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Expected CTC</th>
+                <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Notice Period</th>
+                <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Source</th>
+                <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Attention</th>
+                <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
@@ -573,9 +573,9 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                         className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
                       />
                     </td>
-                    <td className="px-6 py-6 border-transparent">
+                    <td className="px-6 py-6 border-transparent min-w-0 max-w-[200px]">
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="font-semibold text-[14px] text-[#4B5563] truncate">{item.full_name}</div>
+                        <div className="font-semibold text-[14px] text-[#4B5563] truncate" title={item.full_name}>{item.full_name}</div>
                         {isAscendionWorkspace && verifiedNonDuplicateIds.has(item.id) && (
                           <div title="Not a duplicate in Ascendion portal">
                             <Check
@@ -584,7 +584,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                           </div>
                         )}
                       </div>
-                      <div className="text-[13px] text-[#8E8E93] mt-0.5">{item.headline || "-"}</div>
+                      <div className="text-[13px] text-[#8E8E93] mt-0.5 truncate" title={item.headline || ""}>{item.headline || "-"}</div>
                     </td>
                     <td className="px-6 py-6 border-transparent">
                        <div className="relative w-10 h-10 mx-auto">
@@ -595,11 +595,11 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                           <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{score}</div>
                         </div>
                     </td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.location || "-"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "-"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.experience_years || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.current_salary_lpa || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.expected_ctc || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent">{item.notice_period_summary || "-"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_salary_lpa || "-"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc || "-"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent whitespace-nowrap">{item.notice_period_summary || "-"}</td>
                     <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center">
                        {item.source?.source?.replace("_", " ") || "-"}
                     </td>
