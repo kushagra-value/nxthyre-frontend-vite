@@ -166,6 +166,7 @@ const JobListing: React.FC<JobListingProps> = ({
     const statusMenuRef = useRef<HTMLDivElement>(null);
     const [statusMenuPos, setStatusMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
     const [timelineJobId, setTimelineJobId] = useState<number | null>(null);
+    const [isStatsExpanded, setIsStatsExpanded] = useState(true);
     const [stageTooltip, setStageTooltip] = useState<{
         visible: boolean;
         name: string;
@@ -632,6 +633,23 @@ const JobListing: React.FC<JobListingProps> = ({
                 </div>
                 <div className="flex items-center gap-3">
                     <button
+                        onClick={() => setIsStatsExpanded(!isStatsExpanded)}
+                        className="flex items-center gap-1.5 px-3 py-2 border border-[#D1D1D6] rounded-md text-xs text-[#757575] hover:bg-gray-100 transition-colors"
+                        title={isStatsExpanded ? "Collapse stats" : "Expand stats"}
+                    >
+                        {isStatsExpanded ? (
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.33301 14.6667L5.99967 10M5.99967 10H2.09491M5.99967 10V13.9047" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M14.6667 1.3335L10 6.00016M10 6.00016H13.9047M10 6.00016V2.0954" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        ) : (
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 9.99984L1.33333 14.6665M1.33333 14.6665H5.23809M1.33333 14.6665L1.33333 10.7618" stroke="#6B7280" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M10.0013 6L14.668 1.33333M14.668 1.33333L10.7632 1.33333M14.668 1.33333V5.23809" stroke="#6B7280" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        )}
+                    </button>
+                    <button
                         onClick={() => setInfoWorkspace(selectedWorkspace)}
                         className="flex items-center gap-1.5 px-4 py-2 bg-[#F5F5F5] border border-[#AEAEB2] rounded-md text-xs font-medium text-[#757575] hover:bg-gray-100 transition-colors"
                     >
@@ -668,79 +686,81 @@ const JobListing: React.FC<JobListingProps> = ({
             </div>
 
             {/* ── Stat Cards ── */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
-                {[
-                    {
-                        label: "Total Jobs", value: jobsStatsCount?.total_jobs ?? selectedWorkspace.jobs_count ?? workspaceJobs.length, trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
-                            <path d="M20 22.5L20 23.75" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M12.5 19.1665L12.6274 21.5526C12.7643 24.564 12.8327 26.0697 13.799 26.9931C14.7654 27.9165 16.2726 27.9165 19.2872 27.9165H20.7128C23.7274 27.9165 25.2346 27.9165 26.201 26.9931C27.1673 26.0697 27.2357 24.564 27.3726 21.5526L27.5 19.1665" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M12.3728 18.7025C13.7889 21.3954 16.9828 22.5 20.0002 22.5C23.0175 22.5 26.2114 21.3954 27.6275 18.7025C28.3035 17.4171 27.7916 15 26.1268 15H13.8735C12.2087 15 11.6969 17.4171 12.3728 18.7025Z" stroke="#0F47F2" />
-                            <path d="M23.3332 15.0002L23.2596 14.7426C22.8929 13.4592 22.7096 12.8176 22.2731 12.4505C21.8366 12.0835 21.2568 12.0835 20.0973 12.0835H19.9024C18.7428 12.0835 18.1631 12.0835 17.7266 12.4505C17.2901 12.8176 17.1068 13.4592 16.7401 14.7426L16.6665 15.0002" stroke="#0F47F2" />
-                        </svg>
-                    },
-                    {
-                        label: "Total Candidates", value: jobsStatsCount?.total_candidates ?? selectedWorkspace.candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
-                            <path d="M17.8333 18.6667C19.6743 18.6667 21.1667 17.1743 21.1667 15.3333C21.1667 13.4924 19.6743 12 17.8333 12C15.9924 12 14.5 13.4924 14.5 15.3333C14.5 17.1743 15.9924 18.6667 17.8333 18.6667Z" stroke="#0F47F2" />
-                            <path d="M22.833 17.8335C24.2138 17.8335 25.333 16.7142 25.333 15.3335C25.333 13.9528 24.2138 12.8335 22.833 12.8335" stroke="#0F47F2" stroke-linecap="round" />
-                            <path d="M17.8333 27.8332C21.055 27.8332 23.6667 26.3408 23.6667 24.4998C23.6667 22.6589 21.055 21.1665 17.8333 21.1665C14.6117 21.1665 12 22.6589 12 24.4998C12 26.3408 14.6117 27.8332 17.8333 27.8332Z" stroke="#0F47F2" />
-                            <path d="M25.333 22C26.7948 22.3206 27.833 23.1324 27.833 24.0833C27.833 24.9411 26.9883 25.6857 25.7497 26.0587" stroke="#0F47F2" stroke-linecap="round" />
-                        </svg>
-                    },
-                    {
-                        label: "In Pipeline", value: jobsStatsCount?.in_pipeline ?? workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
-                            <path d="M14.167 16.6665C15.5477 16.6665 16.667 15.5472 16.667 14.1665C16.667 12.7858 15.5477 11.6665 14.167 11.6665C12.7863 11.6665 11.667 12.7858 11.667 14.1665C11.667 15.5472 12.7863 16.6665 14.167 16.6665Z" stroke="#0F47F2" />
-                            <path d="M25.833 28.3335C27.2137 28.3335 28.333 27.2142 28.333 25.8335C28.333 24.4528 27.2137 23.3335 25.833 23.3335C24.4523 23.3335 23.333 24.4528 23.333 25.8335C23.333 27.2142 24.4523 28.3335 25.833 28.3335Z" stroke="#0F47F2" />
-                            <path d="M19.1182 25.7085L19.2422 25.8325L19.1416 25.9341L19.1172 25.9585H17.0566V25.7085H19.1182ZM15.3486 23.1997C14.6799 24.0131 15.0559 25.302 16.0566 25.6294V25.8911C14.8057 25.5478 14.3369 23.9402 15.208 22.979L15.3486 23.1997ZM23.9834 17.6128L16.1504 22.5972L16.0156 22.3862L23.8486 17.4019L23.9834 17.6128ZM23.9434 14.1079C25.1942 14.4514 25.6615 16.0589 24.79 17.02L24.6494 16.7993C25.3184 15.986 24.9441 14.6972 23.9434 14.3696V14.1079ZM22.9434 14.0415V14.2915H19.666V14.0415H22.9434Z" fill="#1C274C" stroke="#0F47F2" />
-                        </svg>
-                    },
-                    {
-                        label: "Shortlisted", value: jobsStatsCount?.shortlisted ?? selectedWorkspace.shortlisted_candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: shortlistedTrend, trendColor: shortlistedColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
-                            <path d="M20.0003 18.3332C21.8413 18.3332 23.3337 16.8408 23.3337 14.9998C23.3337 13.1589 21.8413 11.6665 20.0003 11.6665C18.1594 11.6665 16.667 13.1589 16.667 14.9998C16.667 16.8408 18.1594 18.3332 20.0003 18.3332Z" stroke="#0F47F2" />
-                            <path d="M24.1663 28.3332C26.0073 28.3332 27.4997 26.8408 27.4997 24.9998C27.4997 23.1589 26.0073 21.6665 24.1663 21.6665C22.3254 21.6665 20.833 23.1589 20.833 24.9998C20.833 26.8408 22.3254 28.3332 24.1663 28.3332Z" stroke="#0F47F2" />
-                            <path d="M23.0557 25L23.7502 25.8334L25.2779 24.2593" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M21.667 27.3622C21.1389 27.4519 20.5795 27.5002 20.0003 27.5002C16.7787 27.5002 14.167 26.0077 14.167 24.1668C14.167 22.3259 16.7787 20.8335 20.0003 20.8335C21.4282 20.8335 22.7363 21.1267 23.7503 21.6134" stroke="#0F47F2" />
-                        </svg>
-                    },
-                    {
-                        label: "Interview this week", value: jobsStatsCount?.interview_this_week ?? workspaceJobs.reduce((acc, j) => acc + (j.interview_this_week || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
-                            <path d="M11.667 20.0002C11.667 16.8575 11.667 15.2861 12.6433 14.3098C13.6196 13.3335 15.191 13.3335 18.3337 13.3335H21.667C24.8097 13.3335 26.3811 13.3335 27.3573 14.3098C28.3337 15.2861 28.3337 16.8575 28.3337 20.0002V21.6668C28.3337 24.8095 28.3337 26.3809 27.3573 27.3572C26.3811 28.3335 24.8097 28.3335 21.667 28.3335H18.3337C15.191 28.3335 13.6196 28.3335 12.6433 27.3572C11.667 26.3809 11.667 24.8095 11.667 21.6668V20.0002Z" stroke="#0F47F2" />
-                            <path d="M15.833 13.3335V12.0835" stroke="#0F47F2" stroke-linecap="round" />
-                            <path d="M24.167 13.3335V12.0835" stroke="#0F47F2" stroke-linecap="round" />
-                            <path d="M12.083 17.5H27.9163" stroke="#0F47F2" stroke-linecap="round" />
-                            <path d="M24.9997 24.1668C24.9997 24.6271 24.6266 25.0002 24.1663 25.0002C23.7061 25.0002 23.333 24.6271 23.333 24.1668C23.333 23.7066 23.7061 23.3335 24.1663 23.3335C24.6266 23.3335 24.9997 23.7066 24.9997 24.1668Z" fill="#0F47F2" />
-                            <path d="M24.9997 20.8333C24.9997 21.2936 24.6266 21.6667 24.1663 21.6667C23.7061 21.6667 23.333 21.2936 23.333 20.8333C23.333 20.3731 23.7061 20 24.1663 20C24.6266 20 24.9997 20.3731 24.9997 20.8333Z" fill="#0F47F2" />
-                            <path d="M20.8337 24.1668C20.8337 24.6271 20.4606 25.0002 20.0003 25.0002C19.5401 25.0002 19.167 24.6271 19.167 24.1668C19.167 23.7066 19.5401 23.3335 20.0003 23.3335C20.4606 23.3335 20.8337 23.7066 20.8337 24.1668Z" fill="#0F47F2" />
-                            <path d="M20.8337 20.8333C20.8337 21.2936 20.4606 21.6667 20.0003 21.6667C19.5401 21.6667 19.167 21.2936 19.167 20.8333C19.167 20.3731 19.5401 20 20.0003 20C20.4606 20 20.8337 20.3731 20.8337 20.8333Z" fill="#0F47F2" />
-                            <path d="M16.6667 24.1668C16.6667 24.6271 16.2936 25.0002 15.8333 25.0002C15.3731 25.0002 15 24.6271 15 24.1668C15 23.7066 15.3731 23.3335 15.8333 23.3335C16.2936 23.3335 16.6667 23.7066 16.6667 24.1668Z" fill="#0F47F2" />
-                            <path d="M16.6667 20.8333C16.6667 21.2936 16.2936 21.6667 15.8333 21.6667C15.3731 21.6667 15 21.2936 15 20.8333C15 20.3731 15.3731 20 15.8333 20C16.2936 20 16.6667 20.3731 16.6667 20.8333Z" fill="#0F47F2" />
-                        </svg>
-                    },
-                    {
-                        label: "Hired", value: jobsStatsCount?.hired ?? selectedWorkspace.hired_candidates_in_workspace_count ?? 0, trend: hiredTrend, trendColor: hiredColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
-                            <path d="M20 20C21.3807 20 22.5 18.8807 22.5 17.5C22.5 16.1193 21.3807 15 20 15C18.6193 15 17.5 16.1193 17.5 17.5C17.5 18.8807 18.6193 20 20 20Z" stroke="#0F47F2" />
-                            <path d="M20.0003 28.3332C24.6027 28.3332 28.3337 24.6022 28.3337 19.9998C28.3337 15.3975 24.6027 11.6665 20.0003 11.6665C15.398 11.6665 11.667 15.3975 11.667 19.9998C11.667 24.6022 15.398 28.3332 20.0003 28.3332Z" stroke="#0F47F2" />
-                            <path d="M24.974 26.6667C24.8414 24.2571 24.1037 22.5 19.9997 22.5C15.8958 22.5 15.158 24.2571 15.0254 26.6667" stroke="#0F47F2" stroke-linecap="round" />
-                        </svg>
-                    },
-                ].map((stat, idx) => (
-                    <div key={idx} className="bg-white p-5 rounded-xl border border-[#D1D1D6] flex flex-col gap-2 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            {stat.icon}
-                            <span className={`text-[12px] font-light text-right ${stat.trendColor}`}>{stat.trend}</span>
+            {isStatsExpanded && (
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {[
+                        {
+                            label: "Total Jobs", value: jobsStatsCount?.total_jobs ?? selectedWorkspace.jobs_count ?? workspaceJobs.length, trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                                <path d="M20 22.5L20 23.75" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M12.5 19.1665L12.6274 21.5526C12.7643 24.564 12.8327 26.0697 13.799 26.9931C14.7654 27.9165 16.2726 27.9165 19.2872 27.9165H20.7128C23.7274 27.9165 25.2346 27.9165 26.201 26.9931C27.1673 26.0697 27.2357 24.564 27.3726 21.5526L27.5 19.1665" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M12.3728 18.7025C13.7889 21.3954 16.9828 22.5 20.0002 22.5C23.0175 22.5 26.2114 21.3954 27.6275 18.7025C28.3035 17.4171 27.7916 15 26.1268 15H13.8735C12.2087 15 11.6969 17.4171 12.3728 18.7025Z" stroke="#0F47F2" />
+                                <path d="M23.3332 15.0002L23.2596 14.7426C22.8929 13.4592 22.7096 12.8176 22.2731 12.4505C21.8366 12.0835 21.2568 12.0835 20.0973 12.0835H19.9024C18.7428 12.0835 18.1631 12.0835 17.7266 12.4505C17.2901 12.8176 17.1068 13.4592 16.7401 14.7426L16.6665 15.0002" stroke="#0F47F2" />
+                            </svg>
+                        },
+                        {
+                            label: "Total Candidates", value: jobsStatsCount?.total_candidates ?? selectedWorkspace.candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.total_applied || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                                <path d="M17.8333 18.6667C19.6743 18.6667 21.1667 17.1743 21.1667 15.3333C21.1667 13.4924 19.6743 12 17.8333 12C15.9924 12 14.5 13.4924 14.5 15.3333C14.5 17.1743 15.9924 18.6667 17.8333 18.6667Z" stroke="#0F47F2" />
+                                <path d="M22.833 17.8335C24.2138 17.8335 25.333 16.7142 25.333 15.3335C25.333 13.9528 24.2138 12.8335 22.833 12.8335" stroke="#0F47F2" stroke-linecap="round" />
+                                <path d="M17.8333 27.8332C21.055 27.8332 23.6667 26.3408 23.6667 24.4998C23.6667 22.6589 21.055 21.1665 17.8333 21.1665C14.6117 21.1665 12 22.6589 12 24.4998C12 26.3408 14.6117 27.8332 17.8333 27.8332Z" stroke="#0F47F2" />
+                                <path d="M25.333 22C26.7948 22.3206 27.833 23.1324 27.833 24.0833C27.833 24.9411 26.9883 25.6857 25.7497 26.0587" stroke="#0F47F2" stroke-linecap="round" />
+                            </svg>
+                        },
+                        {
+                            label: "In Pipeline", value: jobsStatsCount?.in_pipeline ?? workspaceJobs.reduce((acc, j) => acc + (j.pipeline_candidate_count || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                                <path d="M14.167 16.6665C15.5477 16.6665 16.667 15.5472 16.667 14.1665C16.667 12.7858 15.5477 11.6665 14.167 11.6665C12.7863 11.6665 11.667 12.7858 11.667 14.1665C11.667 15.5472 12.7863 16.6665 14.167 16.6665Z" stroke="#0F47F2" />
+                                <path d="M25.833 28.3335C27.2137 28.3335 28.333 27.2142 28.333 25.8335C28.333 24.4528 27.2137 23.3335 25.833 23.3335C24.4523 23.3335 23.333 24.4528 23.333 25.8335C23.333 27.2142 24.4523 28.3335 25.833 28.3335Z" stroke="#0F47F2" />
+                                <path d="M19.1182 25.7085L19.2422 25.8325L19.1416 25.9341L19.1172 25.9585H17.0566V25.7085H19.1182ZM15.3486 23.1997C14.6799 24.0131 15.0559 25.302 16.0566 25.6294V25.8911C14.8057 25.5478 14.3369 23.9402 15.208 22.979L15.3486 23.1997ZM23.9834 17.6128L16.1504 22.5972L16.0156 22.3862L23.8486 17.4019L23.9834 17.6128ZM23.9434 14.1079C25.1942 14.4514 25.6615 16.0589 24.79 17.02L24.6494 16.7993C25.3184 15.986 24.9441 14.6972 23.9434 14.3696V14.1079ZM22.9434 14.0415V14.2915H19.666V14.0415H22.9434Z" fill="#1C274C" stroke="#0F47F2" />
+                            </svg>
+                        },
+                        {
+                            label: "Shortlisted", value: jobsStatsCount?.shortlisted ?? selectedWorkspace.shortlisted_candidates_in_workspace_count ?? workspaceJobs.reduce((acc, j) => acc + (j.shortlisted_candidate_count || 0), 0), trend: shortlistedTrend, trendColor: shortlistedColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                                <path d="M20.0003 18.3332C21.8413 18.3332 23.3337 16.8408 23.3337 14.9998C23.3337 13.1589 21.8413 11.6665 20.0003 11.6665C18.1594 11.6665 16.667 13.1589 16.667 14.9998C16.667 16.8408 18.1594 18.3332 20.0003 18.3332Z" stroke="#0F47F2" />
+                                <path d="M24.1663 28.3332C26.0073 28.3332 27.4997 26.8408 27.4997 24.9998C27.4997 23.1589 26.0073 21.6665 24.1663 21.6665C22.3254 21.6665 20.833 23.1589 20.833 24.9998C20.833 26.8408 22.3254 28.3332 24.1663 28.3332Z" stroke="#0F47F2" />
+                                <path d="M23.0557 25L23.7502 25.8334L25.2779 24.2593" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M21.667 27.3622C21.1389 27.4519 20.5795 27.5002 20.0003 27.5002C16.7787 27.5002 14.167 26.0077 14.167 24.1668C14.167 22.3259 16.7787 20.8335 20.0003 20.8335C21.4282 20.8335 22.7363 21.1267 23.7503 21.6134" stroke="#0F47F2" />
+                            </svg>
+                        },
+                        {
+                            label: "Interview this week", value: jobsStatsCount?.interview_this_week ?? workspaceJobs.reduce((acc, j) => acc + (j.interview_this_week || 0), 0), trend: "--", trendColor: "text-[#8E8E93]", icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                                <path d="M11.667 20.0002C11.667 16.8575 11.667 15.2861 12.6433 14.3098C13.6196 13.3335 15.191 13.3335 18.3337 13.3335H21.667C24.8097 13.3335 26.3811 13.3335 27.3573 14.3098C28.3337 15.2861 28.3337 16.8575 28.3337 20.0002V21.6668C28.3337 24.8095 28.3337 26.3809 27.3573 27.3572C26.3811 28.3335 24.8097 28.3335 21.667 28.3335H18.3337C15.191 28.3335 13.6196 28.3335 12.6433 27.3572C11.667 26.3809 11.667 24.8095 11.667 21.6668V20.0002Z" stroke="#0F47F2" />
+                                <path d="M15.833 13.3335V12.0835" stroke="#0F47F2" stroke-linecap="round" />
+                                <path d="M24.167 13.3335V12.0835" stroke="#0F47F2" stroke-linecap="round" />
+                                <path d="M12.083 17.5H27.9163" stroke="#0F47F2" stroke-linecap="round" />
+                                <path d="M24.9997 24.1668C24.9997 24.6271 24.6266 25.0002 24.1663 25.0002C23.7061 25.0002 23.333 24.6271 23.333 24.1668C23.333 23.7066 23.7061 23.3335 24.1663 23.3335C24.6266 23.3335 24.9997 23.7066 24.9997 24.1668Z" fill="#0F47F2" />
+                                <path d="M24.9997 20.8333C24.9997 21.2936 24.6266 21.6667 24.1663 21.6667C23.7061 21.6667 23.333 21.2936 23.333 20.8333C23.333 20.3731 23.7061 20 24.1663 20C24.6266 20 24.9997 20.3731 24.9997 20.8333Z" fill="#0F47F2" />
+                                <path d="M20.8337 24.1668C20.8337 24.6271 20.4606 25.0002 20.0003 25.0002C19.5401 25.0002 19.167 24.6271 19.167 24.1668C19.167 23.7066 19.5401 23.3335 20.0003 23.3335C20.4606 23.3335 20.8337 23.7066 20.8337 24.1668Z" fill="#0F47F2" />
+                                <path d="M20.8337 20.8333C20.8337 21.2936 20.4606 21.6667 20.0003 21.6667C19.5401 21.6667 19.167 21.2936 19.167 20.8333C19.167 20.3731 19.5401 20 20.0003 20C20.4606 20 20.8337 20.3731 20.8337 20.8333Z" fill="#0F47F2" />
+                                <path d="M16.6667 24.1668C16.6667 24.6271 16.2936 25.0002 15.8333 25.0002C15.3731 25.0002 15 24.6271 15 24.1668C15 23.7066 15.3731 23.3335 15.8333 23.3335C16.2936 23.3335 16.6667 23.7066 16.6667 24.1668Z" fill="#0F47F2" />
+                                <path d="M16.6667 20.8333C16.6667 21.2936 16.2936 21.6667 15.8333 21.6667C15.3731 21.6667 15 21.2936 15 20.8333C15 20.3731 15.3731 20 15.8333 20C16.2936 20 16.6667 20.3731 16.6667 20.8333Z" fill="#0F47F2" />
+                            </svg>
+                        },
+                        {
+                            label: "Hired", value: jobsStatsCount?.hired ?? selectedWorkspace.hired_candidates_in_workspace_count ?? 0, trend: hiredTrend, trendColor: hiredColor, icon: <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="0.25" y="0.25" width="39.5" height="39.5" rx="7.75" stroke="black" stroke-opacity="0.2" stroke-width="0.5" />
+                                <path d="M20 20C21.3807 20 22.5 18.8807 22.5 17.5C22.5 16.1193 21.3807 15 20 15C18.6193 15 17.5 16.1193 17.5 17.5C17.5 18.8807 18.6193 20 20 20Z" stroke="#0F47F2" />
+                                <path d="M20.0003 28.3332C24.6027 28.3332 28.3337 24.6022 28.3337 19.9998C28.3337 15.3975 24.6027 11.6665 20.0003 11.6665C15.398 11.6665 11.667 15.3975 11.667 19.9998C11.667 24.6022 15.398 28.3332 20.0003 28.3332Z" stroke="#0F47F2" />
+                                <path d="M24.974 26.6667C24.8414 24.2571 24.1037 22.5 19.9997 22.5C15.8958 22.5 15.158 24.2571 15.0254 26.6667" stroke="#0F47F2" stroke-linecap="round" />
+                            </svg>
+                        },
+                    ].map((stat, idx) => (
+                        <div key={idx} className="bg-white p-5 rounded-xl border border-[#D1D1D6] flex flex-col gap-2 shadow-sm">
+                            <div className="flex items-center justify-between">
+                                {stat.icon}
+                                <span className={`text-[12px] font-light text-right ${stat.trendColor}`}>{stat.trend}</span>
+                            </div>
+                            <div>
+                                <p className="text-[12px] text-[#4B5563] mb-1">{stat.label}</p>
+                                <p className="text-3xl font-medium text-black">{stat.value}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-[12px] text-[#4B5563] mb-1">{stat.label}</p>
-                            <p className="text-3xl font-medium text-black">{stat.value}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
 
             {/* ── Table Section ── */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
