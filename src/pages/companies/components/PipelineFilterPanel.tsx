@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Search, ChevronRight } from "lucide-react";
 import { debounce } from "lodash";
 import { candidateService } from "../../../services/candidateService";
@@ -82,6 +83,44 @@ export default function PipelineFilterPanel({
 
   const [designationSuggestions, setDesignationSuggestions] = useState<FilterOption[]>([]);
   const [isSearchingDesignation, setIsSearchingDesignation] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 600 });
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (isOpen && anchorRef.current) {
+        const rect = anchorRef.current.getBoundingClientRect();
+        const panelWidth = 600;
+        const spacing = 8;
+        
+        let left = rect.right - panelWidth;
+        // If it overflows the left edge of the viewport
+        if (left < spacing) {
+          left = spacing;
+        }
+        // If it overflows the right edge of the viewport (though less likely with right-aligned)
+        if (left + panelWidth > window.innerWidth - spacing) {
+          left = window.innerWidth - panelWidth - spacing;
+        }
+
+        setCoords({
+          top: rect.bottom + window.scrollY + spacing,
+          left: left + window.scrollX,
+          width: panelWidth
+        });
+      }
+    };
+
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [isOpen, anchorRef]);
 
   // Debounced API fetch for location
   const fetchLocationSuggestions = useMemo(
@@ -409,15 +448,20 @@ export default function PipelineFilterPanel({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       ref={panelRef}
-      className="absolute top-full mt-2 w-[600px] bg-white rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-[#E5E7EB] z-50 flex flex-col overflow-hidden"
-      style={{ left: 0 }}
+      className="fixed bg-white rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-[#E5E7EB] z-[9999] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+      style={{ 
+        top: coords.top - window.scrollY, 
+        left: coords.left - window.scrollX,
+        width: coords.width,
+        maxHeight: "calc(100vh - 100px)"
+      }}
     >
-      <div className="flex h-[450px]">
+      <div className="flex h-[450px] max-h-[60vh]">
         {/* Left Sidebar */}
-        <div className="w-[200px] bg-[#F9FAFB] border-r border-[#E5E7EB] py-4">
+        <div className="w-[200px] bg-[#F9FAFB] border-r border-[#E5E7EB] py-4 overflow-y-auto">
           <div className="flex flex-col">
             {TABS.map((tab) => {
               const count = getFilterCount(tab.key);
@@ -454,11 +498,13 @@ export default function PipelineFilterPanel({
         </div>
 
         {/* Right Content */}
-        {renderContent()}
+        <div className="flex-1 overflow-y-auto">
+          {renderContent()}
+        </div>
       </div>
 
       {/* Footer */}
-      <div className="bg-white border-t border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
+      <div className="bg-white border-t border-[#E5E7EB] px-6 py-4 flex items-center justify-between flex-shrink-0">
         <button
           onClick={handleReset}
           className="text-sm font-medium text-gray-500 hover:text-gray-700"
@@ -480,6 +526,7 @@ export default function PipelineFilterPanel({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
