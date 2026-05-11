@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Zap, ArrowLeft, ArrowRight, Copy, Trash2 } from "lucide-react";
+import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Zap, ArrowLeft, ArrowRight, Copy, Trash2, MoreHorizontal } from "lucide-react";
 import { linkedinBotService, LinkedinBotCandidate, LinkedinBotCandidateSummary } from "../../../services/linkedinBotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
@@ -49,6 +49,20 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
     ref: React.RefObject<HTMLElement>;
   } | null>(null);
   const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpenId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSkillsMouseEnter = (e: React.MouseEvent<HTMLElement>, item: any) => {
     if (leaveTimeoutRef.current) {
@@ -415,8 +429,8 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
         )}
 
         {/* Table View */}
-        <div className="bg-white border-x border-t border-[#E5E7EB] overflow-hidden">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-white border-x border-t border-[#E5E7EB] overflow-x-auto">
+          <table className="w-full min-w-[1200px] text-left border-collapse">
             <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
               <tr>
                 <th className="w-12 px-6 py-4">
@@ -476,10 +490,10 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                         </div>
                     </td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.location || "--"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.experience_years ? `${Number(item.experience_years).toFixed(1)} Years` : "--"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent">{item.notice_period || "--"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years ? `${Number(item.experience_years).toFixed(1)} Years` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent whitespace-nowrap">{item.notice_period || "--"}</td>
                     <td 
                       className="px-6 py-6 text-[13px] font-medium border-transparent text-center cursor-help relative" 
                       style={{ color: skillsColor }}
@@ -517,19 +531,57 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                       </div>
                     </td>
                     <td className="px-6 py-6 border-transparent">
-                      <div className="flex justify-end gap-3 z-10 flex-row">
+                      <div className="flex justify-end items-center gap-3 z-10 flex-row">
                         {item.linkedin_url && (
                           <button 
-                            onClick={() => { navigator.clipboard.writeText(item.linkedin_url); toast.success("URL Copied!"); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(item.linkedin_url); 
+                              toast.success("URL Copied!"); 
+                            }}
                             className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E7EDFF] text-[#0F47F2] hover:bg-[#D5E1FF] transition-colors"
                             title="Copy LinkedIn URL"
                           >
                              <Copy className="w-4 h-4" />
                           </button>
                         )}
-                        <button className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FEE2E2] text-[#EF4444] hover:bg-[#FECACA] transition-colors opacity-50 cursor-not-allowed" title="Skip (Not enabled)">
-                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        
+                        <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (menuOpenId === item.id) {
+                                setMenuOpenId(null);
+                                return;
+                              }
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setMenuPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
+                              setMenuOpenId(item.id);
+                            }}
+                            className="p-2 hover:bg-[#F3F5F7] rounded-lg transition-colors text-[#8E8E93] hover:text-[#4B5563]"
+                          >
+                            <MoreHorizontal className="w-5 h-5" />
+                          </button>
+
+                          {menuOpenId === item.id && (
+                            <div 
+                              className="absolute right-0 mt-2 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg py-1 z-[1001]"
+                              style={{ top: '100%' }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setMenuOpenId(null);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 opacity-50 cursor-not-allowed"
+                                title="Skip (Not enabled)"
+                              >
+                                <Trash2 className="w-4 h-4" /> Skip Candidate
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>

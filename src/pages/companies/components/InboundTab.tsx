@@ -522,8 +522,8 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
         </div>
 
         {/* Table View */}
-        <div className="bg-white border-x border-t border-[#E5E7EB] overflow-hidden">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-white border-x border-t border-[#E5E7EB] overflow-x-auto">
+          <table className="w-full min-w-[1200px] text-left border-collapse">
             <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
               <tr>
                 <th className="w-12 px-6 py-4">
@@ -596,11 +596,11 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                         </div>
                     </td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.experience_years || "-"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years || "-"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_salary_lpa || "-"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc || "-"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent whitespace-nowrap">{item.notice_period_summary || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center">
+                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center whitespace-nowrap">
                        {item.source?.source?.replace("_", " ") || "-"}
                     </td>
                     <td className="px-6 py-6 whitespace-nowrap border-transparent">

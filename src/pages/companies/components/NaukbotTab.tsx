@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check, ArrowUpRight, Zap, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check, ArrowUpRight, Zap, ArrowUp, ArrowDown, MoreHorizontal } from "lucide-react";
 import { naukbotService, NaukbotCandidate, NaukbotCandidateSummary } from "../../../services/naukbotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
@@ -51,6 +51,20 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     ref: React.RefObject<HTMLElement>;
   } | null>(null);
   const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpenId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSkillsMouseEnter = (e: React.MouseEvent<HTMLElement>, item: any) => {
     if (leaveTimeoutRef.current) {
@@ -519,8 +533,8 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
         )}
 
         {/* Table View */}
-        <div className="bg-white border-x border-t border-[#E5E7EB] overflow-hidden">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-white border-x border-t border-[#E5E7EB] overflow-x-auto">
+          <table className="w-full min-w-[1200px] text-left border-collapse">
             <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
               <tr>
                 <th className="w-12 px-6 py-4">
@@ -576,10 +590,10 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                         </div>
                     </td>
                     <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.location || "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.experience_years ? `${item.experience_years} Years` : "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-[#8E8E93]">{item.notice_period || "--"}</td>
+                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years ? `${item.experience_years} Years` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
+                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-[#8E8E93] whitespace-nowrap">{item.notice_period || "--"}</td>
                     <td 
                       className="px-6 py-6 text-[13px] font-medium border-transparent text-center cursor-help relative" 
                       style={{ color: skillsColor }}
@@ -617,24 +631,61 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                         </div>
                      </td>
                     <td className="px-6 py-6 border-transparent">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end items-center gap-2">
                         <button 
                            onClick={() => openNviteModal(item.id)}
                            disabled={item.is_nvited}
                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${item.is_nvited ? 'bg-gray-100 text-gray-400' : 'bg-[#0F47F2] text-white hover:bg-[#0A3BCC]'}`}>
                            {item.is_nvited ? <><Check className="w-3.5 h-3.5" /> nVited</> : <><Send className="w-3.5 h-3.5" /> nVite</>}
                         </button>
-                        <button 
-                           onClick={() => handleMoveToPipeline(item.id)}
-                           disabled={item.is_moved_to_pipeline || movingToPipeline}
-                           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${item.is_moved_to_pipeline ? 'bg-gray-100 text-gray-400' : 'bg-emerald-600 text-white hover:bg-emerald-700'} disabled:opacity-50 disabled:cursor-not-allowed`}>
-                           {item.is_moved_to_pipeline ? <><Check className="w-3.5 h-3.5" /> Moved</> : <><ArrowUpRight className="w-3.5 h-3.5" /> Move</>}
-                        </button>
-                        <button 
-                           onClick={() => handleSkip(item.id)}
-                           className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors">
-                           <Trash2 className="w-4 h-4" /> Skip
-                        </button>
+                        
+                        <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (menuOpenId === item.id) {
+                                setMenuOpenId(null);
+                                return;
+                              }
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setMenuPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
+                              setMenuOpenId(item.id);
+                            }}
+                            className="p-2 hover:bg-[#F3F5F7] rounded-lg transition-colors text-[#8E8E93] hover:text-[#4B5563]"
+                          >
+                            <MoreHorizontal className="w-5 h-5" />
+                          </button>
+
+                          {menuOpenId === item.id && (
+                            <div 
+                              className="absolute right-0 mt-2 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg py-1 z-[1001]"
+                              style={{ top: '100%' }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMoveToPipeline(item.id);
+                                  setMenuOpenId(null);
+                                }}
+                                disabled={item.is_moved_to_pipeline || movingToPipeline}
+                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <ArrowUpRight className="w-4 h-4" /> Move to Pipeline
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSkip(item.id);
+                                  setMenuOpenId(null);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              >
+                                <Trash2 className="w-4 h-4" /> Skip Candidate
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
