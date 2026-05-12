@@ -37,6 +37,7 @@ import {
   Mail,
   Trash2,
   Copy,
+  XCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
@@ -311,6 +312,9 @@ export default function JobPipelineDashboard({
   }, [jobId]);
 
   const [verifiedNonDuplicateIds, setVerifiedNonDuplicateIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [confirmedDuplicateIds, setConfirmedDuplicateIds] = useState<Set<string>>(
     () => new Set(),
   );
 
@@ -1162,6 +1166,11 @@ export default function JobPipelineDashboard({
         const isDup = res.data?.is_duplicate;
         if (isDup === true) {
           showToast.error("Duplicate in Ascendion portal");
+          setConfirmedDuplicateIds((prev) => {
+            const next = new Set(prev);
+            next.add(candidateId);
+            return next;
+          });
         } else if (isDup === false) {
           showToast.success("Not a duplicate in Ascendion portal");
           setVerifiedNonDuplicateIds((prev) => {
@@ -1811,6 +1820,15 @@ export default function JobPipelineDashboard({
                         <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
                       </div>
                     )}
+                  {isAscendionWorkspace &&
+                    stageSlug === "uncontacted" &&
+                    !ascendionCheckingIds.has(cand.id) &&
+                    (confirmedDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === true) &&
+                    !verifiedNonDuplicateIds.has(cand.id) && (
+                      <div title="Duplicate found in Ascendion portal">
+                        <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                      </div>
+                    )}
                   {isArchived ? (
                     <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
                   ) : (
@@ -1989,6 +2007,7 @@ export default function JobPipelineDashboard({
       setShowCandidateEditModal,
       isAscendionWorkspace,
       verifiedNonDuplicateIds,
+      confirmedDuplicateIds,
       ascendionCheckingIds,
       runAscendionDuplicateCheck,
       handleCopyCandidateEmail,
@@ -2973,6 +2992,8 @@ export default function JobPipelineDashboard({
                           verifiedNonDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === false;
                         const isAscendionDupChecking =
                           ascendionCheckingIds.has(cand.id);
+                        const isConfirmedDuplicate =
+                          (confirmedDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === true) && !isVerifiedNonDuplicate;
 
                         // Experience — handle both numeric total_experience and string like "1+ years exp"
                         const expYears =
@@ -3082,6 +3103,13 @@ export default function JobPipelineDashboard({
                                       <div title="Not a duplicate in Ascendion portal">
                                         <Check
                                           className="w-4 h-4 text-green-600 shrink-0"
+                                        />
+                                      </div>
+                                    )}
+                                    {showAscendionUncontacted && isConfirmedDuplicate && !ascendionCheckingIds.has(cand.id) && (
+                                      <div title="Duplicate found in Ascendion portal">
+                                        <XCircle
+                                          className="w-4 h-4 text-red-500 shrink-0"
                                         />
                                       </div>
                                     )}
@@ -3293,7 +3321,7 @@ export default function JobPipelineDashboard({
                                             runAscendionDuplicateCheck(cand.id);
                                             setMenuOpenId(null);
                                           }}
-                                          disabled={isVerifiedNonDuplicate || isAscendionDupChecking}
+                                          disabled={isVerifiedNonDuplicate || isAscendionDupChecking || isConfirmedDuplicate}
                                           className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
                                           title={
                                             isVerifiedNonDuplicate
