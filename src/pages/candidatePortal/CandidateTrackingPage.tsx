@@ -88,18 +88,22 @@ const CandidateTrackingPage = () => {
         );
       }
 
-      // Profile: use applicationId since the token is scoped to the candidate
-      fetchPromises.push(
-        fetch(`${API_BASE}/candidate-portal/profile/${applicationId}/`, { headers })
-          .then(res => res.ok ? res.json() : null)
-          .then(data => {
-            if (data) {
-              setProfileData(data);
-              setEditForm(data);
-            }
-          })
-          .catch(err => console.warn("Profile fetch failed:", err))
-      );
+      // Profile: extract candidate ID from application response
+      // The API spec returns candidate info, so we check common field names
+      const candidateId = app.candidate_id || app.candidate?.id || app.candidate;
+      if (candidateId) {
+        fetchPromises.push(
+          fetch(`${API_BASE}/candidate-portal/profile/${candidateId}/`, { headers })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+              if (data) {
+                setProfileData(data);
+                setEditForm(data);
+              }
+            })
+            .catch(err => console.warn("Profile fetch failed:", err))
+        );
+      }
 
       await Promise.all(fetchPromises);
     } catch (err: any) {
