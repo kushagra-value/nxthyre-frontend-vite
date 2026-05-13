@@ -65,7 +65,7 @@ const CandidateTrackingPage = () => {
       const headers = getAuthHeaders();
 
       // 1) Fetch application + interview journey (primary data source)
-      const appRes = await fetch(`${API_BASE}/api/candidate-portal/application/${applicationId}/`, { headers });
+      const appRes = await fetch(`${API_BASE}/candidate-portal/application/${applicationId}/`, { headers });
       if (!appRes.ok) {
         if (appRes.status === 401 || appRes.status === 403) {
           setError("Session expired. Please log in again.");
