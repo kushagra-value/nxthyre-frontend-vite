@@ -139,7 +139,7 @@ const CandidateTrackingPage = () => {
           safePayload[key] = editForm[key];
         }
       }
-      const res = await fetch(`${API_BASE}/candidate-portal/profile/${applicationId}/`, {
+      const res = await fetch(`${API_BASE}/candidate-portal/profile/${applicationId}`, {
         method: "PATCH", headers,
         body: JSON.stringify(safePayload),
       });
