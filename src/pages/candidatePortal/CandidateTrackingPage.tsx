@@ -90,22 +90,18 @@ const CandidateTrackingPage = () => {
         );
       }
 
-      // Profile: extract candidate ID from application response
-      // The API spec returns candidate info, so we check common field names
-      const candidateId = app.candidate_id || app.candidate?.id || app.candidate;
-      if (candidateId) {
-        fetchPromises.push(
-          fetch(`${API_BASE}/candidate-portal/profile/${candidateId}/`, { headers })
-            .then(res => res.ok ? res.json() : null)
-            .then(data => {
-              if (data) {
-                setProfileData(data);
-                setEditForm(data);
-              }
-            })
-            .catch(err => console.warn("Profile fetch failed:", err))
-        );
-      }
+      // Profile: fetch using applicationId (backend resolves candidate from scoped token)
+      fetchPromises.push(
+        fetch(`${API_BASE}/candidate-portal/profile/${applicationId}/`, { headers })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (data) {
+              setProfileData(data);
+              setEditForm(data);
+            }
+          })
+          .catch(err => console.warn("Profile fetch failed:", err))
+      );
 
       // Messages: fetch using applicationId
       fetchPromises.push(
@@ -130,13 +126,22 @@ const CandidateTrackingPage = () => {
     }
   };
 
+  // Only these fields are writable per the API spec
+  const SAFE_PATCH_FIELDS = ["full_name", "email", "phone", "location", "linkedin_url", "portfolio_url"];
+
   const handleProfileSave = async () => {
     try {
       const headers = getAuthHeaders();
-      const profId = profileData?.id || appData?.candidate_id;
-      const res = await fetch(`${API_BASE}/candidate-portal/profile/${profId}/`, {
+      // Only send safe/writable fields
+      const safePayload: Record<string, any> = {};
+      for (const key of SAFE_PATCH_FIELDS) {
+        if (editForm[key] !== undefined) {
+          safePayload[key] = editForm[key];
+        }
+      }
+      const res = await fetch(`${API_BASE}/candidate-portal/profile/${applicationId}/`, {
         method: "PATCH", headers,
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(safePayload),
       });
       if (res.ok) {
         const updated = await res.json();
@@ -298,14 +303,9 @@ const CandidateTrackingPage = () => {
                     {profile.location}
                   </span>
                 )}
-                {profile.current_salary && (
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
-                    {profile.current_salary} CTC
-                  </span>
-                )}
-                {profile.notice_period && (
+                {profile.skills?.length > 0 && (
                   <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
-                    {profile.notice_period} notice
+                    {profile.skills.length} skills
                   </span>
                 )}
               </div>
@@ -476,40 +476,64 @@ const CandidateTrackingPage = () => {
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+            {/* Editable fields (PATCH-safe per API spec) */}
             {[
-              ["Full Name", "full_name", profile.full_name || "—"],
-              ["Email Address", "email", profile.email || "—"],
-              ["Phone Number", "phone", profile.phone || "—"],
-              ["Location", "location", profile.location || "—"],
-              ["Total Experience", "total_experience", profile.total_experience != null ? `${profile.total_experience} Years` : "—"],
-              ["Current CTC", "current_salary", profile.current_salary || "—"],
-              ["Expected CTC", "expected_ctc", profile.expected_ctc || "—"],
-              ["Notice Period", "notice_period", profile.notice_period || "—"],
-            ].map(([label, key, val]) => (
+              ["Full Name", "full_name", profile.full_name || "—", true],
+              ["Email Address", "email", profile.email || "—", true],
+              ["Phone Number", "phone", profile.phone || "—", true],
+              ["Location", "location", profile.location || "—", true],
+              ["Total Experience", "total_experience", profile.total_experience != null ? `${profile.total_experience} Years` : "—", false],
+            ].map(([label, key, val, editable]) => (
               <div key={key as string} className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{label}</label>
-                {isEditing ? (
+                <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{label as string}</label>
+                {isEditing && editable ? (
                   <input type="text" value={editForm[key as string] || ""}
                     onChange={(e) => setEditForm({ ...editForm, [key as string]: e.target.value })}
                     className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
                 ) : (
-                  <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-sm text-gray-900">{val}</div>
+                  <div className={`bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-sm text-gray-900 ${!editable ? "opacity-70" : ""}`}>{val as string}</div>
                 )}
               </div>
             ))}
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">LinkedIn / Portfolio URL</label>
+            {/* LinkedIn URL — editable */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">LinkedIn URL</label>
               {isEditing ? (
                 <input type="text" value={editForm.linkedin_url || ""}
                   onChange={(e) => setEditForm({ ...editForm, linkedin_url: e.target.value })}
                   className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
               ) : (
                 <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-sm text-gray-900">
-                  {profile.linkedin_url || profile.portfolio_url || "—"}
+                  {profile.linkedin_url || "—"}
+                </div>
+              )}
+            </div>
+            {/* Portfolio URL — editable */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Portfolio URL</label>
+              {isEditing ? (
+                <input type="text" value={editForm.portfolio_url || ""}
+                  onChange={(e) => setEditForm({ ...editForm, portfolio_url: e.target.value })}
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
+              ) : (
+                <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-sm text-gray-900">
+                  {profile.portfolio_url || "—"}
                 </div>
               )}
             </div>
           </div>
+
+          {/* Skills (read-only from API) */}
+          {profile.skills?.length > 0 && (
+            <div className="mt-6">
+              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-2">Skills</label>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.map((skill: string, i: number) => (
+                  <span key={i} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-md text-xs font-medium border border-blue-100">{skill}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="h-8"></div>
