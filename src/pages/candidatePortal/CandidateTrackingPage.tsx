@@ -81,7 +81,7 @@ const CandidateTrackingPage = () => {
 
       if (jobId) {
         fetchPromises.push(
-          fetch(`${API_BASE}/api/candidate-portal/job/${jobId}/`, { headers })
+          fetch(`${API_BASE}/candidate-portal/job/${jobId}/`, { headers })
             .then(res => res.ok ? res.json() : null)
             .then(data => { if (data) setJobData(data); })
             .catch(err => console.warn("Job fetch failed:", err))
@@ -90,7 +90,7 @@ const CandidateTrackingPage = () => {
 
       // Profile: use applicationId since the token is scoped to the candidate
       fetchPromises.push(
-        fetch(`${API_BASE}/api/candidate-portal/profile/${applicationId}/`, { headers })
+        fetch(`${API_BASE}/candidate-portal/profile/${applicationId}/`, { headers })
           .then(res => res.ok ? res.json() : null)
           .then(data => {
             if (data) {
