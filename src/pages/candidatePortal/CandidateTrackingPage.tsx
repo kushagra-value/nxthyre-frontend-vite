@@ -114,7 +114,7 @@ const CandidateTrackingPage = () => {
     try {
       const headers = getAuthHeaders();
       const profId = profileData?.id || appData?.candidate_id;
-      const res = await fetch(`${API_BASE}/api/candidate-portal/profile/${profId}/`, {
+      const res = await fetch(`${API_BASE}/candidate-portal/profile/${profId}/`, {
         method: "PATCH", headers,
         body: JSON.stringify(editForm),
       });
@@ -125,9 +125,9 @@ const CandidateTrackingPage = () => {
       } else {
         showToast.error("Failed to update profile.");
       }
-    } catch {
-      showToast.success("Profile saved! (offline mode)");
-      setProfileData({ ...profileData, ...editForm });
+    } catch (err) {
+      console.error("Profile save error:", err);
+      showToast.error("Unable to save profile. Please try again.");
     }
     setIsEditing(false);
   };
