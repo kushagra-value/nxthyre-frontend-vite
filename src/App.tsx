@@ -547,7 +547,7 @@ function MainApp() {
         <Route path="/invite" element={<InvitePage />} />
         <Route path="/terms-and-policies" element={<TermsAndConditions />} />
         <Route path="/candidate-portal/login" element={<CandidatePortalLogin />} />
-        <Route path="/candidate-tracking/:jobId/:applicationId/:candidateId" element={<CandidateTrackingPage />} />
+        <Route path="/candidate-tracking/:jobId/:applicationId/:trackingId" element={<CandidateTrackingPage />} />
         <Route
           path="/settings"
           element={
