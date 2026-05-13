@@ -24,7 +24,7 @@ const CandidatePortalLogin = () => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/candidate-portal/auth/login/`, {
+      const response = await fetch(`${API_BASE}/candidate-portal/auth/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tracking_id: trackingId.trim() }),
