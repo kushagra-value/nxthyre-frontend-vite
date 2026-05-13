@@ -53,6 +53,8 @@ const CandidateTrackingPage = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const chatEndRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchPortalData();
@@ -105,6 +107,20 @@ const CandidateTrackingPage = () => {
         );
       }
 
+      // Messages: fetch using applicationId
+      fetchPromises.push(
+        fetch(`${API_BASE}/candidate-portal/messages/${applicationId}/`, { headers })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (data) {
+              // Normalize: API may return array directly or { results: [...] }
+              const msgs = Array.isArray(data) ? data : (data.results || data.messages || []);
+              setMessages(msgs);
+            }
+          })
+          .catch(err => console.warn("Messages fetch failed:", err))
+      );
+
       await Promise.all(fetchPromises);
     } catch (err: any) {
       console.error("Portal data fetch error:", err);
@@ -136,12 +152,64 @@ const CandidateTrackingPage = () => {
     setIsEditing(false);
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatMessage.trim()) return;
-    setMessages([...messages, { id: Date.now(), sender: "candidate", text: chatMessage, time: "Just now", initials: "ME" }]);
-    setChatMessage("");
+  const fetchMessages = async () => {
+    try {
+      const headers = getAuthHeaders();
+      const res = await fetch(`${API_BASE}/candidate-portal/messages/${applicationId}/`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        const msgs = Array.isArray(data) ? data : (data.results || data.messages || []);
+        setMessages(msgs);
+      }
+    } catch (err) {
+      console.warn("Messages refresh failed:", err);
+    }
   };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatMessage.trim() || isSendingMessage) return;
+
+    const messageText = chatMessage.trim();
+    setChatMessage("");
+
+    // Optimistic UI: add message immediately
+    const optimisticMsg = { id: `temp-${Date.now()}`, sender: "candidate", text: messageText, created_at: new Date().toISOString() };
+    setMessages(prev => [...prev, optimisticMsg]);
+
+    setIsSendingMessage(true);
+    try {
+      const headers = getAuthHeaders();
+      const res = await fetch(`${API_BASE}/candidate-portal/messages/${applicationId}/`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ text: messageText }),
+      });
+      if (res.ok) {
+        // Refresh messages to get server-confirmed data
+        await fetchMessages();
+      } else {
+        showToast.error("Failed to send message.");
+      }
+    } catch (err) {
+      console.error("Send message error:", err);
+      showToast.error("Unable to send message. Please try again.");
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
+  // Auto-scroll chat to bottom on new messages
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Refresh messages when chat is opened
+  useEffect(() => {
+    if (isChatOpen && applicationId) {
+      fetchMessages();
+    }
+  }, [isChatOpen]);
 
   if (isLoading) {
     return (
@@ -462,20 +530,33 @@ const CandidateTrackingPage = () => {
           {messages.map((msg) => {
             const isMe = msg.sender === "candidate";
             return (
-              <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm ${isMe ? "bg-blue-600 text-white rounded-br-sm" : "bg-gray-100 text-gray-800 rounded-bl-sm"}`}>
-                  {msg.text}
+              <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"} items-end gap-2`}>
+                {!isMe && msg.initials && (
+                  <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-bold shrink-0">
+                    {msg.initials || msg.sender_name?.charAt(0) || "R"}
+                  </div>
+                )}
+                <div className={`max-w-[75%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                  <div className={`px-4 py-3 rounded-2xl text-sm ${isMe ? "bg-blue-600 text-white rounded-br-sm" : "bg-gray-100 text-gray-800 rounded-bl-sm"}`}>
+                    {msg.text || msg.content || msg.message}
+                  </div>
+                  {(msg.created_at || msg.time) && (
+                    <span className="text-[10px] text-gray-400 mt-1 px-1">
+                      {msg.time || formatDate(msg.created_at)}
+                    </span>
+                  )}
                 </div>
               </div>
             );
           })}
+          <div ref={chatEndRef} />
         </div>
         <div className="p-4 border-t border-gray-200 bg-white shrink-0">
           <form onSubmit={handleSendMessage} className="relative flex items-center">
             <input type="text" value={chatMessage} onChange={(e) => setChatMessage(e.target.value)}
               placeholder="Type a message..."
               className="w-full bg-gray-50 border border-gray-200 rounded-full pl-5 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
-            <button type="submit" disabled={!chatMessage.trim()}
+            <button type="submit" disabled={!chatMessage.trim() || isSendingMessage}
               className="absolute right-1.5 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors">
               <Send className="w-4 h-4" />
             </button>
