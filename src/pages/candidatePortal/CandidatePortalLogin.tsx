@@ -39,14 +39,7 @@ const CandidatePortalLogin = () => {
       }
     } catch (error) {
       console.error("Portal login error:", error);
-      // Fallback: use dummy navigation for development
-      const dummyResponse = {
-        success: true,
-        token: "dev-token",
-        redirect_url: `/candidate-tracking/225/3413/${trackingId}`,
-      };
-      localStorage.setItem("portal_token", dummyResponse.token);
-      navigate(dummyResponse.redirect_url);
+      showToast.error("Unable to connect to the server. Please try again later.");
     } finally {
       setIsLoading(false);
     }

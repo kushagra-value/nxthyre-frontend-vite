@@ -13,79 +13,6 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
-// ── MOCK DATA (used as fallback when API is unavailable) ──
-const MOCK_CANDIDATE = {
-  full_name: "Max Verstappen",
-  email: "max.verstappen@gmail.com",
-  phone: "+91 98765 43210",
-  total_experience: 5,
-  location: "Bangalore, Karnataka",
-  current_salary: "₹24 LPA",
-  expected_ctc: "₹28-30 LPA",
-  notice_period: "30 Days",
-  linkedin_url: "linkedin.com/in/arjun-ramesh-dev",
-};
-
-const MOCK_APPLICATION = {
-  id: 3413,
-  status: "active",
-  applied_on: "2025-04-18T10:00:00Z",
-  current_stage: { name: "Technical Round", slug: "technical-round" },
-  pipeline_stages: [
-    { name: "Applied", slug: "applied", sort_order: 1 },
-    { name: "Screening Call", slug: "screening-call", sort_order: 2 },
-    { name: "Technical Round 1", slug: "technical-round-1", sort_order: 3 },
-    { name: "Technical Round 2", slug: "technical-round-2", sort_order: 4 },
-    { name: "Culture Fit & HR Round", slug: "culture-fit", sort_order: 5 },
-    { name: "Offer & Onboarding", slug: "offer", sort_order: 6 },
-  ],
-  interview_journey: {
-    total_rounds: 4,
-    completed_rounds: 2,
-    rounds: [
-      {
-        id: 1, title: "Screening Call", sort_order: 1, status: "completed",
-        outcome: "cleared", outcome_note: "Shortlisted for technical rounds",
-        completed_on: "2025-04-21T10:00:00Z",
-        duration: "15 mins", interviewer: { name: "Suchandini", role: "Recruiter" },
-      },
-      {
-        id: 2, title: "Technical Round 1 — DSA + JS Fundamentals", sort_order: 2,
-        status: "completed", outcome: "cleared",
-        outcome_note: "Strong problem solving, good JS depth",
-        completed_on: "2025-04-28T10:00:00Z",
-        duration: "60 mins", interviewer: { name: "Kiran M", role: "Eng Lead" },
-      },
-      {
-        id: 3, title: "Technical Round 2 — System Design", sort_order: 3,
-        status: "scheduled",
-        schedule: {
-          date: "2025-05-09", start_time: "15:00", end_time: "16:30",
-          timezone: "IST", platform: "Google Meet",
-          meeting_link: "https://meet.google.com/abc-xyz",
-        },
-        interviewer: { name: "Anand Krishnan", role: "Principal Architect" },
-      },
-      {
-        id: 4, title: "Culture Fit & HR Round", sort_order: 4, status: "pending",
-        outcome_note: "awaiting Round 2 outcome",
-      },
-      {
-        id: 5, title: "Offer & Onboarding", sort_order: 5, status: "pending",
-      },
-    ],
-  },
-};
-
-const MOCK_JOB = {
-  id: 225, title: "Senior Frontend Engineer — Fintech SaaS",
-  company: "Clearpath Technologies", status: "Active",
-  location: { city: "Bangalore (Hybrid)", remote: false },
-  employment: "Full-time", domain: "Fintech · B2B SaaS",
-  applied_on: "18 Apr 2025",
-  skills: ["React", "TypeScript", "GraphQL", "Micro-frontends", "Figma to Code", "Performance Optimisation"],
-};
-
 // ── Helper to get auth header ──
 const getAuthHeaders = () => {
   const token = localStorage.getItem("portal_token");
@@ -115,11 +42,12 @@ const formatTime = (t: string) => {
 };
 
 const CandidateTrackingPage = () => {
-  const { applicationId } = useParams();
+  const { applicationId, jobId } = useParams();
   const [appData, setAppData] = useState<any>(null);
   const [jobData, setJobData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -128,40 +56,55 @@ const CandidateTrackingPage = () => {
 
   useEffect(() => {
     fetchPortalData();
-  }, [applicationId]);
+  }, [applicationId, jobId]);
 
   const fetchPortalData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const headers = getAuthHeaders();
-      // Fetch application + journey data
+
+      // 1) Fetch application + interview journey (primary data source)
       const appRes = await fetch(`${API_BASE}/api/candidate-portal/application/${applicationId}/`, { headers });
-      if (appRes.ok) {
-        const app = await appRes.json();
-        setAppData(app);
-        // Fetch job details
-        if (app.job_id) {
-          const jobRes = await fetch(`${API_BASE}/api/candidate-portal/job/${app.job_id}/`, { headers });
-          if (jobRes.ok) setJobData(await jobRes.json());
+      if (!appRes.ok) {
+        if (appRes.status === 401 || appRes.status === 403) {
+          setError("Session expired. Please log in again.");
+          return;
         }
-        // Fetch profile
-        if (app.candidate_id) {
-          const profRes = await fetch(`${API_BASE}/api/candidate-portal/profile/${app.candidate_id}/`, { headers });
-          if (profRes.ok) {
-            const prof = await profRes.json();
-            setProfileData(prof);
-            setEditForm(prof);
-          }
-        }
-      } else {
-        throw new Error("API unavailable");
+        throw new Error(`Application fetch failed (${appRes.status})`);
       }
-    } catch {
-      // Fallback to mock data
-      setAppData(MOCK_APPLICATION);
-      setJobData(MOCK_JOB);
-      setProfileData(MOCK_CANDIDATE);
-      setEditForm(MOCK_CANDIDATE);
+      const app = await appRes.json();
+      setAppData(app);
+
+      // 2) Fetch job details & profile in parallel using URL params
+      const fetchPromises: Promise<void>[] = [];
+
+      if (jobId) {
+        fetchPromises.push(
+          fetch(`${API_BASE}/api/candidate-portal/job/${jobId}/`, { headers })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => { if (data) setJobData(data); })
+            .catch(err => console.warn("Job fetch failed:", err))
+        );
+      }
+
+      // Profile: use applicationId since the token is scoped to the candidate
+      fetchPromises.push(
+        fetch(`${API_BASE}/api/candidate-portal/profile/${applicationId}/`, { headers })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (data) {
+              setProfileData(data);
+              setEditForm(data);
+            }
+          })
+          .catch(err => console.warn("Profile fetch failed:", err))
+      );
+
+      await Promise.all(fetchPromises);
+    } catch (err: any) {
+      console.error("Portal data fetch error:", err);
+      setError(err.message || "Failed to load application data. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -207,18 +150,53 @@ const CandidateTrackingPage = () => {
     );
   }
 
-  // ── Resolve data ──
-  const app = appData || MOCK_APPLICATION;
-  const job = jobData || MOCK_JOB;
-  const profile = profileData || MOCK_CANDIDATE;
-  const journey = app.interview_journey || MOCK_APPLICATION.interview_journey;
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 max-w-md text-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h2>
+          <p className="text-gray-500 mb-6">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <button onClick={fetchPortalData} className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+              Retry
+            </button>
+            <a href="/candidate-portal/login" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+              Go to Login
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!appData) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">No application data found.</p>
+          <a href="/candidate-portal/login" className="text-blue-600 hover:underline text-sm font-medium">Back to Login</a>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Resolve data (appData is guaranteed non-null by the guard above) ──
+  const app = appData;
+  const job = jobData || {};
+  const profile = profileData || {};
+  const journey = app.interview_journey || { total_rounds: 0, completed_rounds: 0, rounds: [] };
   const rounds = journey.rounds || [];
-  const jTitle = job.title || MOCK_JOB.title;
-  const jCompany = job.company || MOCK_JOB.company;
-  const jLocation = typeof job.location === "object" ? job.location.city : (job.location || MOCK_JOB.location?.city);
-  const jSkills = job.skills || MOCK_JOB.skills;
-  const cName = profile.full_name || MOCK_CANDIDATE.full_name;
-  const cEmail = profile.email || MOCK_CANDIDATE.email;
+  const jTitle = job.title || "—";
+  const jCompany = job.company || "—";
+  const jLocation = typeof job.location === "object" ? job.location.city : (job.location || "—");
+  const jSkills = job.skills || [];
+  const cName = profile.full_name || "—";
+  const cEmail = profile.email || "—";
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans">
@@ -238,18 +216,26 @@ const CandidateTrackingPage = () => {
               <h1 className="text-2xl font-semibold text-gray-900">{cName}</h1>
               <p className="text-gray-500 mt-1 text-sm">{jTitle.split(" — ")[0]} · {cEmail}</p>
               <div className="flex flex-wrap gap-3 mt-4">
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                  {profile.total_experience ?? MOCK_CANDIDATE.total_experience} yrs exp
-                </span>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
-                  {profile.location || MOCK_CANDIDATE.location}
-                </span>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
-                  {profile.current_salary || MOCK_CANDIDATE.current_salary} CTC
-                </span>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
-                  {profile.notice_period || MOCK_CANDIDATE.notice_period} notice
-                </span>
+                {profile.total_experience != null && (
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                    {profile.total_experience} yrs exp
+                  </span>
+                )}
+                {profile.location && (
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                    {profile.location}
+                  </span>
+                )}
+                {profile.current_salary && (
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
+                    {profile.current_salary} CTC
+                  </span>
+                )}
+                {profile.notice_period && (
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+                    {profile.notice_period} notice
+                  </span>
+                )}
               </div>
             </div>
             <button
@@ -274,9 +260,9 @@ const CandidateTrackingPage = () => {
             {[
               ["Company", jCompany],
               ["Location", jLocation],
-              ["Applied On", app.applied_on ? formatDate(app.applied_on) : MOCK_JOB.applied_on],
-              ["Employment", job.employment || MOCK_JOB.employment],
-              ["Domain", job.domain || MOCK_JOB.domain],
+              ["Applied On", app.applied_on ? formatDate(app.applied_on) : "—"],
+              ["Employment", job.employment || "—"],
+              ["Domain", job.domain || "—"],
             ].map(([label, val]) => (
               <div key={label as string}>
                 <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{label}</div>
@@ -419,14 +405,14 @@ const CandidateTrackingPage = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
             {[
-              ["Full Name", "full_name", profile.full_name || MOCK_CANDIDATE.full_name],
-              ["Email Address", "email", profile.email || MOCK_CANDIDATE.email],
-              ["Phone Number", "phone", profile.phone || MOCK_CANDIDATE.phone],
-              ["Location", "location", profile.location || MOCK_CANDIDATE.location],
-              ["Total Experience", "total_experience", `${profile.total_experience ?? MOCK_CANDIDATE.total_experience} Years`],
-              ["Current CTC", "current_salary", profile.current_salary || MOCK_CANDIDATE.current_salary],
-              ["Expected CTC", "expected_ctc", profile.expected_ctc || MOCK_CANDIDATE.expected_ctc],
-              ["Notice Period", "notice_period", profile.notice_period || MOCK_CANDIDATE.notice_period],
+              ["Full Name", "full_name", profile.full_name || "—"],
+              ["Email Address", "email", profile.email || "—"],
+              ["Phone Number", "phone", profile.phone || "—"],
+              ["Location", "location", profile.location || "—"],
+              ["Total Experience", "total_experience", profile.total_experience != null ? `${profile.total_experience} Years` : "—"],
+              ["Current CTC", "current_salary", profile.current_salary || "—"],
+              ["Expected CTC", "expected_ctc", profile.expected_ctc || "—"],
+              ["Notice Period", "notice_period", profile.notice_period || "—"],
             ].map(([label, key, val]) => (
               <div key={key as string} className="space-y-1.5">
                 <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{label}</label>
@@ -447,7 +433,7 @@ const CandidateTrackingPage = () => {
                   className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
               ) : (
                 <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-sm text-gray-900">
-                  {profile.linkedin_url || MOCK_CANDIDATE.linkedin_url}
+                  {profile.linkedin_url || profile.portfolio_url || "—"}
                 </div>
               )}
             </div>
