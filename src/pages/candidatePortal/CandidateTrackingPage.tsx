@@ -60,11 +60,24 @@ const CandidateTrackingPage = () => {
     fetchPortalData();
   }, [applicationId, jobId]);
 
+  // ── Helper to decode JWT payload ──
+  const getCandidateIdFromToken = (): string | null => {
+    try {
+      const token = localStorage.getItem("portal_token");
+      if (!token) return null;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.candidate_id || payload.user_id || payload.candidate || null;
+    } catch {
+      return null;
+    }
+  };
+
   const fetchPortalData = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const headers = getAuthHeaders();
+      const candidateIdFromToken = getCandidateIdFromToken();
 
       // 1) Fetch application + interview journey (primary data source)
       const appRes = await fetch(`${API_BASE}/candidate-portal/application/${applicationId}/`, { headers });
@@ -78,7 +91,7 @@ const CandidateTrackingPage = () => {
       const app = await appRes.json();
       setAppData(app);
 
-      // 2) Fetch job details & profile in parallel using URL params
+      // 2) Fetch job details, profile & messages in parallel
       const fetchPromises: Promise<void>[] = [];
 
       if (jobId) {
@@ -90,18 +103,23 @@ const CandidateTrackingPage = () => {
         );
       }
 
-      // Profile: fetch using applicationId (backend resolves candidate from scoped token)
-      fetchPromises.push(
-        fetch(`${API_BASE}/candidate-portal/profile/${applicationId}/`, { headers })
-          .then(res => res.ok ? res.json() : null)
-          .then(data => {
-            if (data) {
-              setProfileData(data);
-              setEditForm(data);
-            }
-          })
-          .catch(err => console.warn("Profile fetch failed:", err))
-      );
+      // Profile: fetch using candidate UUID from JWT token
+      // If it's not in the token, fallback to app.candidate_id
+      const profileId = candidateIdFromToken || app.candidate_id || app.candidate?.id || app.candidate;
+      
+      if (profileId) {
+        fetchPromises.push(
+          fetch(`${API_BASE}/candidate-portal/profile/${profileId}/`, { headers })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+              if (data) {
+                setProfileData(data);
+                setEditForm(data);
+              }
+            })
+            .catch(err => console.warn("Profile fetch failed:", err))
+        );
+      }
 
       // Messages: fetch using applicationId
       fetchPromises.push(
@@ -109,7 +127,6 @@ const CandidateTrackingPage = () => {
           .then(res => res.ok ? res.json() : null)
           .then(data => {
             if (data) {
-              // Normalize: API may return array directly or { results: [...] }
               const msgs = Array.isArray(data) ? data : (data.results || data.messages || []);
               setMessages(msgs);
             }
@@ -132,6 +149,13 @@ const CandidateTrackingPage = () => {
   const handleProfileSave = async () => {
     try {
       const headers = getAuthHeaders();
+      const profileId = profileData?.id || getCandidateIdFromToken() || appData?.candidate_id;
+      
+      if (!profileId) {
+        showToast.error("Could not identify profile ID.");
+        return;
+      }
+
       // Only send safe/writable fields
       const safePayload: Record<string, any> = {};
       for (const key of SAFE_PATCH_FIELDS) {
@@ -139,7 +163,7 @@ const CandidateTrackingPage = () => {
           safePayload[key] = editForm[key];
         }
       }
-      const res = await fetch(`${API_BASE}/candidate-portal/profile/${applicationId}`, {
+      const res = await fetch(`${API_BASE}/candidate-portal/profile/${profileId}/`, {
         method: "PATCH", headers,
         body: JSON.stringify(safePayload),
       });
