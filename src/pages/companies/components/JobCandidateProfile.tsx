@@ -2457,6 +2457,7 @@ export default function JobCandidateProfile({
             initialJobId={jobId?.toString()}
             initialCompanyId={workspaceId?.toString()}
             initialApplicationId={applicationId?.toString()}
+            initialStageId={pendingEventAction ? String(pendingEventAction.targetStageId) : undefined}
             isStageMove={!!pendingEventAction}
             onSubmit={async (payload) => {
               if (pendingEventAction) {

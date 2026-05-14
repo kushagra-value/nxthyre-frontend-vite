@@ -4987,6 +4987,7 @@ export default function JobPipelineDashboard({
           }}
           initialJobId={String(jobId)}
           initialApplicationId={String(pendingEventAction.applicationIds[0])}
+          initialStageId={String(pendingEventAction.targetStageId)}
           isStageMove={true}
           onSubmit={async (payload) => {
             // Event created successfully. The event form submits to scheduleService.

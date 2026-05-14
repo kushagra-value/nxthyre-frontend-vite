@@ -25,6 +25,7 @@ interface EventFormProps {
   initialCompanyId?: string;
   initialJobId?: string;
   initialApplicationId?: string;
+  initialStageId?: string;
   isStageMove?: boolean;
   onSkip?: (note: string) => void;
 }
@@ -144,6 +145,7 @@ export const EventForm = ({
   initialCompanyId,
   initialJobId,
   initialApplicationId,
+  initialStageId,
   isStageMove,
   onSkip,
 }: EventFormProps) => {
@@ -209,9 +211,13 @@ export const EventForm = ({
 
   useEffect(() => {
     if (isOpen && initialApplicationId && selectedJobId) {
-      setFormData((prev) => ({ ...prev, applicationId: initialApplicationId }));
+      setFormData((prev) => ({ 
+        ...prev, 
+        applicationId: initialApplicationId,
+        stageId: initialStageId || prev.stageId 
+      }));
     }
-  }, [isOpen, initialApplicationId, selectedJobId]);
+  }, [isOpen, initialApplicationId, initialStageId, selectedJobId]);
 
   useEffect(() => {
     if (isOpen) {
