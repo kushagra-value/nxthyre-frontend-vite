@@ -36,9 +36,10 @@ import {
   Phone,
   Mail,
   Trash2,
-  Copy,
   XCircle,
+  CheckCircle2,
   RotateCcw,
+  Copy,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
@@ -470,6 +471,7 @@ export default function JobPipelineDashboard({
   // ── Feedback Modal State ──
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackComment, setFeedbackComment] = useState("");
+  const [selectedFeedbackOptions, setSelectedFeedbackOptions] = useState<string[]>([]);
   const draggedCandidateItemRef = useRef<any>(null);
   const [pendingAction, setPendingAction] = useState<{
     type: "archive" | "unarchive" | "move";
@@ -1584,6 +1586,7 @@ export default function JobPipelineDashboard({
     });
     setPendingAction({ ...action, candidateNames: names });
     setFeedbackComment("");
+    setSelectedFeedbackOptions([]);
     setShowFeedbackModal(true);
   };
 
@@ -1640,13 +1643,17 @@ export default function JobPipelineDashboard({
         );
         showToast.success(`${applicationIds.length} candidate(s) unarchived`);
       } else if (type === "move" && targetStageId) {
+        const finalComment = selectedFeedbackOptions.length > 0 
+          ? `[${selectedFeedbackOptions.join(", ")}] ${feedbackComment.trim()}`
+          : feedbackComment.trim();
+
         await Promise.all(
           applicationIds.map((id) =>
             apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
               current_stage: targetStageId,
               feedback: {
                 subject: `Moving to ${targetStageName || "next stage"}`,
-                comment: feedbackComment.trim(),
+                comment: finalComment,
               },
             })
           )
@@ -4924,6 +4931,40 @@ export default function JobPipelineDashboard({
                     ` and ${pendingAction.candidateNames.length - 3} more`}
                 </div>
               </div>
+
+              {pendingAction.type === "move" && pendingAction.targetStageName?.toLowerCase().includes("shortlist") && (
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Quick Status <span className="text-gray-400 font-normal">(Optional)</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "picked_call", label: "Picked Call", icon: <Phone className="w-3.5 h-3.5" /> },
+                      { id: "approved", label: "Approved by Client", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+                      { id: "rejected", label: "Rejected by Client", icon: <XCircle className="w-3.5 h-3.5" /> },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => {
+                          setSelectedFeedbackOptions(prev => 
+                            prev.includes(opt.label) 
+                              ? prev.filter(i => i !== opt.label)
+                              : [...prev, opt.label]
+                          );
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                          selectedFeedbackOptions.includes(opt.label)
+                            ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
+                            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                        }`}
+                      >
+                        {opt.icon}
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
