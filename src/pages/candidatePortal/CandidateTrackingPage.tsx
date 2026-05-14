@@ -313,7 +313,22 @@ const CandidateTrackingPage = () => {
   const job = jobData || {};
   const profile = profileData || {};
   const journey = app.interview_journey || { total_rounds: 0, completed_rounds: 0, rounds: [] };
-  const rounds = journey.rounds || [];
+  
+  // Filter out unwanted system stages and rename 'Shortlisted' to 'Call screening'
+  const hiddenStageSlugs = ["uncontacted", "invites-sent", "applied", "archives"];
+  let rounds = (journey.rounds || [])
+    .filter((r: any) => {
+      const slug = r.slug || (r.name || r.title || "").toLowerCase().replace(/\s+/g, '-');
+      return !hiddenStageSlugs.includes(slug);
+    })
+    .map((r: any) => {
+      const slug = r.slug || (r.name || r.title || "").toLowerCase().replace(/\s+/g, '-');
+      if (slug === "shortlisted") {
+        return { ...r, title: "Call screening", name: "Call screening" };
+      }
+      return r;
+    });
+
   const jTitle = job.title || "—";
   const jCompany = job.company || "—";
   let jLocation = "—";
@@ -425,7 +440,7 @@ const CandidateTrackingPage = () => {
           <div className="flex justify-between items-center p-6 border-b border-gray-100">
             <h2 className="text-base font-semibold text-gray-900">Pipeline Progress</h2>
             <span className="text-sm text-gray-500 font-medium">
-              Round {journey.completed_rounds} of {journey.total_rounds}
+              Round {rounds.filter((r: any) => r.status === "completed").length} of {rounds.length}
             </span>
           </div>
           <div className="p-6">

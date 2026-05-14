@@ -25,6 +25,8 @@ interface EventFormProps {
   initialCompanyId?: string;
   initialJobId?: string;
   initialApplicationId?: string;
+  isStageMove?: boolean;
+  onSkip?: (note: string) => void;
 }
 
 // Time options for the Start Time dropdown
@@ -142,6 +144,8 @@ export const EventForm = ({
   initialCompanyId,
   initialJobId,
   initialApplicationId,
+  isStageMove,
+  onSkip,
 }: EventFormProps) => {
   // ── Company & Job state ──
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
@@ -369,6 +373,10 @@ export const EventForm = ({
       alert('Please select an interview stage');
       return;
     }
+    if (!formData.note?.trim()) {
+      alert('Please provide a mandatory note');
+      return;
+    }
 
     // Convert 12h time to 24h for API
     const convert12to24 = (time12: string) => {
@@ -416,7 +424,7 @@ export const EventForm = ({
     setSubmitting(true);
     try {
       await scheduleService.createEvent(payload);
-      onSubmit?.(payload);
+      onSubmit?.({ ...payload, submittedNote: formData.note });
       onSuccess?.();
       handleClose();
     } catch (err: any) {
@@ -666,38 +674,16 @@ export const EventForm = ({
               </div>
             </div>
 
-            {/* Virtual Interview Link - shown when virtual mode is selected */}
-            {formData.interviewMode === 'virtual' && (
-              <div className="bg-[#F9FAFB] rounded-xl p-5 border border-[#F3F4F6]">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-7 h-7 rounded-md bg-[#1F2937] flex items-center justify-center text-white text-xs">💻</span>
-                  <span className="text-sm font-medium text-[#1F2937]">Virtual Interview Link</span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-[#1F2937]">
-                    Meeting Link <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="meeting-link-input"
-                    type="url"
-                    placeholder="https://meet.google.com/..."
-                    value={formData.meetingLink}
-                    onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] placeholder:text-[#9CA3AF] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all"
-                  />
-                </div>
-              </div>
-            )}
-
             {/* Note */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-[#1F2937]">
-                <span className="mr-1.5">📝</span> Note <span className="text-xs font-normal text-[#9CA3AF]">(optional)</span>
+                <span className="mr-1.5">📝</span> Note <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <textarea
                   id="note-textarea"
-                  placeholder="Add any notes for the interview..."
+                  required
+                  placeholder="Add mandatory notes for the interview..."
                   value={formData.note}
                   onChange={(e) => {
                     if (e.target.value.length <= 300) {
@@ -715,6 +701,21 @@ export const EventForm = ({
 
             {/* Action Buttons */}
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F3F4F6]">
+              {isStageMove && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!formData.note?.trim()) {
+                      alert('Please provide a mandatory note to skip scheduling.');
+                      return;
+                    }
+                    onSkip?.(formData.note);
+                  }}
+                  className="px-6 py-2.5 text-sm font-medium text-[#D97706] bg-[#FEF3C7] border border-[#FDE68A] rounded-xl hover:bg-[#FDE68A] transition-colors"
+                >
+                  Skip Scheduling
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleClose}

@@ -4,6 +4,7 @@ interface TodaysSidebarProps {
   selectedDate: Date;
   events: ScheduleEvent[];
   onEventClick?: (event: ScheduleEvent) => void;
+  activeFilter?: string;
 }
 
 const MODE_BADGE: Record<string, { bg: string; text: string; label: string }> = {
@@ -59,9 +60,11 @@ function getRelativeDayLabel(selectedDate: Date, offset: number): string {
   return '';
 }
 
-export default function TodaysSidebar({ selectedDate, events, onEventClick }: TodaysSidebarProps) {
+export default function TodaysSidebar({ selectedDate, events, onEventClick, activeFilter }: TodaysSidebarProps) {
   const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
   const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+  const isFilteringStatus = activeFilter && activeFilter !== 'all';
 
   // Selected date + next day
   const selectedStr = toDateStr(selectedDate);
@@ -69,9 +72,9 @@ export default function TodaysSidebar({ selectedDate, events, onEventClick }: To
   nextDay.setDate(nextDay.getDate() + 1);
   const nextDayStr = toDateStr(nextDay);
 
-  // Events for the selected date and next day
-  const selectedDateEvents = events.filter(e => e.date === selectedStr);
-  const nextDayEvents = events.filter(e => e.date === nextDayStr);
+  // Events for the selected date and next day (only if not filtering by status)
+  const selectedDateEvents = isFilteringStatus ? events : events.filter(e => e.date === selectedStr);
+  const nextDayEvents = isFilteringStatus ? [] : events.filter(e => e.date === nextDayStr);
 
   // Dynamic stats based on selected date's events
   const selectedDayStats = {
@@ -86,8 +89,12 @@ export default function TodaysSidebar({ selectedDate, events, onEventClick }: To
     <div className="w-[280px] flex-shrink-0 flex flex-col gap-0 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 170px)' }}>
       {/* ─── Date Header ─── */}
       <div className="bg-white px-4 py-3 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-[#1F2937]">{formatDateHeader(selectedDate)}</h3>
-        <p className="text-[11px] text-[#8E8E93] mt-0.5">{getRelativeLabel(selectedDate)}</p>
+        <h3 className="text-sm font-semibold text-[#1F2937]">
+          {isFilteringStatus ? `${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)} Interviews` : formatDateHeader(selectedDate)}
+        </h3>
+        <p className="text-[11px] text-[#8E8E93] mt-0.5">
+          {isFilteringStatus ? 'All matching events' : getRelativeLabel(selectedDate)}
+        </p>
       </div>
 
       {/* ─── Stats Row ─── */}
@@ -180,10 +187,14 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
       {/* Candidate Name */}
       <h4 className="text-sm font-semibold text-[#1F2937] mb-1">{event.candidateName}</h4>
 
-      {/* Time range */}
-      <p className="text-[11px] text-[#6B7280] mb-0.5">
-        {formatTo12h(event.startTime)} – {formatTo12h(event.endTime)}
-      </p>
+      {/* Time range and Date */}
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <p className="text-[11px] font-medium text-[#0F47F2]">{event.date}</p>
+        <span className="text-[10px] text-gray-300">•</span>
+        <p className="text-[11px] text-[#6B7280]">
+          {formatTo12h(event.startTime)} – {formatTo12h(event.endTime)}
+        </p>
+      </div>
 
       {/* Company / Role */}
       {event.company && (

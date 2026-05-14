@@ -149,6 +149,7 @@ export default function JobCandidateProfile({
   } | null>(null);
   const [showStageMenu, setShowStageMenu] = useState(false);
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
+  const [pendingEventAction, setPendingEventAction] = useState<any>(null);
 
   // ── Match Description Editing State ──
   const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
@@ -167,6 +168,20 @@ export default function JobCandidateProfile({
     targetStageId?: number;
     targetStageName?: string;
   }) => {
+    if (action.type === "move" && action.targetStageId) {
+      const targetStage = stages.find((s) => s.id === action.targetStageId);
+      const interviewTypes = ["VIRTUAL_INTERVIEW", "FACE_TO_FACE", "EXTERNAL_PLATFORM"];
+      if (targetStage && targetStage.stage_type && interviewTypes.includes(targetStage.stage_type)) {
+        if (action.applicationIds.length > 1) {
+          showToast.error("Cannot bulk move candidates to an interview stage. Please move one at a time.");
+          return;
+        }
+        setPendingEventAction(action);
+        setIsEventFormOpen(true);
+        return;
+      }
+    }
+
     const names = [fullName];
     setPendingAction({ ...action, candidateNames: names });
     setFeedbackComment("");
@@ -2432,13 +2447,60 @@ export default function JobCandidateProfile({
           </div>
         )}
 
-        <EventForm
-          isOpen={isEventFormOpen}
-          onClose={() => setIsEventFormOpen(false)}
-          initialJobId={jobId?.toString()}
-          initialCompanyId={workspaceId?.toString()}
-          initialApplicationId={applicationId?.toString()}
-        />
+        {isEventFormOpen && (
+          <EventForm
+            isOpen={isEventFormOpen}
+            onClose={() => {
+              setIsEventFormOpen(false);
+              setPendingEventAction(null);
+            }}
+            initialJobId={jobId?.toString()}
+            initialCompanyId={workspaceId?.toString()}
+            initialApplicationId={applicationId?.toString()}
+            isStageMove={!!pendingEventAction}
+            onSubmit={async (payload) => {
+              if (pendingEventAction) {
+                try {
+                  await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                    current_stage: pendingEventAction.targetStageId,
+                    feedback: {
+                      subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} and scheduled interview`,
+                      comment: payload.submittedNote || "Interview scheduled",
+                    },
+                  });
+                  showToast.success(`Candidate moved and interview scheduled`);
+                  setPendingEventAction(null);
+                  goBack();
+                } catch (err) {
+                  console.error(err);
+                  showToast.error("Failed to move candidate after scheduling.");
+                }
+              } else {
+                showToast.success("Interview scheduled successfully.");
+              }
+            }}
+            onSkip={async (note) => {
+              if (pendingEventAction) {
+                setIsEventFormOpen(false);
+                try {
+                  await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                    current_stage: pendingEventAction.targetStageId,
+                    feedback: {
+                      subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} (Interview skipped)`,
+                      comment: note,
+                    },
+                  });
+                  showToast.success(`Candidate moved with note`);
+                  setPendingEventAction(null);
+                  goBack();
+                } catch (err) {
+                  console.error(err);
+                  showToast.error("Failed to move candidate.");
+                }
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );

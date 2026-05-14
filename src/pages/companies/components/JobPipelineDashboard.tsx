@@ -38,6 +38,7 @@ import {
   Trash2,
   Copy,
   XCircle,
+  RotateCcw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
@@ -63,6 +64,7 @@ import DateRangeFilter from "./DateRangeFilter";
 import PipelineKanbanColumn from "./PipelineKanbanColumn";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import { getAttentionPill, formatTimeAgo, formatMovedDate } from "../../../utils/candidateAttention";
+import { EventForm } from "../../schedules/components/EventForm";
 
 // ─── Interfaces ────────────────────────────────────────────────
 
@@ -475,6 +477,8 @@ export default function JobPipelineDashboard({
     targetStageName?: string;
     candidateNames?: string[];
   } | null>(null);
+  const [isEventFormOpen, setIsEventFormOpen] = useState(false);
+  const [pendingEventAction, setPendingEventAction] = useState<any>(null);
 
   // ── Filters & Date Range ──
   const [pipelineFilters, setPipelineFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
@@ -1556,6 +1560,20 @@ export default function JobPipelineDashboard({
     targetStageId?: number;
     targetStageName?: string;
   }) => {
+    if (action.type === "move" && action.targetStageId) {
+      const targetStage = stages.find(s => s.id === action.targetStageId);
+      const interviewTypes = ["VIRTUAL_INTERVIEW", "FACE_TO_FACE", "EXTERNAL_PLATFORM"];
+      if (targetStage && targetStage.stage_type && interviewTypes.includes(targetStage.stage_type)) {
+        if (action.applicationIds.length > 1) {
+          showToast.error("Cannot bulk move candidates to an interview stage. Please move one at a time.");
+          return;
+        }
+        setPendingEventAction(action);
+        setIsEventFormOpen(true);
+        return;
+      }
+    }
+
     // Gather candidate names for display
     const names = action.applicationIds.map((id) => {
       if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.candidate?.full_name || "Unknown";
@@ -4948,14 +4966,83 @@ export default function JobPipelineDashboard({
               >
                 {pendingAction.type === "archive" ? (
                   <Archive className="w-4 h-4" />
+                ) : pendingAction.type === "unarchive" ? (
+                  <RotateCcw className="w-4 h-4" />
                 ) : (
                   <Check className="w-4 h-4" />
                 )}
-                Confirm {pendingAction.type === "archive" ? "Archive" : "Action"}
+                Confirm {pendingAction.type === "move" ? "Move" : "Action"}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {isEventFormOpen && pendingEventAction && (
+        <EventForm
+          isOpen={isEventFormOpen}
+          onClose={() => {
+            setIsEventFormOpen(false);
+            setPendingEventAction(null);
+          }}
+          initialJobId={String(jobId)}
+          initialApplicationId={String(pendingEventAction.applicationIds[0])}
+          isStageMove={true}
+          onSubmit={async (payload) => {
+            // Event created successfully. The event form submits to scheduleService.
+            // But we ALSO need to move the candidate!
+            try {
+              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                current_stage: pendingEventAction.targetStageId,
+                feedback: {
+                  subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} and scheduled interview`,
+                  comment: payload.submittedNote || "Interview scheduled",
+                },
+              });
+              showToast.success(`Candidate moved and interview scheduled`);
+              clearSelection();
+              if (jobId != null) {
+                if (!isKanbanView) {
+                  fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
+                } else {
+                  triggerKanbanRefresh([pendingEventAction.targetStageName]); // Best effort refresh
+                }
+                fetchStages(jobId);
+              }
+            } catch (err: any) {
+              console.error("Failed to move candidate after scheduling:", err);
+              showToast.error("Failed to move candidate. Please refresh and try again.");
+            }
+          }}
+          onSkip={async (note) => {
+            // Skip scheduling, just move candidate with note
+            setIsEventFormOpen(false);
+            try {
+              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                current_stage: pendingEventAction.targetStageId,
+                feedback: {
+                  subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} (Interview skipped)`,
+                  comment: note,
+                },
+              });
+              showToast.success(`Candidate moved with note`);
+              clearSelection();
+              setPendingEventAction(null);
+              if (jobId != null) {
+                if (!isKanbanView) {
+                  fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
+                } else {
+                  triggerKanbanRefresh([pendingEventAction.targetStageName]);
+                }
+                fetchStages(jobId);
+              }
+            } catch (err: any) {
+              console.error("Failed to move candidate:", err);
+              showToast.error("Failed to move candidate.");
+              setPendingEventAction(null);
+            }
+          }}
+        />
       )}
 
       {/* CALL CANDIDATE MODAL */}
@@ -4966,6 +5053,5 @@ export default function JobPipelineDashboard({
         jobId={jobId}
       />
     </div>
-
   );
 }
