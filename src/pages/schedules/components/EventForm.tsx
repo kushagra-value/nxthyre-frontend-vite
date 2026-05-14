@@ -451,6 +451,7 @@ export const EventForm = ({
       start_at: startDateTime,
       end_at: endDateTime,
       location_type: locationType,
+      location_details: formData.location || '',
       status: 'SCHEDULED',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       participants: [],
@@ -680,37 +681,61 @@ export const EventForm = ({
                 Interview Mode <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-4 gap-3">
-                {INTERVIEW_MODES.map((mode) => (
-                  <button
-                    key={mode.id}
-                    type="button"
-                    id={`mode-${mode.id}`}
-                    onClick={() => setFormData({ ...formData, interviewMode: mode.id })}
-                    className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 ${
-                      formData.interviewMode === mode.id
-                        ? 'border-[#0F47F2] bg-[#EEF2FF] shadow-sm'
-                        : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
-                    }`}
-                  >
-                    <span
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
+                {INTERVIEW_MODES.map((mode) => {
+                  const isDisabled = isStageMove && formData.interviewMode !== mode.id;
+                  return (
+                    <button
+                      key={mode.id}
+                      type="button"
+                      id={`mode-${mode.id}`}
+                      disabled={isDisabled}
+                      title={isDisabled ? "If you need to switch, then update the stage type in the pipeline dashboard." : ""}
+                      onClick={() => setFormData({ ...formData, interviewMode: mode.id })}
+                      className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 ${
                         formData.interviewMode === mode.id
-                          ? 'bg-[#0F47F2] text-white shadow-md'
-                          : 'bg-[#F3F4F6] text-[#6B7280]'
+                          ? 'border-[#0F47F2] bg-[#EEF2FF] shadow-sm'
+                          : isDisabled
+                          ? 'border-[#F3F4F6] bg-gray-50 opacity-60 cursor-not-allowed'
+                          : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
                       }`}
                     >
-                      {mode.icon}
-                    </span>
-                    <span
-                      className={`text-xs font-medium text-center ${
-                        formData.interviewMode === mode.id ? 'text-[#0F47F2]' : 'text-[#4B5563]'
-                      }`}
-                    >
-                      {mode.label}
-                    </span>
-                  </button>
-                ))}
+                      <span
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
+                          formData.interviewMode === mode.id
+                            ? 'bg-[#0F47F2] text-white shadow-md'
+                            : 'bg-[#F3F4F6] text-[#6B7280]'
+                        }`}
+                      >
+                        {mode.icon}
+                      </span>
+                      <span
+                        className={`text-xs font-medium text-center ${
+                          formData.interviewMode === mode.id ? 'text-[#0F47F2]' : 'text-[#4B5563]'
+                        }`}
+                      >
+                        {mode.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {formData.interviewMode === 'face-to-face' && (
+                <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <label className="text-sm font-medium text-[#1F2937]">
+                    <span className="mr-1.5">📍</span> Location <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="location-input"
+                    type="text"
+                    required
+                    placeholder="Enter meeting room, office address, or building name..."
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] placeholder:text-[#9CA3AF] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Note */}
