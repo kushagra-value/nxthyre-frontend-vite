@@ -11,6 +11,28 @@ import {
   MessageSquare,
 } from "lucide-react";
 
+const WhatsappIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clipPath="url(#clip0_1794_9003)">
+      <path fillRule="evenodd" clipRule="evenodd" d="M10.9968 0C4.9327 0 0 4.93408 0 10.9999C0 13.4055 0.775794 15.6365 2.09459 17.4474L0.723979 21.5342L4.95204 20.183C6.69102 21.334 8.76628 22 11.0032 22C17.0673 22 22 17.0657 22 11.0001C22 4.93428 17.0673 0.000181834 11.0032 0.000181834L10.9968 0ZM7.92589 5.58746C7.7126 5.07662 7.55094 5.05728 7.22781 5.04414C7.11779 5.03775 6.99518 5.03137 6.85925 5.03137C6.43887 5.03137 5.99934 5.1542 5.73423 5.42577C5.4111 5.75556 4.60938 6.52501 4.60938 8.10297C4.60938 9.68093 5.76014 11.207 5.91523 11.4206C6.07688 11.6338 8.15869 14.9189 11.3911 16.2578C13.9188 17.3054 14.6689 17.2083 15.2442 17.0854C16.0846 16.9044 17.1385 16.2833 17.4036 15.5334C17.6687 14.7831 17.6687 14.1429 17.5909 14.0071C17.5134 13.8713 17.2999 13.7939 16.9768 13.632C16.6537 13.4703 15.0825 12.6943 14.7851 12.5908C14.4941 12.481 14.2162 12.5198 13.9966 12.8303C13.6862 13.2635 13.3824 13.7034 13.1367 13.9684C12.9427 14.1754 12.6258 14.2013 12.3608 14.0912C12.0052 13.9427 11.0098 13.5932 9.78129 12.5003C8.83088 11.6533 8.18444 10.5993 7.99706 10.2825C7.80949 9.95925 7.97769 9.77145 8.12621 9.59697C8.28787 9.39639 8.44298 9.25422 8.60463 9.0666C8.76629 8.87917 8.85679 8.78207 8.96024 8.56215C9.07026 8.3488 8.99252 8.12888 8.91498 7.96718C8.83744 7.80548 8.191 6.22752 7.92589 5.58746Z" fill="white"/>
+    </g>
+    <defs>
+      <clipPath id="clip0_1794_9003">
+        <rect width="22" height="22" fill="white"/>
+      </clipPath>
+    </defs>
+  </svg>
+);
+
+const CheckMarkIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 14C0 6.26801 6.26801 0 14 0C21.732 0 28 6.26801 28 14C28 21.732 21.732 28 14 28C6.26801 28 0 21.732 0 14Z" fill="#ECFDF5"/>
+    <path d="M14 0.75C21.3178 0.75 27.25 6.68223 27.25 14C27.25 21.3178 21.3178 27.25 14 27.25C6.68223 27.25 0.75 21.3178 0.75 14C0.75 6.68223 6.68223 0.75 14 0.75Z" stroke="#059669" strokeOpacity="0.25" strokeWidth="1.5"/>
+    <path d="M11.972 4.76028C12.6145 4.21277 12.9357 3.93901 13.2716 3.77848C14.0484 3.40717 14.9515 3.40717 15.7284 3.77848C16.0643 3.93901 16.3855 4.21277 17.028 4.76028C17.2837 4.9782 17.4115 5.08716 17.5481 5.17867C17.8611 5.38847 18.2126 5.53408 18.5822 5.60706C18.7436 5.6389 18.911 5.65227 19.246 5.67899C20.0874 5.74613 20.5081 5.77971 20.8591 5.90369C21.6709 6.19045 22.3096 6.82903 22.5964 7.64089C22.7203 7.99191 22.7538 8.41264 22.8211 9.25409C22.8477 9.58899 22.8611 9.75644 22.893 9.91771C22.9659 10.2874 23.1115 10.6389 23.3214 10.9519C23.4129 11.0885 23.5218 11.2163 23.7398 11.472C24.2872 12.1145 24.561 12.4358 24.7216 12.7716C25.0928 13.5484 25.0928 14.4515 24.7216 15.2284C24.561 15.5643 24.2872 15.8855 23.7398 16.528C23.5218 16.7837 23.4129 16.9115 23.3214 17.0481C23.1115 17.3611 22.9659 17.7126 22.893 18.0824C22.8611 18.2436 22.8477 18.4111 22.8211 18.7459C22.7538 19.5874 22.7203 20.0081 22.5964 20.3591C22.3096 21.1709 21.6709 21.8096 20.8591 22.0964C20.5081 22.2203 20.0874 22.2538 19.246 22.3211C18.911 22.3477 18.7436 22.3612 18.5822 22.393C18.2126 22.466 17.8611 22.6115 17.5481 22.8214C17.4115 22.9129 17.2837 23.0218 17.028 23.2398C16.3855 23.7872 16.0643 24.061 15.7284 24.2216C14.9515 24.5928 14.0484 24.5928 13.2716 24.2216C12.9357 24.061 12.6145 23.7872 11.972 23.2398C11.7163 23.0218 11.5885 22.9129 11.4519 22.8214C11.1389 22.6115 10.7874 22.466 10.4177 22.393C10.2564 22.3612 10.089 22.3477 9.75409 22.3211C8.91264 22.2538 8.4919 22.2203 8.14089 22.0964C7.32903 21.8096 6.69044 21.1709 6.40369 20.3591C6.27971 20.0081 6.24613 19.5874 6.17899 18.7459C6.15226 18.4111 6.1389 18.2436 6.10706 18.0824C6.03408 17.7126 5.88847 17.3611 5.67868 17.0481C5.58716 16.9115 5.4782 16.7837 5.26029 16.528C4.71277 15.8855 4.43902 15.5643 4.27847 15.2284C3.90718 14.4515 3.90718 13.5484 4.27847 12.7716C4.43902 12.4357 4.71277 12.1145 5.26029 11.472C5.4782 11.2163 5.58716 11.0885 5.67868 10.9519C5.88847 10.6389 6.03408 10.2874 6.10706 9.91771C6.1389 9.75644 6.15226 9.58899 6.17899 9.25409C6.24613 8.41264 6.27971 7.99191 6.40369 7.64089C6.69044 6.82903 7.32903 6.19045 8.14089 5.90369C8.4919 5.77971 8.91264 5.74613 9.75409 5.67899C10.089 5.65227 10.2564 5.6389 10.4177 5.60706C10.7874 5.53408 11.1389 5.38847 11.4519 5.17867C11.5885 5.08716 11.7163 4.9782 11.972 4.76028Z" fill="#14AE5C"/>
+    <path d="M11 14.5L13 16.5L18 11.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 // ── Helper to get auth header ──
@@ -144,7 +166,7 @@ const CandidateTrackingPage = () => {
   };
 
   // Only these fields are writable per the API spec
-  const SAFE_PATCH_FIELDS = ["full_name", "email", "phone", "location", "linkedin_url", "portfolio_url"];
+  const SAFE_PATCH_FIELDS = ["full_name", "email", "phone", "location", "total_experience", "current_ctc", "expected_ctc", "notice_period", "linkedin_url"];
 
   const handleProfileSave = async () => {
     try {
@@ -302,6 +324,15 @@ const CandidateTrackingPage = () => {
   } else if (typeof job.location === "string") {
     jLocation = job.location;
   }
+
+  if (job.work_approach && jLocation !== "—") {
+    const wa = job.work_approach.charAt(0).toUpperCase() + job.work_approach.slice(1).toLowerCase();
+    jLocation = `${jLocation} (${wa})`;
+  } else if (job.work_approach) {
+    const wa = job.work_approach.charAt(0).toUpperCase() + job.work_approach.slice(1).toLowerCase();
+    jLocation = wa;
+  }
+
   const jSkills = job.skills || [];
   const cName = profile.full_name || "—";
   const cEmail = profile.email || "—";
@@ -325,27 +356,32 @@ const CandidateTrackingPage = () => {
               <p className="text-gray-500 mt-1 text-sm">{jTitle.split(" — ")[0]} · {cEmail}</p>
               <div className="flex flex-wrap gap-3 mt-4">
                 {profile.total_experience != null && (
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                  <span className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-blue-50/80 text-blue-500 border border-blue-100">
                     {profile.total_experience} yrs exp
                   </span>
                 )}
                 {profile.location && (
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                  <span className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-purple-50/80 text-purple-500 border border-purple-100">
                     {profile.location}
                   </span>
                 )}
-                {profile.skills?.length > 0 && (
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
-                    {profile.skills.length} skills
+                {profile.current_ctc && (
+                  <span className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-orange-50/80 text-orange-500 border border-orange-100">
+                    {profile.current_ctc}
+                  </span>
+                )}
+                {profile.notice_period && (
+                  <span className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-green-50/80 text-green-500 border border-green-100">
+                    {profile.notice_period}
                   </span>
                 )}
               </div>
             </div>
             <button
-              onClick={() => setIsChatOpen(!isChatOpen)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm shrink-0 flex items-center gap-2"
+              onClick={() => window.open('https://wa.me/7828567987', '_blank')}
+              className="bg-[#0BA360] hover:bg-[#098C52] text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm shrink-0 flex items-center gap-2"
             >
-              <MessageSquare size={16} /> Message Recruiter
+              <WhatsappIcon /> Whatsapp
             </button>
           </div>
         </div>
@@ -403,11 +439,11 @@ const CandidateTrackingPage = () => {
                 return (
                   <div key={round.id || idx} className="relative flex items-start pb-8 last:pb-0">
                     {/* Node */}
-                    <div className={`absolute -left-6 mt-1 w-8 h-8 rounded-full border-2 bg-white flex items-center justify-center z-10
-                      ${isCompleted ? "border-green-400" : isScheduled ? "border-blue-400 border-[3px]" : "border-gray-200"}`}>
-                      {isCompleted && <CheckCircle2 className="w-5 h-5 fill-green-50 text-green-500" />}
+                    <div className={`absolute -left-6 mt-1 w-8 h-8 rounded-full flex items-center justify-center z-10
+                      ${isCompleted ? "bg-white" : isScheduled ? "bg-blue-600 shadow-sm shadow-blue-200" : "bg-[#F8FAFC] border-2 border-gray-200"}`}>
+                      {isCompleted && <CheckMarkIcon />}
                       {isScheduled && (
-                        <span className="w-5 h-5 bg-blue-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">
                           {round.sort_order || idx + 1}
                         </span>
                       )}
@@ -428,8 +464,8 @@ const CandidateTrackingPage = () => {
                             Completed · {formatDate(round.completed_on)} · {round.duration || ""}{round.interviewer ? ` · ${round.interviewer.name}(${round.interviewer.role})` : ""}
                           </p>
                           {round.outcome_note && (
-                            <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 text-sm text-gray-700 flex items-start gap-2">
-                              <span className="font-semibold text-blue-900 shrink-0 capitalize">{round.outcome || "Cleared"}</span>
+                            <div className="bg-[#EFF4FF] border border-[#D1E0FF] rounded-lg p-3 text-sm text-gray-700 flex items-start gap-3">
+                              <span className="font-semibold text-gray-900 shrink-0 capitalize">{round.outcome || "Cleared"}</span>
                               <span className="text-gray-400">—</span>
                               <span>{round.outcome_note}</span>
                             </div>
@@ -440,31 +476,24 @@ const CandidateTrackingPage = () => {
                       {isScheduled && round.schedule && (
                         <>
                           <p className="text-sm text-gray-500 mb-3">Scheduled · {formatDate(round.schedule.date)}</p>
-                          <div className="bg-orange-50/50 border border-orange-100/60 rounded-xl p-5 shadow-sm space-y-3">
-                            <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
-                              <Calendar className="w-4 h-4 text-orange-500" />
+                          <div className="bg-[#FFF9F0] border border-[#FFE4C4] rounded-xl p-5 shadow-sm space-y-3">
+                            <div className="text-gray-800 text-sm font-medium">
                               {formatScheduleDate(round.schedule.date)}
                             </div>
-                            <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
-                              <Clock4 className="w-4 h-4 text-orange-500" />
+                            <div className="text-gray-800 text-sm font-medium">
                               {formatTime(round.schedule.start_time)} – {formatTime(round.schedule.end_time)} {round.schedule.timezone}
                               <span className="text-gray-400 font-normal ml-1">
                                 ({(() => { const s = round.schedule.start_time.split(":"); const e = round.schedule.end_time.split(":"); return (parseInt(e[0]) * 60 + parseInt(e[1])) - (parseInt(s[0]) * 60 + parseInt(s[1])); })() } mins)
                               </span>
                             </div>
                             {round.interviewer && (
-                              <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
-                                <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-500">
-                                  {round.interviewer.name?.charAt(0)}
-                                </div>
+                              <div className="text-gray-800 text-sm font-medium">
                                 {round.interviewer.name}
-                                <span className="text-gray-400 font-normal">, {round.interviewer.role}</span>
+                                <span className="text-gray-400 font-normal"> , {round.interviewer.role}</span>
                               </div>
                             )}
-                            <div className="flex items-center gap-2.5 text-gray-800 text-sm font-medium">
-                              <Video className="w-4 h-4 text-orange-500" />
-                              <span className="font-semibold">{round.schedule.platform}</span>
-                              <span className="text-gray-400 font-normal">· Link will be emailed 1hr before</span>
+                            <div className="text-gray-800 text-sm font-medium">
+                              {round.schedule.platform} <span className="text-gray-400 font-normal">· Link will be emailed 1hr before</span>
                             </div>
                           </div>
                         </>
@@ -513,7 +542,10 @@ const CandidateTrackingPage = () => {
               ["Email Address", "email", profile.email || "—", true],
               ["Phone Number", "phone", profile.phone || "—", true],
               ["Location", "location", profile.location || "—", true],
-              ["Total Experience", "total_experience", profile.total_experience != null ? `${profile.total_experience} Years` : "—", false],
+              ["Total Experience", "total_experience", profile.total_experience != null ? `${profile.total_experience} Years` : "—", true],
+              ["Current CTC", "current_ctc", profile.current_ctc || "—", true],
+              ["Expected CTC", "expected_ctc", profile.expected_ctc || "—", true],
+              ["Notice Period", "notice_period", profile.notice_period || "—", true],
             ].map(([label, key, val, editable]) => (
               <div key={key as string} className="space-y-1.5">
                 <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{label as string}</label>
@@ -526,9 +558,9 @@ const CandidateTrackingPage = () => {
                 )}
               </div>
             ))}
-            {/* LinkedIn URL — editable */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">LinkedIn URL</label>
+            {/* LinkedIn / Portfolio URL — editable */}
+            <div className="space-y-1.5 col-span-1 md:col-span-2">
+              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">LinkedIn / Portfolio URL</label>
               {isEditing ? (
                 <input type="text" value={editForm.linkedin_url || ""}
                   onChange={(e) => setEditForm({ ...editForm, linkedin_url: e.target.value })}
@@ -536,19 +568,6 @@ const CandidateTrackingPage = () => {
               ) : (
                 <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-sm text-gray-900">
                   {profile.linkedin_url || "—"}
-                </div>
-              )}
-            </div>
-            {/* Portfolio URL — editable */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Portfolio URL</label>
-              {isEditing ? (
-                <input type="text" value={editForm.portfolio_url || ""}
-                  onChange={(e) => setEditForm({ ...editForm, portfolio_url: e.target.value })}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-colors" />
-              ) : (
-                <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 text-sm text-gray-900">
-                  {profile.portfolio_url || "—"}
                 </div>
               )}
             </div>
