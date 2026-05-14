@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Nxthyre – Application Update</title>
+    <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #F0F4FF;
+            font-family: 'DM Sans', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .email-wrapper {
+            width: 100%;
+            background-color: #F0F4FF;
+            padding: 32px 16px;
+        }
+
+        .email-card {
+            max-width: 650px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 4px 40px rgba(15, 71, 242, 0.08);
+        }
+
+        /* ── Header / Logo ── */
+        .email-header {
+            padding: 40px 40px 24px;
+            text-align: center;
+        }
+
+        .logo-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .logo-icon {
+            display: inline-block;
+            background: #0F47F2;
+            border-radius: 10px;
+            padding: 6px 10px 6px 10px;
+            position: relative;
+        }
+
+        .logo-icon svg {
+            display: block;
+        }
+
+        .logo-text {
+            font-size: 26px;
+            font-weight: 500;
+            color: #111111;
+            letter-spacing: -0.5px;
+        }
+
+        /* ── Greeting ── */
+        .email-greeting {
+            text-align: center;
+            padding: 8px 40px 0;
+        }
+
+        .email-greeting h1 {
+            font-size: 26px;
+            font-weight: 500;
+            color: #0F47F2;
+            letter-spacing: -0.3px;
+        }
+
+        /* ── Body Copy ── */
+        .email-body {
+            text-align: center;
+            padding: 20px 48px 28px;
+        }
+
+        .email-body p {
+            font-size: 17px;
+            line-height: 1.65;
+            color: #111111;
+            font-weight: 400;
+        }
+
+        .email-body .highlight-link {
+            color: #0F47F2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .email-body .role-bold {
+            font-weight: 700;
+            color: #0F47F2;
+        }
+
+        /* ── Illustration Card ── */
+        .illustration-card {
+            margin: 0 40px;
+            background: #E7EDFF;
+            border-radius: 24px;
+            overflow: visible;
+            position: relative;
+        }
+
+        .illustration-card img {
+            width: 100%;
+            display: block;
+            border-radius: 24px 24px 0 0;
+        }
+
+        /* Tracking ID box inside the card */
+        .tracking-box {
+            background: #FFFFFF;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tracking-id-text {
+            font-size: 22px;
+            font-weight: 500;
+            color: #0F47F2;
+            letter-spacing: 0.5px;
+        }
+
+        .copy-icon {
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        /* ── Tracking Label ── */
+        .tracking-label {
+            text-align: center;
+            padding: 12px 40px 0;
+            font-size: 17px;
+            color: #374151;
+            font-weight: 400;
+        }
+
+        /* ── CTA Button ── */
+        .cta-wrap {
+            text-align: center;
+            padding: 28px 40px 12px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #0F47F2;
+            color: #F5F9FB;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 500;
+            padding: 14px 32px;
+            border-radius: 8px;
+            letter-spacing: 0.1px;
+        }
+
+        /* ── Sub-note ── */
+        .sub-note {
+            text-align: center;
+            padding: 14px 40px 0;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        /* ── Footer ── */
+        .email-footer {
+            text-align: center;
+            padding: 28px 40px 36px;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        /* ── Responsive ── */
+        @media only screen and (max-width: 480px) {
+            .email-card {
+                border-radius: 20px;
+            }
+
+            .email-header {
+                padding: 28px 20px 16px;
+            }
+
+            .email-greeting {
+                padding: 8px 20px 0;
+            }
+
+            .email-body {
+                padding: 16px 24px 20px;
+            }
+
+            .illustration-card {
+                margin: 0 20px;
+            }
+
+            .tracking-box {
+                padding: 14px 16px;
+            }
+
+            .cta-wrap {
+                padding: 20px 20px 10px;
+            }
+
+            .sub-note {
+                padding: 10px 20px 0;
+            }
+
+            .email-footer {
+                padding: 20px 20px 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-wrapper">
+        <div class="email-card">
+
+            <!-- Logo -->
+            <div class="email-header">
+                <img src="https://cdn.corenexis.com/files/c/4611873720.png" alt="Nxthyre" height="52"
+                    style="display:inline-block;" />
+            </div>
+
+            <!-- Greeting -->
+            <div class="email-greeting">
+                <h1>Hi {{candidate_name}}</h1>
+            </div>
+
+            <!-- Body copy -->
+            <div class="email-body">
+                <p>Great news!<br />
+                    After reviewing your profile,<br />
+                    we'd like to move you forward to the <a href="{{tracking_url}}" class="highlight-link">Screening
+                        Call</a> stage for the<br />
+                    <span class="role-bold">{{job_title}}</span> role at <a href="{{company_url}}"
+                        class="highlight-link">{{company_name}}.</a>
+                </p>
+
+                <p style="margin-top:24px;">Your recruiter will reach out shortly to schedule a time.<br />
+                    Track your full application progress here:</p>
+            </div>
+
+            <!-- Illustration card -->
+            <div class="illustration-card">
+                <img src="https://cdn.corenexis.com/files/c/9491661720.png" alt="Stand out from the crowd – Nxthyre"
+                    style="width:100%; display:block; border-radius:24px 24px 0 0;" />
+
+                <!-- Tracking ID box -->
+                <div class="tracking-box">
+                    <span class="tracking-id-text">{{tracking_id}}</span>
+                    <span class="copy-icon">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="7" y="1" width="12" height="14" rx="2" stroke="#374151" stroke-width="1.5"
+                                fill="none" />
+                            <rect x="1" y="5" width="12" height="14" rx="2" stroke="#374151" stroke-width="1.5"
+                                fill="white" />
+                        </svg>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tracking label -->
+            <p class="tracking-label">Your Tracking ID</p>
+
+            <!-- CTA -->
+            <div class="cta-wrap">
+                <a href="{{tracking_url}}" class="cta-button">Check My Status →</a>
+            </div>
+
+            <!-- Sub-note -->
+            <p class="sub-note">you will be redirecting to application to track your status</p>
+
+            <!-- Footer -->
+            <div class="email-footer">
+                2026, Nxthyre
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>
