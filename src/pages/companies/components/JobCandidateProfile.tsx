@@ -170,8 +170,8 @@ export default function JobCandidateProfile({
   }) => {
     if (action.type === "move" && action.targetStageId) {
       const targetStage = stages.find((s) => s.id === action.targetStageId);
-      const interviewTypes = ["VIRTUAL_INTERVIEW", "FACE_TO_FACE", "EXTERNAL_PLATFORM"];
-      if (targetStage && targetStage.stage_type && interviewTypes.includes(targetStage.stage_type)) {
+      const interviewTypes = ["VIRTUAL_INTERVIEW", "FACE_TO_FACE_INTERVIEW", "EXTERNAL_PLATFORM_INTERVIEW"];
+      if (targetStage && targetStage.custom_stage_type && interviewTypes.includes(targetStage.custom_stage_type)) {
         if (action.applicationIds.length > 1) {
           showToast.error("Cannot bulk move candidates to an interview stage. Please move one at a time.");
           return;
