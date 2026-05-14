@@ -309,7 +309,7 @@ const JobListing: React.FC<JobListingProps> = ({
     };
 
     const renderHealthIndicator = (job: Job) => {
-        if (!job.performance_status || !job.performance_summary) return null;
+        if (!job.performance_status) return null;
 
         let color = "#16A34A"; // ON_TRACK
         let label = "On Track";
@@ -329,7 +329,7 @@ const JobListing: React.FC<JobListingProps> = ({
                     setHealthTooltip({
                         visible: true,
                         status: label,
-                        summary: job.performance_summary || "No assessment summary available yet.",
+                        summary: job.performance_summary || "Assessment pending. Check back soon for detailed insights.",
                         updatedAt: job.performance_summary_updated_at,
                         top: rect.top,
                         left: rect.left + rect.width / 2
