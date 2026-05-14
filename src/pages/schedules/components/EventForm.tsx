@@ -417,7 +417,6 @@ export const EventForm = ({
       start_at: startDateTime,
       end_at: endDateTime,
       location_type: locationType,
-      virtual_conference_url: formData.meetingLink || undefined,
       status: 'SCHEDULED',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       participants: [],

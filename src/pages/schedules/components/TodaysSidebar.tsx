@@ -205,38 +205,28 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
 
       {/* Actions */}
       <div className="flex items-center gap-2 mt-2">
-        {(event.mode === 'zoom' || event.mode === 'virtual') && event.virtual_url && (
-          <button 
-            className={`flex items-center gap-1 px-2.5 py-1 ${event.mode === 'zoom' ? 'bg-[#0F47F2] hover:bg-blue-700' : 'bg-[#7C4DFF] hover:bg-purple-700'} text-white text-[10px] font-semibold rounded-md transition-colors`}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (event.virtual_url) window.open(event.virtual_url, '_blank');
-            }}
-          >
-            {event.mode === 'zoom' && (
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="23 7 16 12 23 17 23 7" />
-                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-              </svg>
-            )}
-            {event.mode === 'zoom' ? 'Join Now' : 'Join Teams'}
-          </button>
-        )}
-        {event.mode === 'f2f' && (
-          <button
-            className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold rounded-md transition-colors"
-            style={{ backgroundColor: '#FF9800', color: '#FFFFFF' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            Room A
-          </button>
-        )}
+        <button 
+          className="flex items-center gap-1 px-2.5 py-1 bg-[#10B981] hover:bg-emerald-600 text-white text-[10px] font-semibold rounded-md transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            // TODO: Call API to mark completed
+          }}
+        >
+          Mark Completed
+        </button>
+        <button 
+          className="flex items-center gap-1 px-2.5 py-1 bg-[#EF4444] hover:bg-red-600 text-white text-[10px] font-semibold rounded-md transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            // TODO: Call API to mark cancelled
+          }}
+        >
+          Mark Cancelled
+        </button>
         <button 
           className="flex items-center gap-1 px-2.5 py-1 border border-gray-200 text-[10px] font-semibold text-[#6B7280] rounded-md hover:bg-gray-50 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
-            // Opening the modal for reschedule is what mostly happens, but user asked for redirect.
-            // If there's no redirect URL, we might just trigger the modal click anyway or a specific callback.
             onClick?.(); 
           }}
         >

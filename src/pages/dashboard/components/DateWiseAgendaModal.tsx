@@ -237,18 +237,24 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                                                                 <div className="flex items-center gap-2 shrink-0">
                                                                     <span className="text-[10px] font-bold text-blue-600">{item.time}</span>
                                                                     {item.meeting_link && (
-                                                                        <a
-                                                                            href={item.meeting_link}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-3 py-1 rounded-md transition-all shadow-sm shadow-blue-200 flex items-center gap-1 active:scale-95"
-                                                                        >
-                                                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                                                <polygon points="23 7 16 12 23 17 23 7" />
-                                                                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                                                                            </svg>
-                                                                            Join
-                                                                        </a>
+                                                                        <div className="flex items-center gap-1">
+                                                                            <button
+                                                                                className="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
+                                                                                onClick={() => {
+                                                                                    // TODO: Call API to mark completed
+                                                                                }}
+                                                                            >
+                                                                                ✓ Completed
+                                                                            </button>
+                                                                            <button
+                                                                                className="bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
+                                                                                onClick={() => {
+                                                                                    // TODO: Call API to mark cancelled
+                                                                                }}
+                                                                            >
+                                                                                ✕ Cancel
+                                                                            </button>
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -273,16 +279,24 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                                                             <div className="flex items-center gap-2 shrink-0">
                                                                 <span className="text-[10px] font-bold text-slate-500 mr-2">{item.time}</span>
                                                                 {item.meeting_link && (
-                                                                    <button
-                                                                        className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-3 py-1 rounded-md transition-all shadow-sm shadow-blue-200 flex items-center gap-1 active:scale-95"
-                                                                        onClick={() => window.open(item.meeting_link!, '_blank')}
-                                                                    >
-                                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                                            <polygon points="23 7 16 12 23 17 23 7" />
-                                                                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                                                                        </svg>
-                                                                        Join
-                                                                    </button>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <button
+                                                                            className="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
+                                                                            onClick={() => {
+                                                                                // TODO: Call API to mark completed
+                                                                            }}
+                                                                        >
+                                                                            ✓ Completed
+                                                                        </button>
+                                                                        <button
+                                                                            className="bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
+                                                                            onClick={() => {
+                                                                                // TODO: Call API to mark cancelled
+                                                                            }}
+                                                                        >
+                                                                            ✕ Cancel
+                                                                        </button>
+                                                                    </div>
                                                                 )}
                                                                 <button
                                                                     className="border border-slate-200 hover:bg-blue-50 text-slate-600 text-[10px] font-bold px-2.5 py-0.5 rounded-md transition-all"
