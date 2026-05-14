@@ -5028,6 +5028,7 @@ export default function JobPipelineDashboard({
             setPendingEventAction(null);
           }}
           initialJobId={String(jobId)}
+          initialCompanyId={String(workspaceId)}
           initialApplicationId={String(pendingEventAction.applicationIds[0])}
           initialStageId={String(pendingEventAction.targetStageId)}
           isStageMove={true}

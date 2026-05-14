@@ -232,6 +232,40 @@ export const EventForm = ({
     }
   }, [isOpen, initialDate, initialTime]);
 
+  // ── Prefill Title and Mode when data is ready ──
+  useEffect(() => {
+    if (isOpen && formData.applicationId && formData.stageId && pipelineCandidates.length > 0 && pipelineStages.length > 0) {
+      const candidate = pipelineCandidates.find(c => String(c.id) === formData.applicationId);
+      const stage = pipelineStages.find(s => String(s.id) === formData.stageId);
+      const job = allJobs.find(j => String(j.id) === selectedJobId);
+
+      if (candidate && stage) {
+        setFormData(prev => {
+          const newUpdates: any = {};
+          
+          // Prefill Title if empty
+          if (!prev.title) {
+            newUpdates.title = `${stage.name} - ${candidate.candidate.full_name}${job ? ` (${job.title})` : ''}`;
+          }
+
+          // Prefill Interview Mode based on stage type
+          if (!prev.interviewMode || prev.interviewMode === 'virtual') {
+            const stype = stage.custom_stage_type || '';
+            if (stype === 'FACE_TO_FACE_INTERVIEW') newUpdates.interviewMode = 'face-to-face';
+            else if (stype === 'EXTERNAL_PLATFORM_INTERVIEW') newUpdates.interviewMode = 'external';
+            else if (stype === 'VIRTUAL_INTERVIEW') newUpdates.interviewMode = 'virtual';
+            else if (stype === 'MOCK_CALL') newUpdates.interviewMode = 'mock-call';
+          }
+
+          if (Object.keys(newUpdates).length > 0) {
+            return { ...prev, ...newUpdates };
+          }
+          return prev;
+        });
+      }
+    }
+  }, [isOpen, formData.applicationId, formData.stageId, pipelineCandidates, pipelineStages, allJobs, selectedJobId]);
+
   // ── Fetch workspaces (companies) ──
   useEffect(() => {
     if (!isOpen) return;

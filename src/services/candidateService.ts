@@ -450,6 +450,7 @@ export interface BulkPipelineResponse {
 }
 
 export interface PipelineStage {
+  custom_stage_type: string;
   id: number;
   name: string;
   slug: string;
