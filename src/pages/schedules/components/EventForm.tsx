@@ -777,7 +777,7 @@ export const EventForm = ({
                   }}
                   className="px-6 py-2.5 text-sm font-medium text-[#D97706] bg-[#FEF3C7] border border-[#FDE68A] rounded-xl hover:bg-[#FDE68A] transition-colors"
                 >
-                  Skip Scheduling
+                  Skip Scheduling & Move
                 </button>
               )}
               <button
