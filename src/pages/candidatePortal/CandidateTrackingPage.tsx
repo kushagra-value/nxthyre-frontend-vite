@@ -294,7 +294,14 @@ const CandidateTrackingPage = () => {
   const rounds = journey.rounds || [];
   const jTitle = job.title || "—";
   const jCompany = job.company || "—";
-  const jLocation = typeof job.location === "object" ? job.location.city : (job.location || "—");
+  let jLocation = "—";
+  if (Array.isArray(job.location)) {
+    jLocation = job.location.join(", ");
+  } else if (typeof job.location === "object" && job.location !== null) {
+    jLocation = job.location.city || "—";
+  } else if (typeof job.location === "string") {
+    jLocation = job.location;
+  }
   const jSkills = job.skills || [];
   const cName = profile.full_name || "—";
   const cEmail = profile.email || "—";
@@ -357,12 +364,12 @@ const CandidateTrackingPage = () => {
               ["Company", jCompany],
               ["Location", jLocation],
               ["Applied On", app.applied_on ? formatDate(app.applied_on) : "—"],
-              ["Employment", job.employment || "—"],
-              ["Domain", job.domain || "—"],
+              ["Employment", job.employment || job.work_approach || "—"],
+              ["Department", job.department || "—"],
             ].map(([label, val]) => (
               <div key={label as string}>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{label}</div>
-                <div className="text-sm font-medium text-gray-900">{val}</div>
+                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{label as string}</div>
+                <div className="text-sm font-medium text-gray-900">{val as string}</div>
               </div>
             ))}
           </div>
