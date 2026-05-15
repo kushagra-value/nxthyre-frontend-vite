@@ -185,10 +185,17 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
       className="bg-white border border-gray-100 rounded-xl p-3 mb-2 cursor-pointer hover:shadow-sm transition-all hover:border-gray-200"
       onClick={onClick}
     >
-      {/* Top Badges Row */}
+      {/* Top row: Title + Status + Mode */}
       <div className="flex items-center justify-between mb-2.5">
         <span className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider">
           {event.title || 'Technical Round'}
+        </span>
+
+        <span
+          className="text-[10px] font-bold px-3 py-1 rounded-full tracking-wide"
+          style={{ backgroundColor: statusBadge.bg, color: statusBadge.text }}
+        >
+          {statusBadge.label}
         </span>
 
         <div className="flex items-center gap-1.5">
@@ -212,10 +219,10 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
       <h4 className="text-sm font-semibold text-[#1F2937] mb-1 line-clamp-1">{event.candidateName}</h4>
 
       {/* Time & Date */}
-      <div className="flex items-center gap-1.5 mb-3 text-[11px]">
-        <p className="font-medium text-[#0F47F2]">{event.date}</p>
-        <span className="text-gray-300">•</span>
-        <p className="text-[#6B7280]">
+      <div className="flex items-center gap-1.5 mb-3">
+        <p className="text-[11px] font-medium text-[#0F47F2]">{event.date}</p>
+        <span className="text-[10px] text-gray-300">•</span>
+        <p className="text-[11px] text-[#6B7280]">
           {formatTo12h(event.startTime)} – {formatTo12h(event.endTime)}
         </p>
       </div>
@@ -227,11 +234,11 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
         </p>
       )}
 
-      {/* Action Buttons - Only for SCHEDULED and OVERDUE */}
+      {/* Action Buttons - Only for Scheduled & Overdue */}
       {isActionable && (
-        <div className="flex gap-2 pt-2 border-t border-gray-100">
+        <div className="flex items-center gap-2 pt-2 border-t border-gray-100 mb-2">
           <button
-            className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-semibold py-2 px-3 rounded-lg transition-all active:scale-[0.98]"
             onClick={async (e) => {
               e.stopPropagation();
               try {
@@ -239,16 +246,16 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
                 toast.success("Marked as Completed");
                 window.location.reload();
               } catch (err) {
-                toast.error("Failed to mark completed");
+                toast.error("Failed to mark cancelled");
               }
             }}
           >
-            <Check className="w-4 h-4" />
+            <Check className="w-3.5 h-3.5" />
             Completed
           </button>
 
           <button
-            className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-semibold py-2 px-3 rounded-lg transition-all active:scale-[0.98]"
             onClick={async (e) => {
               e.stopPropagation();
               try {
@@ -256,11 +263,11 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
                 toast.success("Marked as Cancelled");
                 window.location.reload();
               } catch (err) {
-                toast.error("Failed to mark cancelled");
+                toast.error("Failed to update");
               }
             }}
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
             Cancel
           </button>
         </div>
@@ -268,7 +275,7 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
 
       {/* Reschedule Button - Always Visible */}
       <button
-        className="w-full mt-3 text-[#0F47F2] hover:bg-[#F0F7FF] text-xs font-medium py-2 border border-[#E5E7EB] rounded-lg transition-colors"
+        className="w-full text-[#0F47F2] hover:bg-[#F0F7FF] text-[10px] font-medium py-2 border border-[#E5E7EB] rounded-lg transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           onClick?.();
