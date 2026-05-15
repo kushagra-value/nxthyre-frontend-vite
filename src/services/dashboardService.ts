@@ -593,6 +593,7 @@ class DashboardService {
   }
 
   // ── Schedule Widget API ──
+    // ── Schedule Widget API ──
   async getScheduleEvents(params?: { filter?: ScheduleFilterType; date?: string }): Promise<ScheduleResponse> {
     try {
       const queryParams = new URLSearchParams();
@@ -609,13 +610,11 @@ class DashboardService {
         startDateStr = formatDate(today);
         endDateStr = formatDate(today);
       } else if (params?.filter === 'upcoming') {
-        // Today to next 30 days
         startDateStr = formatDate(today);
         const upcomingEnd = new Date(today);
         upcomingEnd.setDate(today.getDate() + 30);
         endDateStr = formatDate(upcomingEnd);
       } else {
-        // Default to today if no filter or unrecognized
         startDateStr = formatDate(today);
         endDateStr = formatDate(today);
       }
@@ -626,23 +625,32 @@ class DashboardService {
 
       const response = await apiClient.get(`/v1/schedule/interview-events/?${queryParams.toString()}`);
       
-      // Transform InterviewEvent[] to ScheduleEventAPI[]
+      // UPDATED: Properly map real status from backend
       const events: ScheduleEventAPI[] = (response.data.results || response.data || []).map((ev: any) => {
         const start = new Date(ev.start_at);
         const end = new Date(ev.end_at);
-        const formatTime = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'UTC' });
+        const formatTime = (d: Date) => d.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit', 
+          hour12: true 
+        });
+
+        const rawStatus = ev.status || 'SCHEDULED';
         
         return {
           id: ev.id,
-          status: ev.status === 'COMPLETED' ? 'completed' : (ev.status === 'IN_PROGRESS' ? 'in-progress' : 'upcoming'),
-          is_done: ev.status === 'COMPLETED',
+          // Use real status from API
+          status: rawStatus.toLowerCase(),
+          is_done: rawStatus === 'COMPLETED' || rawStatus === 'CANCELLED',
+
           widget_summary: {
             time: `${formatTime(start)} – ${formatTime(end)}`,
             type: ev.title || 'Interview',
-            name: ev.candidate_name,
+            name: ev.candidate_name || 'Unknown',
             details: ev.candidate_position || '',
             location: ev.location_type || 'virtual',
-            color_theme: 'cyan'
+            color_theme: rawStatus === 'OVERDUE' ? 'orange' : 
+                        rawStatus === 'CANCELLED' ? 'grey' : 'cyan'
           },
           modal_details: {
             title: ev.title || 'Interview',
@@ -653,10 +661,10 @@ class DashboardService {
             date: start.toLocaleDateString(),
             time_range: `${formatTime(start)} – ${formatTime(end)}`,
             timezone: ev.timezone || 'IST',
-            description: ev.description || ev.title || 'Scheduled Interview',
+            description: ev.description || '',
             meeting_platform: ev.location_type === 'VIRTUAL' ? 'Virtual' : (ev.location_type || 'Virtual'),
             meeting_url: ev.virtual_conference_url || '',
-            status_label: ev.status || 'scheduled',
+            status_label: rawStatus,
             duration: '60 min',
             recruiter: { name: 'Recruiter', role: 'Team', avatar: '' },
             candidate_contact: { email: '', phone: '' },

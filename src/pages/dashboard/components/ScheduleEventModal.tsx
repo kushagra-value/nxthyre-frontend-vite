@@ -184,11 +184,11 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                         </div>
                     </div>
 
-                                        {/* ─── Footer Actions ─── */}
+                    {/* ─── Footer Actions ─── */}
                     <div className="flex flex-col justify-center items-start shrink-0" style={{ padding: '24px 27px', gap: 12, borderTop: '0.5px solid #AEAEB2' }}>
                         {(() => {
-                            // UPDATED: Robust status detection
-                            const status = (details.status || event.status || 'SCHEDULED').toUpperCase();
+                            const rawStatus = details.status || event.status || 'SCHEDULED';
+                            const status = rawStatus.toUpperCase();
                             const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status);
 
                             const statusConfig = {
@@ -196,7 +196,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                                 OVERDUE:   { bg: '#F59E0B', text: '#FFF', label: 'Overdue' },
                                 COMPLETED: { bg: '#6B7280', text: '#FFF', label: 'Completed' },
                                 CANCELLED: { bg: '#EF4444', text: '#FFF', label: 'Cancelled' },
-                            }[status] || { bg: '#6B7280', text: '#FFF', label: status };
+                            }[status] || { bg: '#6B7280', text: '#FFF', label: rawStatus };
 
                             return (
                                 <>
