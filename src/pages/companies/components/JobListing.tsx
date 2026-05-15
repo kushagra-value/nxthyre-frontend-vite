@@ -35,6 +35,7 @@ import {
 import { MyWorkspace } from "../../../services/organizationService";
 import { Job, JobsApiResponse, jobPostService } from "../../../services/jobPostService";
 import { showToast as toastUtil } from "../../../utils/toast";
+import { bulkReframeQuestions } from "../../../services/jobPipelineDashboardService";
 import CreateJobRoleModal from "../../candidates/components/CreateJobRoleModal";
 import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoDrawer from "./CompanyInfoDrawer";
@@ -167,6 +168,11 @@ const JobListing: React.FC<JobListingProps> = ({
     const [statusMenuPos, setStatusMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
     const [timelineJobId, setTimelineJobId] = useState<number | null>(null);
     const [isStatsExpanded, setIsStatsExpanded] = useState(true);
+
+    // ── Reframe Questions Modal State ──
+    const [reframeJobId, setReframeJobId] = useState<number | null>(null);
+    const [reframeInput, setReframeInput] = useState("");
+    const [isReframing, setIsReframing] = useState(false);
     const [stageTooltip, setStageTooltip] = useState<{
         visible: boolean;
         name: string;
@@ -305,6 +311,25 @@ const JobListing: React.FC<JobListingProps> = ({
             toastUtil.success(!currentFlag ? "Job flagged" : "Job unflagged");
         } catch {
             toastUtil.error("Failed to update flag status");
+        }
+    };
+
+    const handleReframeSubmit = async () => {
+        if (!reframeJobId) return;
+        setIsReframing(true);
+        try {
+            const result = await bulkReframeQuestions(reframeJobId, reframeInput.trim());
+            toastUtil.success(
+                result.queued != null
+                    ? `Queued ${result.queued} candidate${result.queued !== 1 ? "s" : ""} for question regeneration`
+                    : "Questions reframe queued successfully"
+            );
+            setReframeJobId(null);
+            setReframeInput("");
+        } catch (err: any) {
+            toastUtil.error(err?.message || "Failed to reframe questions");
+        } finally {
+            setIsReframing(false);
         }
     };
 
@@ -1303,6 +1328,12 @@ const JobListing: React.FC<JobListingProps> = ({
                                                                     >
                                                                         {job.is_flagged ? 'Unflag' : 'Mark as Flag'}
                                                                     </button>
+                                                                    <button
+                                                                        onClick={() => { setMenuOpenJobId(null); setReframeJobId(job.id); setReframeInput(""); }}
+                                                                        className="w-full text-left px-4 py-2.5 text-[15px] text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+                                                                    >
+                                                                        Reframe Questions
+                                                                    </button>
                                                                     <div className="h-[1px] bg-[#F3F5F7] my-1"></div>
                                                                     <button
                                                                         onClick={() => {
@@ -1634,6 +1665,58 @@ const JobListing: React.FC<JobListingProps> = ({
                     </div>
                 );
             })()}
+
+            {/* Reframe Questions Modal */}
+            {reframeJobId !== null && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+                        <div className="flex items-start justify-between mb-5">
+                            <div>
+                                <h3 className="text-lg font-semibold text-[#1C1C1E]">Reframe Interview Questions</h3>
+                                <p className="text-sm text-[#6B7280] mt-1.5 leading-relaxed">
+                                    AI will regenerate technical interview questions for all candidates associated with this job. Optionally provide instructions to guide the regeneration.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-[#374151] mb-2">
+                                Instructions
+                            </label>
+                            <textarea
+                                value={reframeInput}
+                                onChange={(e) => setReframeInput(e.target.value)}
+                                placeholder="e.g. Focus more on system design and distributed systems. Avoid basic syntax questions."
+                                rows={4}
+                                disabled={isReframing}
+                                className="w-full px-3.5 py-3 text-sm text-[#1C1C1E] border border-[#D1D5DB] rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#0F47F2] focus:border-transparent placeholder:text-[#9CA3AF] disabled:bg-[#F9FAFB] disabled:cursor-not-allowed transition-shadow"
+                            />
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setReframeJobId(null); setReframeInput(""); }}
+                                disabled={isReframing}
+                                className="flex-1 px-4 py-2.5 text-sm font-medium text-[#374151] border border-[#D1D5DB] rounded-lg hover:bg-[#F9FAFB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleReframeSubmit}
+                                disabled={isReframing || !reframeInput.trim()}
+                                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#0F47F2] rounded-lg hover:bg-[#0D3ED4] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {isReframing ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        Processing...
+                                    </>
+                                ) : (
+                                    "Submit"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Timeline Drawer */}
             <JobTimelineDrawer
