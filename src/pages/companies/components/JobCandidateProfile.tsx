@@ -208,7 +208,7 @@ export default function JobCandidateProfile({
         }
         await Promise.all(
           applicationIds.map((id) =>
-            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+            apiClient.patch(`/jobs/applications/${id}/`, {
               current_stage: archiveStage.id,
               status: "ARCHIVED",
               archive_reason: feedbackComment.trim(),
@@ -227,7 +227,7 @@ export default function JobCandidateProfile({
 
         await Promise.all(
           applicationIds.map((id) =>
-            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+            apiClient.patch(`/jobs/applications/${id}/`, {
               current_stage: targetStageId,
               feedback: {
                 subject: `Moving to ${targetStageName || "next stage"}`,
@@ -2501,7 +2501,7 @@ export default function JobCandidateProfile({
             onSubmit={async (payload) => {
               if (pendingEventAction) {
                 try {
-                  await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                  await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/`, {
                     current_stage: pendingEventAction.targetStageId,
                     feedback: {
                       subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} and scheduled interview`,
@@ -2523,7 +2523,7 @@ export default function JobCandidateProfile({
               if (pendingEventAction) {
                 setIsEventFormOpen(false);
                 try {
-                  await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                  await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/`, {
                     current_stage: pendingEventAction.targetStageId,
                     feedback: {
                       subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} (Interview skipped)`,

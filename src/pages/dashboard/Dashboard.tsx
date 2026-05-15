@@ -840,6 +840,11 @@ export default function Dashboard() {
         onClose={() => setIsScheduleModalOpen(false)}
         events={scheduleEvents}
         initialIndex={selectedScheduleEventIndex}
+        onRefresh={() => {
+          fetchScheduleEvents(activeScheduleFilter);
+          const now = new Date();
+          fetchCalendarActivity(now.getMonth() + 1, now.getFullYear());
+        }}
       />
       {/* Date-Wise Agenda Modal */}
       <DateWiseAgendaModal
@@ -847,6 +852,11 @@ export default function Dashboard() {
         onClose={() => setIsAgendaModalOpen(false)}
         agenda={agendaData}
         isLoading={agendaLoading}
+        onRefresh={() => {
+          if (selectedCalendarDate) {
+            handleDateClick(selectedCalendarDate, true);
+          }
+        }}
       />
       {/* Daily Activities Modal — for past dates */}
       <DailyActivitiesModal

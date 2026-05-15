@@ -1,14 +1,18 @@
 import apiClient from '../../../services/api';
 import { showToast } from '../../../utils/toast';
+import { scheduleService } from '../../../services/scheduleService';
+import { useState } from 'react';
 
 interface EventPreviewProps {
   event: any;
   candidate: any;
   onClose: () => void;
   isOpen?: boolean;
+  onRefresh?: () => void;
 }
 
-export default function EventPreview({ event, candidate, onClose, isOpen = true }: EventPreviewProps) {
+export default function EventPreview({ event, candidate, onClose, isOpen = true, onRefresh }: EventPreviewProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
   console.log("EventPreview rendered", { isOpen, event, candidate }); // ← ADD THIS
   if (!isOpen) return null;
 
@@ -47,12 +51,27 @@ export default function EventPreview({ event, candidate, onClose, isOpen = true 
   const handleDelete = async () => {
     if (!confirm('Delete this event?')) return;
     try {
-      await apiClient.delete(`/jobs/interview-events/${event.id}/`);
-      onClose();
-      // Trigger refresh (pass callback if needed)
+      await scheduleService.deleteEvent(event.id);
       showToast.success('Event deleted');
-    } catch (err) {
+      onClose();
+    } catch (error) {
+      console.error('Error deleting event:', error);
       showToast.error('Failed to delete event');
+    }
+  };
+
+  const handleUpdateStatus = async (status: 'COMPLETED' | 'CANCELLED') => {
+    setIsUpdating(true);
+    try {
+      await scheduleService.updateEvent(event.id, { status });
+      showToast.success(`Interview marked as ${status.toLowerCase()}`);
+      if (onRefresh) onRefresh();
+      onClose();
+    } catch (error) {
+      console.error(`Error updating status to ${status}:`, error);
+      showToast.error(`Failed to update interview status`);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -209,6 +228,20 @@ export default function EventPreview({ event, candidate, onClose, isOpen = true 
         {/* Action Buttons */}
         <div className="p-6">
           <div className="flex items-center gap-3">
+            <button 
+                onClick={() => handleUpdateStatus('COMPLETED')} 
+                disabled={isUpdating}
+                className={`bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium transition-colors ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isUpdating ? 'Updating...' : 'Mark Completed'}
+            </button>
+            <button 
+                onClick={() => handleUpdateStatus('CANCELLED')} 
+                disabled={isUpdating}
+                className={`bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isUpdating ? 'Updating...' : 'Mark Cancelled'}
+            </button>
             <button onClick={handleReschedule} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
               Reschedule
             </button>

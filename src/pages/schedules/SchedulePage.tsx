@@ -315,6 +315,7 @@ export default function SchedulePage() {
             events={sidebarEvents}
             onEventClick={handleEventClick}
             activeFilter={activeTab}
+            onEventStatusChange={() => setRefreshTrigger(prev => prev + 1)}
           />
         )}
       </div>

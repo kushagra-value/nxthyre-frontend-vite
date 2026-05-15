@@ -15,6 +15,7 @@ export interface StatCardData {
 }
 
 export interface PriorityCardData {
+    latestCallTags: string[] | null | undefined;
     latestCallNote: string | null | undefined;
     id: string;
     name: string;

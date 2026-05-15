@@ -255,7 +255,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
     try {
       await Promise.all(
         candidateIds.map((id) =>
-          apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
+          apiClient.patch(`/jobs/applications/${id}/`, {
             current_stage: archiveStageId,
             feedback: {
               subject: "Moved to Archive",
@@ -299,7 +299,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           if (!targetStageId) return Promise.resolve();
 
           return apiClient.patch(
-            `/jobs/applications/${candidate.id}/?view=kanban`,
+            `/jobs/applications/${candidate.id}/`,
             {
               current_stage: targetStageId,
               feedback: {
@@ -2318,7 +2318,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
 
     try {
       const response = await apiClient.patch(
-        `/jobs/applications/${feedbackData.candidate.id}/?view=kanban`,
+        `/jobs/applications/${feedbackData.candidate.id}/`,
         {
           current_stage: toStageId,
           feedback: {

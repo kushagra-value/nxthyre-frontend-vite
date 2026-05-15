@@ -1,11 +1,14 @@
-import React from 'react';
 import type { AgendaResponse } from '../../../services/dashboardService';
+import { scheduleService } from '../../../services/scheduleService';
+import { showToast } from '../../../utils/toast';
+import { useState } from 'react';
 
 interface DateWiseAgendaModalProps {
     isOpen?: boolean;
     onClose?: () => void;
     agenda: AgendaResponse | null;
     isLoading?: boolean;
+    onRefresh?: () => void;
 }
 
 const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
@@ -13,7 +16,23 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
     onClose = () => { },
     agenda,
     isLoading = false,
+    onRefresh,
 }) => {
+    const [isUpdating, setIsUpdating] = useState<string | null>(null);
+
+    const handleUpdateStatus = async (eventId: string, status: 'COMPLETED' | 'CANCELLED') => {
+        setIsUpdating(eventId + status);
+        try {
+            await scheduleService.updateEvent(eventId, { status });
+            showToast.success(`Interview marked as ${status.toLowerCase()}`);
+            if (onRefresh) onRefresh();
+        } catch (error) {
+            console.error(`Error updating status to ${status}:`, error);
+            showToast.error(`Failed to update interview status`);
+        } finally {
+            setIsUpdating(null);
+        }
+    };
     if (!isOpen) return null;
 
     // Loading state
@@ -239,20 +258,26 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                                                                     {item.meeting_link && (
                                                                         <div className="flex items-center gap-1">
                                                                             <button
-                                                                                className="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
+                                                                                className={`bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95 ${isUpdating === (agenda?.live_status?.candidate_name || '') + 'COMPLETED' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                                disabled={!!isUpdating || !agenda?.live_status}
                                                                                 onClick={() => {
-                                                                                    // TODO: Call API to mark completed
+                                                                                    if (!agenda?.live_status) return;
+                                                                                    const item = agenda.items.find(i => i.candidate_name === agenda.live_status?.candidate_name);
+                                                                                    if (item) handleUpdateStatus(item.id, 'COMPLETED');
                                                                                 }}
                                                                             >
-                                                                                ✓ Completed
+                                                                                {isUpdating === (agenda?.live_status?.candidate_name || '') + 'COMPLETED' ? '...' : '✓ Completed'}
                                                                             </button>
                                                                             <button
-                                                                                className="bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
+                                                                                className={`bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95 ${isUpdating === (agenda?.live_status?.candidate_name || '') + 'CANCELLED' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                                disabled={!!isUpdating || !agenda?.live_status}
                                                                                 onClick={() => {
-                                                                                    // TODO: Call API to mark cancelled
+                                                                                    if (!agenda?.live_status) return;
+                                                                                    const item = agenda.items.find(i => i.candidate_name === agenda.live_status?.candidate_name);
+                                                                                    if (item) handleUpdateStatus(item.id, 'CANCELLED');
                                                                                 }}
                                                                             >
-                                                                                ✕ Cancel
+                                                                                {isUpdating === (agenda?.live_status?.candidate_name || '') + 'CANCELLED' ? '...' : '✕ Cancel'}
                                                                             </button>
                                                                         </div>
                                                                     )}
@@ -281,20 +306,18 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                                                                 {item.meeting_link && (
                                                                     <div className="flex items-center gap-1">
                                                                         <button
-                                                                            className="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
-                                                                            onClick={() => {
-                                                                                // TODO: Call API to mark completed
-                                                                            }}
+                                                                            className={`bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95 ${isUpdating === item.id + 'COMPLETED' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                            disabled={!!isUpdating}
+                                                                            onClick={() => handleUpdateStatus(item.id, 'COMPLETED')}
                                                                         >
-                                                                            ✓ Completed
+                                                                            {isUpdating === item.id + 'COMPLETED' ? '...' : '✓ Completed'}
                                                                         </button>
                                                                         <button
-                                                                            className="bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
-                                                                            onClick={() => {
-                                                                                // TODO: Call API to mark cancelled
-                                                                            }}
+                                                                            className={`bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95 ${isUpdating === item.id + 'CANCELLED' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                            disabled={!!isUpdating}
+                                                                            onClick={() => handleUpdateStatus(item.id, 'CANCELLED')}
                                                                         >
-                                                                            ✕ Cancel
+                                                                            {isUpdating === item.id + 'CANCELLED' ? '...' : '✕ Cancel'}
                                                                         </button>
                                                                     </div>
                                                                 )}

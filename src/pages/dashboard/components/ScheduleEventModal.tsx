@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import type { ScheduleEventAPI } from '../../../services/dashboardService';
+import { scheduleService } from '../../../services/scheduleService';
+import { showToast } from '../../../utils/toast';
 
 interface ScheduleEventModalProps {
     isOpen?: boolean;
     onClose?: () => void;
     events: ScheduleEventAPI[];
     initialIndex?: number;
+    onRefresh?: () => void;
 }
 
 const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
@@ -13,8 +16,10 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
     onClose = () => { },
     events = [],
     initialIndex = 0,
+    onRefresh,
 }) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     React.useEffect(() => {
         if (isOpen && events.length > 0) {
@@ -185,24 +190,48 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                     <div className="flex flex-col justify-center items-start shrink-0" style={{ padding: '24px 27px', gap: 10, borderTop: '0.5px solid #AEAEB2' }}>
                         {/* Primary CTA */}
                         <div className="flex items-center justify-between w-full" style={{ gap: 10 }}>
-                            <button
-                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90"
-                                style={{ height: 37, background: '#10B981', border: '0.5px solid #10B981', borderRadius: 5, padding: 10, lineHeight: '17px' }}
-                                onClick={() => {
-                                    // Call API to mark completed (Implementation deferred to backend connection)
-                                }}
-                            >
-                                Mark Completed
-                            </button>
-                            <button
-                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90"
-                                style={{ height: 37, background: '#EF4444', border: '0.5px solid #EF4444', borderRadius: 5, padding: 10, lineHeight: '17px' }}
-                                onClick={() => {
-                                    // Call API to mark cancelled (Implementation deferred to backend connection)
-                                }}
-                            >
-                                Mark Cancelled
-                            </button>
+                                <button
+                                    className={`flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90 ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    style={{ height: 37, background: '#10B981', border: '0.5px solid #10B981', borderRadius: 5, padding: 10, lineHeight: '17px' }}
+                                    disabled={isUpdating}
+                                    onClick={async () => {
+                                        setIsUpdating(true);
+                                        try {
+                                            await scheduleService.updateEvent(event.id, { status: 'COMPLETED' });
+                                            showToast.success('Interview marked as completed');
+                                            if (onRefresh) onRefresh();
+                                            onClose();
+                                        } catch (error) {
+                                            console.error('Error marking completed:', error);
+                                            showToast.error('Failed to mark interview as completed');
+                                        } finally {
+                                            setIsUpdating(false);
+                                        }
+                                    }}
+                                >
+                                    {isUpdating ? 'Updating...' : 'Mark Completed'}
+                                </button>
+                                <button
+                                    className={`flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90 ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    style={{ height: 37, background: '#EF4444', border: '0.5px solid #EF4444', borderRadius: 5, padding: 10, lineHeight: '17px' }}
+                                    disabled={isUpdating}
+                                    onClick={async () => {
+                                        setIsUpdating(true);
+                                        try {
+                                            await scheduleService.updateEvent(event.id, { status: 'CANCELLED' });
+                                            showToast.success('Interview marked as cancelled');
+                                            if (onRefresh) onRefresh();
+                                            onClose();
+                                        } catch (error) {
+                                            console.error('Error marking cancelled:', error);
+                                            showToast.error('Failed to mark interview as cancelled');
+                                        } finally {
+                                            setIsUpdating(false);
+                                        }
+                                    }}
+                                >
+                                    {isUpdating ? 'Updating...' : 'Mark Cancelled'}
+                                </button>
                         </div>
 
                         {/* Secondary buttons row */}

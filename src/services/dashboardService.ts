@@ -622,7 +622,7 @@ class DashboardService {
       queryParams.append('end_date', endDateStr);
       queryParams.append('page_size', '1000');
 
-      const response = await apiClient.get(`/v1/schedule/interview-events/?${queryParams.toString()}`);
+      const response = await apiClient.get(`/jobs/interview-events/?${queryParams.toString()}`);
       
       // Transform InterviewEvent[] to ScheduleEventAPI[]
       const events: ScheduleEventAPI[] = (response.data.results || response.data || []).map((ev: any) => {
