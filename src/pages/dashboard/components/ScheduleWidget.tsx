@@ -133,12 +133,12 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
           ) : (
             events.map((event, index) => {
               const ws = event.widget_summary;
-              const config = colorConfig[ws.color_theme] || colorConfig.cyan;
+              const config = colorConfig[ws.color_theme] || colorConfig.orange; // Default to orange for overdue look
 
               const rawStatus = event.status || ws.status || 'SCHEDULED';
               const status = rawStatus.toUpperCase();
               const statusConfig = STATUS_BADGE_CONFIG[status] ||
-                { bg: '#6B7280', text: '#FFF', label: rawStatus };
+                { bg: '#F59E0B', text: '#FFF', label: rawStatus };
 
               const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status);
 
@@ -149,25 +149,25 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                   onClick={!event.is_done ? () => onEventClick?.(event, index) : undefined}
                 >
                   {/* Time */}
-                  <span className="w-[100px] shrink-0 text-xs font-medium text-[#4B5563] leading-5 pt-1">
+                  <span className="w-[100px] shrink-0 text-xs font-medium text-[#4B5563] leading-5 pt-1 text-right">
                     {ws.time}
                   </span>
 
                   {/* Timeline Dot */}
-                  <div className="relative z-10 mt-1.5">
+                  <div className="relative z-10 mt-2">
                     <div
                       className="w-3 h-3 rounded-full border-2 border-white"
                       style={{ backgroundColor: config.dot }}
                     />
                   </div>
 
-                  {/* Event Card */}
+                  {/* Event Card - Orange/Peach Style */}
                   <div
-                    className="flex-1 rounded-xl p-4 relative"
-                    style={{ backgroundColor: config.bg }}
+                    className="flex-1 rounded-2xl p-4 relative shadow-sm"
+                    style={{ backgroundColor: '#FFEDD5' }}   // Light orange/peach
                   >
-                    {/* Top Right: Status Badge */}
-                    <div className="absolute top-4 right-4">
+                    {/* Top Right: Overdue Badge */}
+                    <div className="absolute top-3 right-3">
                       <span
                         className="text-xs font-bold px-3 py-1 rounded-full tracking-wide"
                         style={{
@@ -179,64 +179,64 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                       </span>
                     </div>
 
-                    {/* Round Title */}
-                    <span className="text-sm font-medium text-[#1F2937] block">
-                      {ws.type || event.title || 'Interview Round'}
-                    </span>
-
-                    {/* Candidate Name */}
-                    <h4 className="text-lg font-semibold text-[#1F2937] mt-1 mb-1">
-                      {ws.name || event.candidate_name}
-                    </h4>
-
-                    {/* Details */}
-                    <p className="text-sm text-[#4B5563]">
-                      {ws.details || `${event.candidate_company || ''} | ${event.candidate_position || ''} | ${event.candidate_experience || ''}`}
+                    {/* Title */}
+                    <p className="text-sm font-medium text-[#1F2937] mb-1">
+                      {ws.type || event.title || 'Expired Interview'}
                     </p>
 
-                    {/* Bottom Right: Mode Tag */}
-                    <div className="absolute bottom-4 right-4">
-                      <span className="text-xs font-medium px-3 py-1 bg-white/80 rounded-full">
+                    {/* Candidate Name */}
+                    <h4 className="text-[17px] font-semibold text-[#1F2937] mb-1">
+                      {ws.name || event.candidate_name || 'Unknown'}
+                    </h4>
+
+                    {/* Subtitle */}
+                    <p className="text-sm text-[#4B5563] mb-4">
+                      {ws.details || `${event.candidate_company || ''} | ${event.candidate_position || ''}`}
+                    </p>
+
+                    {/* Bottom Row: Mode + Action Buttons */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium px-3 py-1 bg-white rounded-full text-gray-700">
                         {event.mode || 'Virtual'}
                       </span>
+
+                      {/* Action Buttons - Green Check & Red Cross */}
+                      {isActionable && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                await scheduleService.updateEventStatus(event.id, 'COMPLETED');
+                                toast.success("Completed");
+                                window.location.reload();
+                              } catch (err) {
+                                toast.error("Failed");
+                              }
+                            }}
+                            className="w-8 h-8 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-all"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                await scheduleService.updateEventStatus(event.id, 'CANCELLED');
+                                toast.success("Cancelled");
+                                window.location.reload();
+                              } catch (err) {
+                                toast.error("Failed");
+                              }
+                            }}
+                            className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-
-                    {/* Minimal Action Buttons - Right Side */}
-                    {isActionable && (
-                      <div className="flex gap-2 absolute bottom-4 right-28">
-                        <button
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            try {
-                              await scheduleService.updateEventStatus(event.id, 'COMPLETED');
-                              toast.success("Completed");
-                              window.location.reload();
-                            } catch (err) {
-                              toast.error("Failed");
-                            }
-                          }}
-                          className="w-8 h-8 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            try {
-                              await scheduleService.updateEventStatus(event.id, 'CANCELLED');
-                              toast.success("Cancelled");
-                              window.location.reload();
-                            } catch (err) {
-                              toast.error("Failed");
-                            }
-                          }}
-                          className="w-8 h-8 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               );
