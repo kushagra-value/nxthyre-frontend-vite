@@ -142,6 +142,7 @@ export default function JobCandidateProfile({
   // ── Feedback Modal State ──
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackComment, setFeedbackComment] = useState("");
+  const [selectedFeedbackOptions, setSelectedFeedbackOptions] = useState<string[]>([]);
   const [pendingAction, setPendingAction] = useState<{
     type: "archive" | "unarchive" | "move";
     applicationIds: number[];
@@ -151,6 +152,7 @@ export default function JobCandidateProfile({
   } | null>(null);
   const [showStageMenu, setShowStageMenu] = useState(false);
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
+  const [pendingEventAction, setPendingEventAction] = useState<any>(null);
 
   // ── Match Description Editing State ──
   const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
@@ -173,9 +175,24 @@ export default function JobCandidateProfile({
     targetStageId?: number;
     targetStageName?: string;
   }) => {
+    if (action.type === "move" && action.targetStageId) {
+      const targetStage = stages.find((s) => s.id === action.targetStageId);
+      const interviewTypes = ["VIRTUAL_INTERVIEW", "FACE_TO_FACE_INTERVIEW", "EXTERNAL_PLATFORM_INTERVIEW"];
+      if (targetStage && targetStage.custom_stage_type && interviewTypes.includes(targetStage.custom_stage_type)) {
+        if (action.applicationIds.length > 1) {
+          showToast.error("Cannot bulk move candidates to an interview stage. Please move one at a time.");
+          return;
+        }
+        setPendingEventAction(action);
+        setIsEventFormOpen(true);
+        return;
+      }
+    }
+
     const names = [fullName];
     setPendingAction({ ...action, candidateNames: names });
     setFeedbackComment("");
+    setSelectedFeedbackOptions([]);
     setShowFeedbackModal(true);
   };
 
@@ -210,13 +227,17 @@ export default function JobCandidateProfile({
         );
         showToast.success("Candidate archived");
       } else if (type === "move" && targetStageId) {
+        const finalComment = selectedFeedbackOptions.length > 0 
+          ? `[${selectedFeedbackOptions.join(", ")}] ${feedbackComment.trim()}`
+          : feedbackComment.trim();
+
         await Promise.all(
           applicationIds.map((id) =>
             apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
               current_stage: targetStageId,
               feedback: {
                 subject: `Moving to ${targetStageName || "next stage"}`,
-                comment: feedbackComment.trim(),
+                comment: finalComment,
               },
             }),
           ),
@@ -2494,6 +2515,39 @@ export default function JobCandidateProfile({
                   </div>
                 </div>
 
+                {pendingAction.type === "move" && pendingAction.targetStageName?.toLowerCase().includes("shortlist") && (
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      Quick Status <span className="text-gray-400 font-normal">(Optional)</span>
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: "picked_call", label: "Picked Call", icon: <Phone className="w-3.5 h-3.5" /> },
+                        { id: "approved", label: "Approved by Client", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+                        { id: "rejected", label: "Rejected by Client", icon: <XCircle className="w-3.5 h-3.5" /> },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => {
+                            setSelectedFeedbackOptions(prev =>
+                              prev.includes(opt.label)
+                                ? prev.filter(i => i !== opt.label)
+                                : [...prev, opt.label]
+                            );
+                          }}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${selectedFeedbackOptions.includes(opt.label)
+                            ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
+                            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                            }`}
+                        >
+                          {opt.icon}
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Feedback / Reason <span className="text-red-500">*</span>
@@ -2547,13 +2601,61 @@ export default function JobCandidateProfile({
           </div>
         )}
 
-        <EventForm
-          isOpen={isEventFormOpen}
-          onClose={() => setIsEventFormOpen(false)}
-          initialJobId={jobId?.toString()}
-          initialCompanyId={workspaceId?.toString()}
-          initialApplicationId={applicationId?.toString()}
-        />
+        {isEventFormOpen && (
+          <EventForm
+            isOpen={isEventFormOpen}
+            onClose={() => {
+              setIsEventFormOpen(false);
+              setPendingEventAction(null);
+            }}
+            initialJobId={jobId?.toString()}
+            initialCompanyId={workspaceId?.toString()}
+            initialApplicationId={applicationId?.toString()}
+            initialStageId={pendingEventAction ? String(pendingEventAction.targetStageId) : undefined}
+            isStageMove={!!pendingEventAction}
+            onSubmit={async (payload) => {
+              if (pendingEventAction) {
+                try {
+                  await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                    current_stage: pendingEventAction.targetStageId,
+                    feedback: {
+                      subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} and scheduled interview`,
+                      comment: payload.submittedNote || "Interview scheduled",
+                    },
+                  });
+                  showToast.success(`Candidate moved and interview scheduled`);
+                  setPendingEventAction(null);
+                  goBack();
+                } catch (err) {
+                  console.error(err);
+                  showToast.error("Failed to move candidate after scheduling.");
+                }
+              } else {
+                showToast.success("Interview scheduled successfully.");
+              }
+            }}
+            onSkip={async (note) => {
+              if (pendingEventAction) {
+                setIsEventFormOpen(false);
+                try {
+                  await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                    current_stage: pendingEventAction.targetStageId,
+                    feedback: {
+                      subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} (Interview skipped)`,
+                      comment: note,
+                    },
+                  });
+                  showToast.success(`Candidate moved with note`);
+                  setPendingEventAction(null);
+                  goBack();
+                } catch (err) {
+                  console.error(err);
+                  showToast.error("Failed to move candidate.");
+                }
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );

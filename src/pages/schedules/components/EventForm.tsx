@@ -25,6 +25,9 @@ interface EventFormProps {
   initialCompanyId?: string;
   initialJobId?: string;
   initialApplicationId?: string;
+  initialStageId?: string;
+  isStageMove?: boolean;
+  onSkip?: (note: string) => void;
 }
 
 // Time options for the Start Time dropdown
@@ -142,6 +145,9 @@ export const EventForm = ({
   initialCompanyId,
   initialJobId,
   initialApplicationId,
+  initialStageId,
+  isStageMove,
+  onSkip,
 }: EventFormProps) => {
   // ── Company & Job state ──
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
@@ -205,9 +211,13 @@ export const EventForm = ({
 
   useEffect(() => {
     if (isOpen && initialApplicationId && selectedJobId) {
-      setFormData((prev) => ({ ...prev, applicationId: initialApplicationId }));
+      setFormData((prev) => ({ 
+        ...prev, 
+        applicationId: initialApplicationId,
+        stageId: initialStageId || prev.stageId 
+      }));
     }
-  }, [isOpen, initialApplicationId, selectedJobId]);
+  }, [isOpen, initialApplicationId, initialStageId, selectedJobId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -221,6 +231,40 @@ export const EventForm = ({
       }));
     }
   }, [isOpen, initialDate, initialTime]);
+
+  // ── Prefill Title and Mode when data is ready ──
+  useEffect(() => {
+    if (isOpen && formData.applicationId && formData.stageId && pipelineCandidates.length > 0 && pipelineStages.length > 0) {
+      const candidate = pipelineCandidates.find(c => String(c.id) === formData.applicationId);
+      const stage = pipelineStages.find(s => String(s.id) === formData.stageId);
+      const job = allJobs.find(j => String(j.id) === selectedJobId);
+
+      if (candidate && stage) {
+        setFormData(prev => {
+          const newUpdates: any = {};
+          
+          // Prefill Title if empty
+          if (!prev.title) {
+            newUpdates.title = `${stage.name} - ${candidate.candidate.full_name}${job ? ` (${job.title})` : ''}`;
+          }
+
+          // Prefill Interview Mode based on stage type
+          if (!prev.interviewMode || prev.interviewMode === 'virtual') {
+            const stype = stage.custom_stage_type || '';
+            if (stype === 'FACE_TO_FACE_INTERVIEW') newUpdates.interviewMode = 'face-to-face';
+            else if (stype === 'EXTERNAL_PLATFORM_INTERVIEW') newUpdates.interviewMode = 'external';
+            else if (stype === 'VIRTUAL_INTERVIEW') newUpdates.interviewMode = 'virtual';
+            else if (stype === 'MOCK_CALL') newUpdates.interviewMode = 'mock-call';
+          }
+
+          if (Object.keys(newUpdates).length > 0) {
+            return { ...prev, ...newUpdates };
+          }
+          return prev;
+        });
+      }
+    }
+  }, [isOpen, formData.applicationId, formData.stageId, pipelineCandidates, pipelineStages, allJobs, selectedJobId]);
 
   // ── Fetch workspaces (companies) ──
   useEffect(() => {
@@ -369,6 +413,10 @@ export const EventForm = ({
       alert('Please select an interview stage');
       return;
     }
+    if (!formData.note?.trim()) {
+      alert('Please provide a mandatory note');
+      return;
+    }
 
     // Convert 12h time to 24h for API
     const convert12to24 = (time12: string) => {
@@ -403,7 +451,7 @@ export const EventForm = ({
       start_at: startDateTime,
       end_at: endDateTime,
       location_type: locationType,
-      virtual_conference_url: formData.meetingLink || undefined,
+      location_details: formData.location || '',
       status: 'SCHEDULED',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       participants: [],
@@ -416,7 +464,7 @@ export const EventForm = ({
     setSubmitting(true);
     try {
       await scheduleService.createEvent(payload);
-      onSubmit?.(payload);
+      onSubmit?.({ ...payload, submittedNote: formData.note });
       onSuccess?.();
       handleClose();
     } catch (err: any) {
@@ -633,71 +681,73 @@ export const EventForm = ({
                 Interview Mode <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-4 gap-3">
-                {INTERVIEW_MODES.map((mode) => (
-                  <button
-                    key={mode.id}
-                    type="button"
-                    id={`mode-${mode.id}`}
-                    onClick={() => setFormData({ ...formData, interviewMode: mode.id })}
-                    className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 ${
-                      formData.interviewMode === mode.id
-                        ? 'border-[#0F47F2] bg-[#EEF2FF] shadow-sm'
-                        : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
-                    }`}
-                  >
-                    <span
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
+                {INTERVIEW_MODES.map((mode) => {
+                  const isDisabled = isStageMove && formData.interviewMode !== mode.id;
+                  return (
+                    <button
+                      key={mode.id}
+                      type="button"
+                      id={`mode-${mode.id}`}
+                      disabled={isDisabled}
+                      title={isDisabled ? "If you need to switch, then update the stage type in the pipeline dashboard." : ""}
+                      onClick={() => setFormData({ ...formData, interviewMode: mode.id })}
+                      className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 ${
                         formData.interviewMode === mode.id
-                          ? 'bg-[#0F47F2] text-white shadow-md'
-                          : 'bg-[#F3F4F6] text-[#6B7280]'
+                          ? 'border-[#0F47F2] bg-[#EEF2FF] shadow-sm'
+                          : isDisabled
+                          ? 'border-[#F3F4F6] bg-gray-50 opacity-60 cursor-not-allowed'
+                          : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
                       }`}
                     >
-                      {mode.icon}
-                    </span>
-                    <span
-                      className={`text-xs font-medium text-center ${
-                        formData.interviewMode === mode.id ? 'text-[#0F47F2]' : 'text-[#4B5563]'
-                      }`}
-                    >
-                      {mode.label}
-                    </span>
-                  </button>
-                ))}
+                      <span
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
+                          formData.interviewMode === mode.id
+                            ? 'bg-[#0F47F2] text-white shadow-md'
+                            : 'bg-[#F3F4F6] text-[#6B7280]'
+                        }`}
+                      >
+                        {mode.icon}
+                      </span>
+                      <span
+                        className={`text-xs font-medium text-center ${
+                          formData.interviewMode === mode.id ? 'text-[#0F47F2]' : 'text-[#4B5563]'
+                        }`}
+                      >
+                        {mode.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-            </div>
 
-            {/* Virtual Interview Link - shown when virtual mode is selected */}
-            {formData.interviewMode === 'virtual' && (
-              <div className="bg-[#F9FAFB] rounded-xl p-5 border border-[#F3F4F6]">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-7 h-7 rounded-md bg-[#1F2937] flex items-center justify-center text-white text-xs">💻</span>
-                  <span className="text-sm font-medium text-[#1F2937]">Virtual Interview Link</span>
-                </div>
-                <div className="flex flex-col gap-1.5">
+              {formData.interviewMode === 'face-to-face' && (
+                <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
                   <label className="text-sm font-medium text-[#1F2937]">
-                    Meeting Link <span className="text-red-500">*</span>
+                    <span className="mr-1.5">📍</span> Location <span className="text-red-500">*</span>
                   </label>
                   <input
-                    id="meeting-link-input"
-                    type="url"
-                    placeholder="https://meet.google.com/..."
-                    value={formData.meetingLink}
-                    onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
+                    id="location-input"
+                    type="text"
+                    required
+                    placeholder="Enter meeting room, office address, or building name..."
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] placeholder:text-[#9CA3AF] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all"
                   />
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Note */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-[#1F2937]">
-                <span className="mr-1.5">📝</span> Note <span className="text-xs font-normal text-[#9CA3AF]">(optional)</span>
+                <span className="mr-1.5">📝</span> Note <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <textarea
                   id="note-textarea"
-                  placeholder="Add any notes for the interview..."
+                  required
+                  placeholder="Add mandatory notes for the interview..."
                   value={formData.note}
                   onChange={(e) => {
                     if (e.target.value.length <= 300) {
@@ -715,6 +765,21 @@ export const EventForm = ({
 
             {/* Action Buttons */}
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F3F4F6]">
+              {isStageMove && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!formData.note?.trim()) {
+                      alert('Please provide a mandatory note to skip scheduling.');
+                      return;
+                    }
+                    onSkip?.(formData.note);
+                  }}
+                  className="px-6 py-2.5 text-sm font-medium text-[#D97706] bg-[#FEF3C7] border border-[#FDE68A] rounded-xl hover:bg-[#FDE68A] transition-colors"
+                >
+                  Skip Scheduling & Move
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleClose}

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import type { ScheduleEventAPI } from '../../../services/dashboardService';
+import scheduleService from '../../../services/scheduleService';
+import toast from "react-hot-toast";
 
 interface ScheduleEventModalProps {
     isOpen?: boolean;
@@ -184,18 +186,38 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                     {/* ─── Footer Actions ─── */}
                     <div className="flex flex-col justify-center items-start shrink-0" style={{ padding: '24px 27px', gap: 10, borderTop: '0.5px solid #AEAEB2' }}>
                         {/* Primary CTA */}
-                        <button
-                            className="w-full flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                            style={{ height: 37, background: '#0F47F2', border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, lineHeight: '17px' }}
-                            disabled={!details.meeting_url}
-                            onClick={() => {
-                                if (details.meeting_url) {
-                                    window.open(details.meeting_url, '_blank');
-                                }
-                            }}
-                        >
-                            Join {details.meeting_platform} Meeting
-                        </button>
+                        <div className="flex items-center justify-between w-full" style={{ gap: 10 }}>
+                            <button
+                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90"
+                                style={{ height: 37, background: '#10B981', border: '0.5px solid #10B981', borderRadius: 5, padding: 10, lineHeight: '17px' }}
+                                onClick={async () => {                     // UPDATED
+                                    try {
+                                        await scheduleService.updateEventStatus(event.id, 'COMPLETED');
+                                        toast.success("Event marked as Completed");
+                                        onClose?.();
+                                    } catch (err) {
+                                        toast.error("Failed to mark as completed");
+                                    }
+                                }}
+                            >
+                                Mark Completed
+                            </button>
+                            <button
+                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90"
+                                style={{ height: 37, background: '#EF4444', border: '0.5px solid #EF4444', borderRadius: 5, padding: 10, lineHeight: '17px' }}
+                                onClick={async () => {                     // UPDATED
+                                    try {
+                                        await scheduleService.updateEventStatus(event.id, 'CANCELLED');
+                                        toast.success("Event marked as Cancelled");
+                                        onClose?.();
+                                    } catch (err) {
+                                        toast.error("Failed to mark as cancelled");
+                                    }
+                                }}
+                            >
+                                Mark Cancelled
+                            </button>
+                        </div>
 
                         {/* Secondary buttons row */}
                         <div className="flex items-center justify-between w-full" style={{ gap: 10 }}>

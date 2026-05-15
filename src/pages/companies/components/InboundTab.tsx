@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check, MoreHorizontal, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check, MoreHorizontal, Loader2, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
@@ -308,6 +308,9 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
   const [verifiedNonDuplicateIds, setVerifiedNonDuplicateIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [confirmedDuplicateIds, setConfirmedDuplicateIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   useEffect(() => {
     if (!ascendionNonDupStorageKey) {
@@ -401,6 +404,11 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
         const isDup = res.data?.is_duplicate;
         if (isDup === true) {
           showToast.error("Duplicate in Ascendion portal");
+          setConfirmedDuplicateIds((prev) => {
+            const next = new Set(prev);
+            next.add(candidateId);
+            return next;
+          });
         } else if (isDup === false) {
           showToast.success("Not a duplicate in Ascendion portal");
           setVerifiedNonDuplicateIds((prev) => {
@@ -588,6 +596,13 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                             />
                           </div>
                         )}
+                        {isAscendionWorkspace && !ascendionCheckingIds.has(item.id) && (confirmedDuplicateIds.has(item.id) || (item as any).is_ascendion_duplicate === true) && !verifiedNonDuplicateIds.has(item.id) && (
+                          <div title="Duplicate found in Ascendion portal">
+                            <XCircle
+                              className="w-4 h-4 text-red-500 shrink-0"
+                            />
+                          </div>
+                        )}
                       </div>
                       <div className="text-[13px] text-[#8E8E93] mt-0.5 truncate" title={item.headline || ""}>{item.headline || "-"}</div>
                     </td>
@@ -748,7 +763,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                                     runAscendionDuplicateCheck(item.id);
                                     setMenuOpenId(null);
                                   }}
-                                  disabled={verifiedNonDuplicateIds.has(item.id) || ascendionCheckingIds.has(item.id)}
+                                  disabled={verifiedNonDuplicateIds.has(item.id) || ascendionCheckingIds.has(item.id) || confirmedDuplicateIds.has(item.id)}
                                   className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
                                   title={
                                     verifiedNonDuplicateIds.has(item.id)
