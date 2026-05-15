@@ -2093,7 +2093,7 @@ export default function JobPipelineDashboard({
                   className="flex items-center gap-1 cursor-pointer hover:text-[#4B5563] transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigator.clipboard.writeText(`${jobDetails?.title}, ${jobDetails?.location} (Job ID: ${jobDetails?.id})`).then(() => showToast.success("Job ID copied"));
+                    navigator.clipboard.writeText(`${jobDetails?.title}, (Job ID: ${jobDetails?.id})`).then(() => showToast.success("Job ID copied"));
                   }}
                 >
                   <Copy className="w-3.5 h-3.5 text-[#4674E5] shrink-0" />
