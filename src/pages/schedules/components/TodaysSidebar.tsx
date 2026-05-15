@@ -198,12 +198,21 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
           {statusBadge.label}
         </span>
 
-        <span
-          className="text-[9px] font-bold px-2.5 py-0.5 rounded-full"
-          style={{ backgroundColor: modeBadge.bg, color: modeBadge.text }}
-        >
-          {modeBadge.label}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="text-[10px] font-bold px-3 py-1 rounded-full tracking-wide"
+            style={{ backgroundColor: statusBadge.bg, color: statusBadge.text }}
+          >
+            {statusBadge.label}
+          </span>
+
+          <span
+            className="text-[9px] font-bold px-2.5 py-0.5 rounded-full"
+            style={{ backgroundColor: modeBadge.bg, color: modeBadge.text }}
+          >
+            {modeBadge.label}
+          </span>
+        </div>
       </div>
 
       {/* Candidate Name */}
@@ -237,7 +246,7 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
                 toast.success("Marked as Completed");
                 window.location.reload();
               } catch (err) {
-                toast.error("Failed to update");
+                toast.error("Failed to mark cancelled");
               }
             }}
           >
