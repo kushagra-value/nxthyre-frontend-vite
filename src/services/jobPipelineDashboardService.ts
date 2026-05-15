@@ -377,3 +377,29 @@ export async function getLiveTranscript(
   );
   return handleResponse<LiveTranscript[]>(res);
 }
+
+// ─── Bulk Reframe Questions ──────────────────────────
+
+export interface BulkReframeQuestionsResponse {
+  job_id: string;
+  input_string: string;
+  total_candidates: number;
+  queued: number;
+  errors: string[];
+  queued_tasks: { candidate_id: string; task_name: string }[];
+}
+
+/**
+ * Triggers AI regeneration of interview questions for all candidates in a job.
+ */
+export async function bulkReframeQuestions(
+  jobId: number,
+  inputString: string,
+): Promise<BulkReframeQuestionsResponse> {
+  const { default: apiClient } = await import("./api");
+  const response = await apiClient.post(
+    `/plivo/copilot/jobs/${jobId}/questions/bulk/`,
+    { input_string: inputString },
+  );
+  return response.data;
+}
