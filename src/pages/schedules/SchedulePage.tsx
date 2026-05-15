@@ -123,13 +123,20 @@ export default function SchedulePage() {
       try {
         const cId = selectedCompany !== 'all' ? Number(selectedCompany) : undefined;
         const jId = selectedJobRole !== 'all' ? Number(selectedJobRole) : undefined;
-        const res = await scheduleService.getDailyDetail(toDateStr(selectedDate), cId, jId);
         
-        let allEvts = [...res.events, ...(res.tomorrow_events || [])].map(mapInterviewEvent);
-        if (activeTab !== 'all') allEvts = allEvts.filter(e => e.status === activeTab);
-        setSidebarEvents(allEvts);
+        if (activeTab !== 'all') {
+          const params: any = { status: activeTab, page_size: 1000 };
+          if (cId) params.company_id = cId;
+          if (jId) params.job_role_id = jId;
+          const res = await scheduleService.getEvents(params);
+          setSidebarEvents(res.results.map(mapInterviewEvent));
+        } else {
+          const res = await scheduleService.getDailyDetail(toDateStr(selectedDate), cId, jId);
+          let allEvts = [...res.events, ...(res.tomorrow_events || [])].map(mapInterviewEvent);
+          setSidebarEvents(allEvts);
+        }
       } catch (err) {
-        console.error('Failed to load daily details:', err);
+        console.error('Failed to load sidebar details:', err);
       }
     };
     loadSidebar();
@@ -307,6 +314,7 @@ export default function SchedulePage() {
             selectedDate={selectedDate}
             events={sidebarEvents}
             onEventClick={handleEventClick}
+            activeFilter={activeTab}
           />
         )}
       </div>

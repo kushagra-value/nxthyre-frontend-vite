@@ -41,7 +41,7 @@ export default function EventPreview({ event, candidate, onClose, isOpen = true 
     hour12: true,
     timeZone: 'UTC'
   });
-  const location = event.location_type === 'VIRTUAL' ? "Virtual " + event.virtual_conference_url : "Hybrid" + event.location_details || 'TBD';
+  const location = event.location_type === 'VIRTUAL' ? 'Virtual Interview' : event.location_type === 'ONSITE' ? 'Face to Face' : event.location_details || 'TBD';
   const attachment = event.attachments_summary?.[0];
 
   const handleDelete = async () => {

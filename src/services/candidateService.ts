@@ -450,6 +450,7 @@ export interface BulkPipelineResponse {
 }
 
 export interface PipelineStage {
+  custom_stage_type: string;
   id: number;
   name: string;
   slug: string;
@@ -1236,6 +1237,17 @@ class CandidateService {
     } catch (error: any) {
       console.error("Error updating stage transition:", error);
       throw error;
+    }
+  }
+
+  async syncNaukriEmails(days: number = 1): Promise<any> {
+    try {
+      const response = await apiClient.post(`/candidates/sync-naukri-emails-manual/?days=${days}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to sync Naukri emails",
+      );
     }
   }
 

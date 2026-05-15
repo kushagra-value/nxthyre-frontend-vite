@@ -36,6 +36,9 @@ import {
   Phone,
   Mail,
   Trash2,
+  XCircle,
+  CheckCircle2,
+  RotateCcw,
   Copy,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -62,10 +65,12 @@ import DateRangeFilter from "./DateRangeFilter";
 import PipelineKanbanColumn from "./PipelineKanbanColumn";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import { getAttentionPill, formatTimeAgo, formatMovedDate } from "../../../utils/candidateAttention";
+import { EventForm } from "../../schedules/components/EventForm";
 
 // ─── Interfaces ────────────────────────────────────────────────
 
 export interface Stage {
+  custom_stage_type: string | null;
   id: number;
   name: string;
   slug: string;
@@ -313,6 +318,9 @@ export default function JobPipelineDashboard({
   const [verifiedNonDuplicateIds, setVerifiedNonDuplicateIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [confirmedDuplicateIds, setConfirmedDuplicateIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   useEffect(() => {
     if (!ascendionNonDupStorageKey) {
@@ -358,7 +366,7 @@ export default function JobPipelineDashboard({
   const [uploadStatus, setUploadStatus] = useState<any | null>(null);
   const [uploadHistory, setUploadHistory] = useState<any[]>([]);
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Stages
   const [stages, setStages] = useState<Stage[]>([]);
@@ -463,6 +471,7 @@ export default function JobPipelineDashboard({
   // ── Feedback Modal State ──
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackComment, setFeedbackComment] = useState("");
+  const [selectedFeedbackOptions, setSelectedFeedbackOptions] = useState<string[]>([]);
   const draggedCandidateItemRef = useRef<any>(null);
   const [pendingAction, setPendingAction] = useState<{
     type: "archive" | "unarchive" | "move";
@@ -471,6 +480,8 @@ export default function JobPipelineDashboard({
     targetStageName?: string;
     candidateNames?: string[];
   } | null>(null);
+  const [isEventFormOpen, setIsEventFormOpen] = useState(false);
+  const [pendingEventAction, setPendingEventAction] = useState<any>(null);
 
   // ── Filters & Date Range ──
   const [pipelineFilters, setPipelineFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
@@ -1162,6 +1173,11 @@ export default function JobPipelineDashboard({
         const isDup = res.data?.is_duplicate;
         if (isDup === true) {
           showToast.error("Duplicate in Ascendion portal");
+          setConfirmedDuplicateIds((prev) => {
+            const next = new Set(prev);
+            next.add(candidateId);
+            return next;
+          });
         } else if (isDup === false) {
           showToast.success("Not a duplicate in Ascendion portal");
           setVerifiedNonDuplicateIds((prev) => {
@@ -1547,6 +1563,20 @@ export default function JobPipelineDashboard({
     targetStageId?: number;
     targetStageName?: string;
   }) => {
+    if (action.type === "move" && action.targetStageId) {
+      const targetStage = stages.find(s => s.id === action.targetStageId);
+      const interviewTypes = ["VIRTUAL_INTERVIEW", "FACE_TO_FACE_INTERVIEW", "EXTERNAL_PLATFORM_INTERVIEW"];
+      if (targetStage && targetStage.custom_stage_type && interviewTypes.includes(targetStage.custom_stage_type)) {
+        if (action.applicationIds.length > 1) {
+          showToast.error("Cannot bulk move candidates to an interview stage. Please move one at a time.");
+          return;
+        }
+        setPendingEventAction(action);
+        setIsEventFormOpen(true);
+        return;
+      }
+    }
+
     // Gather candidate names for display
     const names = action.applicationIds.map((id) => {
       if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.candidate?.full_name || "Unknown";
@@ -1556,6 +1586,7 @@ export default function JobPipelineDashboard({
     });
     setPendingAction({ ...action, candidateNames: names });
     setFeedbackComment("");
+    setSelectedFeedbackOptions([]);
     setShowFeedbackModal(true);
   };
 
@@ -1612,13 +1643,17 @@ export default function JobPipelineDashboard({
         );
         showToast.success(`${applicationIds.length} candidate(s) unarchived`);
       } else if (type === "move" && targetStageId) {
+        const finalComment = selectedFeedbackOptions.length > 0 
+          ? `[${selectedFeedbackOptions.join(", ")}] ${feedbackComment.trim()}`
+          : feedbackComment.trim();
+
         await Promise.all(
           applicationIds.map((id) =>
             apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
               current_stage: targetStageId,
               feedback: {
                 subject: `Moving to ${targetStageName || "next stage"}`,
-                comment: feedbackComment.trim(),
+                comment: finalComment,
               },
             })
           )
@@ -1811,6 +1846,15 @@ export default function JobPipelineDashboard({
                         <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
                       </div>
                     )}
+                  {isAscendionWorkspace &&
+                    stageSlug === "uncontacted" &&
+                    !ascendionCheckingIds.has(cand.id) &&
+                    (confirmedDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === true) &&
+                    !verifiedNonDuplicateIds.has(cand.id) && (
+                      <div title="Duplicate found in Ascendion portal">
+                        <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                      </div>
+                    )}
                   {isArchived ? (
                     <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
                   ) : (
@@ -1989,6 +2033,7 @@ export default function JobPipelineDashboard({
       setShowCandidateEditModal,
       isAscendionWorkspace,
       verifiedNonDuplicateIds,
+      confirmedDuplicateIds,
       ascendionCheckingIds,
       runAscendionDuplicateCheck,
       handleCopyCandidateEmail,
@@ -2973,6 +3018,8 @@ export default function JobPipelineDashboard({
                           verifiedNonDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === false;
                         const isAscendionDupChecking =
                           ascendionCheckingIds.has(cand.id);
+                        const isConfirmedDuplicate =
+                          (confirmedDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === true) && !isVerifiedNonDuplicate;
 
                         // Experience — handle both numeric total_experience and string like "1+ years exp"
                         const expYears =
@@ -3082,6 +3129,13 @@ export default function JobPipelineDashboard({
                                       <div title="Not a duplicate in Ascendion portal">
                                         <Check
                                           className="w-4 h-4 text-green-600 shrink-0"
+                                        />
+                                      </div>
+                                    )}
+                                    {showAscendionUncontacted && isConfirmedDuplicate && !ascendionCheckingIds.has(cand.id) && (
+                                      <div title="Duplicate found in Ascendion portal">
+                                        <XCircle
+                                          className="w-4 h-4 text-red-500 shrink-0"
                                         />
                                       </div>
                                     )}
@@ -3293,7 +3347,7 @@ export default function JobPipelineDashboard({
                                             runAscendionDuplicateCheck(cand.id);
                                             setMenuOpenId(null);
                                           }}
-                                          disabled={isVerifiedNonDuplicate || isAscendionDupChecking}
+                                          disabled={isVerifiedNonDuplicate || isAscendionDupChecking || isConfirmedDuplicate}
                                           className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
                                           title={
                                             isVerifiedNonDuplicate
@@ -4878,6 +4932,40 @@ export default function JobPipelineDashboard({
                 </div>
               </div>
 
+              {pendingAction.type === "move" && pendingAction.targetStageName?.toLowerCase().includes("shortlist") && (
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Quick Status <span className="text-gray-400 font-normal">(Optional)</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "picked_call", label: "Picked Call", icon: <Phone className="w-3.5 h-3.5" /> },
+                      { id: "approved", label: "Approved by Client", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+                      { id: "rejected", label: "Rejected by Client", icon: <XCircle className="w-3.5 h-3.5" /> },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => {
+                          setSelectedFeedbackOptions(prev => 
+                            prev.includes(opt.label) 
+                              ? prev.filter(i => i !== opt.label)
+                              : [...prev, opt.label]
+                          );
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                          selectedFeedbackOptions.includes(opt.label)
+                            ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
+                            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                        }`}
+                      >
+                        {opt.icon}
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Feedback / Reason <span className="text-red-500">*</span>
@@ -4920,14 +5008,85 @@ export default function JobPipelineDashboard({
               >
                 {pendingAction.type === "archive" ? (
                   <Archive className="w-4 h-4" />
+                ) : pendingAction.type === "unarchive" ? (
+                  <RotateCcw className="w-4 h-4" />
                 ) : (
                   <Check className="w-4 h-4" />
                 )}
-                Confirm {pendingAction.type === "archive" ? "Archive" : "Action"}
+                Confirm {pendingAction.type === "move" ? "Move" : "Action"}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {isEventFormOpen && pendingEventAction && (
+        <EventForm
+          isOpen={isEventFormOpen}
+          onClose={() => {
+            setIsEventFormOpen(false);
+            setPendingEventAction(null);
+          }}
+          initialJobId={String(jobId)}
+          initialCompanyId={String(workspaceId)}
+          initialApplicationId={String(pendingEventAction.applicationIds[0])}
+          initialStageId={String(pendingEventAction.targetStageId)}
+          isStageMove={true}
+          onSubmit={async (payload) => {
+            // Event created successfully. The event form submits to scheduleService.
+            // But we ALSO need to move the candidate!
+            try {
+              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                current_stage: pendingEventAction.targetStageId,
+                feedback: {
+                  subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} and scheduled interview`,
+                  comment: payload.submittedNote || "Interview scheduled",
+                },
+              });
+              showToast.success(`Candidate moved and interview scheduled`);
+              clearSelection();
+              if (jobId != null) {
+                if (!isKanbanView) {
+                  fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
+                } else {
+                  triggerKanbanRefresh([pendingEventAction.targetStageName]); // Best effort refresh
+                }
+                fetchStages(jobId);
+              }
+            } catch (err: any) {
+              console.error("Failed to move candidate after scheduling:", err);
+              showToast.error("Failed to move candidate. Please refresh and try again.");
+            }
+          }}
+          onSkip={async (note) => {
+            // Skip scheduling, just move candidate with note
+            setIsEventFormOpen(false);
+            try {
+              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
+                current_stage: pendingEventAction.targetStageId,
+                feedback: {
+                  subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} (Interview skipped)`,
+                  comment: note,
+                },
+              });
+              showToast.success(`Candidate moved with note`);
+              clearSelection();
+              setPendingEventAction(null);
+              if (jobId != null) {
+                if (!isKanbanView) {
+                  fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
+                } else {
+                  triggerKanbanRefresh([pendingEventAction.targetStageName]);
+                }
+                fetchStages(jobId);
+              }
+            } catch (err: any) {
+              console.error("Failed to move candidate:", err);
+              showToast.error("Failed to move candidate.");
+              setPendingEventAction(null);
+            }
+          }}
+        />
       )}
 
       {/* CALL CANDIDATE MODAL */}
@@ -4938,6 +5097,5 @@ export default function JobPipelineDashboard({
         jobId={jobId}
       />
     </div>
-
   );
 }
