@@ -476,19 +476,6 @@ export default function JobCandidateProfile({
     return `${score}%`;
   };
 
-  // ── Loading State ────────────────────────────────────────
-
-  if (loading) {
-    return (
-      <div className="flex-1 overflow-y-auto bg-[#F3F5F7] flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0F47F2] mx-auto mb-4" />
-          <p className="text-sm text-[#8E8E93]">Loading candidate profile...</p>
-        </div>
-      </div>
-    );
-  }
-
   // ── Score entries for AI breakdown ───────────────────────
 
   const scoreEntries = [
@@ -501,7 +488,7 @@ export default function JobCandidateProfile({
     { label: "Communication", score: Number(aiScores.communication) || 0 },
   ].filter((e) => e.score > 0);
 
-  // ── Job title for display ────────────────────────────────
+  // ── Skill Assessment Items (derived from questions analysis) ──
 
   const skillAssessmentItems = useMemo(() => {
     if (!questionsAnalysisData?.questions || questionsAnalysisData.questions.length === 0) {
@@ -554,6 +541,21 @@ export default function JobCandidateProfile({
 
     return items;
   }, [questionsAnalysisData]);
+
+  // ── Loading State ────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="flex-1 overflow-y-auto bg-[#F3F5F7] flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0F47F2] mx-auto mb-4" />
+          <p className="text-sm text-[#8E8E93]">Loading candidate profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Job title for display ────────────────────────────────
 
   const jobTitle = candidate?.job?.title || contextualDetails?.job_title || "";
 

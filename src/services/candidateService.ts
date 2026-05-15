@@ -509,6 +509,11 @@ export interface CandidateQuestionsAnalysisResponse {
   candidate_id: string;
   job_id: string;
   analysed: boolean;
+  ai_score_percentage: number | null;
+  ai_accuracy_score: number | null;
+  ai_clarity_score: number | null;
+  ai_completeness_score: number | null;
+  ai_depth_score: number | null;
   questions: {
     question_text: string;
     analysis: {
