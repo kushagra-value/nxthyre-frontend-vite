@@ -1,4 +1,6 @@
 import type { ScheduleEvent } from './ScheduleWeekGrid';
+import scheduleService from '../../../services/scheduleService';
+import toast from "react-hot-toast";
 
 interface TodaysSidebarProps {
   selectedDate: Date;
@@ -207,19 +209,32 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
       <div className="flex items-center gap-2 mt-2">
         <button 
           className="flex items-center gap-1 px-2.5 py-1 bg-[#10B981] hover:bg-emerald-600 text-white text-[10px] font-semibold rounded-md transition-colors"
-          onClick={(e) => {
+          onClick={async (e) => {                    // UPDATED
             e.stopPropagation();
-            // TODO: Call API to mark completed
-          }}
+            try {
+                await scheduleService.updateEventStatus(event.id, 'COMPLETED');
+                toast.success("Marked Completed");
+                // Optional: refresh parent
+                window.location.reload(); // or trigger refresh callback
+            } catch (err) {
+                toast.error("Failed to update");
+            }
+        }}
         >
           Mark Completed
         </button>
         <button 
           className="flex items-center gap-1 px-2.5 py-1 bg-[#EF4444] hover:bg-red-600 text-white text-[10px] font-semibold rounded-md transition-colors"
-          onClick={(e) => {
+          onClick={async (e) => {                    // UPDATED
             e.stopPropagation();
-            // TODO: Call API to mark cancelled
-          }}
+            try {
+                await scheduleService.updateEventStatus(event.id, 'CANCELLED');
+                toast.success("Marked Cancelled");
+                window.location.reload();
+            } catch (err) {
+                toast.error("Failed to update");
+            }
+        }}
         >
           Mark Cancelled
         </button>

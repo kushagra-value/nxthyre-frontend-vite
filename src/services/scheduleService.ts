@@ -193,6 +193,13 @@ class ScheduleService {
     return response.data;
   }
 
+  async updateEventStatus(eventId: string, status: 'COMPLETED' | 'CANCELLED' | 'SCHEDULED' | 'OVERDUE'): Promise<InterviewEvent> {
+    const response = await apiClient.patch(`/v1/schedule/interview-events/${eventId}/`, {
+      status
+    });
+    return response.data;
+  }
+
   async deleteEvent(eventId: string): Promise<void> {
     await apiClient.delete(`/v1/schedule/interview-events/${eventId}/`);
   }

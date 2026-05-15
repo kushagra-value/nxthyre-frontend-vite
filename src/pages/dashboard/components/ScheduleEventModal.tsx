@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import type { ScheduleEventAPI } from '../../../services/dashboardService';
+import scheduleService from '../../../services/scheduleService';
+import toast from "react-hot-toast";
 
 interface ScheduleEventModalProps {
     isOpen?: boolean;
@@ -188,8 +190,14 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                             <button
                                 className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90"
                                 style={{ height: 37, background: '#10B981', border: '0.5px solid #10B981', borderRadius: 5, padding: 10, lineHeight: '17px' }}
-                                onClick={() => {
-                                    // Call API to mark completed (Implementation deferred to backend connection)
+                                onClick={async () => {                     // UPDATED
+                                    try {
+                                        await scheduleService.updateEventStatus(event.id, 'COMPLETED');
+                                        toast.success("Event marked as Completed");
+                                        onClose?.();
+                                    } catch (err) {
+                                        toast.error("Failed to mark as completed");
+                                    }
                                 }}
                             >
                                 Mark Completed
@@ -197,8 +205,14 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                             <button
                                 className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90"
                                 style={{ height: 37, background: '#EF4444', border: '0.5px solid #EF4444', borderRadius: 5, padding: 10, lineHeight: '17px' }}
-                                onClick={() => {
-                                    // Call API to mark cancelled (Implementation deferred to backend connection)
+                                onClick={async () => {                     // UPDATED
+                                    try {
+                                        await scheduleService.updateEventStatus(event.id, 'CANCELLED');
+                                        toast.success("Event marked as Cancelled");
+                                        onClose?.();
+                                    } catch (err) {
+                                        toast.error("Failed to mark as cancelled");
+                                    }
                                 }}
                             >
                                 Mark Cancelled
