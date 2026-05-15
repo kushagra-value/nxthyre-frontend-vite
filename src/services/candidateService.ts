@@ -1267,7 +1267,7 @@ class CandidateService {
     }
     }
   
-  async syncNaukriEmails(days: number = 1): Promise<any> {
+  async NaukriEmails(days: number = 1): Promise<any> {
     try {
       const response = await apiClient.post(`/candidates/sync-naukri-emails-manual/?days=${days}`);
       return response.data;
