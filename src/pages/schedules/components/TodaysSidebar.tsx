@@ -1,14 +1,10 @@
-import { useState } from 'react';
 import type { ScheduleEvent } from './ScheduleWeekGrid';
-import { scheduleService } from '../../../services/scheduleService';
-import { showToast } from '../../../utils/toast';
 
 interface TodaysSidebarProps {
   selectedDate: Date;
   events: ScheduleEvent[];
   onEventClick?: (event: ScheduleEvent) => void;
   activeFilter?: string;
-  onEventStatusChange?: () => void;
 }
 
 const MODE_BADGE: Record<string, { bg: string; text: string; label: string }> = {
@@ -64,7 +60,7 @@ function getRelativeDayLabel(selectedDate: Date, offset: number): string {
   return '';
 }
 
-export default function TodaysSidebar({ selectedDate, events, onEventClick, activeFilter, onEventStatusChange }: TodaysSidebarProps) {
+export default function TodaysSidebar({ selectedDate, events, onEventClick, activeFilter }: TodaysSidebarProps) {
   const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
   const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
@@ -124,7 +120,7 @@ export default function TodaysSidebar({ selectedDate, events, onEventClick, acti
         {selectedDateEvents.length > 0 && (
           <div className="px-3 pt-3 pb-1">
             {selectedDateEvents.map((ev) => (
-              <ScheduleCard key={ev.id} event={ev} onClick={() => onEventClick?.(ev)} onStatusChange={onEventStatusChange} />
+              <ScheduleCard key={ev.id} event={ev} onClick={() => onEventClick?.(ev)} />
             ))}
           </div>
         )}
@@ -139,7 +135,7 @@ export default function TodaysSidebar({ selectedDate, events, onEventClick, acti
             </div>
             <div className="px-3 pb-3">
               {nextDayEvents.map((ev) => (
-                <ScheduleCard key={ev.id} event={ev} onClick={() => onEventClick?.(ev)} onStatusChange={onEventStatusChange} />
+                <ScheduleCard key={ev.id} event={ev} onClick={() => onEventClick?.(ev)} />
               ))}
             </div>
           </>
@@ -167,23 +163,8 @@ export default function TodaysSidebar({ selectedDate, events, onEventClick, acti
 
 /* ─── Schedule Card ─── */
 
-function ScheduleCard({ event, onClick, onStatusChange }: { event: ScheduleEvent; onClick?: () => void; onStatusChange?: () => void }) {
+function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () => void }) {
   const badge = MODE_BADGE[event.mode] || MODE_BADGE.zoom;
-  const [updating, setUpdating] = useState<string | null>(null);
-
-  const handleStatusUpdate = async (status: 'COMPLETED' | 'CANCELLED') => {
-    setUpdating(status);
-    try {
-      await scheduleService.updateEvent(event.id, { status });
-      showToast.success(`Interview marked as ${status.toLowerCase()}`);
-      onStatusChange?.();
-    } catch (err: any) {
-      console.error(`Failed to mark ${status}:`, err);
-      showToast.error(`Failed to mark ${status.toLowerCase()}`);
-    } finally {
-      setUpdating(null);
-    }
-  };
 
   return (
     <div
@@ -225,24 +206,22 @@ function ScheduleCard({ event, onClick, onStatusChange }: { event: ScheduleEvent
       {/* Actions */}
       <div className="flex items-center gap-2 mt-2">
         <button 
-          className={`flex items-center gap-1 px-2.5 py-1 bg-[#10B981] hover:bg-emerald-600 text-white text-[10px] font-semibold rounded-md transition-colors ${updating ? 'opacity-60 cursor-not-allowed' : ''}`}
-          disabled={!!updating}
+          className="flex items-center gap-1 px-2.5 py-1 bg-[#10B981] hover:bg-emerald-600 text-white text-[10px] font-semibold rounded-md transition-colors"
           onClick={(e) => {
             e.stopPropagation();
-            handleStatusUpdate('COMPLETED');
+            // TODO: Call API to mark completed
           }}
         >
-          {updating === 'COMPLETED' ? 'Updating...' : 'Mark Completed'}
+          Mark Completed
         </button>
         <button 
-          className={`flex items-center gap-1 px-2.5 py-1 bg-[#EF4444] hover:bg-red-600 text-white text-[10px] font-semibold rounded-md transition-colors ${updating ? 'opacity-60 cursor-not-allowed' : ''}`}
-          disabled={!!updating}
+          className="flex items-center gap-1 px-2.5 py-1 bg-[#EF4444] hover:bg-red-600 text-white text-[10px] font-semibold rounded-md transition-colors"
           onClick={(e) => {
             e.stopPropagation();
-            handleStatusUpdate('CANCELLED');
+            // TODO: Call API to mark cancelled
           }}
         >
-          {updating === 'CANCELLED' ? 'Updating...' : 'Mark Cancelled'}
+          Mark Cancelled
         </button>
         <button 
           className="flex items-center gap-1 px-2.5 py-1 border border-gray-200 text-[10px] font-semibold text-[#6B7280] rounded-md hover:bg-gray-50 transition-colors"

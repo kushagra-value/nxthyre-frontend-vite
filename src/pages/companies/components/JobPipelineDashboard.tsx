@@ -1607,7 +1607,7 @@ export default function JobPipelineDashboard({
         }
         await Promise.all(
           applicationIds.map((id) =>
-            apiClient.patch(`/jobs/applications/${id}/`, {
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
               current_stage: archiveStage.id,
               status: "ARCHIVED",
               archive_reason: feedbackComment.trim(),
@@ -1631,7 +1631,7 @@ export default function JobPipelineDashboard({
 
             if (!targetStage) return Promise.resolve();
 
-            return apiClient.patch(`/jobs/applications/${id}/`, {
+            return apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
               current_stage: targetStage.id,
               status: "ACTIVE",
               feedback: {
@@ -1649,7 +1649,7 @@ export default function JobPipelineDashboard({
 
         await Promise.all(
           applicationIds.map((id) =>
-            apiClient.patch(`/jobs/applications/${id}/`, {
+            apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
               current_stage: targetStageId,
               feedback: {
                 subject: `Moving to ${targetStageName || "next stage"}`,
@@ -5036,7 +5036,7 @@ export default function JobPipelineDashboard({
             // Event created successfully. The event form submits to scheduleService.
             // But we ALSO need to move the candidate!
             try {
-              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/`, {
+              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
                 current_stage: pendingEventAction.targetStageId,
                 feedback: {
                   subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} and scheduled interview`,
@@ -5062,7 +5062,7 @@ export default function JobPipelineDashboard({
             // Skip scheduling, just move candidate with note
             setIsEventFormOpen(false);
             try {
-              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/`, {
+              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
                 current_stage: pendingEventAction.targetStageId,
                 feedback: {
                   subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} (Interview skipped)`,

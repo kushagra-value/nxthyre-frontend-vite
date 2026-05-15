@@ -133,7 +133,7 @@ class ScheduleService {
         searchParams.append(key, value.toString());
       }
     });
-    const response = await apiClient.get(`/jobs/interview-events/?${searchParams.toString()}`);
+    const response = await apiClient.get(`/v1/schedule/interview-events/?${searchParams.toString()}`);
     return response.data;
   }
 
@@ -144,12 +144,12 @@ class ScheduleService {
     if (companyId) params.append('company_id', companyId.toString());
     if (jobRoleId) params.append('job_role_id', jobRoleId.toString());
 
-    const response = await apiClient.get(`/jobs/interview-events/calendar-summary/?${params.toString()}`);
+    const response = await apiClient.get(`/v1/schedule/interview-events/calendar-summary/?${params.toString()}`);
     return response.data;
   }
 
   async getStatusCounts(): Promise<StatusCountsResponse> {
-    const response = await apiClient.get(`/jobs/interview-events/status-counts/`);
+    const response = await apiClient.get(`/v1/schedule/interview-events/status-counts/`);
     return response.data;
   }
 
@@ -159,26 +159,23 @@ class ScheduleService {
     if (companyId) params.append('company_id', companyId.toString());
     if (jobRoleId) params.append('job_role_id', jobRoleId.toString());
 
-    const response = await apiClient.get(`/jobs/interview-events/daily-detail/?${params.toString()}`);
+    const response = await apiClient.get(`/v1/schedule/interview-events/daily-detail/?${params.toString()}`);
     return response.data;
   }
 
   async getModeStats(): Promise<ModeStatsResponse> {
-    const response = await apiClient.get('/jobs/interview-events/mode-stats/');
+    const response = await apiClient.get('/v1/schedule/interview-events/mode-stats/');
     return response.data;
   }
 
   async createEvent(payload: {
-    job?: number;
     application: string;
-    candidate?: string;
     title: string;
     description?: string;
     stage?: number;
     start_at: string;
     end_at: string;
     location_type: string;
-    location_details?: string;
     virtual_conference_url?: string;
     physical_location?: string;
     status?: string;
@@ -187,17 +184,17 @@ class ScheduleService {
     participants?: any[];
     reminder_preferences?: any;
   }): Promise<InterviewEvent> {
-    const response = await apiClient.post('/jobs/interview-events/', payload);
+    const response = await apiClient.post('/v1/schedule/interview-events/', payload);
     return response.data;
   }
 
   async updateEvent(eventId: string, payload: Record<string, any>): Promise<InterviewEvent> {
-    const response = await apiClient.patch(`/jobs/interview-events/${eventId}/`, payload);
+    const response = await apiClient.patch(`/v1/schedule/interview-events/${eventId}/`, payload);
     return response.data;
   }
 
   async deleteEvent(eventId: string): Promise<void> {
-    await apiClient.delete(`/jobs/interview-events/${eventId}/`);
+    await apiClient.delete(`/v1/schedule/interview-events/${eventId}/`);
   }
 }
 

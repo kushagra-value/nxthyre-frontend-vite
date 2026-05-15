@@ -28,9 +28,6 @@ interface EventFormProps {
   initialStageId?: string;
   isStageMove?: boolean;
   onSkip?: (note: string) => void;
-  pipelineStages?: any[];
-  stagesLoading?: boolean;
-  candidates?: any[];
 }
 
 // Time options for the Start Time dropdown
@@ -151,9 +148,6 @@ export const EventForm = ({
   initialStageId,
   isStageMove,
   onSkip,
-  pipelineStages: externalStages,
-  stagesLoading: externalLoading,
-  candidates: externalCandidates,
 }: EventFormProps) => {
   // ── Company & Job state ──
   const [workspaces, setWorkspaces] = useState<MyWorkspace[]>([]);
@@ -318,41 +312,15 @@ export const EventForm = ({
       return;
     }
     setSelectedJobId('');
+    setPipelineCandidates([]);
     setFormData((prev) => ({ ...prev, applicationId: '' }));
   }, [selectedCompanyId]);
 
-  // ── Sync external stages & candidates if provided (e.g. from PipelineSharePage) ──
-  useEffect(() => {
-    if (externalStages && externalStages.length > 0) {
-      setPipelineStages(externalStages);
-    }
-  }, [externalStages]);
-
-  useEffect(() => {
-    if (externalCandidates && externalCandidates.length > 0) {
-      // Map external candidates to PipelineCandidate format if they aren't already
-      const mapped = externalCandidates.map(c => {
-        if (c.candidate) return c; // Already in format
-        return {
-          id: Number(c.id),
-          candidate: {
-            id: c.id,
-            full_name: c.name || c.full_name || 'Candidate'
-          },
-          stage_slug: ''
-        };
-      });
-      setPipelineCandidates(mapped);
-    }
-  }, [externalCandidates]);
-
   // ── Fetch pipeline candidates when job is selected ──
   useEffect(() => {
-    if (!selectedJobId || (externalStages && externalStages.length > 0) || (externalCandidates && externalCandidates.length > 0)) {
-      if (!selectedJobId) {
-        setPipelineCandidates([]);
-        setPipelineStages([]);
-      }
+    if (!selectedJobId) {
+      setPipelineCandidates([]);
+      setPipelineStages([]);
       return;
     }
 
@@ -475,13 +443,8 @@ export const EventForm = ({
     if (formData.interviewMode === 'face-to-face') locationType = 'ONSITE';
     else if (formData.interviewMode === 'external') locationType = 'HYBRID';
 
-    // Get the candidate UUID from pipeline candidates
-    const selectedCandidate = pipelineCandidates.find(c => String(c.id) === formData.applicationId);
-
     const payload = {
-      job: Number(selectedJobId),
       application: String(formData.applicationId),
-      candidate: selectedCandidate?.candidate?.id || '',
       title: formData.title || 'Interview',
       description: formData.description || formData.note || '',
       stage: Number(formData.stageId),
