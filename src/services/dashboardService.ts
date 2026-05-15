@@ -372,6 +372,7 @@ export interface DailyActivitiesResponse {
 // ──────────────────────────────────────────────
 
 export interface ScheduleWidgetSummary {
+  status: string;
   time: string;
   type: string;
   name: string;
