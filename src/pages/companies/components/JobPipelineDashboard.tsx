@@ -1199,8 +1199,8 @@ export default function JobPipelineDashboard({
       } catch (err: any) {
         showToast.error(
           err?.response?.data?.detail ||
-            err?.message ||
-            "Failed to check Ascendion duplicate",
+          err?.message ||
+          "Failed to check Ascendion duplicate",
         );
       } finally {
         setAscendionCheckingIds((prev) => {
@@ -1643,10 +1643,6 @@ export default function JobPipelineDashboard({
         );
         showToast.success(`${applicationIds.length} candidate(s) unarchived`);
       } else if (type === "move" && targetStageId) {
-        const finalComment = selectedFeedbackOptions.length > 0 
-          ? `[${selectedFeedbackOptions.join(", ")}] ${feedbackComment.trim()}`
-          : feedbackComment.trim();
-
         await Promise.all(
           applicationIds.map((id) =>
             apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
@@ -1884,7 +1880,7 @@ export default function JobPipelineDashboard({
                           className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
                           style={{ top: menuPos.top, left: menuPos.left }}
                         >
-                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"),currentCtc: cand.current_ctc || "--", expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
+                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), currentCtc: cand.current_ctc || "--", expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
                           <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
                           <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
                           {isAscendionWorkspace && stageSlug === "uncontacted" && (
@@ -3308,7 +3304,7 @@ export default function JobPipelineDashboard({
                                             resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "",
                                           };
                                           const candidateIds = sortedCandidates.map(c => c.candidate.id);
-                                          sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ 
+                                          sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({
                                             candidate: callData,
                                             candidateList: candidateIds
                                           }));
@@ -4932,40 +4928,6 @@ export default function JobPipelineDashboard({
                 </div>
               </div>
 
-              {pendingAction.type === "move" && pendingAction.targetStageName?.toLowerCase().includes("shortlist") && (
-                <div className="space-y-3">
-                  <label className="block text-sm font-semibold text-gray-700">
-                    Quick Status <span className="text-gray-400 font-normal">(Optional)</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { id: "picked_call", label: "Picked Call", icon: <Phone className="w-3.5 h-3.5" /> },
-                      { id: "approved", label: "Approved by Client", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
-                      { id: "rejected", label: "Rejected by Client", icon: <XCircle className="w-3.5 h-3.5" /> },
-                    ].map((opt) => (
-                      <button
-                        key={opt.id}
-                        onClick={() => {
-                          setSelectedFeedbackOptions(prev => 
-                            prev.includes(opt.label) 
-                              ? prev.filter(i => i !== opt.label)
-                              : [...prev, opt.label]
-                          );
-                        }}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                          selectedFeedbackOptions.includes(opt.label)
-                            ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
-                            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
-                        }`}
-                      >
-                        {opt.icon}
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Feedback / Reason <span className="text-red-500">*</span>
@@ -5018,75 +4980,6 @@ export default function JobPipelineDashboard({
             </div>
           </div>
         </div>
-      )}
-
-      {isEventFormOpen && pendingEventAction && (
-        <EventForm
-          isOpen={isEventFormOpen}
-          onClose={() => {
-            setIsEventFormOpen(false);
-            setPendingEventAction(null);
-          }}
-          initialJobId={String(jobId)}
-          initialCompanyId={String(workspaceId)}
-          initialApplicationId={String(pendingEventAction.applicationIds[0])}
-          initialStageId={String(pendingEventAction.targetStageId)}
-          isStageMove={true}
-          onSubmit={async (payload) => {
-            // Event created successfully. The event form submits to scheduleService.
-            // But we ALSO need to move the candidate!
-            try {
-              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
-                current_stage: pendingEventAction.targetStageId,
-                feedback: {
-                  subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} and scheduled interview`,
-                  comment: payload.submittedNote || "Interview scheduled",
-                },
-              });
-              showToast.success(`Candidate moved and interview scheduled`);
-              clearSelection();
-              if (jobId != null) {
-                if (!isKanbanView) {
-                  fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
-                } else {
-                  triggerKanbanRefresh([pendingEventAction.targetStageName]); // Best effort refresh
-                }
-                fetchStages(jobId);
-              }
-            } catch (err: any) {
-              console.error("Failed to move candidate after scheduling:", err);
-              showToast.error("Failed to move candidate. Please refresh and try again.");
-            }
-          }}
-          onSkip={async (note) => {
-            // Skip scheduling, just move candidate with note
-            setIsEventFormOpen(false);
-            try {
-              await apiClient.patch(`/jobs/applications/${pendingEventAction.applicationIds[0]}/?view=kanban`, {
-                current_stage: pendingEventAction.targetStageId,
-                feedback: {
-                  subject: `Moving to ${pendingEventAction.targetStageName || "next stage"} (Interview skipped)`,
-                  comment: note,
-                },
-              });
-              showToast.success(`Candidate moved with note`);
-              clearSelection();
-              setPendingEventAction(null);
-              if (jobId != null) {
-                if (!isKanbanView) {
-                  fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
-                } else {
-                  triggerKanbanRefresh([pendingEventAction.targetStageName]);
-                }
-                fetchStages(jobId);
-              }
-            } catch (err: any) {
-              console.error("Failed to move candidate:", err);
-              showToast.error("Failed to move candidate.");
-              setPendingEventAction(null);
-            }
-          }}
-        />
       )}
 
       {/* CALL CANDIDATE MODAL */}
