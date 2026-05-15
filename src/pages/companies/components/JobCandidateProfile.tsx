@@ -542,7 +542,6 @@ export default function JobCandidateProfile({
     return items;
   }, [questionsAnalysisData]);
 
-  // ── Loading State ────────────────────────────────────────
 
   if (loading) {
     return (
