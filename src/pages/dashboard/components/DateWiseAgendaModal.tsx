@@ -296,17 +296,30 @@ const DateWiseAgendaModal: React.FC<DateWiseAgendaModalProps> = ({
                                                                     <div className="flex items-center gap-1">
                                                                         <button
                                                                             className="bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
-                                                                            onClick={() => {
-                                                                                // TODO: Call API to mark completed
-                                                                            }}
+                                                                            onClick={async () => {                    // UPDATED
+                                                                                    try {
+                                                                                        await scheduleService.updateEventStatus(item.id, 'COMPLETED');
+                                                                                        toast.success("Marked Completed");
+                                                                                        // Refresh logic can be passed as prop later
+                                                                                        window.location.reload();
+                                                                                    } catch (err) {
+                                                                                        toast.error("Failed");
+                                                                                    }
+                                                                                }}
                                                                         >
                                                                             ✓ Completed
                                                                         </button>
                                                                         <button
                                                                             className="bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md transition-all shadow-sm flex items-center gap-1 active:scale-95"
-                                                                            onClick={() => {
-                                                                                // TODO: Call API to mark cancelled
-                                                                            }}
+                                                                            onClick={async () => {                    // UPDATED
+                                                                                    try {
+                                                                                        await scheduleService.updateEventStatus(item.id, 'CANCELLED');
+                                                                                        toast.success("Marked Cancelled");
+                                                                                        window.location.reload();
+                                                                                    } catch (err) {
+                                                                                        toast.error("Failed");
+                                                                                    }
+                                                                                }}
                                                                         >
                                                                             ✕ Cancel
                                                                         </button>

@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { ScheduleEventAPI } from '../../../services/dashboardService';
+import { Check, X } from "lucide-react";
+import scheduleService from '../../../services/scheduleService';
+import toast from "react-hot-toast";
 
 const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; badgeBg: string; badgeText: string }> = {
   grey: {
@@ -31,6 +34,13 @@ const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; 
     badgeBg: 'rgba(255, 255, 255, 0.55)',
     badgeText: '#000000',
   },
+};
+
+const STATUS_BADGE_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
+  SCHEDULED: { bg: '#10B981', text: '#FFF', label: 'Scheduled' },
+  OVERDUE: { bg: '#F59E0B', text: '#FFF', label: 'Overdue' },
+  COMPLETED: { bg: '#6B7280', text: '#FFF', label: 'Completed' },
+  CANCELLED: { bg: '#EF4444', text: '#FFF', label: 'Cancelled' },
 };
 
 export type ScheduleFilterLabel = 'Today' | 'Tomorrow' | 'Upcoming' | 'Past';
@@ -81,11 +91,10 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     onFilterChange(opt);
                     setShowFilterDropdown(false);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm transition-colors ${
-                    opt === activeFilter
+                  className={`w-full px-3 py-2 text-left text-sm transition-colors ${opt === activeFilter
                       ? 'bg-[#E7EDFF] text-[#0F47F2] font-medium'
                       : 'text-[#4B5563] hover:bg-[#F3F5F7]'
-                  }`}
+                    }`}
                 >
                   {opt}
                 </button>
@@ -125,7 +134,11 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
             events.map((event, index) => {
               const ws = event.widget_summary;
               const config = colorConfig[ws.color_theme] || colorConfig.cyan;
+              const status = event.status || 'SCHEDULED';
+              const statusConfig = STATUS_BADGE_CONFIG[status.toUpperCase()] ||
+                { bg: '#6B7280', text: '#FFF', label: status };
 
+              const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status.toUpperCase());
               return (
                 <div
                   key={event.id}
@@ -145,9 +158,21 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     className="flex-1 rounded-md p-2.5 relative"
                     style={{ backgroundColor: config.bg }}
                   >
-                    <span className="text-[10px] font-normal text-[#4B5563] leading-3 block">
-                      {ws.type}
-                    </span>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-normal text-[#4B5563] leading-3">
+                        {ws.type}
+                      </span>
+
+                      {/* UPDATED: Status Badge */}
+                      <span
+                        className="text-[10px] font-bold px-2.5 py-0.5 rounded-full tracking-wide"
+                        style={{ backgroundColor: statusConfig.bg, color: statusConfig.text }}
+                      >
+                        {statusConfig.label}
+                      </span>
+                    </div>
+
+
                     <div className="flex items-center justify-between mt-1">
                       <span
                         className="text-sm font-medium leading-[17px]"
@@ -168,6 +193,43 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     <span className="text-[10px] font-normal text-[#4B5563] leading-3 block mt-1.5">
                       {ws.details}
                     </span>
+                    {isActionable && (
+                      <div className="flex gap-2 mt-3 pt-2 border-t border-white/60">
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              await scheduleService.updateEventStatus(event.id, 'COMPLETED');
+                              toast.success("Marked as Completed");
+                              window.location.reload();
+                            } catch (err) {
+                              toast.error("Failed to update");
+                            }
+                          }}
+                          className="flex-1 flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          Completed
+                        </button>
+
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              await scheduleService.updateEventStatus(event.id, 'CANCELLED');
+                              toast.success("Marked as Cancelled");
+                              window.location.reload();
+                            } catch (err) {
+                              toast.error("Failed to update");
+                            }
+                          }}
+                          className="flex-1 flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

@@ -403,6 +403,7 @@ export interface ScheduleModalInterviewerInfo {
 }
 
 export interface ScheduleModalDetails {
+  status: string;
   title: string;
   candidate_name: string;
   candidate_id?: string;
