@@ -183,20 +183,38 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                         </div>
                     </div>
 
-                    {/* ─── Footer Actions ─── */}
-                    
-                    <div className="flex flex-col justify-center items-start shrink-0" style={{ padding: '24px 27px', gap: 10, borderTop: '0.5px solid #AEAEB2' }}>
+                                        {/* ─── Footer Actions ─── */}
+                    <div className="flex flex-col justify-center items-start shrink-0" style={{ padding: '24px 27px', gap: 12, borderTop: '0.5px solid #AEAEB2' }}>
                         {(() => {
-                            const status = details.status || event.status || 'SCHEDULED';
-                            const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status.toUpperCase());
+                            const status = (details.status || event.status || 'SCHEDULED').toUpperCase();
+                            const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status);
+
+                            // Status Badge Config
+                            const statusConfig = {
+                                SCHEDULED: { bg: '#10B981', text: '#FFF', label: 'Scheduled' },
+                                OVERDUE:   { bg: '#F59E0B', text: '#FFF', label: 'Overdue' },
+                                COMPLETED: { bg: '#6B7280', text: '#FFF', label: 'Completed' },
+                                CANCELLED: { bg: '#EF4444', text: '#FFF', label: 'Cancelled' },
+                            }[status] || { bg: '#6B7280', text: '#FFF', label: status };
 
                             return (
                                 <>
+                                    {/* Status Badge - Always Visible */}
+                                    <div className="flex justify-center mb-1">
+                                        <span
+                                            className="text-sm font-bold px-4 py-1.5 rounded-full tracking-wide"
+                                            style={{ backgroundColor: statusConfig.bg, color: statusConfig.text }}
+                                        >
+                                            {statusConfig.label}
+                                        </span>
+                                    </div>
+
+                                    {/* Primary Action Buttons - Only for Scheduled & Overdue */}
                                     {isActionable && (
                                         <div className="flex items-center justify-between w-full" style={{ gap: 10 }}>
                                             <button
-                                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90 active:scale-[0.98]"
-                                                style={{ height: 37, background: '#10B981', border: '0.5px solid #10B981', borderRadius: 5, padding: 10, lineHeight: '17px' }}
+                                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all"
+                                                style={{ height: 42, background: '#10B981', borderRadius: 6, padding: '10px' }}
                                                 onClick={async () => {
                                                     try {
                                                         await scheduleService.updateEventStatus(event.id, 'COMPLETED');
@@ -210,8 +228,8 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                                                 Mark Completed
                                             </button>
                                             <button
-                                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90 active:scale-[0.98]"
-                                                style={{ height: 37, background: '#EF4444', border: '0.5px solid #EF4444', borderRadius: 5, padding: 10, lineHeight: '17px' }}
+                                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all"
+                                                style={{ height: 42, background: '#EF4444', borderRadius: 6, padding: '10px' }}
                                                 onClick={async () => {
                                                     try {
                                                         await scheduleService.updateEventStatus(event.id, 'CANCELLED');
@@ -227,7 +245,7 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                                         </div>
                                     )}
 
-                                    {/* Secondary buttons row - Always visible */}
+                                    {/* Secondary buttons - Always visible */}
                                     <div className="flex items-center justify-between w-full" style={{ gap: 10 }}>
                                         <button
                                             className="flex-1 flex items-center justify-center text-sm font-normal cursor-pointer bg-transparent hover:bg-gray-50 transition-colors"

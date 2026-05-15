@@ -92,8 +92,8 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     setShowFilterDropdown(false);
                   }}
                   className={`w-full px-3 py-2 text-left text-sm transition-colors ${opt === activeFilter
-                      ? 'bg-[#E7EDFF] text-[#0F47F2] font-medium'
-                      : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                    ? 'bg-[#E7EDFF] text-[#0F47F2] font-medium'
+                    : 'text-[#4B5563] hover:bg-[#F3F5F7]'
                     }`}
                 >
                   {opt}
@@ -134,11 +134,14 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
             events.map((event, index) => {
               const ws = event.widget_summary;
               const config = colorConfig[ws.color_theme] || colorConfig.cyan;
-              const status = event.status || 'SCHEDULED';
-              const statusConfig = STATUS_BADGE_CONFIG[status.toUpperCase()] ||
+
+              // UPDATED: More robust status detection
+              const status = (event.status || ws.status || 'SCHEDULED').toUpperCase();
+              const statusConfig = STATUS_BADGE_CONFIG[status] ||
                 { bg: '#6B7280', text: '#FFF', label: status };
 
-              const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status.toUpperCase());
+              const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status);
+
               return (
                 <div
                   key={event.id}
@@ -155,23 +158,22 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                   />
 
                   <div
-                    className="flex-1 rounded-md p-2.5 relative"
+                    className="flex-1 rounded-md p-3 relative"   // Increased padding
                     style={{ backgroundColor: config.bg }}
                   >
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between mb-2">
                       <span className="text-[10px] font-normal text-[#4B5563] leading-3">
                         {ws.type}
                       </span>
 
-                      {/* UPDATED: Status Badge */}
+                      {/* Status Badge */}
                       <span
-                        className="text-[10px] font-bold px-2.5 py-0.5 rounded-full tracking-wide"
+                        className="text-[10px] font-bold px-3 py-1 rounded-full tracking-wide"
                         style={{ backgroundColor: statusConfig.bg, color: statusConfig.text }}
                       >
                         {statusConfig.label}
                       </span>
                     </div>
-
 
                     <div className="flex items-center justify-between mt-1">
                       <span
@@ -190,11 +192,14 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                         {ws.location}
                       </span>
                     </div>
-                    <span className="text-[10px] font-normal text-[#4B5563] leading-3 block mt-1.5">
+
+                    <span className="text-[10px] font-normal text-[#4B5563] leading-3 block mt-2">
                       {ws.details}
                     </span>
+
+                    {/* Action Buttons - Only for Scheduled & Overdue */}
                     {isActionable && (
-                      <div className="flex gap-2 mt-3 pt-2 border-t border-white/60">
+                      <div className="flex gap-2 mt-4 pt-3 border-t border-white/60">
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
@@ -206,9 +211,9 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                               toast.error("Failed to update");
                             }
                           }}
-                          className="flex-1 flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all"
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
                         >
-                          <Check className="w-3.5 h-3.5" />
+                          <Check className="w-4 h-4" />
                           Completed
                         </button>
 
@@ -223,9 +228,9 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                               toast.error("Failed to update");
                             }
                           }}
-                          className="flex-1 flex items-center justify-center gap-1 bg-red-600 hover:bg-red-700 text-white text-[10px] font-semibold py-1.5 rounded-lg transition-all"
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <X className="w-4 h-4" />
                           Cancel
                         </button>
                       </div>
