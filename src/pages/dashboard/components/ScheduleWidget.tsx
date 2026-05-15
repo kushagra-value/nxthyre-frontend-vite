@@ -131,15 +131,16 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
               No scheduled events
             </div>
           ) : (
-            events.map((event, index) => {
+                        events.map((event, index) => {
               const ws = event.widget_summary;
               const config = colorConfig[ws.color_theme] || colorConfig.cyan;
 
-              // UPDATED: Using direct 'status' key from API response
-              const status = (event.status || 'SCHEDULED').toUpperCase();
+              // FINAL: Direct status from API + fallback + uppercase
+              const rawStatus = event.status || ws.status || 'SCHEDULED';
+              const status = rawStatus.toUpperCase();
 
               const statusConfig = STATUS_BADGE_CONFIG[status] ||
-                { bg: '#6B7280', text: '#FFF', label: status };
+                { bg: '#6B7280', text: '#FFF', label: rawStatus };
 
               const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status);
 
@@ -162,7 +163,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     className="flex-1 rounded-md p-3 relative"
                     style={{ backgroundColor: config.bg }}
                   >
-                    {/* Header with Type and Status Badge */}
+                    {/* Type + Status Badge */}
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[10px] font-normal text-[#4B5563]">
                         {ws.type}
@@ -179,7 +180,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                       </span>
                     </div>
 
-                    {/* Candidate Name */}
+                    {/* Candidate Name + Location */}
                     <div className="flex items-center justify-between mt-1">
                       <span
                         className="text-sm font-medium leading-[17px]"
@@ -203,7 +204,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                       {ws.details}
                     </span>
 
-                    {/* Conditional Action Buttons */}
+                    {/* Conditional Buttons - Only for SCHEDULED & OVERDUE */}
                     {isActionable && (
                       <div className="flex gap-2 mt-4 pt-3 border-t border-white/60">
                         <button
@@ -217,7 +218,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                               toast.error("Failed to update");
                             }
                           }}
-                          className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all active:scale-95"
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
                         >
                           <Check className="w-4 h-4" />
                           Completed
@@ -234,7 +235,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                               toast.error("Failed to update");
                             }
                           }}
-                          className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all active:scale-95"
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
                         >
                           <X className="w-4 h-4" />
                           Cancel
