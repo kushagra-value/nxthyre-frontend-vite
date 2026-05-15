@@ -1,6 +1,7 @@
 import type { ScheduleEvent } from './ScheduleWeekGrid';
 import scheduleService from '../../../services/scheduleService';
 import toast from "react-hot-toast";
+import { Check, X } from 'lucide-react';
 
 interface TodaysSidebarProps {
   selectedDate: Date;
@@ -171,92 +172,103 @@ export default function TodaysSidebar({ selectedDate, events, onEventClick, acti
 
 /* ─── Schedule Card ─── */
 
+/* ─── Schedule Card ─── */
+
 function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () => void }) {
   const modeBadge = (event.mode && MODE_BADGE[event.mode]) || { bg: '#9CA3AF', text: '#FFF', label: event.mode || 'N/A' };
   const statusBadge = (event.status && STATUS_BADGE[event.status]) || { bg: '#6B7280', text: '#FFF', label: event.status || 'Unknown' };
 
-  const isActionable = event.status ? ['SCHEDULED', 'OVERDUE'].includes(event.status) : false;
+  const isActionable = event.status ? ['SCHEDULED', 'OVERDUE'].includes(event.status.toUpperCase()) : false;
+
   return (
     <div
       className="bg-white border border-gray-100 rounded-xl p-3 mb-2 cursor-pointer hover:shadow-sm transition-all hover:border-gray-200"
       onClick={onClick}
     >
-      {/* Top row: Round type + mode badge */}
+      {/* Top Badges Row */}
       <div className="flex items-center justify-between mb-2.5">
         <span className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider">
           {event.title || 'Technical Round'}
         </span>
-        <span
-          className="text-[10px] font-bold px-3 py-1 rounded-full tracking-wide"
-          style={{ backgroundColor: statusBadge.bg, color: statusBadge.text }}
-        >
-          {statusBadge.label}
-        </span>
 
-        <span
-          className="text-[9px] font-bold px-2.5 py-0.5 rounded-full"
-          style={{ backgroundColor: modeBadge.bg, color: modeBadge.text }}
-        >
-          {modeBadge.label}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="text-[10px] font-bold px-3 py-1 rounded-full tracking-wide"
+            style={{ backgroundColor: statusBadge.bg, color: statusBadge.text }}
+          >
+            {statusBadge.label}
+          </span>
+
+          <span
+            className="text-[9px] font-bold px-2.5 py-0.5 rounded-full"
+            style={{ backgroundColor: modeBadge.bg, color: modeBadge.text }}
+          >
+            {modeBadge.label}
+          </span>
+        </div>
       </div>
 
       {/* Candidate Name */}
-      <h4 className="text-sm font-semibold text-[#1F2937] mb-1">{event.candidateName}</h4>
+      <h4 className="text-sm font-semibold text-[#1F2937] mb-1 line-clamp-1">{event.candidateName}</h4>
 
-      {/* Time range and Date */}
-      <div className="flex items-center gap-1.5 mb-0.5">
-        <p className="text-[11px] font-medium text-[#0F47F2]">{event.date}</p>
-        <span className="text-[10px] text-gray-300">•</span>
-        <p className="text-[11px] text-[#6B7280]">
+      {/* Time & Date */}
+      <div className="flex items-center gap-1.5 mb-3 text-[11px]">
+        <p className="font-medium text-[#0F47F2]">{event.date}</p>
+        <span className="text-gray-300">•</span>
+        <p className="text-[#6B7280]">
           {formatTo12h(event.startTime)} – {formatTo12h(event.endTime)}
         </p>
       </div>
 
       {/* Company / Role */}
       {event.company && (
-        <p className="text-[10px] text-[#8E8E93] truncate">
+        <p className="text-[10px] text-[#8E8E93] truncate mb-3">
           {event.company}{event.position ? ` · ${event.position}` : ''}{event.experience ? ` · ${event.experience}` : ''}
         </p>
       )}
+
+      {/* Action Buttons - Only for SCHEDULED and OVERDUE */}
       {isActionable && (
-        < div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+        <div className="flex gap-2 pt-2 border-t border-gray-100">
           <button
-            className="flex items-center gap-1 px-2.5 py-1 bg-[#10B981] hover:bg-emerald-600 text-white text-[10px] font-semibold rounded-md transition-colors"
-            onClick={async (e) => {                    // UPDATED
+            className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
+            onClick={async (e) => {
               e.stopPropagation();
               try {
                 await scheduleService.updateEventStatus(event.id, 'COMPLETED');
-                toast.success("Marked Completed");
-                // Optional: refresh parent
-                window.location.reload(); // or trigger refresh callback
+                toast.success("Marked as Completed");
+                window.location.reload();
               } catch (err) {
-                toast.error("Failed to update");
+                toast.error("Failed to mark completed");
               }
             }}
           >
-            Mark Completed
+            <Check className="w-4 h-4" />
+            Completed
           </button>
+
           <button
-            className="flex items-center gap-1 px-2.5 py-1 bg-[#EF4444] hover:bg-red-600 text-white text-[10px] font-semibold rounded-md transition-colors"
-            onClick={async (e) => {                    // UPDATED
+            className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
+            onClick={async (e) => {
               e.stopPropagation();
               try {
                 await scheduleService.updateEventStatus(event.id, 'CANCELLED');
-                toast.success("Marked Cancelled");
+                toast.success("Marked as Cancelled");
                 window.location.reload();
               } catch (err) {
-                toast.error("Failed to update");
+                toast.error("Failed to mark cancelled");
               }
             }}
           >
-            Mark Cancelled
+            <X className="w-4 h-4" />
+            Cancel
           </button>
         </div>
-      )
-      }
+      )}
+
+      {/* Reschedule Button - Always Visible */}
       <button
-        className="flex items-center gap-1 px-2.5 py-1 border border-gray-200 text-[10px] font-semibold text-[#6B7280] rounded-md hover:bg-gray-50 transition-colors"
+        className="w-full mt-3 text-[#0F47F2] hover:bg-[#F0F7FF] text-xs font-medium py-2 border border-[#E5E7EB] rounded-lg transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           onClick?.();
@@ -264,6 +276,6 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
       >
         Reschedule
       </button>
-    </div >
+    </div>
   );
 }
