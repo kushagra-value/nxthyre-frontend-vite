@@ -3,6 +3,8 @@ import { ChevronDown, Building2, Settings, LogOut, Check } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import organizationService, { Invitation } from '../../services/organizationService';
+import candidateService from '../../services/candidateService';
+import { showToast } from '../../utils/toast';
 
 interface HeaderProps {
   title: string;
@@ -33,6 +35,7 @@ export default function Header({ title, subtitle, onBreadcrumbNavigate }: Header
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [showPopup, setShowPopup] = useState(false);
   const [isLoadingInvites, setIsLoadingInvites] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -57,6 +60,21 @@ export default function Header({ title, subtitle, onBreadcrumbNavigate }: Header
     invitations.filter(invite => invite.status === "PENDING"),
     [invitations]
   );
+
+  const handleSync = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    const toastId = showToast.loading("Syncing Naukri emails...");
+    try {
+      await candidateService.syncNaukriEmails(1);
+      showToast.success("Successfully synced Naukri emails");
+    } catch (error: any) {
+      showToast.error(error.message || "Failed to sync Naukri emails");
+    } finally {
+      setIsSyncing(false);
+      showToast.dismiss(toastId);
+    }
+  };
 
   return (
     <header className="bg-white flex items-center justify-between px-6 shrink-0 relative" style={{ height: '88px', padding: '16px 24px' }}>
@@ -86,8 +104,16 @@ export default function Header({ title, subtitle, onBreadcrumbNavigate }: Header
 
         {/* Icon buttons */}
         <div className="flex items-start gap-2">
-          <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 transition-colors">
-            {RefreshIcon}
+          <button
+            onClick={handleSync}
+            disabled={isSyncing}
+            title="Sync Naukri emails to fetch new candidates manually"
+            className="h-10 px-4 flex items-center justify-center gap-2 rounded-full hover:bg-gray-50 transition-colors border border-gray-100 disabled:opacity-50 group"
+          >
+            <div className={`${isSyncing ? 'animate-spin text-blue-600' : 'text-gray-500 group-hover:text-blue-600'} transition-colors`}>
+              {RefreshIcon}
+            </div>
+            <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">Sync Naukri</span>
           </button>
 
           {isAuthenticated && !isLoadingInvites && (

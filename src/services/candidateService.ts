@@ -1215,6 +1215,17 @@ class CandidateService {
       throw error;
     }
   }
+
+  async syncNaukriEmails(days: number = 1): Promise<any> {
+    try {
+      const response = await apiClient.post(`/candidates/sync-naukri-emails-manual/?days=${days}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to sync Naukri emails",
+      );
+    }
+  }
 }
 
 export const candidateService = new CandidateService();
