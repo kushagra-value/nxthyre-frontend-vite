@@ -13,10 +13,16 @@ const MODE_BADGE: Record<string, { bg: string; text: string; label: string }> = 
   zoom: { bg: '#4CAF50', text: '#FFF', label: 'Zoom' },
   virtual: { bg: '#7C4DFF', text: '#FFF', label: 'Virtual' },
   f2f: { bg: '#FF9800', text: '#FFF', label: 'F2F' },
-  overdue: { bg: '#FF5722', text: '#FFF', label: 'Overdue' },
-  external: { bg: '#2196F3', text: '#FFF', label: 'External' },
-  bgv: { bg: '#E91E63', text: '#FFF', label: 'BGV' },
-  mock: { bg: '#9C27B0', text: '#FFF', label: 'Mock' },
+  EXTERNAL: { bg: '#2196F3', text: '#FFF', label: 'External' },
+  F2F: { bg: '#FF5722', text: '#FFF', label: 'F2F' },
+};
+
+const STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
+  SCHEDULED: { bg: '#10B981', text: '#FFF', label: 'Scheduled' },
+  COMPLETED: { bg: '#6B7280', text: '#FFF', label: 'Completed' },
+  CANCELLED: { bg: '#EF4444', text: '#FFF', label: 'Cancelled' },
+  OVERDUE: { bg: '#F59E0B', text: '#FFF', label: 'Overdue' },
+  // Add more as needed
 };
 
 function formatTo12h(time24: string): string {
@@ -166,23 +172,32 @@ export default function TodaysSidebar({ selectedDate, events, onEventClick, acti
 /* ─── Schedule Card ─── */
 
 function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () => void }) {
-  const badge = MODE_BADGE[event.mode] || MODE_BADGE.zoom;
+  const modeBadge = (event.mode && MODE_BADGE[event.mode]) || { bg: '#9CA3AF', text: '#FFF', label: event.mode || 'N/A' };
+  const statusBadge = (event.status && STATUS_BADGE[event.status]) || { bg: '#6B7280', text: '#FFF', label: event.status || 'Unknown' };
 
+  const isActionable = event.status ? ['SCHEDULED', 'OVERDUE'].includes(event.status) : false;
   return (
     <div
-      className="bg-white border border-gray-100 rounded-xl p-3 mb-2 cursor-pointer hover:shadow-sm transition-shadow"
+      className="bg-white border border-gray-100 rounded-xl p-3 mb-2 cursor-pointer hover:shadow-sm transition-all hover:border-gray-200"
       onClick={onClick}
     >
       {/* Top row: Round type + mode badge */}
-      <div className="flex items-center justify-between mb-1.5">
+      <div className="flex items-center justify-between mb-2.5">
         <span className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider">
           {event.title || 'Technical Round'}
         </span>
         <span
-          className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: badge.bg, color: badge.text }}
+          className="text-[10px] font-bold px-3 py-1 rounded-full tracking-wide"
+          style={{ backgroundColor: statusBadge.bg, color: statusBadge.text }}
         >
-          {badge.label}
+          {statusBadge.label}
+        </span>
+
+        <span
+          className="text-[9px] font-bold px-2.5 py-0.5 rounded-full"
+          style={{ backgroundColor: modeBadge.bg, color: modeBadge.text }}
+        >
+          {modeBadge.label}
         </span>
       </div>
 
@@ -204,50 +219,51 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
           {event.company}{event.position ? ` · ${event.position}` : ''}{event.experience ? ` · ${event.experience}` : ''}
         </p>
       )}
-
-      {/* Actions */}
-      <div className="flex items-center gap-2 mt-2">
-        <button 
-          className="flex items-center gap-1 px-2.5 py-1 bg-[#10B981] hover:bg-emerald-600 text-white text-[10px] font-semibold rounded-md transition-colors"
-          onClick={async (e) => {                    // UPDATED
-            e.stopPropagation();
-            try {
+      {isActionable && (
+        < div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+          <button
+            className="flex items-center gap-1 px-2.5 py-1 bg-[#10B981] hover:bg-emerald-600 text-white text-[10px] font-semibold rounded-md transition-colors"
+            onClick={async (e) => {                    // UPDATED
+              e.stopPropagation();
+              try {
                 await scheduleService.updateEventStatus(event.id, 'COMPLETED');
                 toast.success("Marked Completed");
                 // Optional: refresh parent
                 window.location.reload(); // or trigger refresh callback
-            } catch (err) {
+              } catch (err) {
                 toast.error("Failed to update");
-            }
-        }}
-        >
-          Mark Completed
-        </button>
-        <button 
-          className="flex items-center gap-1 px-2.5 py-1 bg-[#EF4444] hover:bg-red-600 text-white text-[10px] font-semibold rounded-md transition-colors"
-          onClick={async (e) => {                    // UPDATED
-            e.stopPropagation();
-            try {
+              }
+            }}
+          >
+            Mark Completed
+          </button>
+          <button
+            className="flex items-center gap-1 px-2.5 py-1 bg-[#EF4444] hover:bg-red-600 text-white text-[10px] font-semibold rounded-md transition-colors"
+            onClick={async (e) => {                    // UPDATED
+              e.stopPropagation();
+              try {
                 await scheduleService.updateEventStatus(event.id, 'CANCELLED');
                 toast.success("Marked Cancelled");
                 window.location.reload();
-            } catch (err) {
+              } catch (err) {
                 toast.error("Failed to update");
-            }
+              }
+            }}
+          >
+            Mark Cancelled
+          </button>
+        </div>
+      )
+      }
+      <button
+        className="flex items-center gap-1 px-2.5 py-1 border border-gray-200 text-[10px] font-semibold text-[#6B7280] rounded-md hover:bg-gray-50 transition-colors"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick?.();
         }}
-        >
-          Mark Cancelled
-        </button>
-        <button 
-          className="flex items-center gap-1 px-2.5 py-1 border border-gray-200 text-[10px] font-semibold text-[#6B7280] rounded-md hover:bg-gray-50 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick?.(); 
-          }}
-        >
-          Reschedule
-        </button>
-      </div>
-    </div>
+      >
+        Reschedule
+      </button>
+    </div >
   );
 }
