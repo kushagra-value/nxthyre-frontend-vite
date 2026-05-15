@@ -107,7 +107,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
       <div className="overflow-y-auto max-h-[314px] hide-scrollbar px-5 pb-5">
         <div className="relative flex flex-col gap-2.5">
           <div
-            className="absolute left-[72px] top-0 bottom-0 w-0"
+            className="absolute left-[112px] top-0 bottom-0 w-0"
             style={{ borderLeft: '1px dashed #D1D1D6' }}
           />
 
@@ -148,7 +148,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                   className={`flex items-center gap-2 relative ${!event.is_done ? 'cursor-pointer' : ''}`}
                   onClick={!event.is_done ? () => onEventClick?.(event, index) : undefined}
                 >
-                  <span className="w-[60px] shrink-0 text-sm font-normal text-[#4B5563] leading-5">
+                  <span className="w-[100px] shrink-0 text-xs font-normal text-nowrap text-[#4B5563] leading-5">
                     {ws.time}
                   </span>
 
