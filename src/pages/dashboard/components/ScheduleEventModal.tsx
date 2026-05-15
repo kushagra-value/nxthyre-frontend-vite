@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { ScheduleEventAPI } from '../../../services/dashboardService';
 import scheduleService from '../../../services/scheduleService';
 import toast from "react-hot-toast";
+import { Check, X } from 'lucide-react';
 
 interface ScheduleEventModalProps {
     isOpen?: boolean;
@@ -186,10 +187,10 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                                         {/* ─── Footer Actions ─── */}
                     <div className="flex flex-col justify-center items-start shrink-0" style={{ padding: '24px 27px', gap: 12, borderTop: '0.5px solid #AEAEB2' }}>
                         {(() => {
+                            // UPDATED: Robust status detection
                             const status = (details.status || event.status || 'SCHEDULED').toUpperCase();
                             const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status);
 
-                            // Status Badge Config
                             const statusConfig = {
                                 SCHEDULED: { bg: '#10B981', text: '#FFF', label: 'Scheduled' },
                                 OVERDUE:   { bg: '#F59E0B', text: '#FFF', label: 'Overdue' },
@@ -200,10 +201,13 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                             return (
                                 <>
                                     {/* Status Badge - Always Visible */}
-                                    <div className="flex justify-center mb-1">
+                                    <div className="flex justify-center mb-3">
                                         <span
-                                            className="text-sm font-bold px-4 py-1.5 rounded-full tracking-wide"
-                                            style={{ backgroundColor: statusConfig.bg, color: statusConfig.text }}
+                                            className="text-sm font-bold px-5 py-2 rounded-full tracking-wide shadow-sm"
+                                            style={{ 
+                                                backgroundColor: statusConfig.bg, 
+                                                color: statusConfig.text 
+                                            }}
                                         >
                                             {statusConfig.label}
                                         </span>
@@ -211,10 +215,10 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
 
                                     {/* Primary Action Buttons - Only for Scheduled & Overdue */}
                                     {isActionable && (
-                                        <div className="flex items-center justify-between w-full" style={{ gap: 10 }}>
+                                        <div className="flex items-center justify-between w-full gap-3 mb-4">
                                             <button
-                                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all"
-                                                style={{ height: 42, background: '#10B981', borderRadius: 6, padding: '10px' }}
+                                                className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all py-3 rounded-lg"
+                                                style={{ background: '#10B981' }}
                                                 onClick={async () => {
                                                     try {
                                                         await scheduleService.updateEventStatus(event.id, 'COMPLETED');
@@ -225,11 +229,13 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                                                     }
                                                 }}
                                             >
+                                                <Check className="w-4 h-4" />
                                                 Mark Completed
                                             </button>
+
                                             <button
-                                                className="flex-1 flex items-center justify-center text-sm font-normal text-white cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all"
-                                                style={{ height: 42, background: '#EF4444', borderRadius: 6, padding: '10px' }}
+                                                className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all py-3 rounded-lg"
+                                                style={{ background: '#EF4444' }}
                                                 onClick={async () => {
                                                     try {
                                                         await scheduleService.updateEventStatus(event.id, 'CANCELLED');
@@ -240,16 +246,17 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                                                     }
                                                 }}
                                             >
+                                                <X className="w-4 h-4" />
                                                 Mark Cancelled
                                             </button>
                                         </div>
                                     )}
 
-                                    {/* Secondary buttons - Always visible */}
-                                    <div className="flex items-center justify-between w-full" style={{ gap: 10 }}>
+                                    {/* Secondary Buttons - Always Visible */}
+                                    <div className="flex items-center justify-between w-full gap-3">
                                         <button
                                             className="flex-1 flex items-center justify-center text-sm font-normal cursor-pointer bg-transparent hover:bg-gray-50 transition-colors"
-                                            style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2', lineHeight: '17px' }}
+                                            style={{ height: 42, border: '0.5px solid #0F47F2', borderRadius: 6, gap: 6, color: '#0F47F2' }}
                                             onClick={() => {
                                                 if (details.candidate_id) {
                                                     const jobIdParam = details.job_id;
@@ -260,40 +267,24 @@ const ScheduleEventModal: React.FC<ScheduleEventModalProps> = ({
                                                 }
                                             }}
                                         >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                                <circle cx="12" cy="10" r="3.5" stroke="#0F47F2" strokeWidth="1.5" />
-                                                <path d="M5.5 19.5C5.5 16.5 8.5 14.5 12 14.5C15.5 14.5 18.5 16.5 18.5 19.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                                <circle cx="12" cy="12" r="10" stroke="#0F47F2" strokeWidth="1.5" />
-                                            </svg>
                                             View Profile
                                         </button>
+
                                         <button
                                             className="flex-1 flex items-center justify-center text-sm font-normal cursor-pointer bg-transparent hover:bg-gray-50 transition-colors"
-                                            style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2', lineHeight: '17px' }}
+                                            style={{ height: 42, border: '0.5px solid #0F47F2', borderRadius: 6, gap: 6, color: '#0F47F2' }}
                                         >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                                <rect x="3" y="4" width="18" height="18" rx="2" stroke="#0F47F2" strokeWidth="1.5" />
-                                                <path d="M8 2V5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                                <path d="M16 2V5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                                <path d="M3 9H21" stroke="#0F47F2" strokeWidth="1.5" />
-                                                <path d="M14.5 14L18 17.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                                <path d="M18 14L14.5 17.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                            </svg>
                                             Reschedule
                                         </button>
+
                                         <button
                                             className="flex-1 flex items-center justify-center text-sm font-normal cursor-pointer bg-transparent hover:bg-gray-50 transition-colors"
-                                            style={{ height: 37, border: '0.5px solid #0F47F2', borderRadius: 5, padding: 10, gap: 5, color: '#0F47F2', lineHeight: '17px' }}
+                                            style={{ height: 42, border: '0.5px solid #0F47F2', borderRadius: 6, gap: 6, color: '#0F47F2' }}
                                             onClick={() => {
                                                 sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: callCandidateData }));
                                                 window.location.href = `/call/${callCandidateData.id}/${details.job_id || 0}?mode=manual`;
                                             }}
                                         >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                                <path d="M14.5 2C14.5 2 16.5 2.5 19 5C21.5 7.5 22 9.5 22 9.5" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                                <path d="M14.5 5.5C14.5 5.5 15.5 6 17 7.5C18.5 9 19 10 19 10" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" />
-                                                <path d="M22 16.92V19.92C22 20.97 21.18 21.85 20.13 21.97C19.05 22.1 16.8 22 14 20C11.51 18.22 9.37 16.08 7.78 13.78C5.69 10.96 5.5 8.78 5.5 7.5C5.5 5.5 7 4 8.5 4C9 4 9.5 4.5 10 5L11.5 7.5C12 8.5 11 9.5 10.5 10C10 10.5 10 11 11 12.5C12 14 13 15 14.5 14C15 13.5 16 12.5 17 13L19.5 14.5C20.5 15 21 15.5 21 16C21.5 16.25 22 16.42 22 16.92Z" stroke="#0F47F2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
                                             Call Candidate
                                         </button>
                                     </div>
