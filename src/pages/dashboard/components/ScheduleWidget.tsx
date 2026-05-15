@@ -131,14 +131,12 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
               No scheduled events
             </div>
           ) : (
-                        events.map((event, index) => {
+            events.map((event, index) => {
               const ws = event.widget_summary;
               const config = colorConfig[ws.color_theme] || colorConfig.cyan;
 
-              // FINAL: Direct status from API + fallback + uppercase
               const rawStatus = event.status || ws.status || 'SCHEDULED';
               const status = rawStatus.toUpperCase();
-
               const statusConfig = STATUS_BADGE_CONFIG[status] ||
                 { bg: '#6B7280', text: '#FFF', label: rawStatus };
 
@@ -147,30 +145,36 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
               return (
                 <div
                   key={event.id}
-                  className={`flex items-center gap-2 relative ${!event.is_done ? 'cursor-pointer' : ''}`}
+                  className={`flex items-start gap-3 relative ${!event.is_done ? 'cursor-pointer' : ''}`}
                   onClick={!event.is_done ? () => onEventClick?.(event, index) : undefined}
                 >
-                  <span className="w-[100px] shrink-0 text-xs text-nowrap font-normal text-[#4B5563] leading-5">
+                  {/* Time */}
+                  <span className="w-[100px] shrink-0 text-xs font-medium text-[#4B5563] leading-5 pt-1">
                     {ws.time}
                   </span>
 
-                  <div
-                    className="w-2 h-2 rounded-full shrink-0 relative z-10"
-                    style={{ backgroundColor: config.dot }}
-                  />
+                  {/* Timeline Dot */}
+                  <div className="relative z-10 mt-1.5">
+                    <div
+                      className="w-3 h-3 rounded-full border-2 border-white"
+                      style={{ backgroundColor: config.dot }}
+                    />
+                  </div>
 
+                  {/* Event Card */}
                   <div
-                    className="flex-1 rounded-md p-3 relative"
+                    className="flex-1 rounded-xl p-4 relative"
                     style={{ backgroundColor: config.bg }}
                   >
-                    {/* Type + Status Badge */}
+                    {/* Top Row: Round Title + Status Badge */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-normal text-[#4B5563]">
-                        {ws.type}
+                      <span className="text-sm font-medium text-[#1F2937]">
+                        {ws.type || event.title || 'Interview Round'}
                       </span>
 
+                      {/* Status Badge - Top Right */}
                       <span
-                        className="text-[10px] font-bold px-3 py-1 rounded-full tracking-wide"
+                        className="text-xs font-bold px-3 py-1 rounded-full tracking-wide shadow-sm"
                         style={{
                           backgroundColor: statusConfig.bg,
                           color: statusConfig.text
@@ -180,33 +184,33 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                       </span>
                     </div>
 
-                    {/* Candidate Name + Location */}
-                    <div className="flex items-center justify-between mt-1">
+                    {/* Candidate Name */}
+                    <h4 className="text-lg font-semibold text-[#1F2937] mb-1">
+                      {ws.name || event.candidate_name}
+                    </h4>
+
+                    {/* Company | Role | Experience */}
+                    <p className="text-sm text-[#4B5563] mb-3">
+                      {ws.details || `${event.candidate_company || ''} | ${event.candidate_position || ''} | ${event.candidate_experience || ''}`}
+                    </p>
+
+                    {/* Mode Badge */}
+                    <div className="flex justify-end mb-4">
                       <span
-                        className="text-sm font-medium leading-[17px]"
-                        style={{ color: config.nameColor }}
-                      >
-                        {ws.name}
-                      </span>
-                      <span
-                        className="px-2 py-1 text-[10px] font-normal leading-3 rounded-[5px]"
+                        className="text-xs font-medium px-3 py-1 rounded-full"
                         style={{
-                          backgroundColor: config.badgeBg,
-                          color: config.badgeText,
+                          backgroundColor: '#FFFFFF',
+                          color: '#374151',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                         }}
                       >
-                        {ws.location}
+                        {event.mode || 'Virtual'}
                       </span>
                     </div>
 
-                    {/* Details */}
-                    <span className="text-[10px] font-normal text-[#4B5563] leading-3 block mt-2">
-                      {ws.details}
-                    </span>
-
-                    {/* Conditional Buttons - Only for SCHEDULED & OVERDUE */}
+                    {/* Conditional Action Buttons */}
                     {isActionable && (
-                      <div className="flex gap-2 mt-4 pt-3 border-t border-white/60">
+                      <div className="flex gap-2 pt-3 border-t border-white/60">
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
@@ -218,10 +222,10 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                               toast.error("Failed to update");
                             }
                           }}
-                          className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
+                          className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-all"
                         >
                           <Check className="w-4 h-4" />
-                          Completed
+                          Mark Completed
                         </button>
 
                         <button
@@ -235,7 +239,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                               toast.error("Failed to update");
                             }
                           }}
-                          className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all"
+                          className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-all"
                         >
                           <X className="w-4 h-4" />
                           Cancel

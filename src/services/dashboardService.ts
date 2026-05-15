@@ -425,6 +425,12 @@ export interface ScheduleModalDetails {
 }
 
 export interface ScheduleEventAPI {
+  candidate_experience: string;
+  candidate_position: string;
+  mode: string;
+  candidate_company: string;
+  candidate_name: string;
+  title: string;
   id: string;
   status: 'completed' | 'in-progress' | 'upcoming';
   is_done: boolean;
