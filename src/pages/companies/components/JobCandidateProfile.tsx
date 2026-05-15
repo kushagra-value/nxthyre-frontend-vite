@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Mail,
   Download,
@@ -41,6 +41,8 @@ import {
   CallHistoryEntry,
 } from "../../../services/jobPipelineDashboardService";
 import { EventForm } from "../../schedules/components/EventForm";
+import QuickFitSummaryProgress from "./QuickFitSummaryProgress";
+import CallScreeningRoleQuestions from "./CallScreeningRoleQuestions";
 
 // ─── Interfaces ────────────────────────────────────────────
 
@@ -160,6 +162,10 @@ export default function JobCandidateProfile({
   const [notesView, setNotesView] = useState<"my" | "community">("my");
   const [newComment, setNewComment] = useState("");
   const [isLoadingNotes, setIsLoadingNotes] = useState(false);
+
+  // ── Questions Analysis State ──────────────────────────────
+  const [questionsAnalysisData, setQuestionsAnalysisData] = useState<any>(null);
+  const [isLoadingQuestionsAnalysis, setIsLoadingQuestionsAnalysis] = useState(false);
 
   const openFeedbackModal = (action: {
     type: "archive" | "unarchive" | "move";
@@ -300,6 +306,19 @@ export default function JobCandidateProfile({
       .finally(() => setLoadingCalls(false));
   }, [cand.id, activeTab]);
 
+  // ── Fetch Questions Analysis ──────────────────────────────
+  useEffect(() => {
+    if (!cand.id || !jobId) return;
+    setIsLoadingQuestionsAnalysis(true);
+    candidateService
+      .getCandidateQuestionsAnalysis(cand.id, jobId)
+      .then((data) => setQuestionsAnalysisData(data))
+      .catch((err) => {
+        console.error("Error fetching questions analysis:", err);
+      })
+      .finally(() => setIsLoadingQuestionsAnalysis(false));
+  }, [cand.id, jobId]);
+
   // ── Fetch Notes ──────────────────────────────────────────
   useEffect(() => {
     if (!cand.id || activeTab !== "notes") return;
@@ -317,6 +336,8 @@ export default function JobCandidateProfile({
       setIsLoadingNotes(false);
     }
   };
+
+  console.log("check here we are geting the data",questionsAnalysisData)
 
   const handleAddNote = async () => {
     if (!newComment.trim() || !cand.id) return;
@@ -481,6 +502,58 @@ export default function JobCandidateProfile({
   ].filter((e) => e.score > 0);
 
   // ── Job title for display ────────────────────────────────
+
+  const skillAssessmentItems = useMemo(() => {
+    if (!questionsAnalysisData?.questions || questionsAnalysisData.questions.length === 0) {
+      return [];
+    }
+
+    let totalAccuracy = 0, validAccuracy = 0;
+    let totalClarity = 0, validClarity = 0;
+    let totalCompleteness = 0, validCompleteness = 0;
+    let totalDepth = 0, validDepth = 0;
+
+    questionsAnalysisData.questions.forEach((q: any) => {
+      const a = q.analysis;
+      if (a) {
+        if (typeof a.ai_accuracy_score === 'number') { totalAccuracy += a.ai_accuracy_score; validAccuracy++; }
+        if (typeof a.ai_clarity_score === 'number') { totalClarity += a.ai_clarity_score; validClarity++; }
+        if (typeof a.ai_completeness_score === 'number') { totalCompleteness += a.ai_completeness_score; validCompleteness++; }
+        if (typeof a.ai_depth_score === 'number') { totalDepth += a.ai_depth_score; validDepth++; }
+      }
+    });
+
+    const getSkillLabel = (score: number): { description: string, color: "green" | "blue" | "orange" | "red" } => {
+      if (score >= 80) return { description: "Excellent", color: "green" };
+      if (score >= 70) return { description: "Good", color: "blue" };
+      if (score >= 60) return { description: "Average", color: "orange" };
+      return { description: "Needs Improvement", color: "red" };
+    };
+
+    const items: { label: string, score: number, description: string, color: "green" | "blue" | "orange" | "red" }[] = [];
+    if (validAccuracy > 0) {
+      const score = Math.round(totalAccuracy / validAccuracy);
+      const { description, color } = getSkillLabel(score);
+      items.push({ label: "Accuracy", score, description, color });
+    }
+    if (validClarity > 0) {
+      const score = Math.round(totalClarity / validClarity);
+      const { description, color } = getSkillLabel(score);
+      items.push({ label: "Clarity", score, description, color });
+    }
+    if (validCompleteness > 0) {
+      const score = Math.round(totalCompleteness / validCompleteness);
+      const { description, color } = getSkillLabel(score);
+      items.push({ label: "Completeness", score, description, color });
+    }
+    if (validDepth > 0) {
+      const score = Math.round(totalDepth / validDepth);
+      const { description, color } = getSkillLabel(score);
+      items.push({ label: "Depth", score, description, color });
+    }
+
+    return items;
+  }, [questionsAnalysisData]);
 
   const jobTitle = candidate?.job?.title || contextualDetails?.job_title || "";
 
@@ -734,7 +807,7 @@ export default function JobCandidateProfile({
                           resumeUrl: premiumData.resume_url || cand.resume_url || "",
                         };
                         const candidateIds = candidateList?.map(c => c?.candidate?.id || c?.id).filter(Boolean) || [];
-                        sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ 
+                        sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({
                           candidate: callData,
                           candidateList: candidateIds.length > 0 ? candidateIds : [cand.id]
                         }));
@@ -1149,32 +1222,36 @@ export default function JobCandidateProfile({
         )}
 
         {/* ── Quick Fit Summary (Signals) ── */}
-        {quickFitSummary.length > 0 && (
+        {(quickFitSummary.length > 0 || skillAssessmentItems.length > 0) && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
             <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
               QUICK FIT SUMMARY
             </h3>
-            <div className="flex flex-wrap gap-3">
-              {quickFitSummary.map((item: any, i: number) => {
-                const colorMap: Record<
-                  string,
-                  { bg: string; border: string; text: string }
-                > = {
-                  green: { bg: "#EBFFEE", border: "#DEF7EC", text: "#009951" },
-                  yellow: { bg: "#FFF7D6", border: "#FDE047", text: "#92400E" },
-                  red: { bg: "#FEE9E7", border: "#FECACA", text: "#DC2626" },
-                };
-                const c = colorMap[item.color] || colorMap.green;
-                return (
-                  <div
-                    key={i}
-                    className="text-xs font-bold bg-[#F5F9FB] px-3 py-1.5 rounded-lg flex items-center gap-1.5 "
-                    style={{
-                      color: c.text,
-                    }}
-                    title={item.evidence}
-                  >
-                    {item.badge}
+
+            {/* Badges Section */}
+            {quickFitSummary.length > 0 && (
+            <div className={skillAssessmentItems.length > 0 ? "mb-8 pb-8 border-b border-[#E5E7EB]" : ""}>
+              <div className="flex flex-wrap gap-3">
+                {quickFitSummary.map((item: any, i: number) => {
+                  const colorMap: Record<
+                    string,
+                    { bg: string; border: string; text: string }
+                  > = {
+                    green: { bg: "#EBFFEE", border: "#DEF7EC", text: "#009951" },
+                    yellow: { bg: "#FFF7D6", border: "#FDE047", text: "#92400E" },
+                    red: { bg: "#FEE9E7", border: "#FECACA", text: "#DC2626" },
+                  };
+                  const c = colorMap[item.color] || colorMap.green;
+                  return (
+                    <div
+                      key={i}
+                      className="text-xs font-bold bg-[#F5F9FB] px-3 py-1.5 rounded-lg flex items-center gap-1.5 "
+                      style={{
+                        color: c.text,
+                      }}
+                      title={item.evidence}
+                    >
+                      {item.badge}
 
                     {item.color === "green" && (
                       <svg
@@ -1248,8 +1325,45 @@ export default function JobCandidateProfile({
                   </div>
                 );
               })}
+              </div>
             </div>
+            )}
+
+            {/* Progress Bars Section */}
+            {skillAssessmentItems.length > 0 && (
+            <div>
+              <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
+                Skill Assessment
+              </h4>
+              <QuickFitSummaryProgress
+                items={skillAssessmentItems}
+              />
+            </div>
+            )}
           </div>
+        )}
+
+        {/* ── Call Screening · Role Questions ── */}
+        {(isLoadingQuestionsAnalysis || (questionsAnalysisData?.questions && questionsAnalysisData.questions.length > 0)) && (
+          <CallScreeningRoleQuestions
+            isLoading={isLoadingQuestionsAnalysis}
+            stats={{
+              convinced: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "convinced").length || 0,
+              notConvinced: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "not_convinced").length || 0,
+              skipped: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "skipped").length || 0,
+              totalAnswered: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "convinced" || q.analysis?.status === "not_convinced").length || 0,
+              totalQuestions: questionsAnalysisData?.questions?.length || 0,
+            }}
+            questions={questionsAnalysisData?.questions?.map((q: any, i: number) => ({
+              id: i,
+              question: q.question_text,
+              lookFor: q.analysis?.ideal_answer_concept,
+              status: q.analysis?.status,
+              aiScore: q.analysis?.ai_score_percentage,
+              aiAnswerSummary: q.analysis?.ai_evaluation_summary,
+            })) || []}
+            followUpSuggestions={[]}
+          />
         )}
 
         {/* ── Additional AI Sections ── */}
@@ -2051,8 +2165,8 @@ export default function JobCandidateProfile({
                   </div>
                 ) : (
                   callHistory.map((call) => {
-                    const hasInteraction = 
-                      !!call.note || 
+                    const hasInteraction =
+                      !!call.note ||
                       (call.tags && call.tags.length > 0) ||
                       (call.skills_data && Object.keys(call.skills_data).length > 0) ||
                       (call.checklist_data && Object.values(call.checklist_data).some(v => v === true));
@@ -2093,7 +2207,7 @@ export default function JobCandidateProfile({
                                     on {formatTime(call.created_at)}
                                   </p>
                                   <p className="text-[11px] text-[#AEAEB2] mt-0.5">
-                                    {call.duration_seconds > 0 
+                                    {call.duration_seconds > 0
                                       ? formatDuration(call.duration_seconds)
                                       : (call.call_mode === "manual" ? "Manual Mode" : "Platform Mode")}
                                   </p>
@@ -2104,8 +2218,8 @@ export default function JobCandidateProfile({
                               {call.role_questions_data && (
                                 <div className="flex flex-col items-end">
                                   {(() => {
-                                    const questions = Array.isArray(call.role_questions_data) 
-                                      ? call.role_questions_data 
+                                    const questions = Array.isArray(call.role_questions_data)
+                                      ? call.role_questions_data
                                       : Object.values(call.role_questions_data);
                                     const scored = questions.filter((q: any) => q.status === 'convinced' || q.status === 'not_convinced');
                                     if (scored.length === 0) return null;
@@ -2135,7 +2249,7 @@ export default function JobCandidateProfile({
                                     </p>
                                   </div>
                                 )}
-                                
+
                                 {call.tags && call.tags.length > 0 && (
                                   <div>
                                     <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-2 tracking-widest">Tags</h5>
@@ -2177,8 +2291,8 @@ export default function JobCandidateProfile({
                                 </h5>
                                 <div className="flex flex-wrap items-center gap-2">
                                   {(() => {
-                                    const questions = Array.isArray(call.role_questions_data) 
-                                      ? call.role_questions_data 
+                                    const questions = Array.isArray(call.role_questions_data)
+                                      ? call.role_questions_data
                                       : Object.values(call.role_questions_data);
                                     const counts = { convinced: 0, not_convinced: 0, skipped: 0 };
                                     questions.forEach((q: any) => {
@@ -2188,7 +2302,7 @@ export default function JobCandidateProfile({
                                     });
                                     const total = counts.convinced + counts.not_convinced + counts.skipped;
                                     if (total === 0) return <span className="text-xs text-slate-400 italic">No evaluations recorded</span>;
-                                    
+
                                     return (
                                       <>
                                         {counts.convinced > 0 && (
