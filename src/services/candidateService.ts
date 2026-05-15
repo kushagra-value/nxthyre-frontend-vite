@@ -506,6 +506,30 @@ export interface AnalyzeResponse {
   bool_query_used: string;
 }
 
+export interface CandidateQuestionsAnalysisResponse {
+  candidate_id: string;
+  job_id: string;
+  analysed: boolean;
+  ai_score_percentage: number | null;
+  ai_accuracy_score: number | null;
+  ai_clarity_score: number | null;
+  ai_completeness_score: number | null;
+  ai_depth_score: number | null;
+  questions: {
+    question_text: string;
+    analysis: {
+      ai_score_percentage: number | null;
+      ai_accuracy_score: number | null;
+      ai_clarity_score: number | null;
+      ai_completeness_score: number | null;
+      ai_depth_score: number | null;
+      ai_evaluation_summary: string | null;
+      status: "pending" | "convinced" | "not_convinced" | "skipped";
+      ideal_answer_concept: string | null;
+    };
+  }[];
+}
+
 class CandidateService {
   async getCandidates(
     filters: any,
@@ -1217,6 +1241,33 @@ class CandidateService {
   }
 
   async syncNaukriEmails(days: number = 1): Promise<any> {
+    try {
+      const response = await apiClient.post(`/candidates/sync-naukri-emails-manual/?days=${days}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to sync Naukri emails",
+      );
+    }
+  }
+
+  async getCandidateQuestionsAnalysis(
+    candidateId: string | number,
+    jobId: string | number,
+  ): Promise<CandidateQuestionsAnalysisResponse> {
+    try {
+      const response = await apiClient.get(
+        `/candidates/${candidateId}/questions-analysis/?job_id=${jobId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidate questions analysis"
+        );
+    }
+    }
+  
+  async NaukriEmails(days: number = 1): Promise<any> {
     try {
       const response = await apiClient.post(`/candidates/sync-naukri-emails-manual/?days=${days}`);
       return response.data;
