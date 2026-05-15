@@ -149,7 +149,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                   className={`flex items-center gap-2 relative ${!event.is_done ? 'cursor-pointer' : ''}`}
                   onClick={!event.is_done ? () => onEventClick?.(event, index) : undefined}
                 >
-                  <span className="w-[60px] shrink-0 text-sm font-normal text-[#4B5563] leading-5">
+                  <span className="w-[100px] shrink-0 text-xs text-nowrap font-normal text-[#4B5563] leading-5">
                     {ws.time}
                   </span>
 
