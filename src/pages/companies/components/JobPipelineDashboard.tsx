@@ -366,7 +366,7 @@ export default function JobPipelineDashboard({
   const [uploadStatus, setUploadStatus] = useState<any | null>(null);
   const [uploadHistory, setUploadHistory] = useState<any[]>([]);
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Stages
   const [stages, setStages] = useState<Stage[]>([]);
