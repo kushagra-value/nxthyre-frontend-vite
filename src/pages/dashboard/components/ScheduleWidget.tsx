@@ -166,15 +166,10 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     className="flex-1 rounded-xl p-4 relative"
                     style={{ backgroundColor: config.bg }}
                   >
-                    {/* Top Row: Round Title + Status Badge */}
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-[#1F2937]">
-                        {ws.type || event.title || 'Interview Round'}
-                      </span>
-
-                      {/* Status Badge - Top Right */}
+                    {/* Top Right: Status Badge */}
+                    <div className="absolute top-4 right-4">
                       <span
-                        className="text-xs font-bold px-3 py-1 rounded-full tracking-wide shadow-sm"
+                        className="text-xs font-bold px-3 py-1 rounded-full tracking-wide"
                         style={{
                           backgroundColor: statusConfig.bg,
                           color: statusConfig.text
@@ -184,48 +179,45 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                       </span>
                     </div>
 
+                    {/* Round Title */}
+                    <span className="text-sm font-medium text-[#1F2937] block">
+                      {ws.type || event.title || 'Interview Round'}
+                    </span>
+
                     {/* Candidate Name */}
-                    <h4 className="text-lg font-semibold text-[#1F2937] mb-1">
+                    <h4 className="text-lg font-semibold text-[#1F2937] mt-1 mb-1">
                       {ws.name || event.candidate_name}
                     </h4>
 
-                    {/* Company | Role | Experience */}
-                    <p className="text-sm text-[#4B5563] mb-3">
+                    {/* Details */}
+                    <p className="text-sm text-[#4B5563]">
                       {ws.details || `${event.candidate_company || ''} | ${event.candidate_position || ''} | ${event.candidate_experience || ''}`}
                     </p>
 
-                    {/* Mode Badge */}
-                    <div className="flex justify-end mb-4">
-                      <span
-                        className="text-xs font-medium px-3 py-1 rounded-full"
-                        style={{
-                          backgroundColor: '#FFFFFF',
-                          color: '#374151',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                        }}
-                      >
+                    {/* Bottom Right: Mode Tag */}
+                    <div className="absolute bottom-4 right-4">
+                      <span className="text-xs font-medium px-3 py-1 bg-white/80 rounded-full">
                         {event.mode || 'Virtual'}
                       </span>
                     </div>
 
-                    {/* Conditional Action Buttons */}
+                    {/* Minimal Action Buttons - Right Side */}
                     {isActionable && (
-                      <div className="flex gap-2 pt-3 border-t border-white/60">
+                      <div className="flex gap-2 absolute bottom-4 right-28">
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
                             try {
                               await scheduleService.updateEventStatus(event.id, 'COMPLETED');
-                              toast.success("Marked as Completed");
+                              toast.success("Completed");
                               window.location.reload();
                             } catch (err) {
-                              toast.error("Failed to update");
+                              toast.error("Failed");
                             }
                           }}
-                          className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-all"
+                          className="w-8 h-8 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all"
                         >
                           <Check className="w-4 h-4" />
-                          Mark Completed
                         </button>
 
                         <button
@@ -233,16 +225,15 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                             e.stopPropagation();
                             try {
                               await scheduleService.updateEventStatus(event.id, 'CANCELLED');
-                              toast.success("Marked as Cancelled");
+                              toast.success("Cancelled");
                               window.location.reload();
                             } catch (err) {
-                              toast.error("Failed to update");
+                              toast.error("Failed");
                             }
                           }}
-                          className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-all"
+                          className="w-8 h-8 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all"
                         >
                           <X className="w-4 h-4" />
-                          Cancel
                         </button>
                       </div>
                     )}
