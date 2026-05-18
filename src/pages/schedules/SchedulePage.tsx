@@ -206,6 +206,13 @@ export default function SchedulePage() {
       id: ev.id,
       status: ev.status,
       is_done: ev.status === 'completed',
+      stage: { name: ev.title },
+      candidate_experience: ev.experience,
+      candidate_position: ev.position,
+      mode: ev.mode,
+      candidate_company: ev.company,
+      candidate_name: ev.candidateName,
+      title: ev.title,
       widget_summary: {
         time: `${ev.startTime} – ${ev.endTime}`,
         type: ev.title || 'Interview',

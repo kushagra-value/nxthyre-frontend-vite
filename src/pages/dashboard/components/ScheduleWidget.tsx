@@ -191,7 +191,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
 
                     {/* Subtitle */}
                     <p className="text-sm text-[#4B5563] mb-4">
-                      {ws.details || `${event.candidate_company || ''} | ${event.candidate_position || ''}`}
+                      {[event.candidate_company, event.candidate_position].filter(Boolean).join(' | ') || ws.details || '-'}
                     </p>
 
                     {/* Bottom Row: Mode + Action Buttons */}
