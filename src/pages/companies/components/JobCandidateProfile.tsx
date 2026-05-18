@@ -575,7 +575,7 @@ export default function JobCandidateProfile({
     );
   }
 
-  // ── Job title for display ────────────────────────────────
+  // ── Job title  display  ────────────────────────────────
 
   const jobTitle = candidate?.job?.title || contextualDetails?.job_title || "";
 
