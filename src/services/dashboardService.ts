@@ -375,6 +375,7 @@ export interface ScheduleWidgetSummary {
   status: string;
   time: string;
   type: string;
+  interview_type: string;
   name: string;
   details: string;
   location: string;
@@ -653,6 +654,7 @@ class DashboardService {
           widget_summary: {
             time: `${formatTime(start)} – ${formatTime(end)}`,
             type: ev.title || 'Interview',
+            interview_type: ev.stage?.name,
             name: ev.candidate_name || 'Unknown',
             details: ev.candidate_position || '',
             location: ev.location_type || 'virtual',

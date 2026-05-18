@@ -181,7 +181,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
 
                     {/* Title */}
                     <p className="text-sm font-medium text-[#1F2937] mb-1">
-                      {ws.type || event.stage?.name || '-'}
+                      {ws.interview_type || event.stage?.name || '-'}
                     </p>
 
                     {/* Candidate Name */}
