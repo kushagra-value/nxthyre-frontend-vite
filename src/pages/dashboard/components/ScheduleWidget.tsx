@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { ScheduleEventAPI } from '../../../services/dashboardService';
+import { Check, X } from "lucide-react";
+import scheduleService from '../../../services/scheduleService';
+import toast from "react-hot-toast";
 
 const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; badgeBg: string; badgeText: string }> = {
   grey: {
@@ -31,6 +34,13 @@ const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; 
     badgeBg: 'rgba(255, 255, 255, 0.55)',
     badgeText: '#000000',
   },
+};
+
+const STATUS_BADGE_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
+  SCHEDULED: { bg: '#10B981', text: '#FFF', label: 'Scheduled' },
+  OVERDUE: { bg: '#F59E0B', text: '#FFF', label: 'Overdue' },
+  COMPLETED: { bg: '#6B7280', text: '#FFF', label: 'Completed' },
+  CANCELLED: { bg: '#EF4444', text: '#FFF', label: 'Cancelled' },
 };
 
 export type ScheduleFilterLabel = 'Today' | 'Tomorrow' | 'Upcoming' | 'Past';
@@ -81,11 +91,10 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     onFilterChange(opt);
                     setShowFilterDropdown(false);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm transition-colors ${
-                    opt === activeFilter
-                      ? 'bg-[#E7EDFF] text-[#0F47F2] font-medium'
-                      : 'text-[#4B5563] hover:bg-[#F3F5F7]'
-                  }`}
+                  className={`w-full px-3 py-2 text-left text-sm transition-colors ${opt === activeFilter
+                    ? 'bg-[#E7EDFF] text-[#0F47F2] font-medium'
+                    : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                    }`}
                 >
                   {opt}
                 </button>
@@ -98,7 +107,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
       <div className="overflow-y-auto max-h-[314px] hide-scrollbar px-5 pb-5">
         <div className="relative flex flex-col gap-2.5">
           <div
-            className="absolute left-[72px] top-0 bottom-0 w-0"
+            className="absolute left-[112px] top-0 bottom-0 w-0"
             style={{ borderLeft: '1px dashed #D1D1D6' }}
           />
 
@@ -124,50 +133,110 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
           ) : (
             events.map((event, index) => {
               const ws = event.widget_summary;
-              const config = colorConfig[ws.color_theme] || colorConfig.cyan;
+              const config = colorConfig[ws.color_theme] || colorConfig.orange; // Default to orange for overdue look
+
+              const rawStatus = event.status || ws.status || 'SCHEDULED';
+              const status = rawStatus.toUpperCase();
+              const statusConfig = STATUS_BADGE_CONFIG[status] ||
+                { bg: '#F59E0B', text: '#FFF', label: rawStatus };
+
+              const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status);
 
               return (
                 <div
                   key={event.id}
-                  className={`flex items-center gap-2 relative ${!event.is_done ? 'cursor-pointer' : ''}`}
+                  className={`flex items-start gap-3 relative ${!event.is_done ? 'cursor-pointer' : ''}`}
                   onClick={!event.is_done ? () => onEventClick?.(event, index) : undefined}
                 >
-                  <span className="w-[60px] shrink-0 text-sm font-normal text-[#4B5563] leading-5">
+                  {/* Time */}
+                  <span className="w-[100px] shrink-0 text-xs font-medium text-[#4B5563] leading-5 pt-1 text-right">
                     {ws.time}
                   </span>
 
-                  <div
-                    className="w-2 h-2 rounded-full shrink-0 relative z-10"
-                    style={{ backgroundColor: config.dot }}
-                  />
+                  {/* Timeline Dot */}
+                  <div className="relative z-10 mt-2">
+                    <div
+                      className="w-3 h-3 rounded-full border-2 border-white"
+                      style={{ backgroundColor: config.dot }}
+                    />
+                  </div>
 
+                  {/* Event Card - Orange/Peach Style */}
                   <div
-                    className="flex-1 rounded-md p-2.5 relative"
-                    style={{ backgroundColor: config.bg }}
+                    className="flex-1 rounded-2xl p-4 relative shadow-sm"
+                    style={{ backgroundColor: '#FFEDD5' }}   // Light orange/peach
                   >
-                    <span className="text-[10px] font-normal text-[#4B5563] leading-3 block">
-                      {ws.type}
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
+                    {/* Top Right: Overdue Badge */}
+                    <div className="absolute top-3 right-3">
                       <span
-                        className="text-sm font-medium leading-[17px]"
-                        style={{ color: config.nameColor }}
-                      >
-                        {ws.name}
-                      </span>
-                      <span
-                        className="px-2 py-1 text-[10px] font-normal leading-3 rounded-[5px]"
+                        className="text-xs font-bold px-3 py-1 rounded-full tracking-wide"
                         style={{
-                          backgroundColor: config.badgeBg,
-                          color: config.badgeText,
+                          backgroundColor: statusConfig.bg,
+                          color: statusConfig.text
                         }}
                       >
-                        {ws.location}
+                        {statusConfig.label}
                       </span>
                     </div>
-                    <span className="text-[10px] font-normal text-[#4B5563] leading-3 block mt-1.5">
-                      {ws.details}
-                    </span>
+
+                    {/* Title */}
+                    <p className="text-sm font-medium text-[#1F2937] mb-1">
+                      {ws.type || event.title || 'Expired Interview'}
+                    </p>
+
+                    {/* Candidate Name */}
+                    <h4 className="text-[17px] font-semibold text-[#1F2937] mb-1">
+                      {ws.name || event.candidate_name || 'Unknown'}
+                    </h4>
+
+                    {/* Subtitle */}
+                    <p className="text-sm text-[#4B5563] mb-4">
+                      {ws.details || `${event.candidate_company || ''} | ${event.candidate_position || ''}`}
+                    </p>
+
+                    {/* Bottom Row: Mode + Action Buttons */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium px-3 py-1 bg-white rounded-full text-gray-700">
+                        {event.mode || 'Virtual'}
+                      </span>
+
+                      {/* Action Buttons - Green Check & Red Cross */}
+                      {isActionable && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                await scheduleService.updateEventStatus(event.id, 'COMPLETED');
+                                toast.success("Completed");
+                                window.location.reload();
+                              } catch (err) {
+                                toast.error("Failed");
+                              }
+                            }}
+                            className="w-8 h-8 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-all"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                await scheduleService.updateEventStatus(event.id, 'CANCELLED');
+                                toast.success("Cancelled");
+                                window.location.reload();
+                              } catch (err) {
+                                toast.error("Failed");
+                              }
+                            }}
+                            className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
