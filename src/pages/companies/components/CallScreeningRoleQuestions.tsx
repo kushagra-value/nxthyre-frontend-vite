@@ -98,26 +98,26 @@ export default function CallScreeningRoleQuestions({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-[#0F47F2]" />
-          <h3 className="text-xs uppercase font-bold text-[#8E8E93] tracking-wider">
+          <h3 className="text-sm uppercase font-regular text-black tracking-wider">
             CALL SCREENING - ROLE QUESTIONS
           </h3>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 bg-[#F5F9FB] px-3 py-1.5 rounded-full border border-[#E5E7EB]">
             <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-            <span className="text-[11px] font-bold text-[#4B5563]">
+            <span className="text-xs font-medium text-[#4B5563]">
               {stats.convinced} Convinced
             </span>
           </div>
           <div className="flex items-center gap-1.5 bg-[#F5F9FB] px-3 py-1.5 rounded-full border border-[#E5E7EB]">
             <div className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
-            <span className="text-[11px] font-bold text-[#4B5563]">
+            <span className="text-xs font-medium text-[#4B5563]">
               {stats.notConvinced} Not Convinced
             </span>
           </div>
           <div className="flex items-center gap-1.5 bg-[#F5F9FB] px-3 py-1.5 rounded-full border border-[#E5E7EB]">
             <div className="w-1.5 h-1.5 rounded-full bg-[#AEAEB2]" />
-            <span className="text-[11px] font-bold text-[#4B5563]">
+            <span className="text-xs font-medium text-[#4B5563]">
               {stats.skipped} Skipped
             </span>
           </div>
@@ -127,8 +127,8 @@ export default function CallScreeningRoleQuestions({
       {/* Completion Bar */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-[#8E8E93]">Completion</span>
-          <span className="text-xs font-bold text-[#0F47F2]">
+          <span className="text-sm font-medium text-black">Completion</span>
+          <span className="text-sm font-normal text-[#0F47F2]">
             {stats.totalAnswered} / {stats.totalQuestions} answered
           </span>
         </div>
@@ -163,11 +163,11 @@ export default function CallScreeningRoleQuestions({
                   {index + 1}
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-[13px] font-medium text-[#111827] mb-1.5">
+                  <h4 className="text-sm font-medium text-[#111827] mb-1.5">
                     {question.question}
                   </h4>
                   {question.lookFor && (
-                    <p className="text-[11px] text-[#8E8E93]">
+                    <p className="text-xs text-[#8E8E93]">
                       Look for: {question.lookFor}
                     </p>
                   )}
@@ -239,7 +239,7 @@ export default function CallScreeningRoleQuestions({
         <div className="bg-[#F8F5FF] border border-[#E9D8FD] rounded-xl p-5 shadow-sm mt-2">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-4 h-4 text-[#6B46C1]" />
-            <h3 className="text-xs uppercase font-bold text-[#6B46C1] tracking-wider">
+            <h3 className="text-sm uppercase font-normal text-[#6B46C1] tracking-wider">
               AI FOLLOW-UP SUGGESTIONS FOR NEXT ROUND
             </h3>
           </div>

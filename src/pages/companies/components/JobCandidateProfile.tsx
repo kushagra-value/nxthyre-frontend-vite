@@ -227,7 +227,7 @@ export default function JobCandidateProfile({
         );
         showToast.success("Candidate archived");
       } else if (type === "move" && targetStageId) {
-        const finalComment = selectedFeedbackOptions.length > 0 
+        const finalComment = selectedFeedbackOptions.length > 0
           ? `[${selectedFeedbackOptions.join(", ")}] ${feedbackComment.trim()}`
           : feedbackComment.trim();
 
@@ -358,7 +358,7 @@ export default function JobCandidateProfile({
     }
   };
 
-  console.log("check here we are geting the data",questionsAnalysisData)
+  console.log("check here we are geting the data", questionsAnalysisData)
 
   const handleAddNote = async () => {
     if (!newComment.trim() || !cand.id) return;
@@ -575,7 +575,7 @@ export default function JobCandidateProfile({
     );
   }
 
-  // ── Job title for display ────────────────────────────────
+  // ── Job title  display  ────────────────────────────────
 
   const jobTitle = candidate?.job?.title || contextualDetails?.job_title || "";
 
@@ -604,8 +604,8 @@ export default function JobCandidateProfile({
                     {headline && jobTitle ? ` • ${jobTitle}` : ""}
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs text-[#4B5563] mb-6 font-medium">
-                    <span className="flex items-center gap-1.5 ">
+                  <div className="flex items-center gap-4 text-sm text-[#4B5563] mb-6 font-medium">
+                    <span className="flex items-center gap-1.5">
                       <svg
                         width="16"
                         height="16"
@@ -897,27 +897,27 @@ export default function JobCandidateProfile({
                 <div className="flex items-center gap-2 mb-6 self-end w-full justify-end">
                   {currentIndex !== undefined &&
                     totalCandidates !== undefined && (
-                      <span className="text-[10px] text-[#AEAEB2] font-bold mr-1">
+                      <span className="text-xs text-[#AEAEB2] font-bold mr-1">
                         {currentIndex + 1} / {totalCandidates}
                       </span>
                     )}
                   <button
                     onClick={onNavigatePrev}
                     disabled={!onNavigatePrev}
-                    className={`px-3 py-1 border border-[#E5E7EB] rounded-md text-xs transition ${onNavigatePrev ? "text-black hover:bg-gray-50" : "text-[#AEAEB2] cursor-not-allowed opacity-50"}`}
+                    className={`px-4 py-2 border border-[#E5E7EB] rounded-md text-xs transition ${onNavigatePrev ? "text-black hover:bg-gray-50" : "text-[#AEAEB2] cursor-not-allowed opacity-50"}`}
                   >
                     &laquo; Prev
                   </button>
                   <button
                     onClick={onNavigateNext}
                     disabled={!onNavigateNext}
-                    className={`px-3 py-1 border border-[#E5E7EB] rounded-md text-xs transition ${onNavigateNext ? "text-black hover:bg-gray-50" : "text-[#AEAEB2] cursor-not-allowed opacity-50"}`}
+                    className={`px-4 py-2 border border-[#E5E7EB] rounded-md text-xs transition ${onNavigateNext ? "text-black hover:bg-gray-50" : "text-[#AEAEB2] cursor-not-allowed opacity-50"}`}
                   >
                     Next &raquo;
                   </button>
                 </div>
                 <div className="relative w-20 h-20 mb-2">
-                  <svg viewBox="0 0 36 36" className="w-20 h-20 -rotate-90">
+                  <svg viewBox="0 0 36 36" className="w-20 h-20">
                     <path
                       className="text-gray-200"
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -926,6 +926,7 @@ export default function JobCandidateProfile({
                       strokeWidth="3.5"
                     />
                     <path
+                      transform="rotate(-90 18 18)"
                       style={{
                         color: getScoreColor(
                           typeof matchScore.score === "string"
@@ -941,12 +942,12 @@ export default function JobCandidateProfile({
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-semibold -mt-1">
+                    <span className="text-xl font-normal -mt-1">
                       {matchScore.score || "0%"}
                     </span>
                   </div>
                 </div>
-                <span className="text-[11px] text-[#8E8E93] text-center uppercase tracking-wider font-semibold">
+                <span className="text-[11px] text-[#8E8E93] text-center uppercase tracking-wider font-normal">
                   Match Score
                 </span>
               </div>
@@ -955,7 +956,7 @@ export default function JobCandidateProfile({
 
           {/* Status tags row */}
           {statusTags.length > 0 && (
-            <div className="bg-[#F8FAFC] px-6 py-3 text-xs font-semibold border-t border-[#E5E7EB] flex gap-2 flex-wrap">
+            <div className="bg-[#F8FAFC] px-6 py-3 text-xs font-normal border-t border-[#E5E7EB] flex gap-2 flex-wrap">
               {statusTags.map((tag: any, i: number) => (
                 <span
                   key={i}
@@ -1039,15 +1040,15 @@ export default function JobCandidateProfile({
           </div>
         ) : (
           <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-xs font-medium text-[#4B5563] mb-8">
+            <h3 className="text-sm font-regular text-black mb-8">
               CURRENT STAGE{" "}
               <span className="text-[#0F47F2] ml-4 font-bold uppercase">
                 {currentStageName}
               </span>
             </h3>
 
-            <div className=" overflow-y-auto pb-8 scrollbar-hide">
-              <div className="flex items-center min-w-max">
+            <div className="w-full overflow-x-auto pb-8 scrollbar-hide">
+              <div className="w-full flex items-start gap-0">
                 {stages
                   .filter((s) => s.slug !== "archives")
                   .map((stage, i, filteredStages) => {
@@ -1060,76 +1061,80 @@ export default function JobCandidateProfile({
                     return (
                       <div
                         key={stage.id}
-                        className="flex items-center flex-shrink-0"
+                        className="flex-1 flex items-start gap-0 min-w-0"
                       >
-                        <div className="flex flex-col items-left">
-                          <div className="relative group">
-                            {isCompleted ? (
-                              <div className="flex items-center justify-left">
-                                <div className="relative flex flex-col items-center">
-                                  <svg
-                                    width="40"
-                                    height="40"
-                                    viewBox="0 0 58 58"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="w-10 h-10"
-                                  >
-                                    <path
-                                      d="M23.6391 9.40147C25.0017 8.24019 25.683 7.65957 26.3954 7.31908C28.0431 6.53154 29.9586 6.53154 31.6063 7.31908C32.3187 7.65957 32.9999 8.24019 34.3627 9.40147C34.905 9.86366 35.1762 10.0948 35.4659 10.2889C36.1298 10.7339 36.8753 11.0427 37.6593 11.1975C38.0015 11.265 38.3565 11.2934 39.067 11.35C40.8517 11.4924 41.7439 11.5637 42.4885 11.8266C44.2104 12.4348 45.5649 13.7893 46.1732 15.5112C46.4361 16.2557 46.5072 17.1481 46.6498 18.9328C46.7063 19.6431 46.7346 19.9983 46.8022 20.3403C46.9569 21.1244 47.2658 21.87 47.7109 22.5339C47.905 22.8235 48.136 23.0947 48.5983 23.637C49.7595 24.9997 50.3402 25.6812 50.6808 26.3934C51.4681 28.0411 51.4681 29.9565 50.6808 31.6042C50.3402 32.3166 49.7595 32.9979 48.5983 34.3606C48.136 34.9029 47.905 35.1741 47.7109 35.4638C47.2658 36.1277 46.9569 36.8732 46.8022 37.6574C46.7346 37.9994 46.7063 38.3547 46.6498 39.0649C46.5072 40.8496 46.4361 41.7419 46.1732 42.4864C45.5649 44.2083 44.2104 45.5628 42.4885 46.1711C41.7439 46.4341 40.8517 46.5051 39.067 46.6477C38.3565 46.7042 38.0015 46.7328 37.6593 46.8002C36.8753 46.9551 36.1298 47.2637 35.4659 47.7088C35.1762 47.9029 34.905 48.1339 34.3627 48.5962C32.9999 49.7575 32.3187 50.3382 31.6063 50.6787C29.9586 51.466 28.0431 51.466 26.3954 50.6787C25.683 50.3382 25.0017 49.7575 23.6391 48.5962C23.0967 48.1339 22.8255 47.9029 22.5359 47.7088C21.872 47.2637 21.1265 46.9551 20.3424 46.8002C20.0003 46.7328 19.6452 46.7042 18.9348 46.6477C17.1501 46.5051 16.2577 46.4341 15.5133 46.1711C13.7913 45.5628 12.4369 44.2083 11.8287 42.4864C11.5657 41.7419 11.4945 40.8496 11.3521 39.0649C11.2954 38.3547 11.2671 37.9994 11.1995 37.6574C11.0447 36.8732 10.7359 36.1277 10.2909 35.4638C10.0968 35.1741 9.86571 34.9029 9.40352 34.3606C8.24224 32.9979 7.66162 32.3166 7.32111 31.6042C6.53359 29.9565 6.53359 28.0411 7.32111 26.3934C7.66162 25.6809 8.24224 24.9997 9.40352 23.637C9.86571 23.0947 10.0968 22.8235 10.2909 22.5339C10.7359 21.87 11.0447 21.1244 11.1995 20.3403C11.2671 19.9983 11.2954 19.6431 11.3521 18.9328C11.4945 17.1481 11.5657 16.2557 11.8287 15.5112C12.4369 13.7893 13.7913 12.4348 15.5133 11.8266C16.2577 11.5637 17.1501 11.4924 18.9348 11.35C19.6452 11.2934 20.0003 11.265 20.3424 11.1975C21.1265 11.0427 21.872 10.7339 22.5359 10.2889C22.8255 10.0948 23.0967 9.86366 23.6391 9.40147Z"
-                                      fill="#14AE5C"
-                                    />
-                                    <path
-                                      d="M20.541 30.2083L25.3743 35.0416L37.4577 22.9583"
-                                      stroke="white"
-                                      stroke-width="2"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                    />
-                                  </svg>
-                                  <span
-                                    className={`absolute top-10 text-[8px] font-semibold text-left max-w-[88px] text-nowrap leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#8E8E93]"}`}
-                                  >
-                                    {stage.name}
-                                  </span>
-                                </div>
-
-                                {i < filteredStages.length - 1 && (
-                                  <div className="w-12 h-[2px] bg-[#E5E7EB]">
-                                    {isCompleted && (
-                                      <div className="h-full bg-[#009951]" />
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="flex items-center justify-center">
-                                <div className="relative flex flex-col items-center">
-                                  <div
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors
-                                                              ${isActive ? "bg-[#0F47F2] text-white" : "bg-[#E5E7EB] text-[#8E8E93]"}`}
-                                  >
-                                    {i + 1}
-                                  </div>
-                                  <span
-                                    className={`absolute top-10 text-[8px] font-semibold text-left max-w-[88px] text-nowrap leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#8E8E93]"}`}
-                                  >
-                                    {stage.name}
-                                  </span>
-                                </div>
-                                {i < filteredStages.length - 1 && (
-                                  <div className="w-12 h-[2px] bg-[#E5E7EB]">
-                                    {isCompleted && (
-                                      <div className="h-full bg-[#009951]" />
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                        {/* Connector line before stage */}
+                        {i > 0 && (
+                          <div className="flex-1 flex items-center pt-6 pr-0">
+                            <div
+                              className={`w-full h-[2px] transition-colors ${isCompleted ? "bg-[#009951]" : "bg-[#E5E7EB]"
+                                }`}
+                            />
                           </div>
+                        )}
+
+                        {/* Stage circle and label */}
+                        <div className="flex flex-col items-center shrink-0 pt-0">
+                          {isCompleted ? (
+                            <div className="relative flex flex-col items-center">
+                              <div className="w-[52px] h-[52px] rounded-full bg-[#E8F7EE] flex items-center justify-center flex-shrink-0">
+                                <svg
+                                  width="40"
+                                  height="40"
+                                  viewBox="0 0 58 58"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="w-11 h-11"
+                                >
+                                  <path
+                                    d="M23.6391 9.40147C25.0017 8.24019 25.683 7.65957 26.3954 7.31908C28.0431 6.53154 29.9586 6.53154 31.6063 7.31908C32.3187 7.65957 32.9999 8.24019 34.3627 9.40147C34.905 9.86366 35.1762 10.0948 35.4659 10.2889C36.1298 10.7339 36.8753 11.0427 37.6593 11.1975C38.0015 11.265 38.3565 11.2934 39.067 11.35C40.8517 11.4924 41.7439 11.5637 42.4885 11.8266C44.2104 12.4348 45.5649 13.7893 46.1732 15.5112C46.4361 16.2557 46.5072 17.1481 46.6498 18.9328C46.7063 19.6431 46.7346 19.9983 46.8022 20.3403C46.9569 21.1244 47.2658 21.87 47.7109 22.5339C47.905 22.8235 48.136 23.0947 48.5983 23.637C49.7595 24.9997 50.3402 25.6812 50.6808 26.3934C51.4681 28.0411 51.4681 29.9565 50.6808 31.6042C50.3402 32.3166 49.7595 32.9979 48.5983 34.3606C48.136 34.9029 47.905 35.1741 47.7109 35.4638C47.2658 36.1277 46.9569 36.8732 46.8022 37.6574C46.7346 37.9994 46.7063 38.3547 46.6498 39.0649C46.5072 40.8496 46.4361 41.7419 46.1732 42.4864C45.5649 44.2083 44.2104 45.5628 42.4885 46.1711C41.7439 46.4341 40.8517 46.5051 39.067 46.6477C38.3565 46.7042 38.0015 46.7328 37.6593 46.8002C36.8753 46.9551 36.1298 47.2637 35.4659 47.7088C35.1762 47.9029 34.905 48.1339 34.3627 48.5962C32.9999 49.7575 32.3187 50.3382 31.6063 50.6787C29.9586 51.466 28.0431 51.466 26.3954 50.6787C25.683 50.3382 25.0017 49.7575 23.6391 48.5962C23.0967 48.1339 22.8255 47.9029 22.5359 47.7088C21.872 47.2637 21.1265 46.9551 20.3424 46.8002C20.0003 46.7328 19.6452 46.7042 18.9348 46.6477C17.1501 46.5051 16.2577 46.4341 15.5133 46.1711C13.7913 45.5628 12.4369 44.2083 11.8287 42.4864C11.5657 41.7419 11.4945 40.8496 11.3521 39.0649C11.2954 38.3547 11.2671 37.9994 11.1995 37.6574C11.0447 36.8732 10.7359 36.1277 10.2909 35.4638C10.0968 35.1741 9.86571 34.9029 9.40352 34.3606C8.24224 32.9979 7.66162 32.3166 7.32111 31.6042C6.53359 29.9565 6.53359 28.0411 7.32111 26.3934C7.66162 25.6809 8.24224 24.9997 9.40352 23.637C9.86571 23.0947 10.0968 22.8235 10.2909 22.5339C10.7359 21.87 11.0447 21.1244 11.1995 20.3403C11.2671 19.9983 11.2954 19.6431 11.3521 18.9328C11.4945 17.1481 11.5657 16.2557 11.8287 15.5112C12.4369 13.7893 13.7913 12.4348 15.5133 11.8266C16.2577 11.5637 17.1501 11.4924 18.9348 11.35C19.6452 11.2934 20.0003 11.265 20.3424 11.1975C21.1265 11.0427 21.872 10.7339 22.5359 10.2889C22.8255 10.0948 23.0967 9.86366 23.6391 9.40147Z"
+                                    fill="#14AE5C"
+                                  />
+                                  <path
+                                    d="M20.541 30.2083L25.3743 35.0416L37.4577 22.9583"
+                                    stroke="white"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                  />
+                                </svg>
+                              </div>
+                              <span
+                                className={`mt-3 text-sm font-normal text-center max-w-[80px] leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#009951]"
+                                  }`}
+                              >
+                                {stage.name}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="relative flex flex-col items-center">
+                              <div
+                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors flex-shrink-0 ${isActive
+                                    ? "bg-[#0F47F2] text-white"
+                                    : "bg-[#E5E7EB] text-[#8E8E93]"
+                                  }`}
+                              >
+                                {i + 1}
+                              </div>
+                              <span
+                                className={`mt-3 text-sm font-normal text-center max-w-[80px] leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#8E8E93]"
+                                  }`}
+                              >
+                                {stage.name}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
-                        {/* Connector line */}
+                        {/* Connector line after stage */}
+                        {i < filteredStages.length - 1 && (
+                          <div className="flex-1 flex items-center pt-6 pl-0">
+                            <div
+                              className={`w-full h-[2px] transition-colors ${isCompleted ? "bg-[#009951]" : "bg-[#E5E7EB]"
+                                }`}
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1139,7 +1144,7 @@ export default function JobCandidateProfile({
             <div className="flex items-center gap-3 relative">
               <button
                 onClick={() => setShowStageMenu(!showStageMenu)}
-                className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md"
+                className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-normal hover:bg-blue-700 transition shadow-md"
               >
                 <svg
                   width="16"
@@ -1183,13 +1188,26 @@ export default function JobCandidateProfile({
               )}
 
               <button
+                onClick={() => setIsEventFormOpen(true)}
+                className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-normal hover:bg-[#F3F5F7] transition"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M6.66667 11.3332L6.66666 8.89798C6.66666 8.77014 6.5755 8.6665 6.46305 8.6665H6M9.08644 11.3332L9.98945 8.89928C10.0317 8.78547 9.94189 8.6665 9.81379 8.6665H8.66667" stroke="#0F47F2" stroke-linecap="round" />
+                  <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M4 5.3335H12" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+
+                Schedule Interview
+              </button>
+              <button
                 onClick={() =>
                   openFeedbackModal({
                     type: "archive",
                     applicationIds: [applicationId],
                   })
                 }
-                className="flex items-center gap-2 bg-white border border-[#FEE9E7] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#FEE9E7] transition"
+                className="flex items-center gap-2 bg-white border border-[#DC2626] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-normal hover:bg-[#FEE9E7] transition"
               >
                 <svg
                   width="16"
@@ -1226,19 +1244,6 @@ export default function JobCandidateProfile({
                 </svg>
                 Move to Archive
               </button>
-              <button
-                onClick={() => setIsEventFormOpen(true)}
-                className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M6.66667 11.3332L6.66666 8.89798C6.66666 8.77014 6.5755 8.6665 6.46305 8.6665H6M9.08644 11.3332L9.98945 8.89928C10.0317 8.78547 9.94189 8.6665 9.81379 8.6665H8.66667" stroke="#0F47F2" stroke-linecap="round" />
-                  <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M4 5.3335H12" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-
-                Schedule Interview
-              </button>
             </div>
           </div>
         )}
@@ -1246,121 +1251,121 @@ export default function JobCandidateProfile({
         {/* ── Quick Fit Summary (Signals) ── */}
         {(quickFitSummary.length > 0 || skillAssessmentItems.length > 0) && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
+            <h3 className="text-sm uppercase font-normal text-black tracking-wider mb-6">
               QUICK FIT SUMMARY
             </h3>
 
             {/* Badges Section */}
             {quickFitSummary.length > 0 && (
-            <div className={skillAssessmentItems.length > 0 ? "mb-8 pb-8 border-b border-[#E5E7EB]" : ""}>
-              <div className="flex flex-wrap gap-3">
-                {quickFitSummary.map((item: any, i: number) => {
-                  const colorMap: Record<
-                    string,
-                    { bg: string; border: string; text: string }
-                  > = {
-                    green: { bg: "#EBFFEE", border: "#DEF7EC", text: "#009951" },
-                    yellow: { bg: "#FFF7D6", border: "#FDE047", text: "#92400E" },
-                    red: { bg: "#FEE9E7", border: "#FECACA", text: "#DC2626" },
-                  };
-                  const c = colorMap[item.color] || colorMap.green;
-                  return (
-                    <div
-                      key={i}
-                      className="text-xs font-bold bg-[#F5F9FB] px-3 py-1.5 rounded-lg flex items-center gap-1.5 "
-                      style={{
-                        color: c.text,
-                      }}
-                      title={item.evidence}
-                    >
-                      {item.badge}
+              <div className={skillAssessmentItems.length > 0 ? "mb-8 pb-8 border-b border-[#E5E7EB]" : ""}>
+                <div className="flex flex-wrap gap-3">
+                  {quickFitSummary.map((item: any, i: number) => {
+                    const colorMap: Record<
+                      string,
+                      { bg: string; border: string; text: string }
+                    > = {
+                      green: { bg: "#EBFFEE", border: "#DEF7EC", text: "#009951" },
+                      yellow: { bg: "#FFF7D6", border: "#FDE047", text: "#92400E" },
+                      red: { bg: "#FEE9E7", border: "#FECACA", text: "#DC2626" },
+                    };
+                    const c = colorMap[item.color] || colorMap.green;
+                    return (
+                      <div
+                        key={i}
+                        className="text-sm font-regular bg-[#F5F9FB] px-3 py-1.5 rounded-lg flex items-center gap-1.5 "
+                        style={{
+                          color: c.text,
+                        }}
+                        title={item.evidence}
+                      >
+                        {item.badge}
 
-                    {item.color === "green" && (
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M6 11.5C9.03756 11.5 11.5 9.03756 11.5 6C11.5 2.96243 9.03756 0.5 6 0.5C2.96243 0.5 0.5 2.96243 0.5 6C0.5 9.03756 2.96243 11.5 6 11.5Z"
-                          stroke="#009951"
-                        />
-                        <path
-                          d="M4.07324 6.275L5.17324 7.375L7.92324 4.625"
-                          stroke="#009951"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    )}
-                    {item.color === "red" && (
-                      <svg
-                        width="11"
-                        height="11"
-                        viewBox="0 0 11 11"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g clip-path="url(#clip0_465_8838)">
-                          <path
-                            fill-rule="evenodd"
-                            clip-rule="evenodd"
-                            d="M5.5 10.3125C2.84212 10.3125 0.6875 8.15719 0.6875 5.5C0.6875 2.84281 2.84212 0.6875 5.5 0.6875C8.15788 0.6875 10.3125 2.84281 10.3125 5.5C10.3125 8.15719 8.15788 10.3125 5.5 10.3125ZM5.5 0C2.46228 0 0 2.46125 0 5.5C0 8.53875 2.46228 11 5.5 11C8.53772 11 11 8.53875 11 5.5C11 2.46125 8.53772 0 5.5 0ZM7.46521 3.53376C7.32977 3.3997 7.11081 3.3997 6.97537 3.53376L5.49794 5.01186L4.04181 3.55436C3.9074 3.4203 3.68947 3.4203 3.55575 3.55436C3.42134 3.68843 3.42134 3.90844 3.55575 4.0425L5.01188 5.49656L3.54545 6.96438C3.41035 7.09844 3.41035 7.31842 3.54545 7.45592C3.68088 7.58998 3.90018 7.58998 4.03562 7.45592L5.50206 5.98814L6.95819 7.44564C7.0926 7.5797 7.31053 7.5797 7.44459 7.44564C7.57899 7.31157 7.57899 7.09156 7.44459 6.9575L5.98812 5.50344L7.46521 4.0253C7.60031 3.8878 7.60031 3.67126 7.46521 3.53376Z"
-                            fill="#CF272D"
-                          />
-                        </g>
-                        <defs>
-                          <clipPath id="clip0_465_8838">
-                            <rect width="11" height="11" fill="white" />
-                          </clipPath>
-                        </defs>
-                      </svg>
-                    )}
-                    {item.color === "yellow" && (
-                      <svg
-                        width="11"
-                        height="11"
-                        viewBox="0 0 11 11"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          clip-rule="evenodd"
-                          d="M5.5 0.846153C2.92975 0.846153 0.846153 2.92975 0.846153 5.5C0.846153 8.07026 2.92975 10.1538 5.5 10.1538C8.07026 10.1538 10.1538 8.07026 10.1538 5.5C10.1538 2.92975 8.07026 0.846153 5.5 0.846153ZM0 5.5C0 2.46243 2.46243 0 5.5 0C8.53754 0 11 2.46243 11 5.5C11 8.53754 8.53754 11 5.5 11C2.46243 11 0 8.53754 0 5.5Z"
-                          fill="#CD9B05"
-                        />
-                        <path
-                          fill-rule="evenodd"
-                          clip-rule="evenodd"
-                          d="M5.5 3C5.77613 3 6 3.18315 6 3.40909V5.59088C6 5.81684 5.77613 6 5.5 6C5.22387 6 5 5.81684 5 5.59088V3.40909C5 3.18315 5.22387 3 5.5 3Z"
-                          fill="#CD9B05"
-                        />
-                        <path
-                          d="M6 7.49998C6 7.77614 5.77613 8 5.5 8C5.22387 8 5 7.77614 5 7.49998C5 7.22386 5.22387 7 5.5 7C5.77613 7 6 7.22386 6 7.49998Z"
-                          fill="#CD9B05"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                );
-              })}
+                        {item.color === "green" && (
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 12 12"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M6 11.5C9.03756 11.5 11.5 9.03756 11.5 6C11.5 2.96243 9.03756 0.5 6 0.5C2.96243 0.5 0.5 2.96243 0.5 6C0.5 9.03756 2.96243 11.5 6 11.5Z"
+                              stroke="#009951"
+                            />
+                            <path
+                              d="M4.07324 6.275L5.17324 7.375L7.92324 4.625"
+                              stroke="#009951"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        )}
+                        {item.color === "red" && (
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 11 11"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <g clip-path="url(#clip0_465_8838)">
+                              <path
+                                fill-rule="evenodd"
+                                clip-rule="evenodd"
+                                d="M5.5 10.3125C2.84212 10.3125 0.6875 8.15719 0.6875 5.5C0.6875 2.84281 2.84212 0.6875 5.5 0.6875C8.15788 0.6875 10.3125 2.84281 10.3125 5.5C10.3125 8.15719 8.15788 10.3125 5.5 10.3125ZM5.5 0C2.46228 0 0 2.46125 0 5.5C0 8.53875 2.46228 11 5.5 11C8.53772 11 11 8.53875 11 5.5C11 2.46125 8.53772 0 5.5 0ZM7.46521 3.53376C7.32977 3.3997 7.11081 3.3997 6.97537 3.53376L5.49794 5.01186L4.04181 3.55436C3.9074 3.4203 3.68947 3.4203 3.55575 3.55436C3.42134 3.68843 3.42134 3.90844 3.55575 4.0425L5.01188 5.49656L3.54545 6.96438C3.41035 7.09844 3.41035 7.31842 3.54545 7.45592C3.68088 7.58998 3.90018 7.58998 4.03562 7.45592L5.50206 5.98814L6.95819 7.44564C7.0926 7.5797 7.31053 7.5797 7.44459 7.44564C7.57899 7.31157 7.57899 7.09156 7.44459 6.9575L5.98812 5.50344L7.46521 4.0253C7.60031 3.8878 7.60031 3.67126 7.46521 3.53376Z"
+                                fill="#CF272D"
+                              />
+                            </g>
+                            <defs>
+                              <clipPath id="clip0_465_8838">
+                                <rect width="11" height="11" fill="white" />
+                              </clipPath>
+                            </defs>
+                          </svg>
+                        )}
+                        {item.color === "yellow" && (
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 11 11"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              clip-rule="evenodd"
+                              d="M5.5 0.846153C2.92975 0.846153 0.846153 2.92975 0.846153 5.5C0.846153 8.07026 2.92975 10.1538 5.5 10.1538C8.07026 10.1538 10.1538 8.07026 10.1538 5.5C10.1538 2.92975 8.07026 0.846153 5.5 0.846153ZM0 5.5C0 2.46243 2.46243 0 5.5 0C8.53754 0 11 2.46243 11 5.5C11 8.53754 8.53754 11 5.5 11C2.46243 11 0 8.53754 0 5.5Z"
+                              fill="#CD9B05"
+                            />
+                            <path
+                              fill-rule="evenodd"
+                              clip-rule="evenodd"
+                              d="M5.5 3C5.77613 3 6 3.18315 6 3.40909V5.59088C6 5.81684 5.77613 6 5.5 6C5.22387 6 5 5.81684 5 5.59088V3.40909C5 3.18315 5.22387 3 5.5 3Z"
+                              fill="#CD9B05"
+                            />
+                            <path
+                              d="M6 7.49998C6 7.77614 5.77613 8 5.5 8C5.22387 8 5 7.77614 5 7.49998C5 7.22386 5.22387 7 5.5 7C5.77613 7 6 7.22386 6 7.49998Z"
+                              fill="#CD9B05"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
             )}
 
             {/* Progress Bars Section */}
             {skillAssessmentItems.length > 0 && (
-            <div>
-              <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
-                Skill Assessment
-              </h4>
-              <QuickFitSummaryProgress
-                items={skillAssessmentItems}
-              />
-            </div>
+              <div>
+                <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
+                  Skill Assessment
+                </h4>
+                <QuickFitSummaryProgress
+                  items={skillAssessmentItems}
+                />
+              </div>
             )}
           </div>
         )}
@@ -1392,7 +1397,7 @@ export default function JobCandidateProfile({
         {matchScore.description && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider">
+              <h3 className="text-sm  uppercase font-regular text-black tracking-wider">
                 MATCH REASONING
               </h3>
               {!isEditingMatchDesc && (
@@ -1443,7 +1448,7 @@ export default function JobCandidateProfile({
 
         {/* ── Gaps & Risks ── */}
         <div className="bg-white rounded-xl p-8 shadow-sm">
-          <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
+          <h3 className="text-sm uppercase font-regular text-black tracking-wider mb-6">
             GAPS / RISK
           </h3>
           <div className="flex flex-col gap-3">
@@ -1466,7 +1471,7 @@ export default function JobCandidateProfile({
 
         {/* ── Profile Summary ── */}
         <div className="bg-white rounded-xl p-8 shadow-sm">
-          <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
+          <h3 className="text-sm uppercase font-regular text-black tracking-wider mb-6">
             PROFILE SUMMARY
           </h3>
           <p className="text-sm leading-relaxed text-[#4B5563]">
@@ -1476,7 +1481,7 @@ export default function JobCandidateProfile({
 
         {aiSummary && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-[11px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
+            <h3 className="text-sm uppercase font-normal text-black tracking-wider mb-6">
               AI FEEDBACK
             </h3>
             <p className="text-sm leading-relaxed text-[#4B5563]">
@@ -1934,7 +1939,7 @@ export default function JobCandidateProfile({
 
                 {/* ── Experience ── */}
                 <div>
-                  <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
+                  <h4 className="text-sm uppercase font-normal text-[#AEAEB2] mb-4 tracking-wider">
                     EXPERIENCE
                   </h4>
                   <div className="flex flex-col gap-6">
@@ -1965,15 +1970,15 @@ export default function JobCandidateProfile({
                       return (
                         <div key={i} className="mb-6 last:mb-0">
                           <div className="flex justify-between items-start mb-1">
-                            <span className="font-bold text-sm text-black">
+                            <span className="font-normal text-sm text-black">
                               {exp.job_title}
                             </span>
-                            <span className="text-[11px] text-[#AEAEB2] font-medium">
+                            <span className="text-sm text-[#AEAEB2] font-medium">
                               {startYear} — {endYear}
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <div className="text-xs text-[#0F47F2] font-semibold">
+                            <div className="text-sm text-[#0F47F2] font-regular">
                               {exp.company}
                             </div>
                             {duration && (
@@ -1999,12 +2004,12 @@ export default function JobCandidateProfile({
                     {education.length > 0 ? (
                       education.map((edu: any, i: number) => (
                         <div key={i} className="mb-6 last:mb-0">
-                          <div className="font-bold text-sm text-black mb-1">
+                          <div className="font-normal text-sm text-black mb-1">
                             {edu.degree ||
                               edu.degree_name ||
                               edu.field_of_study}
                           </div>
-                          <div className="text-xs font-semibold text-[#0F47F2]">
+                          <div className="text-sm font-normal text-[#0F47F2]">
                             {edu.school_name || edu.institution}{" "}
                             {edu.end_date
                               ? `| ${new Date(edu.end_date).getFullYear()}`
@@ -2074,7 +2079,7 @@ export default function JobCandidateProfile({
                     NOTES
                   </h4>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-[#AEAEB2] font-semibold uppercase">Community</span>
+                    <span className="text-[10px] text-[#AEAEB2] font-normal uppercase">Community</span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -2474,7 +2479,7 @@ export default function JobCandidateProfile({
               {skills.map((skill: string, i: number) => (
                 <span
                   key={i}
-                  className="bg-[#F3F5F7] text-[#4B5563] text-[11px] px-2.5 py-1 rounded-md font-semibold hover:bg-gray-200 transition cursor-default"
+                  className="bg-[#F3F5F7] text-[#4B5563] text-[11px] px-2.5 py-1 rounded-md font-normal hover:bg-gray-200 transition cursor-default"
                 >
                   {skill}
                 </span>
@@ -2517,7 +2522,7 @@ export default function JobCandidateProfile({
 
                 {pendingAction.type === "move" && pendingAction.targetStageName?.toLowerCase().includes("shortlist") && (
                   <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-gray-700">
+                    <label className="block text-sm font-normal text-gray-700">
                       Quick Status <span className="text-gray-400 font-normal">(Optional)</span>
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -2549,7 +2554,7 @@ export default function JobCandidateProfile({
                 )}
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-normal text-gray-700 mb-2">
                     Feedback / Reason <span className="text-red-500">*</span>
                   </label>
                   <textarea
