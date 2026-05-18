@@ -37,6 +37,7 @@ function mapInterviewEvent(ev: InterviewEvent): ScheduleEvent {
     id: ev.id,
     title: ev.title || 'Interview',
     candidateName: ev.candidate_name,
+    stage: ev.stage,
     candidate_id: ev.candidate_id,
     job_role_id: ev.job_role?.id,
     date: ev.start_at.split('T')[0] || '',
