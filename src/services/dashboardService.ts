@@ -425,6 +425,7 @@ export interface ScheduleModalDetails {
 }
 
 export interface ScheduleEventAPI {
+  stage: any;
   candidate_experience: string;
   candidate_position: string;
   mode: string;

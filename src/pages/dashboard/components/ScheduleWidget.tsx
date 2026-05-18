@@ -164,7 +164,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                   {/* Event Card - Orange/Peach Style */}
                   <div
                     className="flex-1 rounded-2xl p-4 relative shadow-sm"
-                    style={{ backgroundColor: '#FFEDD5' }}   // Light orange/peach
+                    style={{ backgroundColor: config.bg }}   // Light orange/peach
                   >
                     {/* Top Right: Overdue Badge */}
                     <div className="absolute top-3 right-3">
@@ -181,12 +181,12 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
 
                     {/* Title */}
                     <p className="text-sm font-medium text-[#1F2937] mb-1">
-                      {ws.type || event.title || 'Expired Interview'}
+                      {ws.type || event.stage?.name || '-'}
                     </p>
 
                     {/* Candidate Name */}
                     <h4 className="text-[17px] font-semibold text-[#1F2937] mb-1">
-                      {ws.name || event.candidate_name || 'Unknown'}
+                      {event.candidate_name}
                     </h4>
 
                     {/* Subtitle */}
