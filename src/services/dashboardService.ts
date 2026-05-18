@@ -375,6 +375,7 @@ export interface ScheduleWidgetSummary {
   status: string;
   time: string;
   type: string;
+  interview_type: string;
   name: string;
   details: string;
   location: string;
@@ -425,14 +426,15 @@ export interface ScheduleModalDetails {
 }
 
 export interface ScheduleEventAPI {
-  candidate_experience: string;
-  candidate_position: string;
-  mode: string;
-  candidate_company: string;
-  candidate_name: string;
-  title: string;
+  stage?: any;
+  candidate_experience?: string;
+  candidate_position?: string;
+  mode?: string;
+  candidate_company?: string;
+  candidate_name?: string;
+  title?: string;
   id: string;
-  status: 'completed' | 'in-progress' | 'upcoming';
+  status: string;
   is_done: boolean;
   widget_summary: ScheduleWidgetSummary;
   modal_details: ScheduleModalDetails;
@@ -648,12 +650,21 @@ class DashboardService {
           // Use real status from API
           status: rawStatus.toLowerCase(),
           is_done: rawStatus === 'COMPLETED' || rawStatus === 'CANCELLED',
+          
+          stage: ev.stage,
+          candidate_experience: ev.candidate_experience,
+          candidate_position: ev.candidate_position || ev.job_role?.name,
+          mode: ev.mode,
+          candidate_company: ev.candidate_company || ev.company?.name,
+          candidate_name: ev.candidate_name,
+          title: ev.title,
 
           widget_summary: {
             time: `${formatTime(start)} – ${formatTime(end)}`,
             type: ev.title || 'Interview',
+            interview_type: ev.stage?.name,
             name: ev.candidate_name || 'Unknown',
-            details: ev.candidate_position || '',
+            details: ev.candidate_position || ev.job_role?.name || '',
             location: ev.location_type || 'virtual',
             color_theme: rawStatus === 'OVERDUE' ? 'orange' : 
                         rawStatus === 'CANCELLED' ? 'grey' : 'cyan'

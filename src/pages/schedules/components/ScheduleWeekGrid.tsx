@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 /* ─── Types ─── */
 
 export interface ScheduleEvent {
+  stage: any;
   id: string;
   title: string;
   candidateName: string;

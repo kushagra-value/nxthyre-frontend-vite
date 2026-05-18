@@ -107,7 +107,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
       <div className="overflow-y-auto max-h-[314px] hide-scrollbar px-5 pb-5">
         <div className="relative flex flex-col gap-2.5">
           <div
-            className="absolute left-[112px] top-0 bottom-0 w-0"
+            className="absolute left-[115px] top-0 bottom-0 w-0"
             style={{ borderLeft: '1px dashed #D1D1D6' }}
           />
 
@@ -164,7 +164,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                   {/* Event Card - Orange/Peach Style */}
                   <div
                     className="flex-1 rounded-2xl p-4 relative shadow-sm"
-                    style={{ backgroundColor: '#FFEDD5' }}   // Light orange/peach
+                    style={{ backgroundColor: config.bg }}   // Light orange/peach
                   >
                     {/* Top Right: Overdue Badge */}
                     <div className="absolute top-3 right-3">
@@ -181,17 +181,17 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
 
                     {/* Title */}
                     <p className="text-sm font-medium text-[#1F2937] mb-1">
-                      {ws.type || event.title || 'Expired Interview'}
+                      {ws.interview_type || event.stage?.name || '-'}
                     </p>
 
                     {/* Candidate Name */}
                     <h4 className="text-[17px] font-semibold text-[#1F2937] mb-1">
-                      {ws.name || event.candidate_name || 'Unknown'}
+                      {event.candidate_name}
                     </h4>
 
                     {/* Subtitle */}
                     <p className="text-sm text-[#4B5563] mb-4">
-                      {ws.details || `${event.candidate_company || ''} | ${event.candidate_position || ''}`}
+                      {[event.candidate_company, event.candidate_position].filter(Boolean).join(' | ') || ws.details || '-'}
                     </p>
 
                     {/* Bottom Row: Mode + Action Buttons */}

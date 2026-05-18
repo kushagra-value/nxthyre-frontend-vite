@@ -193,7 +193,7 @@ function ScheduleCard({ event, onClick }: { event: ScheduleEvent; onClick?: () =
       {/* Top row: Title + Status + Mode */}
       <div className="flex items-center justify-between mb-2.5">
         <span className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider">
-          {event.title || 'Technical Round'}
+          {event.stage?.name || 'internal round'}
         </span>
 
         <div className="flex items-center gap-1.5">
