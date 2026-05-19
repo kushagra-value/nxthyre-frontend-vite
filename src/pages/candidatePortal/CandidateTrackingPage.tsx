@@ -387,7 +387,7 @@ const CandidateTrackingPage = () => {
               <p className="text-gray-500 mt-1 text-sm">{jTitle.split(" — ")[0]} · {cEmail}</p>
               {recruiterName && (
                 <p className="text-gray-500 mt-1 text-sm">
-                  Recruiter: <span className="font-medium text-gray-700">{recruiterName}</span>
+                  Point Of Contact: <span className="font-medium text-gray-700">{recruiterName}</span>
                   {recruiterPhone && (
                     <span className="text-gray-400"> · {recruiterPhone}</span>
                   )}
