@@ -362,13 +362,10 @@ const CandidateTrackingPage = () => {
     }
   }
 
-  console.log("check that are we getting the recuiter name now ",recruiterName)
 
   const recruiterPhone = getRecruiterPhone(recruiterName);
-  console.log("check the recuiter phone number",recruiterPhone)
   const whatsappUrl = recruiterPhone ? getWhatsAppUrl(recruiterPhone) : "https://wa.me";
 
-  console.log("check the whatsapp url ",whatsappUrl)
 
 
   return (

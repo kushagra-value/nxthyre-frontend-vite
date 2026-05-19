@@ -5,9 +5,6 @@ import { NxtHyreLogo } from "../auth/NxtHyreLogo";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
-// there will be a tracking id that we will recieve from the params when the user clicks the link in the email. We will use that tracking id to verify the user and then redirect them to the candidate portal dashboard where they can see their application status, upcoming rounds, messages from recruiter etc. This page is only for login and verification using the tracking id. The actual dashboard will be a different page which we will create later.
-// and traking id should be prefilled in the input field when the user clicks the link in the email. The user can then just click on the "View My Application" button to see their application status. If the tracking id is invalid, we will show an error message. If there is any other error, we will show a generic error message.
-// grab the prams first 
 const CandidatePortalLogin = () => {
 
   const navigate = useNavigate();
