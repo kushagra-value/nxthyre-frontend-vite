@@ -5049,7 +5049,14 @@ export default function JobPipelineDashboard({
                 if (!isKanbanView) {
                   fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
                 } else {
-                  triggerKanbanRefresh([pendingEventAction.targetStageName]); // Best effort refresh
+                  const impactedSlugs = new Set([
+                    ...pendingEventAction.applicationIds.map((id: number) => {
+                      if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.current_stage?.slug || draggedCandidateItemRef.current?.stage_slug;
+                      return selectedCandidatesMap[id]?.current_stage?.slug || selectedCandidatesMap[id]?.stage_slug || candidates.find(c => c.id === id)?.current_stage?.slug || candidates.find(c => c.id === id)?.stage_slug;
+                    }).filter(Boolean),
+                    pendingEventAction.targetStageId ? stages.find(s => s.id === pendingEventAction.targetStageId)?.slug : null
+                  ].filter(Boolean) as string[]);
+                  triggerKanbanRefresh(Array.from(impactedSlugs));
                 }
                 fetchStages(jobId);
               }
@@ -5076,7 +5083,14 @@ export default function JobPipelineDashboard({
                 if (!isKanbanView) {
                   fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery, pageSize);
                 } else {
-                  triggerKanbanRefresh([pendingEventAction.targetStageName]);
+                  const impactedSlugs = new Set([
+                    ...pendingEventAction.applicationIds.map((id: number) => {
+                      if (id === draggedCandidateItemRef.current?.id) return draggedCandidateItemRef.current?.current_stage?.slug || draggedCandidateItemRef.current?.stage_slug;
+                      return selectedCandidatesMap[id]?.current_stage?.slug || selectedCandidatesMap[id]?.stage_slug || candidates.find(c => c.id === id)?.current_stage?.slug || candidates.find(c => c.id === id)?.stage_slug;
+                    }).filter(Boolean),
+                    pendingEventAction.targetStageId ? stages.find(s => s.id === pendingEventAction.targetStageId)?.slug : null
+                  ].filter(Boolean) as string[]);
+                  triggerKanbanRefresh(Array.from(impactedSlugs));
                 }
                 fetchStages(jobId);
               }
