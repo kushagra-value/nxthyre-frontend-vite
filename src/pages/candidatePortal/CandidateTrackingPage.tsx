@@ -367,6 +367,8 @@ const CandidateTrackingPage = () => {
   const recruiterPhone = getRecruiterPhone(recruiterName);
   const whatsappUrl = recruiterPhone ? getWhatsAppUrl(recruiterPhone) : "https://wa.me";
 
+  console.log("check the whatsapp url ",whatsappUrl)
+
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans">
