@@ -355,8 +355,14 @@ const CandidateTrackingPage = () => {
 
   // Get recruiter phone number from name
   const recruiterName = app.assigned_to?.name || app.recruiter?.name || app.assigned_recruiter?.name || null;
+  console.log("Full app object:", app);
+  console.log("Recruiter name:", recruiterName);
+  console.log("assigned_to:", app.assigned_to);
+  console.log("recruiter:", app.recruiter);
+  console.log("assigned_recruiter:", app.assigned_recruiter);
   const recruiterPhone = getRecruiterPhone(recruiterName);
   const whatsappUrl = recruiterPhone ? getWhatsAppUrl(recruiterPhone) : "https://wa.me";
+
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans">
