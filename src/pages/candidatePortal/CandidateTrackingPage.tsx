@@ -353,13 +353,17 @@ const CandidateTrackingPage = () => {
   const cName = profile.full_name || "—";
   const cEmail = profile.email || "—";
 
-  // Get recruiter phone number from name
-  const recruiterName = app.assigned_to?.name || app.recruiter?.name || app.assigned_recruiter?.name || null;
-  console.log("Full app object:", app);
-  console.log("Recruiter name:", recruiterName);
-  console.log("assigned_to:", app.assigned_to);
-  console.log("recruiter:", app.recruiter);
-  console.log("assigned_recruiter:", app.assigned_recruiter);
+  // Extract recruiter name from interview journey rounds
+  let recruiterName: string | null = null;
+  for (const round of rounds) {
+    if (round.interviewer?.name) {
+      recruiterName = round.interviewer.name;
+      break;
+    }
+  }
+
+  console.log("check that are we getting the recuiter name now ",recruiterName)
+
   const recruiterPhone = getRecruiterPhone(recruiterName);
   const whatsappUrl = recruiterPhone ? getWhatsAppUrl(recruiterPhone) : "https://wa.me";
 
