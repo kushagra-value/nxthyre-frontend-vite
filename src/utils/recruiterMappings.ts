@@ -2,8 +2,8 @@
 export const RECRUITER_NUMBERS: Record<string, string> = {
   "sana amjad": "7673971023",
   "sana": "7673971023",
-  "Suchandni": "8951017155",
-  "Suchandni hr": "8951017155",
+  "suchandni": "8951017155",
+  "suchandni hr": "8951017155",
 };
 
 
