@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { showToast } from "../../utils/toast";
 import { NxtHyreLogo } from "../auth/NxtHyreLogo";
+import { getRecruiterPhone, getWhatsAppUrl } from "../../utils/recruiterMappings";
 import {
   CheckCircle2,
   Calendar,
@@ -352,6 +353,11 @@ const CandidateTrackingPage = () => {
   const cName = profile.full_name || "—";
   const cEmail = profile.email || "—";
 
+  // Get recruiter phone number from name
+  const recruiterName = app.assigned_to?.name || app.recruiter?.name || app.assigned_recruiter?.name || null;
+  const recruiterPhone = getRecruiterPhone(recruiterName);
+  const whatsappUrl = recruiterPhone ? getWhatsAppUrl(recruiterPhone) : "https://wa.me";
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans">
       {/* Header */}
@@ -369,6 +375,14 @@ const CandidateTrackingPage = () => {
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">{cName}</h1>
               <p className="text-gray-500 mt-1 text-sm">{jTitle.split(" — ")[0]} · {cEmail}</p>
+              {recruiterName && (
+                <p className="text-gray-500 mt-1 text-sm">
+                  Recruiter: <span className="font-medium text-gray-700">{recruiterName}</span>
+                  {recruiterPhone && (
+                    <span className="text-gray-400"> · {recruiterPhone}</span>
+                  )}
+                </p>
+              )}
               <div className="flex flex-wrap gap-3 mt-4">
                 {profile.total_experience != null && (
                   <span className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-blue-50/80 text-blue-500 border border-blue-100">
@@ -393,10 +407,10 @@ const CandidateTrackingPage = () => {
               </div>
             </div>
             <button
-              onClick={() => window.open('https://wa.me/7828567987', '_blank')}
+              onClick={() => window.open(whatsappUrl, '_blank')}
               className="bg-[#0BA360] hover:bg-[#098C52] text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm shrink-0 flex items-center gap-2"
             >
-              <WhatsappIcon /> Whatsapp
+              <WhatsappIcon /> Whatsapp {recruiterPhone && `(${recruiterPhone})`}
             </button>
           </div>
         </div>
@@ -504,7 +518,7 @@ const CandidateTrackingPage = () => {
                             {round.interviewer && (
                               <div className="text-gray-800 text-sm font-medium">
                                 {round.interviewer.name}
-                                <span className="text-gray-400 font-normal"> , {round.interviewer.role}</span>
+                                <span className="text-gray-400 font-normal"> , Point Of Contact</span>
                               </div>
                             )}
                             <div className="text-gray-800 text-sm font-medium">
