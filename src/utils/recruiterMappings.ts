@@ -10,7 +10,7 @@ export const RECRUITER_NUMBERS: Record<string, string> = {
 export const getRecruiterPhone = (recruiterName: string | null | undefined): string | null => {
   if (!recruiterName) return null;
 
-  const normalized = recruiterName.toLowerCase().trim();
+  const normalized = recruiterName.toLowerCase().trim().replace(/\s+/g, " ");;
   
   // Try exact match
   if (RECRUITER_NUMBERS[normalized]) {
