@@ -122,6 +122,7 @@ export interface JobsRolesQueryParams {
   status?: string;
   search?: string;
   ordering?: string;
+  poc_email?: string;
 }
 
 export interface AllRoleOption {
@@ -843,6 +844,19 @@ class JobPostService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch job timeline");
+    }
+  }
+
+  async getUniquePocs(workspaceId?: number): Promise<{ poc_email: string; name: string }[]> {
+    try {
+      const response = await apiClient.get("/jobs/roles/pocs/", {
+        params: {
+          workspace_id: workspaceId,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to fetch POCs");
     }
   }
 }

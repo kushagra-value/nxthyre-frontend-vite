@@ -41,6 +41,7 @@ import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoDrawer from "./CompanyInfoDrawer";
 import JobDateRangeFilter from "./JobDateRangeFilter";
 import JobTimelineDrawer from "./JobTimelineDrawer";
+import JobPocFilter from "./JobPocFilter";
 
 interface JobListingProps {
     selectedWorkspace: MyWorkspace;
@@ -85,6 +86,8 @@ interface JobListingProps {
     onJobSelect?: (job: Job) => void;
     currentOrdering?: string;
     onSortChange?: (ordering: string) => void;
+    selectedPocEmail?: string;
+    onPocFilterApply?: (pocEmail: string | undefined) => void;
 }
 
 const JobListing: React.FC<JobListingProps> = ({
@@ -124,6 +127,8 @@ const JobListing: React.FC<JobListingProps> = ({
     onJobSelect,
     currentOrdering,
     onSortChange,
+    selectedPocEmail,
+    onPocFilterApply,
 }) => {
     const ITEMS_PER_PAGE = 10;
 
@@ -915,6 +920,14 @@ const JobListing: React.FC<JobListingProps> = ({
                             onApply={onJobDateFilterApply}
                             onClear={onClearJobDateFilter}
                         />
+
+                        {onPocFilterApply && (
+                            <JobPocFilter
+                                workspaceId={selectedWorkspace.id}
+                                selectedPocEmail={selectedPocEmail}
+                                onPocSelect={onPocFilterApply}
+                            />
+                        )}
 
 
                     </div>

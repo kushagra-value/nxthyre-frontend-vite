@@ -124,6 +124,7 @@ export default function Companies() {
     const [jobsLoading, setJobsLoading] = useState(false);
     const [jobOrdering, setJobOrdering] = useState<string>("");
     const [debouncedJobSearch, setDebouncedJobSearch] = useState("");
+    const [selectedPocEmail, setSelectedPocEmail] = useState<string | undefined>(undefined);
 
     // Track pending rehydration IDs from sessionStorage
     const [pendingWsId, setPendingWsId] = useState<number | null>(() => {
@@ -252,6 +253,7 @@ export default function Companies() {
                 status: activeJobFilter === "All" ? undefined : activeJobFilter.toUpperCase(),
                 search: debouncedJobSearch || undefined,
                 ordering: jobOrdering || undefined,
+                poc_email: selectedPocEmail || undefined,
             });
             if (isMounted.current) {
                 setAllJobs(response.jobs || []);
@@ -264,7 +266,7 @@ export default function Companies() {
         } finally {
             if (isMounted.current) setJobsLoading(false);
         }
-    }, [jobCurrentPage, jobPageSize, selectedWorkspace?.id, createdAfter, createdBefore, activeJobFilter, debouncedJobSearch, jobOrdering]);
+    }, [jobCurrentPage, jobPageSize, selectedWorkspace?.id, createdAfter, createdBefore, activeJobFilter, debouncedJobSearch, jobOrdering, selectedPocEmail]);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -284,7 +286,7 @@ export default function Companies() {
     // Reset to page 1 when filters/search/sort change (but not when page itself changes)
     useEffect(() => {
         setJobCurrentPage(1);
-    }, [activeJobFilter, debouncedJobSearch, jobOrdering]);
+    }, [activeJobFilter, debouncedJobSearch, jobOrdering, selectedPocEmail]);
 
     useEffect(() => {
         if (!isAuthenticated) return;
@@ -527,6 +529,7 @@ export default function Companies() {
             setSelectedJob(null);
             setActiveJobFilter("All");
             setJobSearchQuery("");
+            setSelectedPocEmail(undefined);
             setJobCurrentPage(1);
         }
     };
@@ -604,6 +607,8 @@ export default function Companies() {
                 onJobSelect={(job) => setSelectedJob(job)}
                 currentOrdering={jobOrdering}
                 onSortChange={(ordering) => { setJobOrdering(ordering); }}
+                selectedPocEmail={selectedPocEmail}
+                onPocFilterApply={setSelectedPocEmail}
             />
         );
     }
