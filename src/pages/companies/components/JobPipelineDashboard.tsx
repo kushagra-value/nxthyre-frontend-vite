@@ -1598,6 +1598,10 @@ export default function JobPipelineDashboard({
 
     const { type, applicationIds, targetStageId, targetStageName } = pendingAction;
 
+    const finalComment = selectedFeedbackOptions.length > 0
+      ? `${selectedFeedbackOptions.join(", ")} - ${feedbackComment.trim()}`
+      : feedbackComment.trim();
+
     try {
       if (type === "archive") {
         const archiveStage = stages.find((s) => s.slug === "archives");
@@ -1610,10 +1614,10 @@ export default function JobPipelineDashboard({
             apiClient.patch(`/jobs/applications/${id}/?view=kanban`, {
               current_stage: archiveStage.id,
               status: "ARCHIVED",
-              archive_reason: feedbackComment.trim(),
+              archive_reason: finalComment,
               feedback: {
                 subject: "Moved to Archive",
-                comment: feedbackComment.trim(),
+                comment: finalComment,
               },
             })
           )
@@ -1636,7 +1640,7 @@ export default function JobPipelineDashboard({
               status: "ACTIVE",
               feedback: {
                 subject: "Unarchived",
-                comment: feedbackComment.trim(),
+                comment: finalComment,
               },
             });
           })
