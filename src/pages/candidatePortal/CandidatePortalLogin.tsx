@@ -6,15 +6,20 @@ import { NxtHyreLogo } from "../auth/NxtHyreLogo";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 const CandidatePortalLogin = () => {
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [trackingId, setTrackingId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const trackingParam = searchParams.get("trackingId");
-    if (trackingParam) setTrackingId(trackingParam);
+    const trackingParam = searchParams.get("tracking_id");
+
+    if (trackingParam) {
+      setTrackingId(trackingParam);
+    }
   }, [searchParams]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
