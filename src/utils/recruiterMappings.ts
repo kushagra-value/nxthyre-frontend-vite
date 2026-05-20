@@ -6,9 +6,13 @@ export const RECRUITER_NUMBERS: Record<string, string> = {
   "suchandni hr": "8951017155",
 };
 
+const DEFAULT_RECRUITER_NUMBER = "8951017155";
 
 export const getRecruiterPhone = (recruiterName: string | null | undefined): string | null => {
-  if (!recruiterName) return null;
+  // apart form thoes recuiter mentioned in the mapping above if any other user other names appear then fallback to suchandni hr number
+  if (!recruiterName){
+    return DEFAULT_RECRUITER_NUMBER;
+  };
 
   const normalized = recruiterName.toLowerCase().trim().replace(/\s+/g, " ");;
   
