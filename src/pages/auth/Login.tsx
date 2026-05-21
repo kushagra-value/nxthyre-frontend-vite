@@ -32,6 +32,8 @@ interface LoginProps {
   onLogin: (user: any) => void;
 }
 
+
+
 const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -100,6 +102,10 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // i have to check why the remember me is not working as expected, it is not suggesting the users when they  can help me to fix that
+
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -111,7 +117,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
       // Set persistence based on "Remember me" checkbox
       const persistence = formData.rememberMe
         ? browserLocalPersistence
-        : browserLocalPersistence;
+        :  browserSessionPersistence;
       await setPersistence(auth, persistence);
 
       // Sign in with Firebase
@@ -211,6 +217,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                 className={`w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.email ? "border-red-500" : ""
                   }`}
                 placeholder="Eg: johndoe@company.com"
+                autoComplete="email"
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-500 flex items-center">
@@ -233,6 +240,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, onLogin }) => {
                   className={`w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 placeholder-gray-500 ${errors.password ? "border-red乡-500" : ""
                     }`}
                   placeholder="Eg: John@123"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
