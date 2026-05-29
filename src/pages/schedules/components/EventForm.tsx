@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, ChevronDown, Search } from 'lucide-react';
+import Select from 'react-select';
 import apiClient from '../../../services/api';
 import { organizationService, MyWorkspace } from '../../../services/organizationService';
 import { jobPostService, AllRoleOption } from '../../../services/jobPostService';
 import { scheduleService } from '../../../services/scheduleService';
 import { candidateService, PipelineStage } from '../../../services/candidateService';
+import { generateTimeOptions } from '../../../utils/interviewForm.constants';
 
 interface PipelineCandidate {
   id: number;
@@ -31,12 +33,7 @@ interface EventFormProps {
 }
 
 // Time options for the Start Time dropdown
-const TIME_OPTIONS = [
-  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
-  '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
-  '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
-  '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM',
-];
+const TIME_OPTIONS = generateTimeOptions();
 
 const DURATION_OPTIONS = ['15 min', '30 min', '45 min', '60 min', '90 min', '120 min'];
 
@@ -46,6 +43,86 @@ const INTERVIEW_MODES = [
   { id: 'virtual', label: 'Virtual Interview', icon: '💻' },
   { id: 'mock-call', label: 'Mock Call', icon: '📱' },
 ];
+
+// Custom react-select styles matching the design system
+const candidateSelectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    paddingLeft: '2.5rem',
+    minHeight: '42px',
+    backgroundColor: '#ffffff',
+    borderColor: state.isFocused ? '#0F47F2' : '#E5E7EB',
+    borderRadius: '0.75rem',
+    borderWidth: '1px',
+    boxShadow: state.isFocused ? '0 0 0 3px rgba(15, 71, 242, 0.1)' : 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    '&:hover': {
+      borderColor: state.isFocused ? '#0F47F2' : '#D1D5DB',
+    },
+  }),
+  input: (base: any) => ({
+    ...base,
+    color: '#1F2937',
+    fontSize: '0.875rem',
+    lineHeight: '1.25rem',
+  }),
+  placeholder: (base: any) => ({
+    ...base,
+    color: '#9CA3AF',
+    fontSize: '0.875rem',
+  }),
+  singleValue: (base: any) => ({
+    ...base,
+    color: '#1F2937',
+    fontSize: '0.875rem',
+  }),
+  menu: (base: any) => ({
+    ...base,
+    borderRadius: '0.75rem',
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+    marginTop: '0.375rem',
+    backgroundColor: '#ffffff',
+  }),
+  menuList: (base: any) => ({
+    ...base,
+    borderRadius: '0.75rem',
+    paddingTop: 0,
+    paddingBottom: 0,
+    maxHeight: '208px',
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? '#EEF2FF'
+      : state.isFocused
+      ? '#F9FAFB'
+      : '#ffffff',
+    color: state.isSelected ? '#0F47F2' : '#374151',
+    fontWeight: state.isSelected ? '500' : '400',
+    fontSize: '0.875rem',
+    cursor: 'pointer',
+    padding: '0.625rem 0.875rem',
+    borderRadius: 0,
+    '&:first-of-type': {
+      borderTopLeftRadius: '0.75rem',
+      borderTopRightRadius: '0.75rem',
+    },
+    '&:last-of-type': {
+      borderBottomLeftRadius: '0.75rem',
+      borderBottomRightRadius: '0.75rem',
+    },
+    '&:hover': {
+      backgroundColor: state.isSelected ? '#EEF2FF' : '#F9FAFB',
+    },
+  }),
+  noOptionsMessage: (base: any) => ({
+    ...base,
+    color: '#9CA3AF',
+    fontSize: '0.875rem',
+    padding: '0.625rem 0.875rem',
+  }),
+};
 
 // Custom dropdown component
 const CustomSelect = ({
@@ -526,7 +603,7 @@ export const EventForm = ({
     label: pc.candidate.full_name,
   }));
 
-  const timeOptions = TIME_OPTIONS.map((t) => ({ value: t, label: t }));
+  const timeOptions = TIME_OPTIONS;
   const durationOptions = DURATION_OPTIONS.map((d) => ({ value: d, label: d }));
 
   return (
@@ -590,33 +667,43 @@ export const EventForm = ({
                 Candidate <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF] pointer-events-none z-10" />
                 {candidatesLoading ? (
                   <div className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#9CA3AF]">
                     Loading candidates...
                   </div>
-                ) : candidateOptions.length > 0 ? (
-                  <select
-                    id="candidate-select"
-                    required
-                    value={formData.applicationId}
-                    onChange={(e) => setFormData({ ...formData, applicationId: e.target.value })}
-                    className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all appearance-none"
-                  >
-                    <option value="" disabled>Search by name, role or ID...</option>
-                    {candidateOptions.map((c) => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
-                  </select>
                 ) : (
-                  <input
-                    id="candidate-search-input"
-                    type="text"
-                    placeholder={selectedJobId ? 'No candidates in this pipeline' : 'Select a job role first...'}
-                    value={formData.candidateSearch}
-                    onChange={(e) => setFormData({ ...formData, candidateSearch: e.target.value, applicationId: e.target.value })}
-                    disabled={!selectedJobId}
-                    className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] placeholder:text-[#9CA3AF] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all disabled:opacity-50 disabled:bg-gray-50"
+                  <Select
+                    inputId="candidate-select"
+                    options={candidateOptions}
+                    value={
+                      formData.applicationId
+                        ? candidateOptions.find((c) => c.value === formData.applicationId) || null
+                        : null
+                    }
+                    onChange={(option) => {
+                      setFormData({
+                        ...formData,
+                        applicationId: option?.value || '',
+                      });
+                    }}
+                    placeholder={selectedJobId ? 'Search by name, role or ID...' : 'Select a job role first...'}
+                    isDisabled={!selectedJobId}
+                    isSearchable
+                    isClearable={false}
+                    styles={candidateSelectStyles}
+                    classNamePrefix="candidate-select"
+                    components={{
+                      DropdownIndicator: null,
+                      IndicatorSeparator: null,
+                    }}
+                    filterOption={(option, inputValue) => {
+                      const searchText = inputValue.toLowerCase();
+                      return (
+                        option.label.toLowerCase().includes(searchText) ||
+                        option.value.toLowerCase().includes(searchText)
+                      );
+                    }}
                   />
                 )}
               </div>

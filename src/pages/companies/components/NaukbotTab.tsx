@@ -71,9 +71,9 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
       clearTimeout(leaveTimeoutRef.current);
       leaveTimeoutRef.current = null;
     }
-    setHoveredSkills({ 
-      candidateId: item.id, 
-      matched: item.skills_match.matched_skills || [], 
+    setHoveredSkills({
+      candidateId: item.id,
+      matched: item.skills_match.matched_skills || [],
       missing: item.skills_match.missing_skills || [],
       ref: { current: e.currentTarget }
     });
@@ -232,8 +232,8 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
       setSelectedCandidates(new Set());
       fetchCandidates();
     } catch (error) {
-       console.error(error);
-       toast.error("Failed to bulk skip candidates");
+      console.error(error);
+      toast.error("Failed to bulk skip candidates");
     }
   };
 
@@ -307,7 +307,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
     const isSorted = sortBy.startsWith(column);
     const isAsc = sortBy === `${column}_asc`;
     return (
-      <th 
+      <th
         key={column}
         className={`group px-6 py-4 text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap cursor-pointer hover:bg-black/5 transition-colors select-none ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`}
         onClick={() => handleSort(column)}
@@ -351,268 +351,269 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
 
   return (
     <>
-    <div className="pb-12">
-      <div className="mx-8 mt-4">
-        {/* Blue Header */}
-        <div className="bg-[#4F68FC] rounded-t-xl p-6 flex flex-wrap items-center justify-between text-white gap-4">
-          <div>
-            <h2 className="text-[18px] font-semibold">Naukbot - Auto Sourcing</h2>
-            <p className="text-[13px] text-[#E0E7FF] mt-1 font-medium">Candidates sourced by AI matching your JD criteria</p>
+      <div className="pb-12">
+        <div className="mx-8 mt-4">
+          {/* Blue Header */}
+          <div className="bg-[#4F68FC] rounded-t-xl p-6 flex flex-wrap items-center justify-between text-white gap-4">
+            <div>
+              <h2 className="text-[18px] font-semibold">Naukbot - Auto Sourcing</h2>
+              <p className="text-[13px] text-[#E0E7FF] mt-1 font-medium">Candidates sourced by AI matching your JD criteria</p>
+            </div>
+            <div className="flex items-center gap-10">
+              <div className="flex flex-col items-center">
+                <span className="text-[22px] font-bold">{summary.total_sourced}</span>
+                <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">Sourced</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[22px] font-bold">{summary.above_80_pct}</span>
+                <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">80%+ Match</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[22px] font-bold">{summary.nvited}</span>
+                <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">nVited</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[22px] font-bold">{summary.new}</span>
+                <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">New</span>
+              </div>
+              <div className="flex flex-col items-end border-l border-[#8193FE] pl-8">
+                <button
+                  onClick={handleTriggerSourcing}
+                  disabled={toggleLoading}
+                  className={`flex items-center gap-2 bg-white text-[#4F68FC] rounded-lg px-4 py-2 mb-1 cursor-pointer font-bold text-sm shadow-sm hover:bg-gray-50 transition-colors ${toggleLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <Zap className="w-4 h-4 fill-[#4F68FC]" /> {toggleLoading ? 'Sourcing...' : 'Sourcing Candidates'}
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-10">
-            <div className="flex flex-col items-center">
-              <span className="text-[22px] font-bold">{summary.total_sourced}</span>
-              <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">Sourced</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-[22px] font-bold">{summary.above_80_pct}</span>
-              <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">80%+ Match</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-[22px] font-bold">{summary.nvited}</span>
-              <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">nVited</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-[22px] font-bold">{summary.new}</span>
-              <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">New</span>
-            </div>
-            <div className="flex flex-col items-end border-l border-[#8193FE] pl-8">
-              <button 
-                onClick={handleTriggerSourcing}
-                disabled={toggleLoading}
-                className={`flex items-center gap-2 bg-white text-[#4F68FC] rounded-lg px-4 py-2 mb-1 cursor-pointer font-bold text-sm shadow-sm hover:bg-gray-50 transition-colors ${toggleLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <Zap className="w-4 h-4 fill-[#4F68FC]" /> {toggleLoading ? 'Sourcing...' : 'Sourcing Candidates'}
-              </button>
-            </div>
-          </div>
-        </div>
 
-        {/* Green Alert */}
-        {showDismiss && summary.new > 0 && (
-          <div className="bg-[#D1F7DB] px-6 py-3.5 flex items-center justify-between text-[#006A2E]">
-            <div className="flex items-center gap-2.5">
-              <div className="w-2.5 h-2.5 bg-[#009951] rounded-full"></div>
-              <span className="text-[13px] font-semibold text-[#009951]">
-                {summary.new} new candidates <span className="font-normal text-[#1A8D49]">sourced in the last 2 hours</span>
-              </span>
-            </div>
-            <button 
-              onClick={() => setShowDismiss(false)} 
-              className="flex items-center gap-1.5 text-[13px] font-medium text-[#009951] hover:text-[#004d21]"
-            >
-              Dismiss <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Search and Filters */}
-        <div className="bg-white border-x border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
-          <div className="relative w-[340px]">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-            <input 
-              type="text" 
-              placeholder="Search for Candidates" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 pl-10 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none border border-[#E5E7EB] focus:border-[#0F47F2] transition-colors"
-            />
-          </div>
-          <div className="flex items-center gap-3">
-             <div className="relative">
+          {/* Green Alert */}
+          {showDismiss && summary.new > 0 && (
+            <div className="bg-[#D1F7DB] px-6 py-3.5 flex items-center justify-between text-[#006A2E]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-2.5 h-2.5 bg-[#009951] rounded-full"></div>
+                <span className="text-[13px] font-semibold text-[#009951]">
+                  {summary.new} new candidates <span className="font-normal text-[#1A8D49]">sourced in the last 2 hours</span>
+                </span>
+              </div>
               <button
-                ref={filterButtonRef}
-                onClick={() => setShowFilterPanel(!showFilterPanel)}
-                className={`flex items-center gap-2 px-4 py-2 ${showFilterPanel || activeFilterCount > 0 ? "bg-[#F3F5F7] border border-[#d2d6db] text-[#4B5563]" : "bg-white border border-[#E5E7EB] text-[#8E8E93]"} rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors`}
+                onClick={() => setShowDismiss(false)}
+                className="flex items-center gap-1.5 text-[13px] font-medium text-[#009951] hover:text-[#004d21]"
               >
-                <SlidersHorizontal className="w-4 h-4" /> Filters
-                {activeFilterCount > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center">
-                    {activeFilterCount}
-                  </span>
-                )}
+                Dismiss <X className="w-4 h-4" />
               </button>
-              <NaukbotFilterPanel
-                isOpen={showFilterPanel}
-                onClose={() => setShowFilterPanel(false)}
-                onApply={(f) => { setBotFilters(f); setShowFilterPanel(false); }}
-                initialFilters={botFilters}
-                anchorRef={filterButtonRef}
-                jobId={jobId!}
+            </div>
+          )}
+
+          {/* Search and Filters */}
+          <div className="bg-white border-x border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
+            <div className="relative w-[340px]">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+              <input
+                type="text"
+                placeholder="Search for Candidates"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-10 pl-10 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none border border-[#E5E7EB] focus:border-[#0F47F2] transition-colors"
               />
             </div>
-            <select 
-              className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:border-[#0F47F2]"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="ai_score_desc">AI Score ↓</option>
-              <option value="ai_score_asc">AI Score ↑</option>
-              <option value="newest">Newest</option>
-              <option value="experience_desc">Experience ↓</option>
-              <option value="ctc_desc">CTC ↓</option>
-              {!["ai_score_desc", "ai_score_asc", "newest", "experience_desc", "ctc_desc"].includes(sortBy) && (
-                <option value={sortBy} className="hidden">Sorted by Header</option>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <button
+                  ref={filterButtonRef}
+                  onClick={() => setShowFilterPanel(!showFilterPanel)}
+                  className={`flex items-center gap-2 px-4 py-2 ${showFilterPanel || activeFilterCount > 0 ? "bg-[#F3F5F7] border border-[#d2d6db] text-[#4B5563]" : "bg-white border border-[#E5E7EB] text-[#8E8E93]"} rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors`}
+                >
+                  <SlidersHorizontal className="w-4 h-4" /> Filters
+                  {activeFilterCount > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
+                <NaukbotFilterPanel
+                  isOpen={showFilterPanel}
+                  onClose={() => setShowFilterPanel(false)}
+                  onApply={(f) => { setBotFilters(f); setShowFilterPanel(false); }}
+                  initialFilters={botFilters}
+                  anchorRef={filterButtonRef}
+                  jobId={jobId!}
+                />
+              </div>
+              <select
+                className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:border-[#0F47F2]"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="ai_score_desc">AI Score ↓</option>
+                <option value="ai_score_asc">AI Score ↑</option>
+                <option value="newest">Newest</option>
+                <option value="experience_desc">Experience ↓</option>
+                <option value="ctc_desc">CTC ↓</option>
+                {!["ai_score_desc", "ai_score_asc", "newest", "experience_desc", "ctc_desc"].includes(sortBy) && (
+                  <option value={sortBy} className="hidden">Sorted by Header</option>
+                )}
+              </select>
+              {selectedCandidates.size > 0 && (
+                <>
+                  <button
+                    onClick={() => openNviteModal()}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#0F47F2] text-white rounded-lg text-sm font-medium hover:bg-[#0A3BCC] transition-colors"
+                  >
+                    <Send className="w-4 h-4" /> nVite Selected ({selectedCandidates.size})
+                  </button>
+                  <button
+                    onClick={handleBulkMoveToPipeline}
+                    disabled={movingToPipeline}
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ArrowUpRight className="w-4 h-4" /> {movingToPipeline ? 'Moving...' : `Move to Pipeline (${selectedCandidates.size})`}
+                  </button>
+                  <button onClick={handleBulkSkip} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">
+                    <Trash2 className="w-4 h-4" /> Skip Selected ({selectedCandidates.size})
+                  </button>
+                </>
               )}
-            </select>
-            {selectedCandidates.size > 0 && (
-              <>
-                <button
-                  onClick={() => openNviteModal()}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#0F47F2] text-white rounded-lg text-sm font-medium hover:bg-[#0A3BCC] transition-colors"
-                >
-                  <Send className="w-4 h-4" /> nVite Selected ({selectedCandidates.size})
-                </button>
-                <button
-                  onClick={handleBulkMoveToPipeline}
-                  disabled={movingToPipeline}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ArrowUpRight className="w-4 h-4" /> {movingToPipeline ? 'Moving...' : `Move to Pipeline (${selectedCandidates.size})`}
-                </button>
-                <button onClick={handleBulkSkip} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">
-                  <Trash2 className="w-4 h-4" /> Skip Selected ({selectedCandidates.size})
-                </button>
-              </>
-            )}
+            </div>
           </div>
-        </div>
 
-        {/* Active Filters Bar */}
-        {activeFilterCount > 0 && (
-          <div className="bg-white border-x border-[#E5E7EB] px-6 py-3 flex items-center gap-2 flex-wrap">
-            {botFilters.location.map(loc => (
-              <span key={`loc-${loc}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
-                {loc}
-                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('location', loc)} />
-              </span>
-            ))}
-            {botFilters.jobRole.map(role => (
-              <span key={`role-${role}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
-                {role}
-                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('jobRole', role)} />
-              </span>
-            ))}
-            {botFilters.skills.map(skill => (
-              <span key={`skill-${skill}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
-                {skill}
-                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('skills', skill)} />
-              </span>
-            ))}
-            {(botFilters.salaryRange.min || botFilters.salaryRange.max) && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
-                CTC: {botFilters.salaryRange.min || 0} - {botFilters.salaryRange.max || 'Any'} LPA
-                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('salaryRange')} />
-              </span>
-            )}
-            {(botFilters.experience.min || botFilters.experience.max) && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
-                Exp: {botFilters.experience.min || 0} - {botFilters.experience.max || 'Any'} Yrs
-                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('experience')} />
-              </span>
-            )}
-            {botFilters.noticePeriod.selected.map(np => (
-              <span key={`np-${np}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
-                {np}
-                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod', np)} />
-              </span>
-            ))}
-            {(botFilters.noticePeriod.minDays || botFilters.noticePeriod.maxDays) && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
-                Notice (Days): {botFilters.noticePeriod.minDays || 0} - {botFilters.noticePeriod.maxDays || 'Any'}
-                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod')} />
-              </span>
-            )}
-            <button 
-              onClick={() => { setBotFilters(EMPTY_NAUKBOT_FILTERS); setPage(1); }} 
-              className="text-xs font-semibold text-[#8E8E93] hover:text-[#4B5563] ml-2 underline decoration-dashed underline-offset-2"
-            >
-              Clear all
-            </button>
-          </div>
-        )}
+          {/* Active Filters Bar */}
+          {activeFilterCount > 0 && (
+            <div className="bg-white border-x border-[#E5E7EB] px-6 py-3 flex items-center gap-2 flex-wrap">
+              {botFilters.location.map(loc => (
+                <span key={`loc-${loc}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                  {loc}
+                  <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('location', loc)} />
+                </span>
+              ))}
+              {botFilters.jobRole.map(role => (
+                <span key={`role-${role}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                  {role}
+                  <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('jobRole', role)} />
+                </span>
+              ))}
+              {botFilters.skills.map(skill => (
+                <span key={`skill-${skill}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                  {skill}
+                  <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('skills', skill)} />
+                </span>
+              ))}
+              {(botFilters.salaryRange.min || botFilters.salaryRange.max) && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                  CTC: {botFilters.salaryRange.min || 0} - {botFilters.salaryRange.max || 'Any'} LPA
+                  <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('salaryRange')} />
+                </span>
+              )}
+              {(botFilters.experience.min || botFilters.experience.max) && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                  Exp: {botFilters.experience.min || 0} - {botFilters.experience.max || 'Any'} Yrs
+                  <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('experience')} />
+                </span>
+              )}
+              {botFilters.noticePeriod.selected.map(np => (
+                <span key={`np-${np}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                  {np}
+                  <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod', np)} />
+                </span>
+              ))}
+              {(botFilters.noticePeriod.minDays || botFilters.noticePeriod.maxDays) && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                  Notice (Days): {botFilters.noticePeriod.minDays || 0} - {botFilters.noticePeriod.maxDays || 'Any'}
+                  <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod')} />
+                </span>
+              )}
+              <button
+                onClick={() => { setBotFilters(EMPTY_NAUKBOT_FILTERS); setPage(1); }}
+                className="text-xs font-semibold text-[#8E8E93] hover:text-[#4B5563] ml-2 underline decoration-dashed underline-offset-2"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
 
-        {/* Table View */}
-        <div className="bg-white border-x border-t border-[#E5E7EB] overflow-x-auto">
-          <table className="w-full min-w-[1200px] text-left border-collapse">
-            <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-              <tr>
-                <th className="w-12 px-6 py-4">
-                  <input 
-                    type="checkbox" 
-                    checked={candidates.length > 0 && selectedCandidates.size === candidates.length}
-                    onChange={toggleSelectAll}
-                    disabled={candidates.length === 0}
-                    className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
-                  />
-                </th>
-                {renderSortableHeader('Candidate', 'name')}
-                {renderSortableHeader('AI Score', 'ai_score', 'center')}
-                {renderSortableHeader('Location', 'location')}
-                {renderSortableHeader('Exp', 'experience')}
-                {renderSortableHeader('CTC', 'ctc')}
-                {renderSortableHeader('Expected CTC', 'expected_ctc')}
-                {renderSortableHeader('Notice Period', 'notice_period')}
-                {renderSortableHeader('Skills Match', 'skills_match', 'center')}
-                <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Attention</th>
-                <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F3F5F7]">
-               {loading ? (
-                   <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">Loading...</td></tr>
-               ) : candidates.length === 0 ? (
-                   <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">No candidates found</td></tr>
-               ) : candidates.map((item) => {
+          {/* Table View */}
+          <div className="bg-white border-x border-t border-[#E5E7EB] overflow-x-auto">
+            <table className="w-full min-w-[1200px] text-left border-collapse">
+              <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                <tr>
+                  <th className="w-12 px-6 py-4">
+                    <input
+                      type="checkbox"
+                      checked={candidates.length > 0 && selectedCandidates.size === candidates.length}
+                      onChange={toggleSelectAll}
+                      disabled={candidates.length === 0}
+                      className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]"
+                    />
+                  </th>
+                  {renderSortableHeader('Candidate', 'name')}
+                  {renderSortableHeader('AI Score', 'ai_score', 'center')}
+                  {renderSortableHeader('Location', 'location')}
+                  {renderSortableHeader('Exp', 'experience')}
+                  {renderSortableHeader('CTC', 'ctc')}
+                  {renderSortableHeader('Expected CTC', 'expected_ctc')}
+                  {renderSortableHeader('Notice Period', 'notice_period')}
+                  {renderSortableHeader('Skills Match', 'skills_match', 'center')}
+                  {/* <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Attention</th> */}
+                  <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F3F5F7]">
+                {loading ? (
+                  <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">Loading...</td></tr>
+                ) : candidates.length === 0 ? (
+                  <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">No candidates found</td></tr>
+                ) : candidates.map((item) => {
                   const scoreColor = item.ai_score >= 80 ? "#00C8B3" : item.ai_score >= 60 ? "#F59E0B" : "#EA580C";
                   const skillsColor = item.skills_match.matched >= (item.skills_match.total * 0.8) ? "#009951" : "#EA580C";
                   return (
-                  <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors">
-                    <td className="px-6 py-6 border-transparent">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedCandidates.has(item.id)}
-                        onChange={() => toggleSelection(item.id)}
-                        className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
-                      />
-                    </td>
-                    <td className="px-6 py-6 border-transparent">
-                      <div className="font-semibold text-sm text-[#4B5563] truncate max-w-[180px]" title={item.name}>{item.name}</div>
-                      <div className="text-[12px] text-[#8E8E93] mt-0.5 truncate max-w-[180px]" title={`${item.current_title} • ${item.current_company || "N/A"}`}>
-                        {item.current_title} • {item.current_company || "N/A"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-6 border-transparent">
-                       <div className="relative w-10 h-10 mx-auto">
+                    <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors">
+                      <td className="px-6 py-6 border-transparent">
+                        <input
+                          type="checkbox"
+                          checked={selectedCandidates.has(item.id)}
+                          onChange={() => toggleSelection(item.id)}
+                          className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]"
+                        />
+                      </td>
+                      <td className="px-6 py-6 border-transparent">
+                        <div className="font-semibold text-sm text-[#4B5563] truncate max-w-[180px]" title={item.name}>{item.name}</div>
+                        <div className="text-[12px] text-[#8E8E93] mt-0.5 truncate max-w-[180px]" title={`${item.current_title} • ${item.current_company || "N/A"}`}>
+                          {item.current_title} • {item.current_company || "N/A"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-6 border-transparent">
+                        <div className="relative w-10 h-10 mx-auto">
                           <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
                             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F3F5F7" strokeWidth="4" />
                             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={scoreColor} strokeWidth="4" strokeDasharray={`${item.ai_score}, 100`} />
                           </svg>
                           <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{item.ai_score}</div>
                         </div>
-                    </td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years ? `${item.experience_years} Years` : "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-[#8E8E93] whitespace-nowrap">{item.notice_period || "--"}</td>
-                    <td 
-                      className="px-6 py-6 text-[13px] font-medium border-transparent text-center cursor-help relative" 
-                      style={{ color: skillsColor }}
-                      onMouseEnter={(e) => handleSkillsMouseEnter(e, item)}
-                      onMouseLeave={handleSkillsMouseLeave}
-                    >
-                      {item.skills_match.matched}/{item.skills_match.total} skills
-                      {hoveredSkills?.candidateId === item.id && (
-                        <SkillsMatchTooltip 
-                          matchedSkills={hoveredSkills.matched} 
-                          missingSkills={hoveredSkills.missing} 
-                          anchorRef={hoveredSkills.ref}
-                          onClose={() => setHoveredSkills(null)}
-                        />
-                      )}
-                    </td>
-                    <td className="px-6 py-6 whitespace-nowrap border-transparent">
+                      </td>
+                      <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "--"}</td>
+                      <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years ? `${item.experience_years} Years` : "--"}</td>
+                      <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
+                      <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
+                      <td className="px-6 py-6 text-[13px] font-medium border-transparent text-[#8E8E93] whitespace-nowrap">{item.notice_period || "--"}</td>
+                      <td
+                        className="px-6 py-6 text-[13px] font-medium border-transparent text-center cursor-help relative"
+                        style={{ color: skillsColor }}
+                        onMouseEnter={(e) => handleSkillsMouseEnter(e, item)}
+                        onMouseLeave={handleSkillsMouseLeave}
+                      >
+                        {item.skills_match.matched}/{item.skills_match.total} skills
+                        {hoveredSkills?.candidateId === item.id && (
+                          <SkillsMatchTooltip
+                            matchedSkills={hoveredSkills.matched}
+                            missingSkills={hoveredSkills.missing}
+                            anchorRef={hoveredSkills.ref}
+                            onClose={() => setHoveredSkills(null)}
+                          />
+                        )}
+                      </td>
+                      {/* Attention Column - Removed */}
+                      {/* <td className="px-6 py-6 whitespace-nowrap border-transparent">
                         <div className="flex justify-center">
                           {(() => {
                             const attentionTag = (item as any).status_tags?.find((t: any) => t.text);
@@ -631,97 +632,143 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                             );
                           })()}
                         </div>
-                     </td>
-                    <td className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-6 py-6 border-transparent shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}>
-                      <div className="flex justify-end items-center gap-2">
-                        <button 
-                           onClick={() => openNviteModal(item.id)}
-                           disabled={item.is_nvited}
-                           className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${item.is_nvited ? 'bg-gray-100 text-gray-400' : 'bg-[#0F47F2] text-white hover:bg-[#0A3BCC]'}`}>
-                           {item.is_nvited ? <><Check className="w-3.5 h-3.5" /> nVited</> : <><Send className="w-3.5 h-3.5" /> nVite</>}
-                        </button>
-                        
-                        <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (menuOpenId === item.id) {
-                                setMenuOpenId(null);
-                                return;
-                              }
-                              const rect = e.currentTarget.getBoundingClientRect();
-                              setMenuPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
-                              setMenuOpenId(item.id);
-                            }}
-                            className="p-2 hover:bg-[#F3F5F7] rounded-lg transition-colors text-[#8E8E93] hover:text-[#4B5563]"
-                          >
-                            <MoreHorizontal className="w-5 h-5" />
-                          </button>
-
-                          {menuOpenId === item.id && (
-                            <div 
-                              className="absolute right-0 mt-2 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg py-1 z-[1001]"
-                              style={{ top: '100%' }}
-                              onClick={(e) => e.stopPropagation()}
+                      </td> */}
+                      <td className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-6 py-6 border-transparent shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}>
+                        <div className="flex justify-end items-center gap-2">
+                            {/* nVite */}
+                            {/* <button
+                              onClick={() => openNviteModal(item.id)}
+                              disabled={item.is_nvited}
+                              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${item.is_nvited
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  : 'bg-[#0F47F2] text-white hover:bg-[#0A3BCC]'
+                                }`}
                             >
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleMoveToPipeline(item.id);
-                                  setMenuOpenId(null);
-                                }}
-                                disabled={item.is_moved_to_pipeline || movingToPipeline}
-                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <ArrowUpRight className="w-4 h-4" /> Move to Pipeline
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSkip(item.id);
-                                  setMenuOpenId(null);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                              >
-                                <Trash2 className="w-4 h-4" /> Skip Candidate
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-               )})}
-            </tbody>
-          </table>
-        </div>
+                              {item.is_nvited ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5" />
+                                  nVited
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="w-3.5 h-3.5" />
+                                  nVite
+                                </>
+                              )}
+                            </button> */}
 
-        {/* Pagination */}
-        <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between">
+                            {/* Move to Pipeline */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMoveToPipeline(item.id);
+                                setMenuOpenId(null)
+                              }}
+                              disabled={item.is_moved_to_pipeline || movingToPipeline}
+                              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${item.is_moved_to_pipeline || movingToPipeline
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  : 'bg-[#EEF2FF] text-[#0F47F2] hover:bg-[#E0E7FF]'
+                                }`}
+                            >
+                              <ArrowUpRight className="w-3.5 h-3.5" />
+                              {item.is_moved_to_pipeline ? 'Moved to pipeline' : 'Move'}
+                            </button>
+
+                            {/* Skip Candidate */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSkip(item.id);
+                                setMenuOpenId(null)
+                              }}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-all"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Skip
+                            </button>
+
+                          {/* <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (menuOpenId === item.id) {
+                                  setMenuOpenId(null);
+                                  return;
+                                }
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setMenuPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
+                                setMenuOpenId(item.id);
+                              }}
+                              className="p-2 hover:bg-[#F3F5F7] rounded-lg transition-colors text-[#8E8E93] hover:text-[#4B5563]"
+                            >
+                              <MoreHorizontal className="w-5 h-5" />
+                            </button>
+
+                            {menuOpenId === item.id && (
+                              <div
+                                className="absolute right-0 mt-2 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg py-1 z-[1001]"
+                                style={{ top: '100%' }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMoveToPipeline(item.id);
+                                    setMenuOpenId(null);
+                                  }}
+                                  disabled={item.is_moved_to_pipeline || movingToPipeline}
+                                  className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <ArrowUpRight className="w-4 h-4" /> Move to Pipeline
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSkip(item.id);
+                                    setMenuOpenId(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                >
+                                  <Trash2 className="w-4 h-4" /> Skip Candidate
+                                </button>
+                              </div>
+                            )}
+                          </div> */}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between">
             <div className="text-[13px] text-[#8E8E93]">
-                Showing {totalCount > 0 ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, totalCount)} of {totalCount} candidates
+              Showing {totalCount > 0 ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, totalCount)} of {totalCount} candidates
             </div>
             {totalPages > 1 && (
-                <div className="flex items-center gap-1.5">
-                   <button onClick={() => setPage(Math.max(page - 1, 1))} disabled={page === 1} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowLeft className="w-4 h-4"/></button>
-                   {getPageNumbers().map((p, i) => (
-                      p === "..." ? (
-                        <span key={`dots-${i}`} className="w-6 h-8 flex items-center justify-center text-[#8E8E93] text-sm font-medium">...</span>
-                      ) : (
-                        <button 
-                          key={`page-${p}`} 
-                          onClick={() => setPage(p as number)}
-                          className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-medium ${page === p ? 'border-[#0F47F2] text-white bg-[#0F47F2]' : 'border-[#E5E7EB] text-[#4B5563] bg-white hover:bg-gray-50'}`}>
-                            {p}
-                        </button>
-                      )
-                   ))}
-                   <button onClick={() => setPage(Math.min(page + 1, totalPages))} disabled={page === totalPages} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowRight className="w-4 h-4"/></button>
-                </div>
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => setPage(Math.max(page - 1, 1))} disabled={page === 1} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowLeft className="w-4 h-4" /></button>
+                {getPageNumbers().map((p, i) => (
+                  p === "..." ? (
+                    <span key={`dots-${i}`} className="w-6 h-8 flex items-center justify-center text-[#8E8E93] text-sm font-medium">...</span>
+                  ) : (
+                    <button
+                      key={`page-${p}`}
+                      onClick={() => setPage(p as number)}
+                      className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-medium ${page === p ? 'border-[#0F47F2] text-white bg-[#0F47F2]' : 'border-[#E5E7EB] text-[#4B5563] bg-white hover:bg-gray-50'}`}>
+                      {p}
+                    </button>
+                  )
+                ))}
+                <button onClick={() => setPage(Math.min(page + 1, totalPages))} disabled={page === totalPages} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowRight className="w-4 h-4" /></button>
+              </div>
             )}
+          </div>
         </div>
       </div>
-    </div>
 
       {nviteModal && (
         <NViteModal
