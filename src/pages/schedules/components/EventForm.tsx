@@ -6,6 +6,7 @@ import { organizationService, MyWorkspace } from '../../../services/organization
 import { jobPostService, AllRoleOption } from '../../../services/jobPostService';
 import { scheduleService } from '../../../services/scheduleService';
 import { candidateService, PipelineStage } from '../../../services/candidateService';
+import { generateTimeOptions } from '../../../utils/interviewForm.constants';
 
 interface PipelineCandidate {
   id: number;
@@ -32,12 +33,7 @@ interface EventFormProps {
 }
 
 // Time options for the Start Time dropdown
-const TIME_OPTIONS = [
-  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
-  '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
-  '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
-  '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM',
-];
+const TIME_OPTIONS = generateTimeOptions();
 
 const DURATION_OPTIONS = ['15 min', '30 min', '45 min', '60 min', '90 min', '120 min'];
 
@@ -607,7 +603,7 @@ export const EventForm = ({
     label: pc.candidate.full_name,
   }));
 
-  const timeOptions = TIME_OPTIONS.map((t) => ({ value: t, label: t }));
+  const timeOptions = TIME_OPTIONS;
   const durationOptions = DURATION_OPTIONS.map((d) => ({ value: d, label: d }));
 
   return (
