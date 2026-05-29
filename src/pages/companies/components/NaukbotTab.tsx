@@ -612,7 +612,8 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                           />
                         )}
                       </td>
-                      <td className="px-6 py-6 whitespace-nowrap border-transparent">
+                      {/* Attention Column - Removed */}
+                      {/* <td className="px-6 py-6 whitespace-nowrap border-transparent">
                         <div className="flex justify-center">
                           {(() => {
                             const attentionTag = (item as any).status_tags?.find((t: any) => t.text);
@@ -631,7 +632,7 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
                             );
                           })()}
                         </div>
-                      </td>
+                      </td> */}
                       <td className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-6 py-6 border-transparent shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}>
                         <div className="flex justify-end items-center gap-2">
                             {/* nVite */}
