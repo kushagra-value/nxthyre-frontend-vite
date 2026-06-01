@@ -49,6 +49,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp, faWindows } from "@fortawesome/free-brands-svg-icons";
 import { showToast } from "../../utils/toast";
 import apiClient from "../../services/api";
+import { sortStages } from "../../utils/stageUtils";
 import AddNewStageForm from "./AddNewStageForm";
 import { useAuthContext } from "../../context/AuthContext";
 import candidateService from "../../services/candidateService";
@@ -2571,9 +2572,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           `/jobs/applications/stages/?job_id=${jobId}`,
         );
         // Sort by sort_order just in case
-        const sorted = res.data.sort(
-          (a: any, b: any) => a.sort_order - b.sort_order,
-        );
+        const sorted = sortStages(res.data);
         setPipelineStages(sorted);
       } catch (err) {
         console.error("Failed to load pipeline stages", err);

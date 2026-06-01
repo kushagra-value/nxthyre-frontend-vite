@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import JobPipelineDashboard, { Stage } from "./JobPipelineDashboard";
 import JobCandidateProfile from "./JobCandidateProfile";
 import apiClient from "../../../services/api";
+import { sortStages } from "../../../utils/stageUtils";
 
 interface JobPipelineProps {
   jobId: number | null;
@@ -100,7 +101,7 @@ export default function JobPipeline({
         `/jobs/applications/stages/?job_id=${jId}`,
       );
       const data: Stage[] = response.data;
-      const sorted = data.sort((a, b) => a.sort_order - b.sort_order);
+      const sorted = sortStages(data);
       setStages(sorted);
     } catch (error) {
       console.error("Error fetching stages:", error);

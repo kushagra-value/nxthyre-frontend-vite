@@ -61,6 +61,7 @@ import {
 } from "../../services/candidateService";
 import TemplateSelector from "../../components/common/TemplateSelector";
 import toast from "react-hot-toast";
+import { sortStages } from "../../utils/stageUtils";
 
 import { useNavigate } from "react-router-dom";
 
@@ -1006,9 +1007,10 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
         `/jobs/applications/stages/?job_id=${jobId}`,
       );
       const data: Stage[] = response.data;
-      setStages(data.sort((a, b) => a.sort_order - b.sort_order));
+      const sorted = sortStages(data);
+      setStages(sorted);
       setStagesError(null);
-      setSelectedStage(data[0]?.name || "Uncontacted");
+      setSelectedStage(sorted[0]?.name || "Uncontacted");
     } catch (error) {
       console.error("Error fetching stages:", error);
       setStages([]);
