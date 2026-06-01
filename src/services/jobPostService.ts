@@ -572,6 +572,21 @@ class JobPostService {
       if (data.ai_jd_object) {
         formData.append("ai_jd_object", JSON.stringify(data.ai_jd_object));
       }
+      if (data.num_positions !== undefined) {
+        formData.append("num_positions", String(data.num_positions));
+      }
+      if (data.notice_period) {
+        formData.append("notice_period", data.notice_period);
+      }
+      if (data.poc_email) {
+        formData.append("poc_email", data.poc_email);
+      }
+      if (data.education_level) {
+        formData.append("education_level", data.education_level);
+      }
+      if (data.specialisations) {
+        formData.append("specialisations", data.specialisations);
+      }
 
       const response = await apiClient.patch(`/jobs/roles/${id}/`, formData, {
         headers: {
