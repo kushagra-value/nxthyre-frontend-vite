@@ -120,6 +120,12 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     setCompetencies([]); setEditableJD(""); setAiJdResponse(null); setBooleanSearchTerm("");
   };
 
+  const fun = async () => {
+    const checkJobData = await jobPostService.getJob(jobId);
+    console.log("checkJobData", checkJobData);
+  }
+  fun();
+
   useEffect(() => {
     if (isOpen && jobId) {
       if (loadDrafts()) return;
@@ -144,8 +150,8 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           location: locationFirst,
           workApproach,
           seniority: job.seniority,
-          department: departmentOptions.includes(job.department_name) 
-            ? job.department_name 
+          department: departmentOptions.includes(job.department_name)
+            ? job.department_name
             : (departmentMap[Number(job.department_name)] || "Others"),
           openings: job.num_positions?.toString() || "",
           noticePeriod: job.notice_period || "",
@@ -185,7 +191,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
     } else if (!isOpen) {
       resetForm();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, jobId]);
 
   // ── Skill suggestions ──
@@ -336,12 +342,12 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           if (search) newAiSelectedSkills.push(...search);
 
           setFormData((prev: any) => ({
-             ...prev,
-             minExp: prev.minExp || minExp,
-             maxExp: prev.maxExp || maxExp,
-             mustHaveRequirements: prev.mustHaveRequirements || implicitReqs,
-             niceToHaveRequirements: prev.niceToHaveRequirements || niceToHave,
-             aiSelectedSkills: newAiSelectedSkills,
+            ...prev,
+            minExp: prev.minExp || minExp,
+            maxExp: prev.maxExp || maxExp,
+            mustHaveRequirements: prev.mustHaveRequirements || implicitReqs,
+            niceToHaveRequirements: prev.niceToHaveRequirements || niceToHave,
+            aiSelectedSkills: newAiSelectedSkills,
           }));
         }
         setCurrentStep(2);
@@ -400,7 +406,7 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
           ? { description_text: formData.jobDescription }
           : { description_file: file! }),
       };
-      
+
       await jobPostService.updateJob(jobId, jobData);
       showToast.success("Job role updated successfully!");
       onJobUpdated?.(); setShowSuccessModal(true);

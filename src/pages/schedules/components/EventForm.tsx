@@ -7,6 +7,7 @@ import { jobPostService, AllRoleOption } from '../../../services/jobPostService'
 import { scheduleService } from '../../../services/scheduleService';
 import { candidateService, PipelineStage } from '../../../services/candidateService';
 import { generateTimeOptions } from '../../../utils/interviewForm.constants';
+import { sortStages } from '../../../utils/stageUtils';
 
 interface PipelineCandidate {
   id: number;
@@ -447,7 +448,7 @@ export const EventForm = ({
 
         // Sort by sort_order if available
         if (stagesData.length > 0 && typeof stagesData[0].sort_order === 'number') {
-          stagesData.sort((a, b) => a.sort_order - b.sort_order);
+          stagesData = sortStages(stagesData);
         }
 
         console.log('Fetched stages:', stagesData.length);

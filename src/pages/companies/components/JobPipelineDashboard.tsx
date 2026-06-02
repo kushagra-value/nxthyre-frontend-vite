@@ -66,6 +66,7 @@ import PipelineKanbanColumn from "./PipelineKanbanColumn";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import { getAttentionPill, formatTimeAgo, formatMovedDate } from "../../../utils/candidateAttention";
 import { EventForm } from "../../schedules/components/EventForm";
+import { sortStages } from "../../../utils/stageUtils";
 
 // ─── Interfaces ────────────────────────────────────────────────
 
@@ -1006,7 +1007,7 @@ export default function JobPipelineDashboard({
             !s.name.toLowerCase().includes("archive") &&
             !isHiddenStage(s),
         );
-        const sorted = filtered.sort((a, b) => a.sort_order - b.sort_order);
+        const sorted = sortStages(filtered);
         setStages(sorted);
       } catch (error) {
         console.error("Error fetching stages:", error);
@@ -1527,9 +1528,8 @@ export default function JobPipelineDashboard({
     setSelectionType(null);
   };
 
-  const nonArchiveStages = stages
-    .filter((s) => s.slug !== "archives" && !s.name.toLowerCase().includes("archive") && !isHiddenStage(s))
-    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const nonArchiveStages = sortStages(stages
+    .filter((s) => s.slug !== "archives" && !s.name.toLowerCase().includes("archive") && !isHiddenStage(s)));
 
   const getNextStageForItem = (item: CandidateListItem) => {
     const currentSlug = item.current_stage?.slug || item.stage_slug;
