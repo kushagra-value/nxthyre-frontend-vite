@@ -865,6 +865,9 @@ export default function JobPipelineDashboard({
         if (batch.status === "completed") {
           clearInterval(pollingRef.current!);
           pollingRef.current = null;
+          if (batch.failed > 0) {
+            console.error("Upload batch completed with failures:", JSON.stringify(batch, null, 2));
+          }
           showToast.success(
             batch.failed === 0
               ? `All ${batch.success} resumes processed successfully`
@@ -3746,6 +3749,30 @@ export default function JobPipelineDashboard({
                         {uploadStatus.failed > 0 && (
                           <div className="bg-red-50 p-2 rounded text-md text-red-600">
                             {uploadStatus.failed} file(s) failed
+                            {uploadStatus.failed_details && (
+                              <div className="mt-2 space-y-2 text-sm">
+                                {uploadStatus.failed_details.map(
+                                  (fail: any, fIdx: number) => (
+                                    <div
+                                      key={fIdx}
+                                      className="border border-red-200 rounded p-2 bg-white"
+                                    >
+                                      <div className="font-medium text-gray-800">
+                                        {fail.file_name}
+                                      </div>
+                                      <div className="text-red-600">
+                                        {fail.error}
+                                      </div>
+                                      {fail.failure_category && (
+                                        <div className="text-gray-500">
+                                          Category: {fail.failure_category}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

@@ -407,22 +407,37 @@ export const EventForm = ({
       setPipelineCandidates([]); // Clear before fetch
       try {
         console.log('Fetching candidates for job:', selectedJobId);
-        const response = await apiClient.get(
-          `/jobs/applications/?job_id=${selectedJobId}`
-        );
-        const data = response.data;
-        let candidateData: PipelineCandidate[] = [];
+        let allCandidates: PipelineCandidate[] = [];
+        let page = 1;
+        let hasMore = true;
+        const pageSize = 500;
 
-        if (Array.isArray(data)) {
-          candidateData = data;
-        } else if (data && Array.isArray(data.results)) {
-          candidateData = data.results;
-        } else if (data && data.data && Array.isArray(data.data)) {
-          candidateData = data.data;
+        while (hasMore) {
+          const response = await apiClient.get(
+            `/jobs/applications/?job_id=${selectedJobId}&page=${page}&page_size=${pageSize}`
+          );
+          const data = response.data;
+          let candidateData: PipelineCandidate[] = [];
+
+          if (Array.isArray(data)) {
+            candidateData = data;
+            hasMore = false; // Non-paginated response, no more pages
+          } else if (data && Array.isArray(data.results)) {
+            candidateData = data.results;
+            hasMore = !!data.next; // Server indicates more pages via `next` URL
+          } else if (data && data.data && Array.isArray(data.data)) {
+            candidateData = data.data;
+            hasMore = false;
+          } else {
+            hasMore = false;
+          }
+
+          allCandidates = [...allCandidates, ...candidateData];
+          page++;
         }
 
-        console.log('Fetched candidates:', candidateData.length);
-        setPipelineCandidates(candidateData);
+        console.log('Fetched candidates:', allCandidates.length);
+        setPipelineCandidates(allCandidates);
       } catch (error) {
         console.error('Failed to fetch pipeline candidates', error);
       } finally {
