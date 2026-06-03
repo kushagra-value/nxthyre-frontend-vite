@@ -51,6 +51,11 @@ const QUICK_SLOTS = [
   "04:30 PM",
 ];
 
+// Stable defaults to avoid new references on every render (which would cause
+// useEffect dependency changes → infinite re-render loops).
+const EMPTY_TAGS: string[] = [];
+const EMPTY_SKILLS: Record<string, boolean> = {};
+
 type ModalStep = "select" | "connecting" | "noAnswer";
 
 const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
@@ -62,8 +67,8 @@ const CallCandidateModal: React.FC<CallCandidateModalProps> = ({
   initialReason = null,
   callMode = "platform",
   initialNote = "",
-  initialTags = [],
-  initialSkills = {},
+  initialTags = EMPTY_TAGS,
+  initialSkills = EMPTY_SKILLS,
 }) => {
   const [step, setStep] = useState<ModalStep>(initialStep);
   const [selectedReason, setSelectedReason] = useState<string | null>(initialReason);
