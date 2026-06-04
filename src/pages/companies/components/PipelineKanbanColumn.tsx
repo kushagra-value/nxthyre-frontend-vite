@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import apiClient from "../../../services/api";
 import { Stage } from "./JobPipelineDashboard";
+import { candidateService } from "../../../services/candidateService";
 
 interface PipelineKanbanColumnProps {
   jobId: number;
@@ -8,6 +9,7 @@ interface PipelineKanbanColumnProps {
   filters: any;
   dateRange: { from: string; to: string };
   searchQuery: string;
+  selectedRecruiter: string | null;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, stageSlug: string) => void;
   stageBarColor: string;
@@ -31,6 +33,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
   filters,
   dateRange,
   searchQuery,
+  selectedRecruiter,
   onDragOver,
   onDrop,
   stageBarColor,
@@ -74,7 +77,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
         queryParams.append("page", currentPage.toString());
         queryParams.append("page_size", "15");
         if (searchQuery.trim()) queryParams.append("search", searchQuery.trim());
-        
+
         const orderingMap: Record<string, string> = {
           "Name": "full_name",
           "AI Score": "ai_score",
@@ -154,15 +157,52 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
           }
         }
 
+        const candidateDataWithActivities = await Promise.all(
+          candidateData.map(async (item: any) => {
+            if (item.candidate?.id) {
+              try {
+                const activities = await candidateService.getCandidateActivity(
+                  item.candidate.id,
+                  item.id
+                );
+                return { ...item, activities };
+              } catch (err) {
+                console.error(`Error fetching activities for candidate ${item.candidate.id}:`, err);
+              }
+            }
+            return item;
+          })
+        );
+
+        let archivedDataWithActivities = archivedCandidates;
+        if (reset && archivedRes.data.results) {
+          const arc = archivedRes.data.results.map((c: any) => ({ ...c, is_archived: true })).filter((c: any) => c.stage_slug === stage.slug || c.current_stage?.slug === stage.slug);
+          archivedDataWithActivities = await Promise.all(
+            arc.map(async (item: any) => {
+              if (item.candidate?.id) {
+                try {
+                  const activities = await candidateService.getCandidateActivity(
+                    item.candidate.id,
+                    item.id
+                  );
+                  return { ...item, activities };
+                } catch (err) {
+                  console.error(`Error fetching activities for archived candidate ${item.candidate.id}:`, err);
+                }
+              }
+              return item;
+            })
+          );
+        }
+
         if (reset) {
-          setCandidates(candidateData);
+          setCandidates(candidateDataWithActivities);
           setTotalCount(count);
           if (archivedRes.data.results) {
-             const arc = archivedRes.data.results.map((c: any) => ({ ...c, is_archived: true })).filter((c: any) => c.stage_slug === stage.slug || c.current_stage?.slug === stage.slug);
-             setArchivedCandidates(arc);
+            setArchivedCandidates(archivedDataWithActivities);
           }
         } else {
-          setCandidates((prev) => [...prev, ...candidateData]);
+          setCandidates((prev) => [...prev, ...candidateDataWithActivities]);
         }
 
         setHasMore((reset ? candidateData.length : candidates.length + candidateData.length) < count);
@@ -191,7 +231,47 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
     }
   };
 
-  const displayCount = stageCountOverride !== undefined ? stageCountOverride : totalCount;
+  const getInitialRecruiter = (item: any): string | null => {
+    const stageMoves = item.activities?.filter((a: any) => a.type === "stage_move") || [];
+    if (stageMoves.length > 0) {
+      const sorted = [...stageMoves].sort((a: any, b: any) => {
+        const timeA = a.timestamp || a.data?.moved_at || "";
+        const timeB = b.timestamp || b.data?.moved_at || "";
+        return timeA.localeCompare(timeB);
+      });
+      const oldest = sorted[0];
+      const name = oldest.data?.moved_by_name;
+      if (name && name.trim()) {
+        return name.trim();
+      }
+      const extEmail = oldest.data?.external_mover_email;
+      if (extEmail && extEmail.trim()) {
+        return extEmail.trim();
+      }
+    }
+    if (item.last_moved_by_name && item.last_moved_by_name.trim()) {
+      return item.last_moved_by_name.trim();
+    }
+    return null;
+  };
+
+  const matchesRecruiter = (item: any, selected: string | null) => {
+    if (!selected) return true;
+    const initialRec = getInitialRecruiter(item);
+    return initialRec === selected;
+  };
+
+  let displayedCandidates = candidates;
+  let displayedArchived = archivedCandidates;
+
+  if (selectedRecruiter) {
+    displayedCandidates = candidates.filter((c) => matchesRecruiter(c, selectedRecruiter));
+    displayedArchived = archivedCandidates.filter((c) => matchesRecruiter(c, selectedRecruiter));
+  }
+
+  const displayCount = selectedRecruiter
+    ? displayedCandidates.length
+    : (stageCountOverride !== undefined ? stageCountOverride : totalCount);
 
   return (
     <div
@@ -204,7 +284,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
           <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: stageBarColor }} />
           <h3 className="text-sm font-bold text-[#4B5563] capitalize">{stage.name}</h3>
           <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">
-            {displayCount + (visibleArchives.has(stage.slug) ? archivedCandidates.length : 0)}
+            {displayCount + (visibleArchives.has(stage.slug) ? displayedArchived.length : 0)}
           </span>
         </div>
         <div className={`relative ${stageMenuOpenId === stage.id ? "z-50" : ""}`}>
@@ -296,9 +376,9 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
         ref={containerRef}
         onScroll={handleScroll}
       >
-        {candidates.map((item, idx) => renderCandidateCard(item, false, candidates, idx, stage.slug))}
-        
-        {visibleArchives.has(stage.slug) && archivedCandidates.length > 0 && (
+        {displayedCandidates.map((item, idx) => renderCandidateCard(item, false, displayedCandidates, idx, stage.slug))}
+
+        {visibleArchives.has(stage.slug) && displayedArchived.length > 0 && (
           <div className="mt-4 pt-4 border-t border-dashed border-[#E5E7EB]">
             <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[#8E8E93] px-2">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -306,9 +386,9 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
                 <rect x="1" y="3" width="22" height="5"></rect>
                 <line x1="10" y1="12" x2="14" y2="12"></line>
               </svg>
-              Archived ({archivedCandidates.length})
+              Archived ({displayedArchived.length})
             </div>
-            {archivedCandidates.map((item, idx) => renderCandidateCard(item, true, archivedCandidates, idx, stage.slug))}
+            {displayedArchived.map((item, idx) => renderCandidateCard(item, true, displayedArchived, idx, stage.slug))}
           </div>
         )}
 

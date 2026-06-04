@@ -28,6 +28,14 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     () => searchParams.get("stage") || "",
     [searchParams],
   );
+  const selectedInternalRecruiter = useMemo(
+    () => searchParams.get("internal_recruiter") || "",
+    [searchParams],
+  );
+  const selectedCompanyRecruiter = useMemo(
+    () => searchParams.get("company_recruiter") || "",
+    [searchParams],
+  );
 
   const [allApplications, setAllApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,8 +97,27 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
         (app) => (app.current_stage?.name || app.stage_slug) === selectedStage,
       );
     }
+    if (selectedInternalRecruiter) {
+      filtered = filtered.filter((app) => {
+        const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
+        return stageMoves.some((a: any) => {
+          const name = a.data?.moved_by_name || "";
+          return name === selectedInternalRecruiter;
+        });
+      });
+    }
+    if (selectedCompanyRecruiter) {
+      filtered = filtered.filter((app) => {
+        const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
+        return stageMoves.some((a: any) => {
+          const email = a.data?.external_mover_email || "";
+          const name = a.data?.moved_by_name || "";
+          return email === selectedCompanyRecruiter || name === selectedCompanyRecruiter;
+        });
+      });
+    }
     return filtered;
-  }, [allApplications, selectedPipeline, selectedStage]);
+  }, [allApplications, selectedPipeline, selectedStage, selectedInternalRecruiter, selectedCompanyRecruiter]);
 
   // Paginated applications
   const applications = useMemo(() => {
@@ -121,6 +148,49 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       ].sort(),
     [allApplications],
   );
+
+  // Extract unique internal recruiter names from activities
+  const availableInternalRecruiters = useMemo(() => {
+    const names = new Set<string>();
+    allApplications.forEach((app) => {
+      const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
+      stageMoves.forEach((a: any) => {
+        const name = a.data?.moved_by_name;
+        if (name && name.trim() && name !== "System" && name !== "External Upload") {
+          const isInternal = !name.includes("@") || 
+                             name.toLowerCase().endsWith("@valuebound.com") || 
+                             name.toLowerCase().endsWith("@nxthyre.com");
+          if (isInternal) {
+            names.add(name);
+          }
+        }
+      });
+    });
+    return [...names].sort();
+  }, [allApplications]);
+
+  // Extract unique company/external recruiter emails from activities
+  const availableCompanyRecruiters = useMemo(() => {
+    const emails = new Set<string>();
+    allApplications.forEach((app) => {
+      const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
+      stageMoves.forEach((a: any) => {
+        const email = a.data?.external_mover_email;
+        if (email && email.trim()) {
+          emails.add(email);
+        }
+        const name = a.data?.moved_by_name;
+        if (name && name.trim() && name.includes("@")) {
+          const isExternal = !name.toLowerCase().endsWith("@valuebound.com") && 
+                             !name.toLowerCase().endsWith("@nxthyre.com");
+          if (isExternal) {
+            emails.add(name);
+          }
+        }
+      });
+    });
+    return [...emails].sort();
+  }, [allApplications]);
 
   const getVisiblePages = () => {
     const pages: (number | string)[] = [];
@@ -180,6 +250,28 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       newParams.set("stage", value);
     } else {
       newParams.delete("stage");
+    }
+    newParams.set("page", "1");
+    setSearchParams(newParams);
+  };
+
+  const handleInternalRecruiterChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set("internal_recruiter", value);
+    } else {
+      newParams.delete("internal_recruiter");
+    }
+    newParams.set("page", "1");
+    setSearchParams(newParams);
+  };
+
+  const handleCompanyRecruiterChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set("company_recruiter", value);
+    } else {
+      newParams.delete("company_recruiter");
     }
     newParams.set("page", "1");
     setSearchParams(newParams);
@@ -278,8 +370,8 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
         </div>
 
         {/* Filters */}
-        <div className="flex gap-4 mb-6">
-          <div className="flex-1">
+        <div className="flex gap-4 mb-6 flex-wrap">
+          <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Pipeline
             </label>
@@ -297,7 +389,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
             </select>
           </div>
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Stage
             </label>
@@ -310,6 +402,42 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
               {availableStages.map((stage) => (
                 <option key={stage} value={stage}>
                   {stage}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Internal Recruiter
+            </label>
+            <select
+              value={selectedInternalRecruiter}
+              onChange={(e) => handleInternalRecruiterChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Internal Recruiters</option>
+              {availableInternalRecruiters.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              External Recruiter
+            </label>
+            <select
+              value={selectedCompanyRecruiter}
+              onChange={(e) => handleCompanyRecruiterChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All External Recruiters</option>
+              {availableCompanyRecruiters.map((email) => (
+                <option key={email} value={email}>
+                  {email}
                 </option>
               ))}
             </select>
