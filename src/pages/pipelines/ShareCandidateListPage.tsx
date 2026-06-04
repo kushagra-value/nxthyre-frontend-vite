@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import candidateService from "../../services/candidateService"; // adjust path
+import jobPostService from "../../services/jobPostService";
 import { MapPin } from "lucide-react";
 
 interface ShareCandidateListPageProps {
@@ -28,8 +29,17 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     () => searchParams.get("stage") || "",
     [searchParams],
   );
+  const selectedInternalRecruiter = useMemo(
+    () => searchParams.get("internal_recruiter") || "",
+    [searchParams],
+  );
+  const selectedCompanyRecruiter = useMemo(
+    () => searchParams.get("company_recruiter") || "",
+    [searchParams],
+  );
 
   const [allApplications, setAllApplications] = useState<any[]>([]);
+  const [workspaceJobs, setWorkspaceJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +69,17 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       }
 
       try {
+        let jobsList: any[] = [];
+        try {
+          const jobsData = await jobPostService.getPaginatedRoles({
+            workspace_id: Number(workspaceId),
+            page_size: 100,
+          });
+          jobsList = jobsData.jobs || [];
+        } catch (jobErr) {
+          console.error("⚠️ Failed to fetch jobs for workspace:", jobErr);
+        }
+
         const data = await candidateService.getPublicPipelineApplications(
           Number(workspaceId),
           1,
@@ -66,6 +87,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
         );
         console.log(`✅ Fetched all: ${data.count || 0} items`);
 
+        setWorkspaceJobs(jobsList);
         setAllApplications(data.results || []);
       } catch (err) {
         console.error("❌ Fetch error:", err);
@@ -78,6 +100,25 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     fetchData();
   }, [workspaceId]);
 
+  // Map of jobId -> poc_email
+  const jobToPocEmailMap = useMemo(() => {
+    const map = new Map<number | string, string>();
+    workspaceJobs.forEach((job) => {
+      const email = job.poc_email?.trim();
+      if (email) {
+        if (job.id) {
+          map.set(job.id, email);
+          map.set(String(job.id), email);
+        }
+        if (job.job_id) {
+          map.set(job.job_id, email);
+          map.set(String(job.job_id), email);
+        }
+      }
+    });
+    return map;
+  }, [workspaceJobs]);
+
   // Filtered applications
   const filteredApplications = useMemo(() => {
     let filtered = allApplications;
@@ -89,8 +130,37 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
         (app) => (app.current_stage?.name || app.stage_slug) === selectedStage,
       );
     }
+    if (selectedInternalRecruiter) {
+      filtered = filtered.filter((app) => {
+        const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
+        return stageMoves.some((a: any) => {
+          const name = a.data?.moved_by_name || "";
+          return name === selectedInternalRecruiter;
+        });
+      });
+    }
+    if (selectedCompanyRecruiter) {
+      const selectedEmailClean = selectedCompanyRecruiter.trim().toLowerCase();
+      filtered = filtered.filter((app) => {
+        // Match by job's poc_email first
+        const jobId = app.job?.id || app.job?.job_id;
+        if (jobId) {
+          const pocEmail = jobToPocEmailMap.get(jobId) || jobToPocEmailMap.get(String(jobId)) || jobToPocEmailMap.get(Number(jobId));
+          if (pocEmail && pocEmail.trim().toLowerCase() === selectedEmailClean) {
+            return true;
+          }
+        }
+        // Fallback to matching by stage moves activity
+        const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
+        return stageMoves.some((a: any) => {
+          const email = (a.data?.external_mover_email || "").trim().toLowerCase();
+          const name = (a.data?.moved_by_name || "").trim().toLowerCase();
+          return email === selectedEmailClean || name === selectedEmailClean;
+        });
+      });
+    }
     return filtered;
-  }, [allApplications, selectedPipeline, selectedStage]);
+  }, [allApplications, selectedPipeline, selectedStage, selectedInternalRecruiter, selectedCompanyRecruiter, jobToPocEmailMap]);
 
   // Paginated applications
   const applications = useMemo(() => {
@@ -121,6 +191,64 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       ].sort(),
     [allApplications],
   );
+
+  // Extract unique internal recruiter names from activities
+  const availableInternalRecruiters = useMemo(() => {
+    const names = new Set<string>();
+    allApplications.forEach((app) => {
+      const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
+      stageMoves.forEach((a: any) => {
+        console.log("check what are we geting at here ", a.data)
+        const name = a.data?.moved_by_name;
+        if (name && name.trim() && name !== "System" && name !== "External Upload") {
+          const isInternal = !name.includes("@") ||
+            name.toLowerCase().endsWith("@valuebound.com") ||
+            name.toLowerCase().endsWith("@nxthyre.com");
+          if (isInternal) {
+            names.add(name);
+          }
+        }
+      });
+    });
+    return [...names].sort();
+  }, [allApplications]);
+
+  // Extract unique company/external recruiter emails from activities and job poc_emails
+  const availableCompanyRecruiters = useMemo(() => {
+    const emails = new Set<string>();
+
+    // Add emails from job's poc_email
+    allApplications.forEach((app) => {
+      const jobId = app.job?.id || app.job?.job_id;
+      if (jobId) {
+        const pocEmail = jobToPocEmailMap.get(jobId) || jobToPocEmailMap.get(String(jobId)) || jobToPocEmailMap.get(Number(jobId));
+        if (pocEmail && pocEmail.trim()) {
+          emails.add(pocEmail.trim().toLowerCase());
+        }
+      }
+    });
+
+    // Fallback/activity search
+    allApplications.forEach((app) => {
+      const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
+      stageMoves.forEach((a: any) => {
+        console.log("check the a so that we can find out the external a data ", a.data)
+        const email = a.data?.external_mover_email;
+        if (email && email.trim()) {
+          emails.add(email.trim().toLowerCase());
+        }
+        const name = a.data?.moved_by_name;
+        if (name && name.trim() && name.includes("@")) {
+          const isExternal = !name.toLowerCase().endsWith("@valuebound.com") &&
+            !name.toLowerCase().endsWith("@nxthyre.com");
+          if (isExternal) {
+            emails.add(name.trim().toLowerCase());
+          }
+        }
+      });
+    });
+    return [...emails].sort();
+  }, [allApplications, jobToPocEmailMap]);
 
   const getVisiblePages = () => {
     const pages: (number | string)[] = [];
@@ -180,6 +308,28 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       newParams.set("stage", value);
     } else {
       newParams.delete("stage");
+    }
+    newParams.set("page", "1");
+    setSearchParams(newParams);
+  };
+
+  const handleInternalRecruiterChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set("internal_recruiter", value);
+    } else {
+      newParams.delete("internal_recruiter");
+    }
+    newParams.set("page", "1");
+    setSearchParams(newParams);
+  };
+
+  const handleCompanyRecruiterChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set("company_recruiter", value);
+    } else {
+      newParams.delete("company_recruiter");
     }
     newParams.set("page", "1");
     setSearchParams(newParams);
@@ -278,8 +428,8 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
         </div>
 
         {/* Filters */}
-        <div className="flex gap-4 mb-6">
-          <div className="flex-1">
+        <div className="flex gap-4 mb-6 flex-wrap">
+          <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Pipeline
             </label>
@@ -297,7 +447,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
             </select>
           </div>
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Stage
             </label>
@@ -310,6 +460,42 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
               {availableStages.map((stage) => (
                 <option key={stage} value={stage}>
                   {stage}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Internal Recruiter
+            </label>
+            <select
+              value={selectedInternalRecruiter}
+              onChange={(e) => handleInternalRecruiterChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Internal Recruiters</option>
+              {availableInternalRecruiters.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              External Recruiter
+            </label>
+            <select
+              value={selectedCompanyRecruiter}
+              onChange={(e) => handleCompanyRecruiterChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All External Recruiters</option>
+              {availableCompanyRecruiters.map((email) => (
+                <option key={email} value={email}>
+                  {email}
                 </option>
               ))}
             </select>
@@ -536,10 +722,10 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                           </div>
                         );
                       }) || (
-                      <div className="text-[11px] text-gray-400 text-right">
-                        No recent activity
-                      </div>
-                    )}
+                        <div className="text-[11px] text-gray-400 text-right">
+                          No recent activity
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
@@ -584,11 +770,10 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                   <button
                     key={page}
                     onClick={() => handlePageChange(page as number)}
-                    className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-medium transition-all ${
-                      currentPage === page
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "hover:bg-gray-100 text-gray-600"
-                    }`}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-medium transition-all ${currentPage === page
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "hover:bg-gray-100 text-gray-600"
+                      }`}
                   >
                     {page}
                   </button>

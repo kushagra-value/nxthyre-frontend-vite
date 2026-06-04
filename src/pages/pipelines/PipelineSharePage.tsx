@@ -4031,15 +4031,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
           }}
           initialDate={selectedEventDate}
           initialTime={selectedEventTime}
-          pipelineStages={pipelineStages.filter((s) => {
-            const order = s.sort_order;
-            const shortlistedOrder =
-              pipelineStages.find((st) => st.slug === "shortlisted")
-                ?.sort_order || 5;
-            return s.sort_order > shortlistedOrder && s.slug !== "archives";
-          })}
-          stagesLoading={stagesLoading}
-          candidates={Object.values(stageCandidates).flat()}
+          initialCompanyId={workspaceId ? String(workspaceId) : undefined}
+          initialJobId={jobId ? String(jobId) : undefined}
         />
       </div>
     </>

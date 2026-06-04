@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 
 import {
   Search,
@@ -67,6 +67,7 @@ import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import { getAttentionPill, formatTimeAgo, formatMovedDate } from "../../../utils/candidateAttention";
 import { EventForm } from "../../schedules/components/EventForm";
 import { sortStages } from "../../../utils/stageUtils";
+
 
 // ─── Interfaces ────────────────────────────────────────────────
 
@@ -199,6 +200,8 @@ interface CandidateListItem {
     scheduled_date: string;
     scheduled_time: string;
   } | null;
+  last_moved_by_name?: string | null;
+  activities?: any[];
 }
 
 const isAscendionWorkspaceName = (name?: string | null) =>
@@ -494,9 +497,151 @@ export default function JobPipelineDashboard({
   const [isDateRangeFilterApplied, setIsDateRangeFilterApplied] = useState<boolean>(false);
   const [dateRange, setDateRange] = useState<{ from: string, to: string }>({ from: "", to: "" });
 
+  // ── Recruiter Filter
+  const [selectedRecruiter, setSelectedRecruiter] = useState<string | null>(null);
+  const [isRecruiterDropdownOpen, setIsRecruiterDropdownOpen] = useState(false);
+  const [recruiterSearchQuery, setRecruiterSearchQuery] = useState("");
+  const recruiterDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (recruiterDropdownRef.current && !recruiterDropdownRef.current.contains(e.target as Node)) {
+        setIsRecruiterDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const formatRecruiterName = (name: string) => {
+    if (!name) return "";
+    if (name.includes("@")) {
+      return name
+        .split("@")[0]
+        .split(/[._-]/)
+        .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+        .join(" ");
+    }
+    return name;
+  };
+
+  const getInitialRecruiter = (item: any): string | null => {
+    const stageMoves = item.activities?.filter((a: any) => a.type === "stage_move") || [];
+    if (stageMoves.length > 0) {
+      const sorted = [...stageMoves].sort((a: any, b: any) => {
+        const timeA = a.timestamp || a.data?.moved_at || "";
+        const timeB = b.timestamp || b.data?.moved_at || "";
+        return timeA.localeCompare(timeB);
+      });
+      const oldest = sorted[0];
+      const name = oldest.data?.moved_by_name;
+      if (name && name.trim()) {
+        return name.trim();
+      }
+      const extEmail = oldest.data?.external_mover_email;
+      if (extEmail && extEmail.trim()) {
+        return extEmail.trim();
+      }
+    }
+    if (item.last_moved_by_name && item.last_moved_by_name.trim()) {
+      return item.last_moved_by_name.trim();
+    }
+    return null;
+  };
+
+  const matchesRecruiter = (item: any, selected: string | null) => {
+    if (!selected) return true;
+    const initialRec = getInitialRecruiter(item);
+    return initialRec === selected;
+  };
+
+  const availableRecruiters = useMemo(() => {
+    const recruiters = new Set<string>();
+    const scanItem = (item: any) => {
+      const rec = getInitialRecruiter(item);
+      if (rec && rec !== "System" && rec !== "External Upload") {
+        recruiters.add(rec);
+      }
+    };
+    candidates.forEach(scanItem);
+    archivedCandidates.forEach(scanItem);
+    return Array.from(recruiters).sort();
+  }, [candidates, archivedCandidates]);
+
+  const filteredRecruiterOptions = useMemo(() => {
+    return availableRecruiters.filter((rec) =>
+      formatRecruiterName(rec).toLowerCase().includes(recruiterSearchQuery.toLowerCase())
+    );
+  }, [availableRecruiters, recruiterSearchQuery]);
+
+  const renderRecruiterSelect = () => {
+    return (
+      <div className="relative shrink-0" ref={recruiterDropdownRef}>
+        <button
+          onClick={() => setIsRecruiterDropdownOpen(!isRecruiterDropdownOpen)}
+          className="flex items-center gap-2 px-3 h-9 bg-white border border-[#E5E7EB] rounded-lg text-sm text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
+        >
+          <span className="truncate max-w-[150px]">
+            {selectedRecruiter ? formatRecruiterName(selectedRecruiter) : "All Recruiters"}
+          </span>
+          <svg
+            className={`w-4 h-4 text-[#8E8E93] transition-transform ${isRecruiterDropdownOpen ? "rotate-180" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {isRecruiterDropdownOpen && (
+          <div className="absolute left-0 mt-1.5 z-[200] w-64 bg-white shadow-xl rounded-xl border border-gray-200 p-2 flex flex-col gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search recruiter..."
+                value={recruiterSearchQuery}
+                onChange={(e) => setRecruiterSearchQuery(e.target.value)}
+                className="w-full h-8 pl-8 pr-2.5 rounded-lg text-xs text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 border border-[#E5E7EB]"
+              />
+            </div>
+            <div className="max-h-48 overflow-y-auto custom-scrollbar flex flex-col">
+              <div
+                onClick={() => {
+                  setSelectedRecruiter(null);
+                  setIsRecruiterDropdownOpen(false);
+                  setRecruiterSearchQuery("");
+                }}
+                className={`p-2 rounded-lg cursor-pointer text-xs transition-colors hover:bg-gray-100 ${!selectedRecruiter ? "bg-[#E7EDFF] text-[#0F47F2] font-semibold" : "text-[#4B5563]"}`}
+              >
+                All Recruiters
+              </div>
+              {filteredRecruiterOptions.map((rec) => (
+                <div
+                  key={rec}
+                  onClick={() => {
+                    setSelectedRecruiter(rec);
+                    setIsRecruiterDropdownOpen(false);
+                    setRecruiterSearchQuery("");
+                  }}
+                  className={`p-2 rounded-lg cursor-pointer text-xs transition-colors hover:bg-gray-100 ${selectedRecruiter === rec ? "bg-[#E7EDFF] text-[#0F47F2] font-semibold" : "text-[#4B5563]"}`}
+                >
+                  {formatRecruiterName(rec)}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // ── Sorting
   type CandidateSortKey =
     | "Name"
+    | "Recruiter"
     | "AI Score"
     | "Location"
     | "Exp"
@@ -549,6 +694,10 @@ export default function JobPipelineDashboard({
       (c) => (c.current_stage?.slug || c.stage_slug) === activeStageSlug,
     );
   }
+
+  if (selectedRecruiter) {
+    combinedCands = combinedCands.filter((c) => matchesRecruiter(c, selectedRecruiter));
+  }
   const sortedCandidates = combinedCands;
 
   // Derived list for archived candidates (separated to avoid duplication in the main active list)
@@ -567,6 +716,12 @@ export default function JobPipelineDashboard({
       const headline = item.candidate.headline?.toLowerCase() || "";
       if (!name.includes(q) && !headline.includes(q)) return false;
     }
+
+    // 3. Filter by selected recruiter if present
+    if (selectedRecruiter && !matchesRecruiter(item, selectedRecruiter)) {
+      return false;
+    }
+
     return true;
   });
 
@@ -1038,7 +1193,23 @@ export default function JobPipelineDashboard({
       const results = data.results || (Array.isArray(data) ? data : []);
       // add an is_archived manual flag
       const archived = results.map((c: any) => ({ ...c, is_archived: true }));
-      setArchivedCandidates(archived);
+      const archivedWithActivities = await Promise.all(
+        archived.map(async (item: any) => {
+          if (item.candidate?.id) {
+            try {
+              const activities = await candidateService.getCandidateActivity(
+                item.candidate.id,
+                item.id
+              );
+              return { ...item, activities };
+            } catch (err) {
+              console.error(`Error fetching activities for archived candidate ${item.candidate.id}:`, err);
+            }
+          }
+          return item;
+        })
+      );
+      setArchivedCandidates(archivedWithActivities);
     } catch (error) {
       console.error("Error fetching archived candidates:", error);
       setArchivedCandidates([]);
@@ -1124,6 +1295,7 @@ export default function JobPipelineDashboard({
         if (dateRange.to) {
           queryParams.append("last_activity_to", dateRange.to);
         }
+        queryParams.append("view", "kanban");
 
         const url = `/jobs/applications/?${queryParams.toString()}`;
 
@@ -1147,7 +1319,43 @@ export default function JobPipelineDashboard({
           setStageCounts(data.stage_counts);
         }
 
-        setCandidates(candidateData);
+        if (candidateData.length > 0) {
+          fetch("http://localhost:3001/log", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              keys: Object.keys(candidateData[0]),
+              sampleItem: {
+                ...candidateData[0],
+                candidate: {
+                  id: candidateData[0].candidate?.id,
+                  full_name: candidateData[0].candidate?.full_name
+                }
+              }
+            })
+          }).catch(err => console.error("Error logging:", err));
+        }
+
+        const candidateDataWithActivities = await Promise.all(
+          candidateData.map(async (item) => {
+            if (item.candidate?.id) {
+              try {
+                const activities = await candidateService.getCandidateActivity(
+                  item.candidate.id,
+                  item.id
+                );
+                return { ...item, activities };
+              } catch (err) {
+                console.error(`Error fetching activities for candidate ${item.candidate.id}:`, err);
+              }
+            }
+            return item;
+          })
+        );
+
+        setCandidates(candidateDataWithActivities);
         setTotalCandidates(count);
       } catch (error: any) {
         if (error.name === 'CanceledError' || error.message === 'canceled') {
@@ -1203,8 +1411,8 @@ export default function JobPipelineDashboard({
       } catch (err: any) {
         showToast.error(
           err?.response?.data?.detail ||
-            err?.message ||
-            "Failed to check Ascendion duplicate",
+          err?.message ||
+          "Failed to check Ascendion duplicate",
         );
       } finally {
         setAscendionCheckingIds((prev) => {
@@ -1273,7 +1481,18 @@ export default function JobPipelineDashboard({
         setCandidates([]);
         const res = await jobPostService.getSearchedCandidate(sug.id, jobId);
         setActiveStageSlug(res.current_stage.slug);
-        setCandidates([res as unknown as CandidateListItem]);
+        let activities: any[] = [];
+        if (res.candidate?.id) {
+          try {
+            activities = await candidateService.getCandidateActivity(
+              res.candidate.id,
+              res.id
+            );
+          } catch (err) {
+            console.error("Error fetching activities for searched candidate:", err);
+          }
+        }
+        setCandidates([{ ...(res as unknown as CandidateListItem), activities }]);
         setTotalCandidates(1);
       } catch (error) {
         console.error("Error fetching searched candidate:", error);
@@ -1646,7 +1865,7 @@ export default function JobPipelineDashboard({
         );
         showToast.success(`${applicationIds.length} candidate(s) unarchived`);
       } else if (type === "move" && targetStageId) {
-        const finalComment = selectedFeedbackOptions.length > 0 
+        const finalComment = selectedFeedbackOptions.length > 0
           ? `[${selectedFeedbackOptions.join(", ")}] ${feedbackComment.trim()}`
           : feedbackComment.trim();
 
@@ -1887,7 +2106,7 @@ export default function JobPipelineDashboard({
                           className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
                           style={{ top: menuPos.top, left: menuPos.left }}
                         >
-                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"),currentCtc: cand.current_ctc || "--", expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
+                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), currentCtc: cand.current_ctc || "--", expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "" }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
                           <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
                           <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
                           {isAscendionWorkspace && stageSlug === "uncontacted" && (
@@ -2383,28 +2602,31 @@ export default function JobPipelineDashboard({
           {isKanbanView ? (
             /* ═══════════ KANBAN VIEW TOOLBAR ═══════════ */
             <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
-              <div className="relative w-[240px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-                <input
-                  type="text"
-                  placeholder="Search for Candidates"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
-                />
-                {suggestions.length > 0 && (
-                  <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
-                    {suggestions.map((sug) => (
-                      <div
-                        key={sug.id}
-                        className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
-                        onClick={() => handleSuggestionSelect(sug)}
-                      >
-                        {sug.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="flex items-center gap-3">
+                <div className="relative w-[240px] shrink-0">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                  <input
+                    type="text"
+                    placeholder="Search for Candidates"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
+                  />
+                  {suggestions.length > 0 && (
+                    <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                      {suggestions.map((sug) => (
+                        <div
+                          key={sug.id}
+                          className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
+                          onClick={() => handleSuggestionSelect(sug)}
+                        >
+                          {sug.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {renderRecruiterSelect()}
               </div>
               <div className="flex items-center gap-2">
                 {/* Share Pipeline */}
@@ -2522,7 +2744,7 @@ export default function JobPipelineDashboard({
 
                 <div className="flex-shrink-0 flex items-center gap-2">
 
-                  <div className="relative w-[240px]">
+                  <div className="relative w-[240px] shrink-0">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
                     <input
                       type="text"
@@ -2545,6 +2767,7 @@ export default function JobPipelineDashboard({
                       </div>
                     )}
                   </div>
+                  {renderRecruiterSelect()}
 
                   <div className="relative">
                     <button
@@ -2770,6 +2993,7 @@ export default function JobPipelineDashboard({
                       filters={pipelineFilters}
                       dateRange={dateRange}
                       searchQuery={searchQuery}
+                      selectedRecruiter={selectedRecruiter}
                       onDragOver={handleDragOver}
                       onDrop={handleDrop}
                       stageBarColor={stageBarColors[stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).indexOf(stage) % stageBarColors.length]}
@@ -2896,15 +3120,16 @@ export default function JobPipelineDashboard({
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: "2%" }} /> {/* checkbox */}
-                  <col style={{ width: "25%" }} /> {/* name & headline */}
+                  <col style={{ width: "20%" }} /> {/* name & headline */}
+                  <col style={{ width: "10%" }} /> {/* recruiter */}
                   <col style={{ width: "7%" }} /> {/* ai score */}
-                  <col style={{ width: "11%" }} /> {/* location */}
+                  <col style={{ width: "10%" }} /> {/* location */}
                   <col style={{ width: "5%" }} /> {/* exp */}
                   <col style={{ width: "6%" }} /> {/* ctc */}
-                  <col style={{ width: "8%" }} /> {/* expected ctc */}
-                  <col style={{ width: "8%" }} /> {/* notice period */}
-                  <col style={{ width: "8%" }} /> {/* stage */}
-                  <col style={{ width: "8%" }} /> {/* attention */}
+                  <col style={{ width: "7%" }} /> {/* expected ctc */}
+                  <col style={{ width: "7%" }} /> {/* notice period */}
+                  <col style={{ width: "7%" }} /> {/* stage */}
+                  <col style={{ width: "7%" }} /> {/* attention */}
                   <col style={{ width: "12%" }} /> {/* actions */}
                 </colgroup>
 
@@ -2920,6 +3145,7 @@ export default function JobPipelineDashboard({
                     </th>
                     {[
                       "Name",
+                      "Recruiter",
                       "AI Score",
                       "Location",
                       "Exp",
@@ -2956,6 +3182,9 @@ export default function JobPipelineDashboard({
                             <div className="h-4 bg-gray-200 rounded w-32" />
                             <div className="h-3 bg-gray-200 rounded w-40" />
                           </div>
+                        </td>
+                        <td className="px-4 py-5">
+                          <div className="h-4 bg-gray-200 rounded w-20" />
                         </td>
                         <td className="px-4 py-5">
                           <div className="w-9 h-9 bg-gray-200 rounded-full" />
@@ -2995,7 +3224,7 @@ export default function JobPipelineDashboard({
                     filteredArchivedTable.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={11}
+                        colSpan={12}
                         className="px-6 py-12 text-center text-sm text-[#AEAEB2]"
                       >
                         No candidates found
@@ -3147,6 +3376,14 @@ export default function JobPipelineDashboard({
                                     {cand.headline || "--"}
                                   </div>
                                 </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
+                              <div 
+                                className="truncate max-w-[120px]" 
+                                title={getInitialRecruiter(item) || "--"}
+                              >
+                                {formatRecruiterName(getInitialRecruiter(item) || "") || "--"}
                               </div>
                             </td>
                             <td className="px-4 py-5">
@@ -3311,7 +3548,7 @@ export default function JobPipelineDashboard({
                                             resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "",
                                           };
                                           const candidateIds = sortedCandidates.map(c => c.candidate.id);
-                                          sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ 
+                                          sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({
                                             candidate: callData,
                                             candidateList: candidateIds
                                           }));
@@ -3436,7 +3673,7 @@ export default function JobPipelineDashboard({
                         <>
                           <tr className="bg-[#F9FAFB]">
                             <td
-                              colSpan={11}
+                              colSpan={12}
                               className="px-4 py-3 border-y border-[#E5E7EB]"
                             >
                               <div className="flex items-center gap-2">
@@ -3491,6 +3728,14 @@ export default function JobPipelineDashboard({
                                     )}
                                   </div>
                                 </td>
+                                 <td className="px-4 py-5 text-sm text-[#AEAEB2] whitespace-nowrap">
+                                   <div 
+                                     className="truncate max-w-[120px]"
+                                     title={getInitialRecruiter(item) || "--"}
+                                   >
+                                     {formatRecruiterName(getInitialRecruiter(item) || "") || "--"}
+                                   </div>
+                                 </td>
                                 <td className="px-4 py-5">
                                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400">
                                     --%
@@ -4973,17 +5218,16 @@ export default function JobPipelineDashboard({
                       <button
                         key={opt.id}
                         onClick={() => {
-                          setSelectedFeedbackOptions(prev => 
-                            prev.includes(opt.label) 
+                          setSelectedFeedbackOptions(prev =>
+                            prev.includes(opt.label)
                               ? prev.filter(i => i !== opt.label)
                               : [...prev, opt.label]
                           );
                         }}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                          selectedFeedbackOptions.includes(opt.label)
-                            ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
-                            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
-                        }`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${selectedFeedbackOptions.includes(opt.label)
+                          ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
+                          : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                          }`}
                       >
                         {opt.icon}
                         {opt.label}
