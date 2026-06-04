@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import candidateService from "../../services/candidateService"; // adjust path
+import jobPostService from "../../services/jobPostService";
 import { MapPin } from "lucide-react";
 
 interface ShareCandidateListPageProps {
@@ -38,6 +39,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
   );
 
   const [allApplications, setAllApplications] = useState<any[]>([]);
+  const [workspaceJobs, setWorkspaceJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,6 +69,17 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       }
 
       try {
+        let jobsList: any[] = [];
+        try {
+          const jobsData = await jobPostService.getPaginatedRoles({
+            workspace_id: Number(workspaceId),
+            page_size: 100,
+          });
+          jobsList = jobsData.jobs || [];
+        } catch (jobErr) {
+          console.error("⚠️ Failed to fetch jobs for workspace:", jobErr);
+        }
+
         const data = await candidateService.getPublicPipelineApplications(
           Number(workspaceId),
           1,
@@ -74,6 +87,7 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
         );
         console.log(`✅ Fetched all: ${data.count || 0} items`);
 
+        setWorkspaceJobs(jobsList);
         setAllApplications(data.results || []);
       } catch (err) {
         console.error("❌ Fetch error:", err);
@@ -85,6 +99,25 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
 
     fetchData();
   }, [workspaceId]);
+
+  // Map of jobId -> poc_email
+  const jobToPocEmailMap = useMemo(() => {
+    const map = new Map<number | string, string>();
+    workspaceJobs.forEach((job) => {
+      const email = job.poc_email?.trim();
+      if (email) {
+        if (job.id) {
+          map.set(job.id, email);
+          map.set(String(job.id), email);
+        }
+        if (job.job_id) {
+          map.set(job.job_id, email);
+          map.set(String(job.job_id), email);
+        }
+      }
+    });
+    return map;
+  }, [workspaceJobs]);
 
   // Filtered applications
   const filteredApplications = useMemo(() => {
@@ -107,17 +140,27 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       });
     }
     if (selectedCompanyRecruiter) {
+      const selectedEmailClean = selectedCompanyRecruiter.trim().toLowerCase();
       filtered = filtered.filter((app) => {
+        // Match by job's poc_email first
+        const jobId = app.job?.id || app.job?.job_id;
+        if (jobId) {
+          const pocEmail = jobToPocEmailMap.get(jobId) || jobToPocEmailMap.get(String(jobId)) || jobToPocEmailMap.get(Number(jobId));
+          if (pocEmail && pocEmail.trim().toLowerCase() === selectedEmailClean) {
+            return true;
+          }
+        }
+        // Fallback to matching by stage moves activity
         const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
         return stageMoves.some((a: any) => {
-          const email = a.data?.external_mover_email || "";
-          const name = a.data?.moved_by_name || "";
-          return email === selectedCompanyRecruiter || name === selectedCompanyRecruiter;
+          const email = (a.data?.external_mover_email || "").trim().toLowerCase();
+          const name = (a.data?.moved_by_name || "").trim().toLowerCase();
+          return email === selectedEmailClean || name === selectedEmailClean;
         });
       });
     }
     return filtered;
-  }, [allApplications, selectedPipeline, selectedStage, selectedInternalRecruiter, selectedCompanyRecruiter]);
+  }, [allApplications, selectedPipeline, selectedStage, selectedInternalRecruiter, selectedCompanyRecruiter, jobToPocEmailMap]);
 
   // Paginated applications
   const applications = useMemo(() => {
@@ -155,11 +198,12 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     allApplications.forEach((app) => {
       const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
       stageMoves.forEach((a: any) => {
+        console.log("check what are we geting at here ", a.data)
         const name = a.data?.moved_by_name;
         if (name && name.trim() && name !== "System" && name !== "External Upload") {
-          const isInternal = !name.includes("@") || 
-                             name.toLowerCase().endsWith("@valuebound.com") || 
-                             name.toLowerCase().endsWith("@nxthyre.com");
+          const isInternal = !name.includes("@") ||
+            name.toLowerCase().endsWith("@valuebound.com") ||
+            name.toLowerCase().endsWith("@nxthyre.com");
           if (isInternal) {
             names.add(name);
           }
@@ -169,28 +213,42 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     return [...names].sort();
   }, [allApplications]);
 
-  // Extract unique company/external recruiter emails from activities
+  // Extract unique company/external recruiter emails from activities and job poc_emails
   const availableCompanyRecruiters = useMemo(() => {
     const emails = new Set<string>();
+
+    // Add emails from job's poc_email
+    allApplications.forEach((app) => {
+      const jobId = app.job?.id || app.job?.job_id;
+      if (jobId) {
+        const pocEmail = jobToPocEmailMap.get(jobId) || jobToPocEmailMap.get(String(jobId)) || jobToPocEmailMap.get(Number(jobId));
+        if (pocEmail && pocEmail.trim()) {
+          emails.add(pocEmail.trim().toLowerCase());
+        }
+      }
+    });
+
+    // Fallback/activity search
     allApplications.forEach((app) => {
       const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
       stageMoves.forEach((a: any) => {
+        console.log("check the a so that we can find out the external a data ", a.data)
         const email = a.data?.external_mover_email;
         if (email && email.trim()) {
-          emails.add(email);
+          emails.add(email.trim().toLowerCase());
         }
         const name = a.data?.moved_by_name;
         if (name && name.trim() && name.includes("@")) {
-          const isExternal = !name.toLowerCase().endsWith("@valuebound.com") && 
-                             !name.toLowerCase().endsWith("@nxthyre.com");
+          const isExternal = !name.toLowerCase().endsWith("@valuebound.com") &&
+            !name.toLowerCase().endsWith("@nxthyre.com");
           if (isExternal) {
-            emails.add(name);
+            emails.add(name.trim().toLowerCase());
           }
         }
       });
     });
     return [...emails].sort();
-  }, [allApplications]);
+  }, [allApplications, jobToPocEmailMap]);
 
   const getVisiblePages = () => {
     const pages: (number | string)[] = [];
@@ -664,10 +722,10 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                           </div>
                         );
                       }) || (
-                      <div className="text-[11px] text-gray-400 text-right">
-                        No recent activity
-                      </div>
-                    )}
+                        <div className="text-[11px] text-gray-400 text-right">
+                          No recent activity
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
@@ -712,11 +770,10 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
                   <button
                     key={page}
                     onClick={() => handlePageChange(page as number)}
-                    className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-medium transition-all ${
-                      currentPage === page
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "hover:bg-gray-100 text-gray-600"
-                    }`}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-medium transition-all ${currentPage === page
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "hover:bg-gray-100 text-gray-600"
+                      }`}
                   >
                     {page}
                   </button>
