@@ -8,6 +8,30 @@ interface ShareCandidateListPageProps {
   workspaceName: string; // Optional, can be used for display or logging
 }
 
+const getInitialRecruiter = (app: any): string | null => {
+  const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
+  if (stageMoves.length > 0) {
+    const sorted = [...stageMoves].sort((a: any, b: any) => {
+      const timeA = a.timestamp || a.data?.moved_at || "";
+      const timeB = b.timestamp || b.data?.moved_at || "";
+      return timeA.localeCompare(timeB);
+    });
+    const oldest = sorted[0];
+    const name = oldest.data?.moved_by_name;
+    if (name && name.trim()) {
+      return name.trim();
+    }
+    const extEmail = oldest.data?.external_mover_email;
+    if (extEmail && extEmail.trim()) {
+      return extEmail.trim();
+    }
+  }
+  if (app.last_moved_by_name && app.last_moved_by_name.trim()) {
+    return app.last_moved_by_name.trim();
+  }
+  return null;
+};
+
 const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
   workspaceName,
 }) => {
@@ -132,11 +156,8 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     }
     if (selectedInternalRecruiter) {
       filtered = filtered.filter((app) => {
-        const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
-        return stageMoves.some((a: any) => {
-          const name = a.data?.moved_by_name || "";
-          return name === selectedInternalRecruiter;
-        });
+        const initialRec = getInitialRecruiter(app);
+        return initialRec === selectedInternalRecruiter;
       });
     }
     if (selectedCompanyRecruiter) {
@@ -150,13 +171,9 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
             return true;
           }
         }
-        // Fallback to matching by stage moves activity
-        const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
-        return stageMoves.some((a: any) => {
-          const email = (a.data?.external_mover_email || "").trim().toLowerCase();
-          const name = (a.data?.moved_by_name || "").trim().toLowerCase();
-          return email === selectedEmailClean || name === selectedEmailClean;
-        });
+        // Match by initial recruiter
+        const initialRec = getInitialRecruiter(app);
+        return initialRec && initialRec.trim().toLowerCase() === selectedEmailClean;
       });
     }
     return filtered;
@@ -192,28 +209,24 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
     [allApplications],
   );
 
-  // Extract unique internal recruiter names from activities
+  // Extract unique internal recruiter names from activities (who moved them first)
   const availableInternalRecruiters = useMemo(() => {
     const names = new Set<string>();
     allApplications.forEach((app) => {
-      const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
-      stageMoves.forEach((a: any) => {
-        console.log("check what are we geting at here ", a.data)
-        const name = a.data?.moved_by_name;
-        if (name && name.trim() && name !== "System" && name !== "External Upload") {
-          const isInternal = !name.includes("@") ||
-            name.toLowerCase().endsWith("@valuebound.com") ||
-            name.toLowerCase().endsWith("@nxthyre.com");
-          if (isInternal) {
-            names.add(name);
-          }
+      const name = getInitialRecruiter(app);
+      if (name && name !== "System" && name !== "External Upload") {
+        const isInternal = !name.includes("@") ||
+          name.toLowerCase().endsWith("@valuebound.com") ||
+          name.toLowerCase().endsWith("@nxthyre.com");
+        if (isInternal) {
+          names.add(name);
         }
-      });
+      }
     });
     return [...names].sort();
   }, [allApplications]);
 
-  // Extract unique company/external recruiter emails from activities and job poc_emails
+  // Extract unique company/external recruiter emails from activities and job poc_emails (who moved them first)
   const availableCompanyRecruiters = useMemo(() => {
     const emails = new Set<string>();
 
@@ -228,24 +241,16 @@ const ShareCandidateListPage: React.FC<ShareCandidateListPageProps> = ({
       }
     });
 
-    // Fallback/activity search
+    // Fallback/activity search (using initial recruiter)
     allApplications.forEach((app) => {
-      const stageMoves = app.activities?.filter((a: any) => a.type === "stage_move") || [];
-      stageMoves.forEach((a: any) => {
-        console.log("check the a so that we can find out the external a data ", a.data)
-        const email = a.data?.external_mover_email;
-        if (email && email.trim()) {
-          emails.add(email.trim().toLowerCase());
+      const name = getInitialRecruiter(app);
+      if (name && name.trim() && name.includes("@")) {
+        const isExternal = !name.toLowerCase().endsWith("@valuebound.com") &&
+          !name.toLowerCase().endsWith("@nxthyre.com");
+        if (isExternal) {
+          emails.add(name.trim().toLowerCase());
         }
-        const name = a.data?.moved_by_name;
-        if (name && name.trim() && name.includes("@")) {
-          const isExternal = !name.toLowerCase().endsWith("@valuebound.com") &&
-            !name.toLowerCase().endsWith("@nxthyre.com");
-          if (isExternal) {
-            emails.add(name.trim().toLowerCase());
-          }
-        }
-      });
+      }
     });
     return [...emails].sort();
   }, [allApplications, jobToPocEmailMap]);
