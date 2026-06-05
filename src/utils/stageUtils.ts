@@ -10,6 +10,23 @@ export const getLNumber = (name: string): number | null => {
   return match ? parseInt(match[1], 10) : null;
 };
 
+export const isPostInterview = (name: string, slug: string): boolean => {
+  const n = (name || "").toLowerCase();
+  const s = (slug || "").toLowerCase();
+  return n.includes("offer") || n.includes("hired") || n.includes("joined") || n.includes("select") ||
+         s.includes("offer") || s.includes("hired") || s.includes("joined") || s.includes("select");
+};
+
+export const getStageGroup = (name: string, slug: string): number => {
+  if (isPostInterview(name, slug)) {
+    return 3;
+  }
+  if (getLNumber(name) !== null) {
+    return 2;
+  }
+  return 1;
+};
+
 export const sortStages = <T extends SortableStage>(stagesList: T[]): T[] => {
   if (!stagesList || !Array.isArray(stagesList) || stagesList.length === 0) return [];
   
@@ -51,6 +68,11 @@ export const sortStages = <T extends SortableStage>(stagesList: T[]): T[] => {
   
   // 6. Sort the entire list
   return listCopy.sort((a, b) => {
+    const groupA = getStageGroup(a.name, a.slug);
+    const groupB = getStageGroup(b.name, b.slug);
+    if (groupA !== groupB) {
+      return groupA - groupB;
+    }
     if (a.sort_order !== b.sort_order) {
       return a.sort_order - b.sort_order;
     }
@@ -62,3 +84,4 @@ export const sortStages = <T extends SortableStage>(stagesList: T[]): T[] => {
     return a.name.localeCompare(b.name);
   });
 };
+

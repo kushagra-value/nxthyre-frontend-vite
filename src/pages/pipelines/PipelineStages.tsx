@@ -283,6 +283,8 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
 
   const sourceDropdownRef = useRef<HTMLDivElement>(null);
   const actionDropdownRef = useRef<HTMLDivElement>(null);
+  const skipAutosuggestRef = useRef(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [showActionDropdown, setShowActionDropdown] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -781,6 +783,12 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
       ) {
         setShowSourceDropdown(false);
       }
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setSuggestions([]);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -960,6 +968,11 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   }, [showComments]);
 
   useEffect(() => {
+    if (skipAutosuggestRef.current) {
+      skipAutosuggestRef.current = false;
+      setSuggestions([]);
+      return;
+    }
     if (
       currentView === "search" &&
       searchQuery.length > 0 &&
@@ -2239,6 +2252,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
   };
 
   const handleSuggestionSelect = async (sug: { id: string; name: string }) => {
+    skipAutosuggestRef.current = true;
     setSearchQuery(sug.name);
     setSuggestions([]);
     if (activeJobId) {
@@ -2464,7 +2478,7 @@ const PipelineStages: React.FC<PipelineStagesProps> = ({
                     >
                       <LogOut className="w-4 h-4 rotate-180" />
                     </button>
-                    <div className="flex-1 relative">
+                    <div ref={searchContainerRef} className="flex-1 relative">
                       <input
                         type="text"
                         value={searchQuery}
