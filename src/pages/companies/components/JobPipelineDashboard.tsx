@@ -492,6 +492,8 @@ export default function JobPipelineDashboard({
   const [showPipelineFilterPanel, setShowPipelineFilterPanel] = useState(false);
   const pipelineFilterButtonRef = useRef<HTMLButtonElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const skipAutosuggestRef = useRef(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const [dateRangeFilterLabel, setDateRangeFilterLabel] = useState<string>("Date Filter");
   const [isDateRangeFilterApplied, setIsDateRangeFilterApplied] = useState<boolean>(false);
@@ -776,6 +778,9 @@ export default function JobPipelineDashboard({
       }
       if (stageMenuRef.current && !stageMenuRef.current.contains(event.target as Node)) {
         setStageMenuOpenId(null);
+      }
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setSuggestions([]);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -1454,6 +1459,11 @@ export default function JobPipelineDashboard({
   ]);
 
   useEffect(() => {
+    if (skipAutosuggestRef.current) {
+      skipAutosuggestRef.current = false;
+      setSuggestions([]);
+      return;
+    }
     if (searchQuery.length > 0 && jobId !== null && activeTab === "pipeline") {
       const fetchSuggestions = async () => {
         try {
@@ -1474,6 +1484,7 @@ export default function JobPipelineDashboard({
   }, [searchQuery, jobId, activeTab]);
 
   const handleSuggestionSelect = async (sug: { id: string; name: string }) => {
+    skipAutosuggestRef.current = true;
     setSearchQuery(sug.name);
     setSuggestions([]);
     if (jobId) {
@@ -2612,7 +2623,7 @@ export default function JobPipelineDashboard({
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
                   />
-                  {suggestions.length > 0 && (
+                  {/* {suggestions.length > 0 && (
                     <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
                       {suggestions.map((sug) => (
                         <div
@@ -2624,7 +2635,7 @@ export default function JobPipelineDashboard({
                         </div>
                       ))}
                     </div>
-                  )}
+                  )} */}
                 </div>
                 {renderRecruiterSelect()}
               </div>
@@ -2744,7 +2755,7 @@ export default function JobPipelineDashboard({
 
                 <div className="flex-shrink-0 flex items-center gap-2">
 
-                  <div className="relative w-[240px] shrink-0">
+                  <div ref={searchContainerRef} className="relative w-[240px] shrink-0">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
                     <input
                       type="text"
@@ -3379,8 +3390,8 @@ export default function JobPipelineDashboard({
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
-                              <div 
-                                className="truncate max-w-[120px]" 
+                              <div
+                                className="truncate max-w-[120px]"
                                 title={getInitialRecruiter(item) || "--"}
                               >
                                 {formatRecruiterName(getInitialRecruiter(item) || "") || "--"}
@@ -3728,14 +3739,14 @@ export default function JobPipelineDashboard({
                                     )}
                                   </div>
                                 </td>
-                                 <td className="px-4 py-5 text-sm text-[#AEAEB2] whitespace-nowrap">
-                                   <div 
-                                     className="truncate max-w-[120px]"
-                                     title={getInitialRecruiter(item) || "--"}
-                                   >
-                                     {formatRecruiterName(getInitialRecruiter(item) || "") || "--"}
-                                   </div>
-                                 </td>
+                                <td className="px-4 py-5 text-sm text-[#AEAEB2] whitespace-nowrap">
+                                  <div
+                                    className="truncate max-w-[120px]"
+                                    title={getInitialRecruiter(item) || "--"}
+                                  >
+                                    {formatRecruiterName(getInitialRecruiter(item) || "") || "--"}
+                                  </div>
+                                </td>
                                 <td className="px-4 py-5">
                                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400">
                                     --%
@@ -3993,29 +4004,36 @@ export default function JobPipelineDashboard({
                         </div>
                         {uploadStatus.failed > 0 && (
                           <div className="bg-red-50 p-2 rounded text-md text-red-600">
-                            {uploadStatus.failed} file(s) failed
+                            <div>{uploadStatus.failed} file(s) failed</div>
                             {uploadStatus.failed_details && (
-                              <div className="mt-2 space-y-2 text-sm">
-                                {uploadStatus.failed_details.map(
-                                  (fail: any, fIdx: number) => (
-                                    <div
-                                      key={fIdx}
-                                      className="border border-red-200 rounded p-2 bg-white"
-                                    >
-                                      <div className="font-medium text-gray-800">
-                                        {fail.file_name}
-                                      </div>
-                                      <div className="text-red-600">
-                                        {fail.error}
-                                      </div>
-                                      {fail.failure_category && (
-                                        <div className="text-gray-500">
-                                          Category: {fail.failure_category}
+                              <div className="mt-2">
+                                <details>
+                                  <summary className="cursor-pointer font-medium text-sm text-red-500">
+                                    Failed Files Details
+                                  </summary>
+                                  <div className="mt-2 space-y-2 text-sm">
+                                    {uploadStatus.failed_details.map(
+                                      (fail: any, fIdx: number) => (
+                                        <div
+                                          key={fIdx}
+                                          className="border border-red-200 rounded p-2 bg-white"
+                                        >
+                                          <div className="font-medium text-gray-800">
+                                            {fail.file_name}
+                                          </div>
+                                          <div className="text-red-600">
+                                            {fail.error}
+                                          </div>
+                                          {fail.failure_category && (
+                                            <div className="text-gray-500">
+                                              Category: {fail.failure_category}
+                                            </div>
+                                          )}
                                         </div>
-                                      )}
-                                    </div>
-                                  ),
-                                )}
+                                      ),
+                                    )}
+                                  </div>
+                                </details>
                               </div>
                             )}
                           </div>
@@ -4079,6 +4097,39 @@ export default function JobPipelineDashboard({
                               />
                             </div>
                           </div>
+
+                          {/* Failed Details */}
+                          {batch.failed > 0 && batch.failed_details && (
+                            <div className="mt-2">
+                              <details>
+                                <summary className="cursor-pointer font-medium text-sm text-red-500">
+                                  Failed Files ({batch.failed})
+                                </summary>
+                                <div className="mt-2 space-y-2 text-sm">
+                                  {batch.failed_details.map(
+                                    (fail: any, fIdx: number) => (
+                                      <div
+                                        key={fIdx}
+                                        className="border border-red-200 rounded p-2 bg-white"
+                                      >
+                                        <div className="font-medium text-gray-800">
+                                          {fail.file_name}
+                                        </div>
+                                        <div className="text-red-600">
+                                          {fail.error}
+                                        </div>
+                                        {fail.failure_category && (
+                                          <div className="text-gray-500">
+                                            Category: {fail.failure_category}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              </details>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
