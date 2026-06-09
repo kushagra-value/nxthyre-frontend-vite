@@ -84,6 +84,12 @@ export interface Stage {
 
 interface CandidateListItem {
   id: number;
+  question_analysis?: number | null;
+  questioion_analysis?: number | null;
+  ai_accuracy_score?: number | null;
+  ai_clarity_score?: number | null;
+  ai_completeness_score?: number | null;
+  ai_depth_score?: number | null;
   candidate: {
     job_score: any;
     id: string;
@@ -95,6 +101,12 @@ interface CandidateListItem {
     is_background_verified: boolean;
     profile_picture_url?: string | null;
     experience_years: string;
+    question_analysis?: number | null;
+    questioion_analysis?: number | null;
+    ai_accuracy_score?: number | null;
+    ai_clarity_score?: number | null;
+    ai_completeness_score?: number | null;
+    ai_depth_score?: number | null;
     experience_summary: {
       title: string;
       date_range: string;
@@ -283,6 +295,44 @@ const statusColor = (
   if (label === "Closed")
     return { bg: "bg-[#F3F5F7]", dot: "bg-[#8E8E93]", text: "text-[#8E8E93]" };
   return { bg: "bg-[#F2F2F7]", dot: "bg-[#8E8E93]", text: "text-[#4B5563]" };
+};
+
+const getQuestionAnalysisScore = (item: CandidateListItem): number | null => {
+  if (item.question_analysis != null) return item.question_analysis;
+  if (item.questioion_analysis != null) return item.questioion_analysis;
+
+  const cand = item.candidate;
+  if (cand) {
+    if (cand.question_analysis != null) return cand.question_analysis;
+    if (cand.questioion_analysis != null) return cand.questioion_analysis;
+  }
+
+  const getAverage = (obj: any) => {
+    if (!obj) return null;
+    const accuracy = obj.ai_accuracy_score ?? obj.accuracy_score;
+    const clarity = obj.ai_clarity_score ?? obj.clarity_score;
+    const completeness = obj.ai_completeness_score ?? obj.completeness_score;
+    const depth = obj.ai_depth_score ?? obj.depth_score;
+
+    if (accuracy != null && clarity != null && completeness != null && depth != null) {
+      return Math.round((Number(accuracy) + Number(clarity) + Number(completeness) + Number(depth)) / 4);
+    }
+    return null;
+  };
+
+  const appAvg = getAverage(item);
+  if (appAvg != null) return appAvg;
+
+  const candAvg = getAverage(cand);
+  if (candAvg != null) return candAvg;
+
+  const jobScore = item.job_score || (item as any).contextual_details?.job_score_obj;
+  if (jobScore) {
+    const jsAvg = getAverage(jobScore);
+    if (jsAvg != null) return jsAvg;
+  }
+
+  return null;
 };
 
 // ─── Hidden Stages ────────────────────────────────────────────
@@ -644,7 +694,8 @@ export default function JobPipelineDashboard({
   type CandidateSortKey =
     | "Name"
     | "Recruiter"
-    | "AI Score"
+    | "Resume Score"
+    | "Question Analysis"
     | "Location"
     | "Exp"
     | "CTC"
@@ -655,12 +706,12 @@ export default function JobPipelineDashboard({
   const [sortConfig, setSortConfig] = useState<{
     key: CandidateSortKey;
     direction: "asc" | "desc";
-  } | null>({ key: "AI Score", direction: "desc" });
+  } | null>({ key: "Resume Score", direction: "desc" });
 
   const handleSort = (key: CandidateSortKey) => {
     let direction: "asc" | "desc" = "asc";
     if (
-      ["AI Score", "Exp", "CTC", "Expected CTC", "Notice Period"].includes(key)
+      ["Resume Score", "Question Analysis", "Exp", "CTC", "Expected CTC", "Notice Period"].includes(key)
     ) {
       direction = "desc"; // Default desc for numeric/score values
     }
@@ -1227,7 +1278,8 @@ export default function JobPipelineDashboard({
 
   const orderingMap: Record<string, string> = {
     "Name": "full_name",
-    "AI Score": "ai_score",
+    "Resume Score": "ai_score",
+    "Question Analysis": "question_analysis",
     "Location": "location",
     "Exp": "experience",
     "CTC": "current_ctc",
@@ -2228,6 +2280,21 @@ export default function JobPipelineDashboard({
                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FFE4E6] text-[#E11D48]">
                   {cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--"}
                 </span>
+                {(() => {
+                  const qaScore = getQuestionAnalysisScore(item);
+                  if (qaScore === null) return null;
+                  let bg = "bg-[#EBFFEE] text-[#069855]";
+                  if (qaScore < 60) {
+                    bg = "bg-[#FFF2F2] text-[#FF383C]";
+                  } else if (qaScore < 80) {
+                    bg = "bg-[#FFF7D6] text-[#D97706]";
+                  }
+                  return (
+                    <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${bg}`}>
+                      QA: {qaScore}%
+                    </span>
+                  );
+                })()}
               </div>
             )}
             <div className={`flex items-center gap-1.5 shrink-0 ${isArchived ? "w-full justify-end" : ""}`}>
@@ -3131,16 +3198,17 @@ export default function JobPipelineDashboard({
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: "2%" }} /> {/* checkbox */}
-                  <col style={{ width: "20%" }} /> {/* name & headline */}
-                  <col style={{ width: "10%" }} /> {/* recruiter */}
-                  <col style={{ width: "7%" }} /> {/* ai score */}
-                  <col style={{ width: "10%" }} /> {/* location */}
+                  <col style={{ width: "18%" }} /> {/* name & headline */}
+                  <col style={{ width: "9%" }} /> {/* recruiter */}
+                  <col style={{ width: "7%" }} /> {/* Resume score */}
+                  <col style={{ width: "9%" }} /> {/* question analysis */}
+                  <col style={{ width: "8%" }} /> {/* location */}
                   <col style={{ width: "5%" }} /> {/* exp */}
-                  <col style={{ width: "6%" }} /> {/* ctc */}
-                  <col style={{ width: "7%" }} /> {/* expected ctc */}
+                  <col style={{ width: "5%" }} /> {/* ctc */}
+                  <col style={{ width: "6%" }} /> {/* expected ctc */}
                   <col style={{ width: "7%" }} /> {/* notice period */}
-                  <col style={{ width: "7%" }} /> {/* stage */}
-                  <col style={{ width: "7%" }} /> {/* attention */}
+                  <col style={{ width: "6%" }} /> {/* stage */}
+                  <col style={{ width: "6%" }} /> {/* attention */}
                   <col style={{ width: "12%" }} /> {/* actions */}
                 </colgroup>
 
@@ -3157,7 +3225,8 @@ export default function JobPipelineDashboard({
                     {[
                       "Name",
                       "Recruiter",
-                      "AI Score",
+                      "Resume Score",
+                      "Question Analysis",
                       "Location",
                       "Exp",
                       "CTC",
@@ -3201,6 +3270,9 @@ export default function JobPipelineDashboard({
                           <div className="w-9 h-9 bg-gray-200 rounded-full" />
                         </td>
                         <td className="px-4 py-5">
+                          <div className="h-6 bg-gray-200 rounded-full w-14" />
+                        </td>
+                        <td className="px-4 py-5">
                           <div className="h-4 bg-gray-200 rounded w-20" />
                         </td>
                         <td className="px-4 py-5">
@@ -3235,7 +3307,7 @@ export default function JobPipelineDashboard({
                     filteredArchivedTable.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={12}
+                        colSpan={13}
                         className="px-6 py-12 text-center text-sm text-[#AEAEB2]"
                       >
                         No candidates found
@@ -3321,7 +3393,7 @@ export default function JobPipelineDashboard({
                           (t) => t.text,
                         );
 
-                        // AI Score — read from item.job_score (top-level), not cand.job_score
+                        // Resume Score — read from item.job_score (top-level), not cand.job_score
                         const aiScoreRaw =
                           item.job_score?.candidate_match_score?.score;
                         const aiScoreLabel = aiScoreRaw || "--%";
@@ -3421,6 +3493,45 @@ export default function JobPipelineDashboard({
                                   {aiScoreNum}
                                 </div>
                               </div>
+                            </td>
+                            <td className="px-4 py-5">
+                              {(() => {
+                                const score = getQuestionAnalysisScore(item);
+                                if (score === null) {
+                                  return <span className="text-[#AEAEB2] pl-3">-</span>;
+                                }
+                                const qaScoreColor =
+                                  score >= 80
+                                    ? "#00C8B3"
+                                    : score >= 60
+                                      ? "#FFCC00"
+                                      : "#FF383C";
+                                return (
+                                  <div className="relative w-9 h-9">
+                                    <svg
+                                      className="w-9 h-9 -rotate-90"
+                                      viewBox="0 0 36 36"
+                                    >
+                                      <path
+                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none"
+                                        stroke="#E5E7EB"
+                                        strokeWidth="3.5"
+                                      />
+                                      <path
+                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none"
+                                        stroke={qaScoreColor}
+                                        strokeWidth="3.5"
+                                        strokeDasharray={`${score}, 100`}
+                                      />
+                                    </svg>
+                                    <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">
+                                      {score}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               <div className="truncate" title={cand.location || "--"}>
@@ -3684,7 +3795,7 @@ export default function JobPipelineDashboard({
                         <>
                           <tr className="bg-[#F9FAFB]">
                             <td
-                              colSpan={12}
+                              colSpan={13}
                               className="px-4 py-3 border-y border-[#E5E7EB]"
                             >
                               <div className="flex items-center gap-2">
@@ -3751,6 +3862,45 @@ export default function JobPipelineDashboard({
                                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400">
                                     --%
                                   </div>
+                                </td>
+                                <td className="px-4 py-5">
+                                  {(() => {
+                                    const score = getQuestionAnalysisScore(item);
+                                    if (score === null) {
+                                      return <span className="text-[#AEAEB2] pl-3">-</span>;
+                                    }
+                                    const qaScoreColor =
+                                      score >= 80
+                                        ? "#00C8B3"
+                                        : score >= 60
+                                          ? "#FFCC00"
+                                          : "#FF383C";
+                                    return (
+                                      <div className="relative w-9 h-9">
+                                        <svg
+                                          className="w-9 h-9 -rotate-90"
+                                          viewBox="0 0 36 36"
+                                        >
+                                          <path
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none"
+                                            stroke="#E5E7EB"
+                                            strokeWidth="3.5"
+                                          />
+                                          <path
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none"
+                                            stroke={qaScoreColor}
+                                            strokeWidth="3.5"
+                                            strokeDasharray={`${score}, 100`}
+                                          />
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">
+                                          {score}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
                                 </td>
                                 <td className="px-4 py-5 text-sm text-[#AEAEB2] whitespace-nowrap">
                                   <span className="truncate block" title={cand.location || "--"}>{cand.location || "--"}</span>
