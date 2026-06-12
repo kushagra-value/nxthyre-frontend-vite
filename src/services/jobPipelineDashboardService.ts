@@ -1,7 +1,7 @@
 // jobPipelineDashboardService.ts
 // Service file for Plivo call integration APIs
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 const PLIVO_BASE = `${API_BASE}/plivo`;
 
 function getAuthHeaders(): HeadersInit {
@@ -66,13 +66,13 @@ export interface CallHistoryEntry {
   caller_uid: string | null;
   phone_number: string | null;
   call_status:
-    | "initiated"
-    | "ringing"
-    | "answered"
-    | "not_answered"
-    | "busy"
-    | "failed"
-    | "completed";
+  | "initiated"
+  | "ringing"
+  | "answered"
+  | "not_answered"
+  | "busy"
+  | "failed"
+  | "completed";
   call_type: "outgoing" | "incoming";
   call_mode?: "platform" | "manual";
   reason: string | null;
@@ -151,6 +151,7 @@ export interface RoleQuestion {
   ideal_answer_concept: string;
   ai_score_percentage: number | null;
   status: "pending" | "convinced" | "not_convinced" | "skipped";
+  recruiter_guidance?: string | null;
 }
 export interface LiveTranscript {
   id: number;
