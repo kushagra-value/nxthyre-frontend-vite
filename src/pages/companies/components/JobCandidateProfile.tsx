@@ -1110,8 +1110,8 @@ export default function JobCandidateProfile({
                             <div className="relative flex flex-col items-center">
                               <div
                                 className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors flex-shrink-0 ${isActive
-                                    ? "bg-[#0F47F2] text-white"
-                                    : "bg-[#E5E7EB] text-[#8E8E93]"
+                                  ? "bg-[#0F47F2] text-white"
+                                  : "bg-[#E5E7EB] text-[#8E8E93]"
                                   }`}
                               >
                                 {i + 1}

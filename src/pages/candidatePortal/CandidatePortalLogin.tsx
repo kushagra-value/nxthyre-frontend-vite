@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { showToast } from "../../utils/toast";
 import { NxtHyreLogo } from "../auth/NxtHyreLogo";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const CandidatePortalLogin = () => {
 

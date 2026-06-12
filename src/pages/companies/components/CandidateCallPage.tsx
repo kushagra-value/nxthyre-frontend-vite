@@ -43,6 +43,73 @@ import {
   type LiveTranscript,
 } from "../../../services/jobPipelineDashboardService";
 
+function RecruiterGuidancePanel({ recruiter_guidance }: { recruiter_guidance?: string | null }) {
+  const [showHelper, setShowHelper] = useState(false);
+
+  // Fallback default guidance if not provided by the backend, to ensure the UI always appears
+  const effectiveGuidance = recruiter_guidance || `💡 WHY WE ASK: This tests the candidate's depth of knowledge, problem-solving approach, and practical experience in this area. \n\n🗣️ CLARIFICATION & NUDGES: \n• If they are struggling, say: "Could you walk me through your general thought process or a simple example?" \n• If they get stuck, say: "Think about the primary trade-offs or alternatives for this approach."`;
+
+  // Helper function to separate the guidance fields if you want custom structured UI
+  const parseGuidance = (guidance: string) => {
+    if (!guidance) return { whyWeAsk: '', nudges: '' };
+
+    const parts = guidance.split('🗣️ CLARIFICATION & NUDGES:');
+    const whyWeAsk = parts[0]?.replace('💡 WHY WE ASK:', '').trim();
+    const nudges = parts[1]?.trim();
+
+    return { whyWeAsk, nudges };
+  };
+
+  const { whyWeAsk, nudges } = parseGuidance(effectiveGuidance);
+
+  return (
+    <div className="mt-4 border-t border-slate-100 pt-4">
+      <button
+        onClick={() => setShowHelper(!showHelper)}
+        className="flex items-center gap-2 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
+      >
+        <span>{showHelper ? 'Hide Recruiter Help' : '💡 Need help? Show Quick-Scripts & context'}</span>
+        <svg
+          className={`w-4 h-4 transform transition-transform ${showHelper ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {showHelper && (
+        <div className="mt-3 text-slate-700 text-sm space-y-3 bg-indigo-50/40 p-4 rounded-xl border border-indigo-100/60 animate-fadeIn">
+          {/* Context Summary */}
+          {whyWeAsk && (
+            <div>
+              <span className="font-bold text-slate-900 text-xs block uppercase tracking-wider mb-1">
+                💡 Why We Ask This
+              </span>
+              <p className="text-slate-600 leading-relaxed text-xs">
+                {whyWeAsk}
+              </p>
+            </div>
+          )}
+
+          {/* Read Aloud Scripts */}
+          {nudges && (
+            <div className="border-t border-slate-100/80 pt-2.5">
+              <span className="font-bold text-slate-900 text-xs block uppercase tracking-wider mb-1.5">
+                🗣️ Read-Aloud Help Scripts
+              </span>
+              <div className="whitespace-pre-wrap text-xs text-slate-700 leading-relaxed space-y-1 bg-white p-3 rounded-lg border border-indigo-100">
+                {nudges}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface CandidateCallParams {
   id: string;
   name: string;
@@ -73,7 +140,9 @@ const DUMMY_FALLBACK: CandidateCallParams = {
 
 export default function CandidateCallPage() {
   // const { candidateId } = useParams();
-  const { candidateId, jobId } = useParams();
+  const { candidateId, jobId: routeJobId } = useParams();
+  const persistedJobId = sessionStorage.getItem("nxthyre_companies_jobId");
+  const jobId = routeJobId && routeJobId !== "0" ? routeJobId : (persistedJobId || "0");
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -88,7 +157,7 @@ export default function CandidateCallPage() {
         // Don't remove yet, we might need it for re-renders during init
         return JSON.parse(stored);
       }
-    } catch {}
+    } catch { }
     return null;
   })();
 
@@ -260,7 +329,7 @@ export default function CandidateCallPage() {
       // Update sessionStorage so refreshes reflect the new data
       try {
         sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidate: updatedCandidate }));
-      } catch {}
+      } catch { }
 
       setIsEditingProfile(false);
       showToast.success("Profile updated!");
@@ -327,7 +396,7 @@ export default function CandidateCallPage() {
       jobPostService.getJob(numericJobId)
         .then(setJobData)
         .catch((err) => console.error('Failed to fetch job data:', err));
-        
+
       jobPostService.getJobCompetencies(numericJobId)
         .then(setCompetenciesData)
         .catch((err) => console.error('Failed to fetch job competencies:', err));
@@ -433,7 +502,7 @@ export default function CandidateCallPage() {
   useEffect(() => {
     if (isManual) return; // Skip call initiation for manual calls
     if (!candidate?.phone) return;
-    
+
     // If we've already reached answered state from the modal, don't initiate again
     if (callState === "answered") {
       console.log("Call already answered, skipping initiation");
@@ -606,7 +675,7 @@ export default function CandidateCallPage() {
       // ── STOP VOICE RECORDING ──
       isManualRecordingRef.current = false;
       setIsManualRecording(false);
-      
+
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
         mediaRecorderRef.current.stop();
         // The submission logic is handled in the onstop callback
@@ -615,7 +684,7 @@ export default function CandidateCallPage() {
       // ── START VOICE RECORDING ──
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
+
         // Use a supported mime type for Gemini
         const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/ogg";
         const mediaRecorder = new MediaRecorder(stream, { mimeType });
@@ -631,7 +700,7 @@ export default function CandidateCallPage() {
         mediaRecorder.onstop = async () => {
           // Compile chunks into a single Blob
           const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-          
+
           if (candidate && callUuid && audioBlob.size > 0) {
             console.log("Submitting manual recording audio file...");
             const formData = new FormData();
@@ -700,10 +769,10 @@ export default function CandidateCallPage() {
 
     if (!isSilent) setIsSaving(true);
     isSavingRef.current = true;
-    
+
     // Always use the latest UUID from the ref
     const finalCallUuid = callUuidRef.current;
-    
+
     try {
       const callLogRes = await saveCallLog({
         call_uuid: finalCallUuid || undefined,
@@ -720,13 +789,13 @@ export default function CandidateCallPage() {
         call_mode: isManual ? "manual" : "platform",
         call_status: isManual && manualCallConnected ? "completed" : undefined
       });
-      
+
       if (callLogRes.call_uuid) {
         callUuidRef.current = callLogRes.call_uuid;
         setCallUuid(callLogRes.call_uuid);
         lastSavedDataRef.current = currentData; // Update last saved state
       }
-      
+
       if (!isSilent) showToast.success("Notes and checklist saved!");
     } catch (err) {
       console.error("Failed to save notes:", err);
@@ -761,7 +830,7 @@ export default function CandidateCallPage() {
     });
   };
 
-  
+
 
   const handleEvaluateQuestion = async (
     qId: number,
@@ -876,25 +945,25 @@ export default function CandidateCallPage() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse"></span>
                   CONNECTED (MANUAL)
                 </div>
-                
+
                 {/* Manual Call Controls */}
                 <div className="mt-6 flex items-center gap-6">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="relative">
-                        <button
-                          onClick={toggleManualRecording}
-                          className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg z-10 relative ${isManualRecording ? "bg-red-500 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}
-                        >
-                          <Mic className={`w-5 h-5 ${isManualRecording ? "animate-pulse" : ""}`} />
-                        </button>
-                        {isManualRecording && (
-                          <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20 -z-0"></div>
-                        )}
-                      </div>
-                      <span className="text-xs text-white uppercase tracking-widest font-semibold">
-                        {isManualRecording ? "Stop Rec" : "Record"}
-                      </span>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="relative">
+                      <button
+                        onClick={toggleManualRecording}
+                        className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg z-10 relative ${isManualRecording ? "bg-red-500 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}
+                      >
+                        <Mic className={`w-5 h-5 ${isManualRecording ? "animate-pulse" : ""}`} />
+                      </button>
+                      {isManualRecording && (
+                        <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20 -z-0"></div>
+                      )}
                     </div>
+                    <span className="text-xs text-white uppercase tracking-widest font-semibold">
+                      {isManualRecording ? "Stop Rec" : "Record"}
+                    </span>
+                  </div>
 
                   {/* End Call Button */}
                   <div className="flex flex-col items-center gap-2">
@@ -915,15 +984,15 @@ export default function CandidateCallPage() {
                     </span>
                   </div>
                 </div>
-                
-                  {isManualRecording && (
-                    <div className="mt-4 w-full px-4 max-h-24 overflow-y-auto text-xs text-slate-300 italic text-center custom-scrollbar">
-                      Recording audio...
-                    </div>
-                  )}
+
+                {isManualRecording && (
+                  <div className="mt-4 w-full px-4 max-h-24 overflow-y-auto text-xs text-slate-300 italic text-center custom-scrollbar">
+                    Recording audio...
+                  </div>
+                )}
               </div>
             )}
-            
+
             {/* QUICK NOTES - pinned to bottom of left panel */}
             <div className="absolute bottom-0 left-0 right-0 bg-white z-20">
               <div className="px-4 py-3">
@@ -931,24 +1000,23 @@ export default function CandidateCallPage() {
                   <span className="text-sm">📝</span>
                   <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Quick Notes</span>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2 mb-3">
                   {tagsList.map((tag) => (
                     <button
                       key={tag.id}
                       onClick={() => toggleTag(tag.id)}
-                      className={`px-3 py-1.5 rounded-full text-[11px] whitespace-nowrap transition-colors border border-dashed flex items-center gap-1.5 ${
-                        activeTags.includes(tag.id) 
-                          ? "bg-blue-50 text-blue-600 border-blue-400" 
-                          : "bg-white text-slate-500 border-slate-300 hover:bg-slate-50"
-                      }`}
+                      className={`px-3 py-1.5 rounded-full text-[11px] whitespace-nowrap transition-colors border border-dashed flex items-center gap-1.5 ${activeTags.includes(tag.id)
+                        ? "bg-blue-50 text-blue-600 border-blue-400"
+                        : "bg-white text-slate-500 border-slate-300 hover:bg-slate-50"
+                        }`}
                     >
                       <span>{tag.icon}</span>
                       <span>{tag.label}</span>
                     </button>
                   ))}
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <input
                     value={notes}
@@ -1072,120 +1140,120 @@ export default function CandidateCallPage() {
       <div className={`w-[80%] flex ${isManual ? "flex-col lg:flex-row" : "flex-col"} h-full overflow-hidden bg-white shadow-xl shadow-slate-200 relative`}>
         {/* Main content area */}
         <div className={`flex flex-col ${isManual ? "w-[75%] min-w-0 h-full" : "h-full w-full"} overflow-hidden`}>
-        {/* Header & Candidate Summary Strip */}
-        <div className="bg-white border-b border-slate-200 shrink-0">
-          <div className="h-[80px] flex items-center justify-between px-8">
-            <div className="flex items-center gap-4 text-lg font-medium text-slate-800">
-              <span className="text-slate-400">
-                {isManual
-                  ? manualCallConnected ? "Call in progress —" : "Manual call —"
-                  : callState === "completed"
-                    ? "Call ended —"
-                    : "Call in progress —"}
-              </span>
-              <span className="text-blue-600 font-bold">{candidate.name}</span>
-              {((isManual && manualCallConnected) || (!isManual && callState !== "completed")) && (
-                <span className="bg-green-100 text-green-700 text-xs px-2.5 py-0.5 rounded-full font-bold tracking-widest flex items-center gap-1.5 uppercase shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                  Live
+          {/* Header & Candidate Summary Strip */}
+          <div className="bg-white border-b border-slate-200 shrink-0">
+            <div className="h-[80px] flex items-center justify-between px-8">
+              <div className="flex items-center gap-4 text-lg font-medium text-slate-800">
+                <span className="text-slate-400">
+                  {isManual
+                    ? manualCallConnected ? "Call in progress —" : "Manual call —"
+                    : callState === "completed"
+                      ? "Call ended —"
+                      : "Call in progress —"}
                 </span>
-              )}
-            </div>
-            {/* Right Side: Status and Navigation */}
-            <div className="flex flex-col items-end gap-2">
-              {!isManual && (
-                <span className="text-xs text-slate-400 font-medium">
-                  {candidate.headline}
-                </span>
-              )}
-              
-              {/* Previous / Next Candidate Navigation */}
-              {candidateList.length > 1 && (
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-400 text-xs font-semibold tracking-wider uppercase">
-                    Candidate {currentCandidateIndex + 1} of {candidateList.length}
+                <span className="text-blue-600 font-bold">{candidate.name}</span>
+                {((isManual && manualCallConnected) || (!isManual && callState !== "completed")) && (
+                  <span className="bg-green-100 text-green-700 text-xs px-2.5 py-0.5 rounded-full font-bold tracking-widest flex items-center gap-1.5 uppercase shadow-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                    Live
                   </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={handleNavigatePrev}
-                      disabled={!hasPrevCandidate}
-                      className={`p-1.5 rounded-md border transition-colors ${hasPrevCandidate ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600" : "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"}`}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={handleNavigateNext}
-                      disabled={!hasNextCandidate}
-                      className={`p-1.5 rounded-md border transition-colors ${hasNextCandidate ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600" : "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"}`}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                )}
+              </div>
+              {/* Right Side: Status and Navigation */}
+              <div className="flex flex-col items-end gap-2">
+                {!isManual && (
+                  <span className="text-xs text-slate-400 font-medium">
+                    {candidate.headline}
+                  </span>
+                )}
+
+                {/* Previous / Next Candidate Navigation */}
+                {candidateList.length > 1 && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-400 text-xs font-semibold tracking-wider uppercase">
+                      Candidate {currentCandidateIndex + 1} of {candidateList.length}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={handleNavigatePrev}
+                        disabled={!hasPrevCandidate}
+                        className={`p-1.5 rounded-md border transition-colors ${hasPrevCandidate ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600" : "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"}`}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={handleNavigateNext}
+                        disabled={!hasNextCandidate}
+                        className={`p-1.5 rounded-md border transition-colors ${hasNextCandidate ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600" : "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"}`}
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
+              </div>
+            </div>
+            {/* Tab Navigation */}
+            <div className="flex px-8 gap-8 border-t border-slate-100 bg-slate-50/50">
+              {isManual ? (
+                /* Manual mode tabs: Candidate Resume | Role Questions */
+                <>
+                  {(["jobDescription", "roleQuestions", "resume"] as const).map((tab) => {
+                    const labels = {
+                      jobDescription: "Job Description",
+                      roleQuestions: "Role Questions",
+                      resume: "Candidate Resume",
+                    };
+                    const isActive = manualActiveTab === tab;
+                    return (
+                      <button
+                        key={tab}
+                        onClick={() => setManualActiveTab(tab)}
+                        className={`py-4 font-semibold text-sm relative transition-colors ${isActive ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                      >
+                        {labels[tab]}
+                        {isActive && (
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </>
+              ) : (
+                /* Platform mode tabs (original) */
+                <>
+                  {["roleQuestions", "transcript", "quickNotes"].map((tab) => {
+                    const labels = {
+                      roleQuestions: "Role Questions (AI)",
+                      transcript: "Transcript + AI",
+                      quickNotes: "Quick Notes & Checklist",
+                    };
+                    const isActive = activeTab === tab;
+                    return (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab as any)}
+                        className={`py-4 font-semibold text-sm relative transition-colors ${isActive ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                      >
+                        {labels[tab as keyof typeof labels]}
+                        {isActive && (
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </>
               )}
             </div>
           </div>
-          {/* Tab Navigation */}
-          <div className="flex px-8 gap-8 border-t border-slate-100 bg-slate-50/50">
-            {isManual ? (
-              /* Manual mode tabs: Candidate Resume | Role Questions */
-              <>
-                {(["jobDescription", "roleQuestions", "resume"] as const).map((tab) => {
-                  const labels = {
-                    jobDescription: "Job Description",
-                    roleQuestions: "Role Questions",
-                    resume: "Candidate Resume",
-                  };
-                  const isActive = manualActiveTab === tab;
-                  return (
-                    <button
-                      key={tab}
-                      onClick={() => setManualActiveTab(tab)}
-                      className={`py-4 font-semibold text-sm relative transition-colors ${isActive ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
-                    >
-                      {labels[tab]}
-                      {isActive && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
-                      )}
-                    </button>
-                  );
-                })}
-              </>
-            ) : (
-              /* Platform mode tabs (original) */
-              <>
-            {["roleQuestions", "transcript", "quickNotes"].map((tab) => {
-              const labels = {
-                roleQuestions: "Role Questions (AI)",
-                transcript: "Transcript + AI",
-                quickNotes: "Quick Notes & Checklist",
-              };
-              const isActive = activeTab === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab as any)}
-                  className={`py-4 font-semibold text-sm relative transition-colors ${isActive ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
-                >
-                  {labels[tab as keyof typeof labels]}
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
-                  )}
-                </button>
-              );
-            })}
-              </>
-            )}
-          </div>
-        </div>
-        {/* Scrollable Content Area */}
-        <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto px-4 md:px-8 py-6 custom-scrollbar bg-slate-50/30">
-          {/* MANUAL MODE TABS */}
-          {isManual && manualActiveTab === "jobDescription" && (
-            <div className="flex flex-col h-full w-full max-w-4xl mx-auto break-words pb-10">
-              <div className="bg-white border border-slate-200 rounded-[24px] shadow-sm p-8 md:p-10 w-full relative">
-                
-                {/* Floating Avatars (Premium touch from design)
+          {/* Scrollable Content Area */}
+          <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto px-4 md:px-8 py-6 custom-scrollbar bg-slate-50/30">
+            {/* MANUAL MODE TABS */}
+            {isManual && manualActiveTab === "jobDescription" && (
+              <div className="flex flex-col h-full w-full max-w-4xl mx-auto break-words pb-10">
+                <div className="bg-white border border-slate-200 rounded-[24px] shadow-sm p-8 md:p-10 w-full relative">
+
+                  {/* Floating Avatars (Premium touch from design)
                 <div className="absolute top-8 right-8 flex -space-x-3 group cursor-pointer">
                   <div className="w-12 h-12 rounded-full border-4 border-white shadow-xl overflow-hidden transition-transform group-hover:-translate-x-1">
                     <img src="https://i.pravatar.cc/150?u=1" alt="Recruiter 1" className="w-full h-full object-cover" />
@@ -1196,206 +1264,207 @@ export default function CandidateCallPage() {
                   <div className="absolute -inset-2 bg-blue-500/10 rounded-full blur-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div> */}
 
-                {/* Header */}
-                <div className="mb-8 pr-24">
-                  <h2 className="text-2xl font-bold text-slate-800 tracking-tight leading-tight">
-                    {jobData?.title || "Loading Job Details..."} {jobData?.workspace_details?.name ? `| ${jobData.workspace_details.name}` : ""}
-                  </h2>
-                </div>
-
-                {/* Job Summary Section */}
-                <div className="mb-10">
-                  <h3 className="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-wider">Job Summary</h3>
-                  <div className="flex flex-col gap-1.5">
-                    {[
-                      { label: "Job Title", value: jobData?.title },
-                      { label: "Company", value: jobData?.workspace_details?.name },
-                      { label: "Location", value: jobData?.location?.join(' · ') || "Hybrid" },
-                      { label: "Salary Range", value: jobData?.salary_min ? `₹${jobData.salary_min}L – ₹${jobData.salary_max}L per annum` : "Not disclosed" },
-                      { label: "Experience", value: jobData?.experience_min_years ? `${jobData.experience_min_years}–${jobData.experience_max_years} years` : "Not specified" },
-                      { label: "Openings", value: jobData?.No_of_opening_or_positions_ || jobData?.num_positions || "1" },
-                      { label: "Notice Period", value: jobData?.notice_period || "30 Days" },
-                    ].map((row, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl hover:bg-[#F1F5F9] transition-colors group">
-                        <span className="text-sm text-slate-500 font-medium">{row.label}</span>
-                        <span className="text-sm text-slate-800 font-semibold group-hover:text-blue-600 transition-colors">{row.value}</span>
-                      </div>
-                    ))}
+                  {/* Header */}
+                  <div className="mb-8 pr-24">
+                    <h2 className="text-2xl font-bold text-slate-800 tracking-tight leading-tight">
+                      {jobData?.title || "Loading Job Details..."} {jobData?.workspace_details?.name ? `| ${jobData.workspace_details.name}` : ""}
+                    </h2>
                   </div>
-                </div>
 
-                {/* Primary Skills Section */}
-                <div className="mb-10 bg-[#F4F7FF] rounded-2xl p-6 border border-[#E0E7FF]/50">
-                  <h3 className="text-sm font-semibold text-slate-500 mb-5 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    Primary Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2.5">
-                    {(jobData?.skills?.length ? jobData.skills : ["React", "TypeScript", "Node.js"]).map((skill, i) => (
-                      <span 
-                        key={i} 
-                        className="px-5 py-2.5 bg-white rounded-xl text-sm text-blue-600 font-bold shadow-sm border border-blue-100 hover:border-blue-300 hover:shadow-md transition-all cursor-default"
-                      >
-                        {skill}
-                      </span>
-                    ))}
+                  {/* Job Summary Section */}
+                  <div className="mb-10">
+                    <h3 className="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-wider">Job Summary</h3>
+                    <div className="flex flex-col gap-1.5">
+                      {[
+                        { label: "Job Title", value: jobData?.title },
+                        { label: "Company", value: jobData?.workspace_details?.name },
+                        { label: "Location", value: jobData?.location?.join(' · ') || "Hybrid" },
+                        { label: "Salary Range", value: jobData?.salary_min ? `₹${jobData.salary_min}L – ₹${jobData.salary_max}L per annum` : "Not disclosed" },
+                        { label: "Experience", value: jobData?.experience_min_years ? `${jobData.experience_min_years}–${jobData.experience_max_years} years` : "Not specified" },
+                        { label: "Openings", value: jobData?.No_of_opening_or_positions_ || jobData?.num_positions || "1" },
+                        { label: "Notice Period", value: jobData?.notice_period || "30 Days" },
+                      ].map((row, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl hover:bg-[#F1F5F9] transition-colors group">
+                          <span className="text-sm text-slate-500 font-medium">{row.label}</span>
+                          <span className="text-sm text-slate-800 font-semibold group-hover:text-blue-600 transition-colors">{row.value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Must Have Section */}
-                <div className="bg-[#FFF1F2] rounded-2xl p-6 border border-[#FFE4E6]">
-                  <h3 className="text-sm font-bold text-rose-600 mb-5 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                    Must Have
-                  </h3>
-                  <ul className="space-y-4">
-                    {(competenciesData?.the_core_expectation?.length 
-                      ? competenciesData.the_core_expectation 
-                      : (jobData?.description?.split('\n').filter(l => l.includes('Must') || l.includes('experience')).slice(0, 3) || ["Strong technical knowledge and problem-solving skills"])
-                    ).map((item: string, i: number) => (
-                      <li key={i} className="flex items-start gap-3 group">
-                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-rose-400 transition-colors shrink-0" />
-                        <p className="text-sm text-slate-600 leading-relaxed group-hover:text-slate-900 transition-colors">
-                          {item}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  {/* Primary Skills Section */}
+                  <div className="mb-10 bg-[#F4F7FF] rounded-2xl p-6 border border-[#E0E7FF]/50">
+                    <h3 className="text-sm font-semibold text-slate-500 mb-5 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                      Primary Skills
+                    </h3>
+                    <div className="flex flex-wrap gap-2.5">
+                      {(jobData?.skills?.length ? jobData.skills : ["React", "TypeScript", "Node.js"]).map((skill, i) => (
+                        <span
+                          key={i}
+                          className="px-5 py-2.5 bg-white rounded-xl text-sm text-blue-600 font-bold shadow-sm border border-blue-100 hover:border-blue-300 hover:shadow-md transition-all cursor-default"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
 
+                  {/* Must Have Section */}
+                  <div className="bg-[#FFF1F2] rounded-2xl p-6 border border-[#FFE4E6]">
+                    <h3 className="text-sm font-bold text-rose-600 mb-5 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                      Must Have
+                    </h3>
+                    <ul className="space-y-4">
+                      {(competenciesData?.the_core_expectation?.length
+                        ? competenciesData.the_core_expectation
+                        : (jobData?.description?.split('\n').filter(l => l.includes('Must') || l.includes('experience')).slice(0, 3) || ["Strong technical knowledge and problem-solving skills"])
+                      ).map((item: string, i: number) => (
+                        <li key={i} className="flex items-start gap-3 group">
+                          <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-rose-400 transition-colors shrink-0" />
+                          <p className="text-sm text-slate-600 leading-relaxed group-hover:text-slate-900 transition-colors">
+                            {item}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                </div>
               </div>
-            </div>
-          )}
-          {isManual && manualActiveTab === "resume" && (
-            <div className="flex flex-col h-full max-w-4xl mx-auto">
-              <div className="bg-white border border-slate-200 rounded-xl overflow-auto shadow-sm">
-                <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50/50">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-800">Candidate Resume View</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {candidate.name} · {candidate.headline}
-                    </p>
+            )}
+            {isManual && manualActiveTab === "resume" && (
+              <div className="flex flex-col h-full max-w-4xl mx-auto">
+                <div className="bg-white border border-slate-200 rounded-xl overflow-auto shadow-sm">
+                  <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50/50">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800">Candidate Resume View</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {candidate.name} · {candidate.headline}
+                      </p>
+                    </div>
+                    <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button className="text-slate-400 hover:text-slate-600 transition-colors">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="h-[calc(100vh-160px)] bg-white">
-                  {candidate.resumeUrl ? (() => {
-                    const url = candidate.resumeUrl;
-                    const ext = url.split(".").pop()?.toLowerCase() || "";
-                    const isPdf = ext === "pdf";
-                    const isDocViewerSupported = ["docx", "doc", "txt", "rtf"].includes(ext);
-                    const viewerUrl = isDocViewerSupported
-                      ? `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`
-                      : url;
+                  <div className="h-[calc(100vh-160px)] bg-white">
+                    {candidate.resumeUrl ? (() => {
+                      const url = candidate.resumeUrl;
+                      const ext = url.split(".").pop()?.toLowerCase() || "";
+                      const isPdf = ext === "pdf";
+                      const isDocViewerSupported = ["docx", "doc", "txt", "rtf"].includes(ext);
+                      const viewerUrl = isDocViewerSupported
+                        ? `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`
+                        : url;
 
-                    if (isPdf) {
+                      if (isPdf) {
+                        return (
+                          <embed
+                            src={url}
+                            type="application/pdf"
+                            className="w-full h-full border-0"
+                          />
+                        );
+                      }
+                      if (isDocViewerSupported) {
+                        return (
+                          <iframe
+                            src={viewerUrl}
+                            className="w-full h-full border-0"
+                            title="Candidate Resume"
+                          />
+                        );
+                      }
                       return (
-                        <embed
-                          src={url}
-                          type="application/pdf"
-                          className="w-full h-full border-0"
-                        />
+                        <div className="flex items-center justify-center h-full text-slate-400">
+                          <div className="text-center">
+                            <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                            <p className="font-medium">Resume format not supported for inline viewing</p>
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline text-sm mt-2 inline-block"
+                            >
+                              Download or open in a new tab
+                            </a>
+                          </div>
+                        </div>
                       );
-                    }
-                    if (isDocViewerSupported) {
-                      return (
-                        <iframe
-                          src={viewerUrl}
-                          className="w-full h-full border-0"
-                          title="Candidate Resume"
-                        />
-                      );
-                    }
-                    return (
+                    })() : (
                       <div className="flex items-center justify-center h-full text-slate-400">
                         <div className="text-center">
                           <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                          <p className="font-medium">Resume format not supported for inline viewing</p>
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 underline text-sm mt-2 inline-block"
-                          >
-                            Download or open in a new tab
-                          </a>
+                          <p className="font-medium">No resume uploaded</p>
+                          <p className="text-sm mt-1">Resume will appear here when available</p>
                         </div>
                       </div>
-                    );
-                  })() : (
-                    <div className="flex items-center justify-center h-full text-slate-400">
-                      <div className="text-center">
-                        <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                        <p className="font-medium">No resume uploaded</p>
-                        <p className="text-sm mt-1">Resume will appear here when available</p>
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {isManual && manualActiveTab === "roleQuestions" && (
-            <div className="flex flex-col gap-5 max-w-4xl mx-auto">
-              <div className="mb-2">
-                <h2 className="text-lg font-bold text-slate-800">Role Questions</h2>
-                <p className="text-slate-500 text-sm">
-                  Suggested questions to evaluate {candidate.headline} skills.
-                </p>
-              </div>
-              {roleQuestions.map((q, idx) => (
-                <div
-                  key={q.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-all hover:shadow-md"
-                >
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex gap-4 items-start">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
-                        {idx + 1}
-                      </div>
-                      <div>
-                        <h3 className="text-slate-800 font-semibold mb-1.5 leading-snug">
-                          {q.question_text}
-                        </h3>
-                        <p className="text-slate-500 text-sm italic bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
-                          {q.ideal_answer_concept}
-                        </p>
+            {isManual && manualActiveTab === "roleQuestions" && (
+              <div className="flex flex-col gap-5 max-w-4xl mx-auto">
+                <div className="mb-2">
+                  <h2 className="text-lg font-bold text-slate-800">Role Questions</h2>
+                  <p className="text-slate-500 text-sm">
+                    Suggested questions to evaluate {candidate.headline} skills.
+                  </p>
+                </div>
+                {roleQuestions.map((q, idx) => (
+                  <div
+                    key={q.id}
+                    className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-all hover:shadow-md"
+                  >
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex gap-4 items-start">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <h3 className="text-slate-800 font-semibold mb-1.5 leading-snug">
+                            {q.question_text}
+                          </h3>
+                          <p className="text-slate-500 text-sm italic bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                            {q.ideal_answer_concept}
+                          </p>
+                          <RecruiterGuidancePanel recruiter_guidance={q.recruiter_guidance} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="h-px bg-slate-100 my-1"></div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handleEvaluateQuestion(q.id, "convinced")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-300 shadow-sm" : "bg-white text-slate-500 hover:bg-green-50 hover:text-green-600 border-slate-200"}`}
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Convinced
-                      </button>
-                      <button
-                        onClick={() => handleEvaluateQuestion(q.id, "not_convinced")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-300 shadow-sm" : "bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 border-slate-200"}`}
-                      >
-                        <XCircle className="w-3.5 h-3.5" /> Not Convinced
-                      </button>
-                      <button
-                        onClick={() => handleEvaluateQuestion(q.id, "skipped")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50 border-slate-200"}`}
-                      >
-                        <FastForward className="w-3.5 h-3.5" /> Skip
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {q.status === "convinced" && (
-                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Score: 100%</span>
-                      )}
-                      {q.status === "not_convinced" && (
-                        <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
-                      )}
-                      {/* {q.ai_score_percentage !== null && (
+                    <div className="h-px bg-slate-100 my-1"></div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleEvaluateQuestion(q.id, "convinced")}
+                          className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-300 shadow-sm" : "bg-white text-slate-500 hover:bg-green-50 hover:text-green-600 border-slate-200"}`}
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Convinced
+                        </button>
+                        <button
+                          onClick={() => handleEvaluateQuestion(q.id, "not_convinced")}
+                          className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-300 shadow-sm" : "bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 border-slate-200"}`}
+                        >
+                          <XCircle className="w-3.5 h-3.5" /> Not Convinced
+                        </button>
+                        <button
+                          onClick={() => handleEvaluateQuestion(q.id, "skipped")}
+                          className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50 border-slate-200"}`}
+                        >
+                          <FastForward className="w-3.5 h-3.5" /> Skip
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {q.status === "convinced" && (
+                          <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Score: 100%</span>
+                        )}
+                        {q.status === "not_convinced" && (
+                          <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
+                        )}
+                        {/* {q.ai_score_percentage !== null && (
                         <div className="flex items-center gap-3">
                           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Score</span>
                           <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -1404,86 +1473,87 @@ export default function CandidateCallPage() {
                           <span className="text-sm font-bold text-blue-700">{q.ai_score_percentage}%</span>
                         </div>
                       )} */}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              {roleQuestions.length === 0 && (
-                <div className="text-center p-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
-                  Generating questions with Gemini...
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* PLATFORM MODE TABS */}
-          {!isManual && (
-          <>
-          {/* TAB 1: ROLE QUESTIONS */}
-          {activeTab === "roleQuestions" && (
-            <div className="flex flex-col gap-5 max-w-4xl mx-auto">
-              <div className="mb-2">
-                <h2 className="text-lg font-bold text-slate-800">
-                  Interview Questions
-                </h2>
-                <p className="text-slate-500 text-sm">
-                  Suggested questions to evaluate {candidate.headline} skills.
-                </p>
+                ))}
+                {roleQuestions.length === 0 && (
+                  <div className="text-center p-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
+                    Generating questions with Gemini...
+                  </div>
+                )}
               </div>
-              {roleQuestions.map((q, idx) => (
-                <div
-                  key={q.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-all hover:shadow-md"
-                >
-                  {/* Question Header */}
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex gap-4 items-start">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
-                        {idx + 1}
-                      </div>
-                      <div>
-                        <h3 className="text-slate-800 font-semibold mb-1.5 leading-snug">
-                          {q.question_text}
-                        </h3>
-                        <p className="text-slate-500 text-sm italic bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
-                          {q.ideal_answer_concept}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Divider */}
-                  <div className="h-px bg-slate-100 my-1"></div>
-                  {/* Actions & AI Score */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handleEvaluateQuestion(q.id, "convinced")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-300 shadow-sm" : "bg-white text-slate-500 hover:bg-green-50 hover:text-green-600 border-slate-200"}`}
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Convinced
-                      </button>
-                      <button
-                        onClick={() => handleEvaluateQuestion(q.id, "not_convinced")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-300 shadow-sm" : "bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 border-slate-200"}`}
-                      >
-                        <XCircle className="w-3.5 h-3.5" /> Not Convinced
-                      </button>
-                      <button
-                        onClick={() => handleEvaluateQuestion(q.id, "skipped")}
-                        className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50 border-slate-200"}`}
-                      >
-                        <FastForward className="w-3.5 h-3.5" /> Skip
-                      </button>
-                    </div>
+            )}
 
-                    <div className="flex items-center gap-4">
-                      {q.status === "convinced" && (
-                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Score: 100%</span>
-                      )}
-                      {q.status === "not_convinced" && (
-                        <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
-                      )}
-                      {/* {q.ai_score_percentage !== null && (
+            {/* PLATFORM MODE TABS */}
+            {!isManual && (
+              <>
+                {/* TAB 1: ROLE QUESTIONS */}
+                {activeTab === "roleQuestions" && (
+                  <div className="flex flex-col gap-5 max-w-4xl mx-auto">
+                    <div className="mb-2">
+                      <h2 className="text-lg font-bold text-slate-800">
+                        Interview Questions
+                      </h2>
+                      <p className="text-slate-500 text-sm">
+                        Suggested questions to evaluate {candidate.headline} skills.
+                      </p>
+                    </div>
+                    {roleQuestions.map((q, idx) => (
+                      <div
+                        key={q.id}
+                        className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-all hover:shadow-md"
+                      >
+                        {/* Question Header */}
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex gap-4 items-start">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-sm">
+                              {idx + 1}
+                            </div>
+                            <div>
+                              <h3 className="text-slate-800 font-semibold mb-1.5 leading-snug">
+                                {q.question_text}
+                              </h3>
+                              <p className="text-slate-500 text-sm italic bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                                {q.ideal_answer_concept}
+                              </p>
+                              <RecruiterGuidancePanel recruiter_guidance={q.recruiter_guidance} />
+                            </div>
+                          </div>
+                        </div>
+                        {/* Divider */}
+                        <div className="h-px bg-slate-100 my-1"></div>
+                        {/* Actions & AI Score */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => handleEvaluateQuestion(q.id, "convinced")}
+                              className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "convinced" ? "bg-green-100 text-green-700 border-green-300 shadow-sm" : "bg-white text-slate-500 hover:bg-green-50 hover:text-green-600 border-slate-200"}`}
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Convinced
+                            </button>
+                            <button
+                              onClick={() => handleEvaluateQuestion(q.id, "not_convinced")}
+                              className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "not_convinced" ? "bg-red-100 text-red-700 border-red-300 shadow-sm" : "bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 border-slate-200"}`}
+                            >
+                              <XCircle className="w-3.5 h-3.5" /> Not Convinced
+                            </button>
+                            <button
+                              onClick={() => handleEvaluateQuestion(q.id, "skipped")}
+                              className={`flex items-center border gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${q.status === "skipped" ? "bg-slate-200 text-slate-700 border-slate-300 shadow-sm" : "bg-white text-slate-500 hover:bg-slate-50 border-slate-200"}`}
+                            >
+                              <FastForward className="w-3.5 h-3.5" /> Skip
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            {q.status === "convinced" && (
+                              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Score: 100%</span>
+                            )}
+                            {q.status === "not_convinced" && (
+                              <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Score: 0%</span>
+                            )}
+                            {/* {q.ai_score_percentage !== null && (
                         <div className="flex items-center gap-3">
                           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                             AI Score
@@ -1499,279 +1569,279 @@ export default function CandidateCallPage() {
                           </span>
                         </div>
                       )} */}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {roleQuestions.length === 0 && (
-                <div className="text-center p-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
-                  Generating questions with Gemini...
-                </div>
-              )}
-            </div>
-          )}
-          {/* TAB 2: TRANSCRIPT + AI */}
-          {activeTab === "transcript" && (
-            <div className="flex flex-col h-full max-w-4xl mx-auto">
-              <div className="mb-4">
-                <h2 className="text-lg font-bold text-slate-800">
-                  Live Transcript & Evaluations
-                </h2>
-              </div>
-
-              <div className="flex-1 flex flex-col gap-6 p-2">
-                {transcripts.map((t) => (
-                  <div
-                    key={t.id}
-                    className={`flex flex-col max-w-[80%] ${t.speaker === "candidate" ? "self-start" : t.speaker === "recruiter" ? "self-end items-end" : "self-center items-center w-full max-w-full"}`}
-                  >
-                    {/* System/AI Suggestions */}
-                    {t.speaker === "system" ? (
-                      <div className="bg-purple-50 border border-purple-100 text-purple-800 px-5 py-3 rounded-2xl flex items-start gap-3 w-full shadow-sm">
-                        <MessageSquare className="w-5 h-5 text-purple-500 mt-0.5 shrink-0" />
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-wider text-purple-500 mb-1">
-                            AI Suggests asking next
-                          </p>
-                          <p className="text-sm font-medium">
-                            {t.ai_suggested_followup || t.text}
-                          </p>
+                          </div>
                         </div>
                       </div>
-                    ) : (
-                      <>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 px-1">
-                          {t.speaker === "candidate"
-                            ? candidate.name
-                            : "Recruiter"}
-                        </span>
-                        <div
-                          className={`px-5 py-3 rounded-2xl text-sm ${t.speaker === "candidate" ? "bg-white border border-slate-200 text-slate-700 rounded-tl-sm shadow-sm" : "bg-blue-600 text-white rounded-tr-sm shadow-md"}`}
-                        >
-                          {t.text}
-                        </div>
-                        {t.ai_evaluation_pill && t.speaker === "candidate" && (
-                          <div className="mt-2 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full w-fit">
-                            ✓ {t.ai_evaluation_pill}
-                          </div>
-                        )}
-                      </>
+                    ))}
+                    {roleQuestions.length === 0 && (
+                      <div className="text-center p-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
+                        Generating questions with Gemini...
+                      </div>
                     )}
                   </div>
-                ))}
+                )}
+                {/* TAB 2: TRANSCRIPT + AI */}
+                {activeTab === "transcript" && (
+                  <div className="flex flex-col h-full max-w-4xl mx-auto">
+                    <div className="mb-4">
+                      <h2 className="text-lg font-bold text-slate-800">
+                        Live Transcript & Evaluations
+                      </h2>
+                    </div>
 
-                {transcripts.length === 0 && (
-                  <div className="flex items-center justify-center h-full text-slate-400 italic">
-                    {callState === "answered"
-                      ? "Listening for speech..."
-                      : "Waiting for call to connect..."}
+                    <div className="flex-1 flex flex-col gap-6 p-2">
+                      {transcripts.map((t) => (
+                        <div
+                          key={t.id}
+                          className={`flex flex-col max-w-[80%] ${t.speaker === "candidate" ? "self-start" : t.speaker === "recruiter" ? "self-end items-end" : "self-center items-center w-full max-w-full"}`}
+                        >
+                          {/* System/AI Suggestions */}
+                          {t.speaker === "system" ? (
+                            <div className="bg-purple-50 border border-purple-100 text-purple-800 px-5 py-3 rounded-2xl flex items-start gap-3 w-full shadow-sm">
+                              <MessageSquare className="w-5 h-5 text-purple-500 mt-0.5 shrink-0" />
+                              <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-purple-500 mb-1">
+                                  AI Suggests asking next
+                                </p>
+                                <p className="text-sm font-medium">
+                                  {t.ai_suggested_followup || t.text}
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 px-1">
+                                {t.speaker === "candidate"
+                                  ? candidate.name
+                                  : "Recruiter"}
+                              </span>
+                              <div
+                                className={`px-5 py-3 rounded-2xl text-sm ${t.speaker === "candidate" ? "bg-white border border-slate-200 text-slate-700 rounded-tl-sm shadow-sm" : "bg-blue-600 text-white rounded-tr-sm shadow-md"}`}
+                              >
+                                {t.text}
+                              </div>
+                              {t.ai_evaluation_pill && t.speaker === "candidate" && (
+                                <div className="mt-2 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full w-fit">
+                                  ✓ {t.ai_evaluation_pill}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      ))}
+
+                      {transcripts.length === 0 && (
+                        <div className="flex items-center justify-center h-full text-slate-400 italic">
+                          {callState === "answered"
+                            ? "Listening for speech..."
+                            : "Waiting for call to connect..."}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
+
+                {/* TAB 3: QUICK NOTES (Original Layout) */}
+                {activeTab === "quickNotes" && (
+                  <div className="flex gap-8 items-start max-w-6xl mx-auto">
+                    <div className="flex-[3] flex flex-col gap-8">
+                      {/* Quick Notes Input */}
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-500 mb-3 font-semibold uppercase tracking-wider">
+                          Quick Notes
+                        </h3>
+                        <textarea
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Add key points here during the call"
+                          className="w-full h-24 bg-white border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:outline-none rounded-xl p-4 text-sm transition-all resize-none shadow-sm"
+                        />
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {tagsList.map((tag) => (
+                            <button
+                              key={tag.id}
+                              onClick={() => toggleTag(tag.id)}
+                              className={`px-4 py-1.5 rounded-full text-xs font-semibold border border-dashed transition-all flex items-center gap-1.5 ${activeTags.includes(tag.id) ? "bg-blue-50 text-blue-600 border-blue-400 shadow-sm" : "bg-white text-slate-500 border-slate-300 hover:bg-slate-50"}`}
+                            >
+                              <span>{tag.icon}</span>
+                              <span>{tag.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Recruiter Checklist (from your provided code) */}
+                      <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                        <h3 className="text-xs font-bold text-blue-500 mb-6 font-semibold uppercase tracking-widest">
+                          Recruiter Checklist
+                        </h3>
+                        <div className="flex flex-col gap-5 text-sm">
+                          <label className="flex items-start gap-4 cursor-pointer group">
+                            <div className="mt-0.5 relative flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                checked={checklist.ctcConfirmed}
+                                onChange={() => toggleChecklist("ctcConfirmed")}
+                                className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
+                              />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                            </div>
+                            <div>
+                              <p
+                                className={`font-semibold transition-colors ${checklist.ctcConfirmed ? "text-slate-400 line-through" : "text-slate-700"}`}
+                              >
+                                Current CTC confirmed?
+                              </p>
+                              <p className="text-slate-400 text-xs mt-0.5">
+                                Ask exact in-hand + variables
+                              </p>
+                            </div>
+                          </label>
+                          <label className="flex items-start gap-4 cursor-pointer group">
+                            <div className="mt-0.5 relative flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                checked={checklist.ctcFlexibility}
+                                onChange={() => toggleChecklist("ctcFlexibility")}
+                                className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
+                              />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                            </div>
+                            <div>
+                              <p
+                                className={`font-semibold transition-colors ${checklist.ctcFlexibility ? "text-slate-400 line-through" : "text-slate-700"}`}
+                              >
+                                Expected CTC & flexibility?
+                              </p>
+                              <p className="text-slate-400 text-xs mt-0.5">
+                                Range + negotiation room
+                              </p>
+                            </div>
+                          </label>
+                          <label className="flex items-start gap-4 cursor-pointer group">
+                            <div className="mt-0.5 relative flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                checked={checklist.noticePeriod}
+                                onChange={() => toggleChecklist("noticePeriod")}
+                                className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
+                              />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                            </div>
+                            <div>
+                              <p
+                                className={`font-semibold transition-colors ${checklist.noticePeriod ? "text-slate-400 line-through" : "text-slate-700"}`}
+                              >
+                                Notice period & buyout option?
+                              </p>
+                              <p className="text-slate-400 text-xs mt-0.5">
+                                Exact days, can employer waive?
+                              </p>
+                            </div>
+                          </label>
+                          <label className="flex items-start gap-4 cursor-pointer group">
+                            <div className="mt-0.5 relative flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                checked={checklist.location}
+                                onChange={() => toggleChecklist("location")}
+                                className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
+                              />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                            </div>
+                            <div>
+                              <p
+                                className={`font-semibold transition-colors ${checklist.location ? "text-slate-400 line-through" : "text-slate-700"}`}
+                              >
+                                Current location & relocation?
+                              </p>
+                              <p className="text-slate-400 text-xs mt-0.5">
+                                Open to Bengaluru onsite?
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Candidate Info Sidebar */}
+                    {/* Candidate Resume Summary */}
+                    <div className="flex-[2] sticky top-0">
+                      <div className="border border-blue-200 bg-blue-50/20 rounded-2xl p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-blue-700 font-bold text-lg">
+                            {candidate.name}
+                          </h4>
+                          <div className="w-10 h-10 rounded-full border-[3px] border-[#00C8B3] flex items-center justify-center relative">
+                            <span className="text-[#00C8B3] font-black text-[10px]">
+                              84%
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-slate-400 text-xs font-semibold mb-6">
+                          {candidate.headline}
+                        </p>
+                        <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest mb-4">
+                          Info
+                        </h5>
+                        <div className="flex flex-col gap-4 text-xs font-medium">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Current CTC</span>
+                            <span className="text-slate-700 font-bold">
+                              {candidate.currentCtc}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Expected CTC</span>
+                            <span className="text-slate-700 font-bold">
+                              {candidate.expectedCtc}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Notice Period</span>
+                            <span className="text-slate-700 font-bold">
+                              {candidate.noticePeriod}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Location</span>
+                            <span className="text-slate-700 font-bold">
+                              {candidate.location}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Experience</span>
+                            <span className="text-slate-700 font-bold">
+                              {candidate.experience}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-8 border-t border-slate-200 pt-4">
+                          <button className="text-blue-600 font-semibold text-xs py-1 flex items-center gap-2 hover:underline">
+                            View Profile <Eye className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          {/* Fixed Footer for Save - Platform mode only */}
+          {!isManual && (
+            <div className="w-full shrink-0 border-t border-slate-100 py-3 px-6 bg-white flex flex-col justify-center z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+
+              <div className="flex items-center w-full">
+                <button
+                  onClick={() => handleSaveNotes()}
+                  disabled={isSaving}
+                  className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50"
+                >
+                  {isSaving ? "Saving..." : "Save Call Wrap-up Data"}
+                </button>
               </div>
             </div>
           )}
-
-          {/* TAB 3: QUICK NOTES (Original Layout) */}
-          {activeTab === "quickNotes" && (
-            <div className="flex gap-8 items-start max-w-6xl mx-auto">
-              <div className="flex-[3] flex flex-col gap-8">
-                {/* Quick Notes Input */}
-                <div>
-                  <h3 className="text-sm font-bold text-slate-500 mb-3 font-semibold uppercase tracking-wider">
-                    Quick Notes
-                  </h3>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add key points here during the call"
-                    className="w-full h-24 bg-white border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:outline-none rounded-xl p-4 text-sm transition-all resize-none shadow-sm"
-                  />
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    {tagsList.map((tag) => (
-                      <button
-                        key={tag.id}
-                        onClick={() => toggleTag(tag.id)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border border-dashed transition-all flex items-center gap-1.5 ${activeTags.includes(tag.id) ? "bg-blue-50 text-blue-600 border-blue-400 shadow-sm" : "bg-white text-slate-500 border-slate-300 hover:bg-slate-50"}`}
-                      >
-                        <span>{tag.icon}</span>
-                        <span>{tag.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Recruiter Checklist (from your provided code) */}
-                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
-                  <h3 className="text-xs font-bold text-blue-500 mb-6 font-semibold uppercase tracking-widest">
-                    Recruiter Checklist
-                  </h3>
-                  <div className="flex flex-col gap-5 text-sm">
-                    <label className="flex items-start gap-4 cursor-pointer group">
-                      <div className="mt-0.5 relative flex items-center justify-center">
-                        <input
-                          type="checkbox"
-                          checked={checklist.ctcConfirmed}
-                          onChange={() => toggleChecklist("ctcConfirmed")}
-                          className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
-                        />
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                      </div>
-                      <div>
-                        <p
-                          className={`font-semibold transition-colors ${checklist.ctcConfirmed ? "text-slate-400 line-through" : "text-slate-700"}`}
-                        >
-                          Current CTC confirmed?
-                        </p>
-                        <p className="text-slate-400 text-xs mt-0.5">
-                          Ask exact in-hand + variables
-                        </p>
-                      </div>
-                    </label>
-                    <label className="flex items-start gap-4 cursor-pointer group">
-                      <div className="mt-0.5 relative flex items-center justify-center">
-                        <input
-                          type="checkbox"
-                          checked={checklist.ctcFlexibility}
-                          onChange={() => toggleChecklist("ctcFlexibility")}
-                          className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
-                        />
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                      </div>
-                      <div>
-                        <p
-                          className={`font-semibold transition-colors ${checklist.ctcFlexibility ? "text-slate-400 line-through" : "text-slate-700"}`}
-                        >
-                          Expected CTC & flexibility?
-                        </p>
-                        <p className="text-slate-400 text-xs mt-0.5">
-                          Range + negotiation room
-                        </p>
-                      </div>
-                    </label>
-                    <label className="flex items-start gap-4 cursor-pointer group">
-                      <div className="mt-0.5 relative flex items-center justify-center">
-                        <input
-                          type="checkbox"
-                          checked={checklist.noticePeriod}
-                          onChange={() => toggleChecklist("noticePeriod")}
-                          className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
-                        />
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                      </div>
-                      <div>
-                        <p
-                          className={`font-semibold transition-colors ${checklist.noticePeriod ? "text-slate-400 line-through" : "text-slate-700"}`}
-                        >
-                          Notice period & buyout option?
-                        </p>
-                        <p className="text-slate-400 text-xs mt-0.5">
-                          Exact days, can employer waive?
-                        </p>
-                      </div>
-                    </label>
-                    <label className="flex items-start gap-4 cursor-pointer group">
-                      <div className="mt-0.5 relative flex items-center justify-center">
-                        <input
-                          type="checkbox"
-                          checked={checklist.location}
-                          onChange={() => toggleChecklist("location")}
-                          className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer peer appearance-none checked:bg-blue-600 checked:border-blue-600 transition"
-                        />
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                      </div>
-                      <div>
-                        <p
-                          className={`font-semibold transition-colors ${checklist.location ? "text-slate-400 line-through" : "text-slate-700"}`}
-                        >
-                          Current location & relocation?
-                        </p>
-                        <p className="text-slate-400 text-xs mt-0.5">
-                          Open to Bengaluru onsite?
-                        </p>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Candidate Info Sidebar */}
-              {/* Candidate Resume Summary */}
-              <div className="flex-[2] sticky top-0">
-                <div className="border border-blue-200 bg-blue-50/20 rounded-2xl p-6 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-blue-700 font-bold text-lg">
-                      {candidate.name}
-                    </h4>
-                    <div className="w-10 h-10 rounded-full border-[3px] border-[#00C8B3] flex items-center justify-center relative">
-                      <span className="text-[#00C8B3] font-black text-[10px]">
-                        84%
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-slate-400 text-xs font-semibold mb-6">
-                    {candidate.headline}
-                  </p>
-                  <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest mb-4">
-                    Info
-                  </h5>
-                  <div className="flex flex-col gap-4 text-xs font-medium">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Current CTC</span>
-                      <span className="text-slate-700 font-bold">
-                        {candidate.currentCtc}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Expected CTC</span>
-                      <span className="text-slate-700 font-bold">
-                        {candidate.expectedCtc}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Notice Period</span>
-                      <span className="text-slate-700 font-bold">
-                        {candidate.noticePeriod}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Location</span>
-                      <span className="text-slate-700 font-bold">
-                        {candidate.location}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Experience</span>
-                      <span className="text-slate-700 font-bold">
-                        {candidate.experience}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-8 border-t border-slate-200 pt-4">
-                    <button className="text-blue-600 font-semibold text-xs py-1 flex items-center gap-2 hover:underline">
-                      View Profile <Eye className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-        )}
-        </div>
-        {/* Fixed Footer for Save - Platform mode only */}
-        {!isManual && (
-        <div className="w-full shrink-0 border-t border-slate-100 py-3 px-6 bg-white flex flex-col justify-center z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-          
-            <div className="flex items-center w-full">
-              <button
-                onClick={() => handleSaveNotes()}
-                disabled={isSaving}
-                className="w-[60%] bg-[#1D4ED8] hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50"
-              >
-                {isSaving ? "Saving..." : "Save Call Wrap-up Data"}
-              </button>
-            </div>
-        </div>
-        )}
         </div>
         {/* RIGHT SIDEBAR for manual mode */}
         {isManual && (
@@ -1791,14 +1861,14 @@ export default function CandidateCallPage() {
             <div className="p-5 border-b border-slate-100">
               <div className="flex items-center justify-between mb-4">
                 <h5 className="text-[10px] uppercase font-bold text-slate-800 tracking-widest">PROFILE INFO</h5>
-                <button 
+                <button
                   onClick={isEditingProfile ? handleUpdateProfile : handleStartEdit}
                   className={`p-1.5 rounded-md transition-colors ${isEditingProfile ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100" : "bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50"}`}
                 >
                   {isEditingProfile ? <Check className="w-3.5 h-3.5" /> : <Edit2 className="w-3.5 h-3.5" />}
                 </button>
               </div>
-              
+
               <div className="flex flex-col gap-3 text-xs">
                 {[
                   { label: "Current CTC", key: "currentCtc" },
@@ -1850,7 +1920,7 @@ export default function CandidateCallPage() {
                     // Assign colors based on index or just use a default
                     const colors = ["bg-blue-600", "bg-red-500", "bg-yellow-500", "bg-emerald-500", "bg-purple-500", "bg-pink-500", "bg-indigo-500", "bg-orange-500"];
                     const color = isChecked ? colors[index % colors.length] : "bg-slate-200";
-                    
+
                     return (
                       <label key={skill} className="flex items-center gap-3 cursor-pointer group">
                         <input
@@ -1881,7 +1951,7 @@ export default function CandidateCallPage() {
           </div>
         )}
       </div>
-      
+
       {/* Follow Up Modal Overlay for Manual Call Failures */}
       {followUpReason && (
         <CallCandidateModal

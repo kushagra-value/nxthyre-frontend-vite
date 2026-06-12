@@ -694,24 +694,24 @@ export default function JobPipelineDashboard({
   type CandidateSortKey =
     | "Name"
     | "Recruiter"
-    | "Resume Score"
-    | "Question Analysis"
+    | "Resume"
+    | "Screening"
     | "Location"
     | "Exp"
     | "CTC"
-    | "Expected CTC"
-    | "Notice Period"
+    | "E_CTC"
+    | "NP"
     | "Stage"
     | "Attention";
   const [sortConfig, setSortConfig] = useState<{
     key: CandidateSortKey;
     direction: "asc" | "desc";
-  } | null>({ key: "Resume Score", direction: "desc" });
+  } | null>({ key: "Resume", direction: "desc" });
 
   const handleSort = (key: CandidateSortKey) => {
     let direction: "asc" | "desc" = "asc";
     if (
-      ["Resume Score", "Question Analysis", "Exp", "CTC", "Expected CTC", "Notice Period"].includes(key)
+      ["Resume ", "Screening", "Exp", "CTC", "E_CTC", "NP"].includes(key)
     ) {
       direction = "desc"; // Default desc for numeric/score values
     }
@@ -1278,13 +1278,13 @@ export default function JobPipelineDashboard({
 
   const orderingMap: Record<string, string> = {
     "Name": "full_name",
-    "Resume Score": "ai_score",
-    "Question Analysis": "question_analysis",
+    "Resume": "ai_score",
+    "Screening": "question_analysis",
     "Location": "location",
     "Exp": "experience",
     "CTC": "current_ctc",
-    "Expected CTC": "expected_ctc",
-    "Notice Period": "notice_period",
+    "E_CTC": "expected_ctc",
+    "NP": "notice_period",
     "Stage": "stage",
   };
 
@@ -3198,18 +3198,18 @@ export default function JobPipelineDashboard({
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
                   <col style={{ width: "2%" }} /> {/* checkbox */}
-                  <col style={{ width: "18%" }} /> {/* name & headline */}
+                  <col style={{ width: "17%" }} /> {/* name & headline */}
                   <col style={{ width: "9%" }} /> {/* recruiter */}
-                  <col style={{ width: "7%" }} /> {/* Resume score */}
-                  <col style={{ width: "9%" }} /> {/* question analysis */}
+                  <col style={{ width: "6%" }} /> {/* Resume */}
+                  <col style={{ width: "8%" }} /> {/* Screening */}
                   <col style={{ width: "8%" }} /> {/* location */}
-                  <col style={{ width: "5%" }} /> {/* exp */}
-                  <col style={{ width: "5%" }} /> {/* ctc */}
+                  <col style={{ width: "6%" }} /> {/* exp */}
+                  <col style={{ width: "6%" }} /> {/* ctc */}
                   <col style={{ width: "6%" }} /> {/* expected ctc */}
-                  <col style={{ width: "7%" }} /> {/* notice period */}
-                  <col style={{ width: "6%" }} /> {/* stage */}
-                  <col style={{ width: "6%" }} /> {/* attention */}
-                  <col style={{ width: "12%" }} /> {/* actions */}
+                  <col style={{ width: "6%" }} /> {/* notice period */}
+                  <col style={{ width: "9%" }} /> {/* stage */}
+                  <col style={{ width: "10%" }} /> {/* attention */}
+                  <col style={{ width: "10%" }} /> {/* actions */}
                 </colgroup>
 
                 <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
@@ -3225,13 +3225,13 @@ export default function JobPipelineDashboard({
                     {[
                       "Name",
                       "Recruiter",
-                      "Resume Score",
-                      "Question Analysis",
+                      "Resume",
+                      "Screening",
                       "Location",
                       "Exp",
                       "CTC",
-                      "Expected CTC",
-                      "Notice Period",
+                      "E_CTC",
+                      "NP",
                       "Stage",
                       "Attention",
                     ].map((h) => (
@@ -3393,7 +3393,7 @@ export default function JobPipelineDashboard({
                           (t) => t.text,
                         );
 
-                        // Resume Score — read from item.job_score (top-level), not cand.job_score
+                        // Resume  — read from item.job_score (top-level), not cand.job_score
                         const aiScoreRaw =
                           item.job_score?.candidate_match_score?.score;
                         const aiScoreLabel = aiScoreRaw || "--%";
@@ -3568,7 +3568,7 @@ export default function JobPipelineDashboard({
                                   const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
                                   return (
                                     <span
-                                      className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
+                                      className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-full"
                                       style={{ backgroundColor: bgColor, color: textColor }}
                                       title={pill.text}
                                     >

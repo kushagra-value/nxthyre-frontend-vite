@@ -7,4 +7,13 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://nxthyre-server-staging-863630644667.asia-south1.run.app',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });
