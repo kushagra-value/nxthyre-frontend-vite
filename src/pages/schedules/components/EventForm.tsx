@@ -6,7 +6,7 @@ import { organizationService, MyWorkspace } from '../../../services/organization
 import { jobPostService, AllRoleOption } from '../../../services/jobPostService';
 import { scheduleService } from '../../../services/scheduleService';
 import { candidateService, PipelineStage } from '../../../services/candidateService';
-import { generateTimeOptions } from '../../../utils/interviewForm.constants';
+import { generateTimeOnlyOptions } from '../../../utils/interviewForm.constants';
 import { sortStages } from '../../../utils/stageUtils';
 
 interface PipelineCandidate {
@@ -34,7 +34,15 @@ interface EventFormProps {
 }
 
 // Time options for the Start Time dropdown
-const TIME_OPTIONS = generateTimeOptions();
+
+// Time options for the Start Time dropdown without AM/PM
+
+const TIME_ONLY_OPTIONS = generateTimeOnlyOptions();
+
+const AMPM_OPTIONS = [
+  { value: 'AM', label: 'AM' },
+  { value: 'PM', label: 'PM' },
+];
 
 const DURATION_OPTIONS = ['15 min', '30 min', '45 min', '60 min', '90 min', '120 min'];
 
@@ -97,8 +105,8 @@ const candidateSelectStyles = {
     backgroundColor: state.isSelected
       ? '#EEF2FF'
       : state.isFocused
-      ? '#F9FAFB'
-      : '#ffffff',
+        ? '#F9FAFB'
+        : '#ffffff',
     color: state.isSelected ? '#0F47F2' : '#374151',
     fontWeight: state.isSelected ? '500' : '400',
     fontSize: '0.875rem',
@@ -137,7 +145,7 @@ const CustomSelect = ({
   disabled,
   id,
 }: {
-  label: string;
+  label?: string;
   required?: boolean;
   value: string;
   placeholder: string;
@@ -164,18 +172,19 @@ const CustomSelect = ({
 
   return (
     <div className="flex flex-col gap-1.5" ref={ref}>
-      <label className="text-sm font-medium text-[#1F2937]">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
+      {label && (
+        <label className="text-sm font-medium text-[#1F2937]">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
       <div className="relative">
         <button
           id={id}
           type="button"
           disabled={disabled || loading}
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-white border rounded-xl text-sm transition-all duration-200 ${
-            isOpen ? 'border-[#0F47F2] ring-2 ring-[#0F47F2]/10' : 'border-[#E5E7EB] hover:border-[#D1D5DB]'
-          } ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'cursor-pointer'}`}
+          className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-white border rounded-xl text-sm transition-all duration-200 ${isOpen ? 'border-[#0F47F2] ring-2 ring-[#0F47F2]/10' : 'border-[#E5E7EB] hover:border-[#D1D5DB]'
+            } ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'cursor-pointer'}`}
         >
           <span className={selectedLabel ? 'text-[#1F2937]' : 'text-[#9CA3AF]'}>
             {loading ? 'Loading...' : selectedLabel || placeholder}
@@ -196,11 +205,10 @@ const CustomSelect = ({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-3.5 py-2.5 text-sm transition-colors ${
-                    value === opt.value
-                      ? 'bg-[#EEF2FF] text-[#0F47F2] font-medium'
-                      : 'text-[#374151] hover:bg-[#F9FAFB]'
-                  }`}
+                  className={`w-full text-left px-3.5 py-2.5 text-sm transition-colors ${value === opt.value
+                    ? 'bg-[#EEF2FF] text-[#0F47F2] font-medium'
+                    : 'text-[#374151] hover:bg-[#F9FAFB]'
+                    }`}
                 >
                   {opt.label}
                 </button>
@@ -277,7 +285,7 @@ export const EventForm = ({
       }, 100);
       return () => clearTimeout(timer);
     } else if (isOpen) {
-        isInitialMount.current = false;
+      isInitialMount.current = false;
     }
   }, [isOpen, initialCompanyId]);
 
@@ -289,10 +297,10 @@ export const EventForm = ({
 
   useEffect(() => {
     if (isOpen && initialApplicationId && selectedJobId) {
-      setFormData((prev) => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         applicationId: initialApplicationId,
-        stageId: initialStageId || prev.stageId 
+        stageId: initialStageId || prev.stageId
       }));
     }
   }, [isOpen, initialApplicationId, initialStageId, selectedJobId]);
@@ -320,7 +328,7 @@ export const EventForm = ({
       if (candidate && stage) {
         setFormData(prev => {
           const newUpdates: any = {};
-          
+
           // Prefill Title if empty
           if (!prev.title) {
             newUpdates.title = `${stage.name} - ${candidate.candidate.full_name}${job ? ` (${job.title})` : ''}`;
@@ -452,7 +460,7 @@ export const EventForm = ({
         console.log('Fetching stages for job:', selectedJobId);
         const stagesRes = await candidateService.getPipelineStages(Number(selectedJobId));
         let stagesData: any[] = [];
-        
+
         if (Array.isArray(stagesRes)) {
           stagesData = stagesRes;
         } else if (stagesRes && Array.isArray((stagesRes as any).results)) {
@@ -619,7 +627,10 @@ export const EventForm = ({
     label: pc.candidate.full_name,
   }));
 
-  const timeOptions = TIME_OPTIONS;
+  const [timePart, ampmPart] = (formData.startTime || '11:00 AM').split(' ');
+  const selectedTimePart = timePart || '11:00';
+  const selectedAmpmPart = ampmPart || 'AM';
+
   const durationOptions = DURATION_OPTIONS.map((d) => ({ value: d, label: d }));
 
   return (
@@ -759,15 +770,35 @@ export const EventForm = ({
                   className="w-full px-3.5 py-2.5 bg-white border border-[#E5E7EB] rounded-xl text-sm text-[#1F2937] outline-none focus:border-[#0F47F2] focus:ring-2 focus:ring-[#0F47F2]/10 transition-all"
                 />
               </div>
-              <CustomSelect
-                id="start-time-select"
-                label="Start Time"
-                required
-                value={formData.startTime}
-                placeholder="Select time..."
-                options={timeOptions}
-                onChange={(val) => setFormData({ ...formData, startTime: val })}
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-[#1F2937]">
+                  Start Time <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <CustomSelect
+                      id="start-time-val-select"
+                      value={selectedTimePart}
+                      placeholder="Select time..."
+                      options={TIME_ONLY_OPTIONS}
+                      onChange={(val) => {
+                        setFormData({ ...formData, startTime: `${val} ${selectedAmpmPart}` });
+                      }}
+                    />
+                  </div>
+                  <div className="w-[85px] shrink-0">
+                    <CustomSelect
+                      id="start-time-ampm-select"
+                      value={selectedAmpmPart}
+                      placeholder="AM/PM"
+                      options={AMPM_OPTIONS}
+                      onChange={(val) => {
+                        setFormData({ ...formData, startTime: `${selectedTimePart} ${val}` });
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
               <CustomSelect
                 id="duration-select"
                 label="Duration"
@@ -794,27 +825,24 @@ export const EventForm = ({
                       disabled={isDisabled}
                       title={isDisabled ? "If you need to switch, then update the stage type in the pipeline dashboard." : ""}
                       onClick={() => setFormData({ ...formData, interviewMode: mode.id })}
-                      className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 ${
-                        formData.interviewMode === mode.id
-                          ? 'border-[#0F47F2] bg-[#EEF2FF] shadow-sm'
-                          : isDisabled
+                      className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 ${formData.interviewMode === mode.id
+                        ? 'border-[#0F47F2] bg-[#EEF2FF] shadow-sm'
+                        : isDisabled
                           ? 'border-[#F3F4F6] bg-gray-50 opacity-60 cursor-not-allowed'
                           : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
-                          formData.interviewMode === mode.id
-                            ? 'bg-[#0F47F2] text-white shadow-md'
-                            : 'bg-[#F3F4F6] text-[#6B7280]'
-                        }`}
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${formData.interviewMode === mode.id
+                          ? 'bg-[#0F47F2] text-white shadow-md'
+                          : 'bg-[#F3F4F6] text-[#6B7280]'
+                          }`}
                       >
                         {mode.icon}
                       </span>
                       <span
-                        className={`text-xs font-medium text-center ${
-                          formData.interviewMode === mode.id ? 'text-[#0F47F2]' : 'text-[#4B5563]'
-                        }`}
+                        className={`text-xs font-medium text-center ${formData.interviewMode === mode.id ? 'text-[#0F47F2]' : 'text-[#4B5563]'
+                          }`}
                       >
                         {mode.label}
                       </span>

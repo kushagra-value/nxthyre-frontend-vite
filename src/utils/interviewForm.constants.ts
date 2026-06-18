@@ -83,33 +83,16 @@ export const candidateSelectStyles: StylesConfig<any, false> = {
   }),
 };
 
-export const generateTimeOptions = (
-  startHour = 0,
-  endHour = 23,
-  interval = 30
-) => {
+export const generateTimeOnlyOptions = () => {
   const options = [];
-
-  for (let hour = startHour; hour <= endHour; hour++) {
-    for (let minute = 0; minute < 60; minute += interval) {
-      const period = hour >= 12 ? 'PM' : 'AM';
-
-      let formattedHour = hour % 12;
-
-      if (formattedHour === 0) {
-        formattedHour = 12;
-      }
-
-      const formattedMinute = String(minute).padStart(2, '0');
-
-      options.push({
-        value: `${String(formattedHour).padStart(2, '0')}:${formattedMinute} ${period}`,
-        label: `${String(formattedHour).padStart(2, '0')}:${formattedMinute} ${period}`,
-      });
+  const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  for (const h of hours) {
+    for (const m of [0, 30]) {
+      const formattedHour = String(h).padStart(2, '0');
+      const formattedMinute = String(m).padStart(2, '0');
+      const val = `${formattedHour}:${formattedMinute}`;
+      options.push({ value: val, label: val });
     }
   }
-
   return options;
 };
-
-export const TIME_OPTIONS = generateTimeOptions();

@@ -550,10 +550,25 @@ export default function JobPipelineDashboard({
   const [dateRange, setDateRange] = useState<{ from: string, to: string }>({ from: "", to: "" });
 
   // ── Recruiter Filter
-  const [selectedRecruiter, setSelectedRecruiter] = useState<string | null>(null);
+  const [selectedRecruiter, setSelectedRecruiter] = useState<string | null>(() => {
+    if (jobId) {
+      return sessionStorage.getItem(`_nxthyre_selected_recruiter_${jobId}`);
+    }
+    return null;
+  });
   const [isRecruiterDropdownOpen, setIsRecruiterDropdownOpen] = useState(false);
   const [recruiterSearchQuery, setRecruiterSearchQuery] = useState("");
   const recruiterDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (jobId) {
+      if (selectedRecruiter) {
+        sessionStorage.setItem(`_nxthyre_selected_recruiter_${jobId}`, selectedRecruiter);
+      } else {
+        sessionStorage.removeItem(`_nxthyre_selected_recruiter_${jobId}`);
+      }
+    }
+  }, [selectedRecruiter, jobId]);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
