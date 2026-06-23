@@ -17,8 +17,26 @@ export const isPostInterview = (name: string, slug: string): boolean => {
          s.includes("offer") || s.includes("hired") || s.includes("joined") || s.includes("select");
 };
 
+export const isHRStage = (name: string, slug: string): boolean => {
+  const n = (name || "").toLowerCase();
+  const s = (slug || "").toLowerCase();
+  return (
+    /\bhr\b/i.test(n) ||
+    n.includes("human resources") ||
+    n.includes("salary") ||
+    n.includes("negotiation") ||
+    /\bhr\b/i.test(s) ||
+    s.includes("human-resources") ||
+    s.includes("salary") ||
+    s.includes("negotiation")
+  );
+};
+
 export const getStageGroup = (name: string, slug: string): number => {
   if (isPostInterview(name, slug)) {
+    return 4;
+  }
+  if (isHRStage(name, slug)) {
     return 3;
   }
   if (getLNumber(name) !== null) {
