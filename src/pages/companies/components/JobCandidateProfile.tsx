@@ -31,6 +31,7 @@ import {
   CheckCircle2,
   XCircle,
   FastForward,
+  Copy
 } from "lucide-react";
 import candidateService, { Note } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
@@ -358,7 +359,6 @@ export default function JobCandidateProfile({
     }
   };
 
-  console.log("check here we are geting the data", questionsAnalysisData)
 
   const handleAddNote = async () => {
     if (!newComment.trim() || !cand.id) return;
@@ -562,6 +562,16 @@ export default function JobCandidateProfile({
 
     return items;
   }, [questionsAnalysisData]);
+
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast.success("Text copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+      showToast.error("Failed to copy text");
+    }
+  }
 
 
   if (loading) {
@@ -1690,27 +1700,51 @@ export default function JobCandidateProfile({
                     </div>
                     <div className="flex justify-between items-center text-sm text-black">
                       <span className="text-[#AEAEB2] font-medium">Email</span>
-                      <span
-                        className="truncate ml-4 text-[#0F47F2] font-medium cursor-pointer"
-                        onClick={() =>
-                          premiumData.email &&
-                          window.open(`mailto:${premiumData.email}`)
-                        }
-                      >
-                        {premiumData.email || "--"}
-                      </span>
+
+                      <div className="flex items-center gap-2 ml-4">
+                        <span
+                          className="truncate text-[#0F47F2] font-medium cursor-pointer"
+                          onClick={() =>
+                            premiumData.email &&
+                            window.open(`mailto:${premiumData.email}`)
+                          }
+                        >
+                          {premiumData.email || "--"}
+                        </span>
+
+                        {premiumData.email && (
+                          <Copy
+                            size={16}
+                            className="cursor-pointer text-[#0F47F2]"
+                            onClick={() => handleCopy(premiumData.email)}
+                          />
+                        )}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">Phone</span>
-                      <span
-                        className="text-[#0F47F2] font-medium cursor-pointer"
-                        onClick={() =>
-                          (premiumData.phone || cand.phone) &&
-                          window.open(`tel:${premiumData.phone || cand.phone}`)
-                        }
-                      >
-                        {premiumData.phone || cand.phone || "--"}
-                      </span>
+
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-[#0F47F2] font-medium cursor-pointer"
+                          onClick={() =>
+                            (premiumData.phone || cand.phone) &&
+                            window.open(`tel:${premiumData.phone || cand.phone}`)
+                          }
+                        >
+                          {premiumData.phone || cand.phone || "--"}
+                        </span>
+
+                        {(premiumData.phone || cand.phone) && (
+                          <Copy
+                            size={16}
+                            className="cursor-pointer text-[#0F47F2]"
+                            onClick={() =>
+                              handleCopy(premiumData.phone || cand.phone || "")
+                            }
+                          />
+                        )}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">Links</span>
