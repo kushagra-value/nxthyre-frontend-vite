@@ -1,46 +1,49 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Check, X, Clock } from 'lucide-react';
 import type { ScheduleEventAPI } from '../../../services/dashboardService';
-import { Check, X } from "lucide-react";
 import scheduleService from '../../../services/scheduleService';
 import toast from "react-hot-toast";
 
-const colorConfig: Record<string, { bg: string; dot: string; nameColor: string; badgeBg: string; badgeText: string }> = {
+const colorConfig: Record<string, { bg: string; border: string; dot: string; text: string; badgeBg: string; badgeText: string }> = {
   grey: {
-    bg: 'rgba(75, 85, 99, 0.28)',
-    dot: '#4B5563',
-    nameColor: '#4B5563',
-    badgeBg: '#0088FF',
-    badgeText: '#FFFFFF',
+    bg: 'rgba(243, 244, 246, 0.4)',
+    border: 'rgba(209, 213, 219, 0.4)',
+    dot: '#9CA3AF',
+    text: '#4B5563',
+    badgeBg: '#E5E7EB',
+    badgeText: '#374151',
   },
   cyan: {
-    bg: 'rgba(0, 200, 179, 0.4)',
-    dot: '#00C8B3',
-    nameColor: '#000000',
-    badgeBg: 'rgba(255, 255, 255, 0.55)',
-    badgeText: '#000000',
+    bg: 'rgba(6, 182, 212, 0.04)',
+    border: 'rgba(6, 182, 212, 0.15)',
+    dot: '#06B6D4',
+    text: '#0891B2',
+    badgeBg: 'rgba(6, 182, 212, 0.08)',
+    badgeText: '#0891B2',
   },
   purple: {
-    bg: 'rgba(97, 85, 245, 0.4)',
-    dot: '#6155F5',
-    nameColor: '#000000',
-    badgeBg: 'rgba(255, 255, 255, 0.2)',
-    badgeText: '#000000',
+    bg: 'rgba(139, 92, 246, 0.04)',
+    border: 'rgba(139, 92, 246, 0.15)',
+    dot: '#8B5CF6',
+    text: '#7C3AED',
+    badgeBg: 'rgba(139, 92, 246, 0.08)',
+    badgeText: '#7C3AED',
   },
   orange: {
-    bg: 'rgba(255, 141, 40, 0.4)',
-    dot: '#FF8D28',
-    nameColor: '#000000',
-    badgeBg: 'rgba(255, 255, 255, 0.55)',
-    badgeText: '#000000',
+    bg: 'rgba(249, 115, 22, 0.04)',
+    border: 'rgba(249, 115, 22, 0.15)',
+    dot: '#F97316',
+    text: '#EA580C',
+    badgeBg: 'rgba(249, 115, 22, 0.08)',
+    badgeText: '#EA580C',
   },
 };
 
 const STATUS_BADGE_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
-  SCHEDULED: { bg: '#10B981', text: '#FFF', label: 'Scheduled' },
-  OVERDUE: { bg: '#F59E0B', text: '#FFF', label: 'Overdue' },
-  COMPLETED: { bg: '#6B7280', text: '#FFF', label: 'Completed' },
-  CANCELLED: { bg: '#EF4444', text: '#FFF', label: 'Cancelled' },
+  SCHEDULED: { bg: 'rgba(16, 185, 129, 0.1)', text: '#059669', label: 'Scheduled' },
+  OVERDUE: { bg: 'rgba(245, 158, 11, 0.1)', text: '#D97706', label: 'Overdue' },
+  COMPLETED: { bg: 'rgba(107, 114, 128, 0.1)', text: '#4B5563', label: 'Completed' },
+  CANCELLED: { bg: 'rgba(239, 68, 68, 0.1)', text: '#DC2626', label: 'Cancelled' },
 };
 
 export type ScheduleFilterLabel = 'Today' | 'Tomorrow' | 'Upcoming' | 'Past';
@@ -70,20 +73,20 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
   }, []);
 
   return (
-    <div className="bg-white rounded-[10px] flex flex-col overflow-hidden" >
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+      {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
-        <span className="text-sm font-normal text-black leading-[17px]">Schedule</span>
+        <span className="text-base font-semibold text-gray-900 leading-5">Schedule</span>
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-            className="flex items-center gap-1.5 px-3 py-1 text-sm font-normal text-[#4B5563] leading-[17px] rounded-md cursor-pointer bg-white transition-colors hover:bg-gray-50"
-            style={{ border: '0.5px solid #D1D1D6' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 leading-5 rounded-lg cursor-pointer bg-white transition-all hover:bg-gray-50 border border-gray-200 shadow-sm"
           >
             {activeFilter}
-            <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
           </button>
           {showFilterDropdown && (
-            <div className="absolute top-full mt-1 right-0 min-w-[120px] bg-white border border-[#D1D1D6] rounded-[10px] shadow-lg z-10 py-1">
+            <div className="absolute top-full mt-1.5 right-0 min-w-[120px] bg-white border border-gray-200 rounded-xl shadow-lg z-20 py-1.5">
               {FILTER_OPTIONS.map((opt) => (
                 <button
                   key={opt}
@@ -92,7 +95,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     setShowFilterDropdown(false);
                   }}
                   className={`w-full px-3 py-2 text-left text-sm transition-colors ${opt === activeFilter
-                    ? 'bg-[#E7EDFF] text-[#0F47F2] font-medium'
+                    ? 'bg-[#E7EDFF] text-[#0F47F2] font-semibold'
                     : 'text-[#4B5563] hover:bg-[#F3F5F7]'
                     }`}
                 >
@@ -104,25 +107,27 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
         </div>
       </div>
 
+      {/* Events List */}
       <div className="overflow-y-auto max-h-[314px] hide-scrollbar px-5 pb-5">
-        <div className="relative flex flex-col gap-2.5">
-          <div
-            className="absolute left-[115px] top-0 bottom-0 w-0"
-            style={{ borderLeft: '1px dashed #D1D1D6' }}
-          />
-
+        <div className="flex flex-col gap-3">
           {isLoading ? (
             [...Array(3)].map((_, i) => (
-              <div key={`sched-skel-${i}`} className="flex items-center gap-2 relative animate-pulse">
-                <div className="w-[60px] h-4 rounded bg-gray-200 shrink-0" />
-                <div className="w-2 h-2 rounded-full bg-gray-300 shrink-0 relative z-10" />
-                <div className="flex-1 rounded-md p-2.5 bg-gray-100 flex flex-col gap-2">
-                  <div className="w-16 h-3 rounded bg-gray-200" />
-                  <div className="flex items-center justify-between">
-                    <div className="w-24 h-4 rounded bg-gray-200" />
-                    <div className="w-12 h-4 rounded bg-gray-200" />
+              <div key={`sched-skel-${i}`} className="w-full rounded-xl p-4 bg-gray-50/50 border border-gray-100 flex flex-col gap-3 animate-pulse">
+                <div className="flex justify-between items-center">
+                  <div className="w-24 h-3.5 rounded bg-gray-200" />
+                  <div className="w-16 h-4 rounded bg-gray-200" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <div className="w-12 h-3 rounded bg-gray-200" />
+                  <div className="w-36 h-4.5 rounded bg-gray-200" />
+                  <div className="w-48 h-3.5 rounded bg-gray-200" />
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                  <div className="w-14 h-4 rounded bg-gray-200" />
+                  <div className="flex gap-1.5">
+                    <div className="w-7 h-7 rounded-lg bg-gray-200" />
+                    <div className="w-7 h-7 rounded-lg bg-gray-200" />
                   </div>
-                  <div className="w-32 h-3 rounded bg-gray-200" />
                 </div>
               </div>
             ))
@@ -133,43 +138,41 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
           ) : (
             events.map((event, index) => {
               const ws = event.widget_summary;
-              const config = colorConfig[ws.color_theme] || colorConfig.orange; // Default to orange for overdue look
+              const config = colorConfig[ws.color_theme] || colorConfig.orange;
 
               const rawStatus = event.status || ws.status || 'SCHEDULED';
               const status = rawStatus.toUpperCase();
               const statusConfig = STATUS_BADGE_CONFIG[status] ||
-                { bg: '#F59E0B', text: '#FFF', label: rawStatus };
+                { bg: 'rgba(245, 158, 11, 0.1)', text: '#D97706', label: rawStatus };
 
               const isActionable = ['SCHEDULED', 'OVERDUE'].includes(status);
 
               return (
                 <div
                   key={event.id}
-                  className={`flex items-start gap-3 relative ${!event.is_done ? 'cursor-pointer' : ''}`}
+                  className={`w-full group ${!event.is_done ? 'cursor-pointer' : ''}`}
                   onClick={!event.is_done ? () => onEventClick?.(event, index) : undefined}
                 >
-                  {/* Time */}
-                  <span className="w-[100px] shrink-0 text-xs font-medium text-[#4B5563] leading-5 pt-1 text-right">
-                    {ws.time}
-                  </span>
-
-                  {/* Timeline Dot */}
-                  <div className="relative z-10 mt-2">
-                    <div
-                      className="w-3 h-3 rounded-full border-2 border-white"
-                      style={{ backgroundColor: config.dot }}
-                    />
-                  </div>
-
-                  {/* Event Card - Orange/Peach Style */}
+                  {/* Event Card */}
                   <div
-                    className="flex-1 rounded-2xl p-4 relative shadow-sm"
-                    style={{ backgroundColor: config.bg }}   // Light orange/peach
+                    className="w-full rounded-xl p-4 relative shadow-sm border border-solid transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                    style={{
+                      backgroundColor: config.bg,
+                      borderWidth: '1px',
+                      borderStyle: 'solid',
+                      borderColor: config.border,
+                      borderLeftWidth: '4px',
+                      borderLeftColor: config.dot
+                    }}
                   >
-                    {/* Top Right: Overdue Badge */}
-                    <div className="absolute top-3 right-3">
+                    {/* Top Row: Time + Status Badge */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <span className="tabular-nums">{ws.time}</span>
+                      </div>
                       <span
-                        className="text-xs font-bold px-3 py-1 rounded-full tracking-wide"
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider uppercase"
                         style={{
                           backgroundColor: statusConfig.bg,
                           color: statusConfig.text
@@ -180,29 +183,42 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     </div>
 
                     {/* Title */}
-                    <p className="text-sm font-medium text-[#1F2937] mb-1">
+                    {/* <p
+                      className="text-[10px] font-bold uppercase tracking-wider mb-1"
+                      style={{ color: config.text }}
+                    >
                       {ws.interview_type || event.stage?.name || '-'}
-                    </p>
+                    </p> */}
 
                     {/* Candidate Name */}
-                    <h4 className="text-[17px] font-semibold text-[#1F2937] mb-1">
+                    <h4 className="text-base font-bold text-gray-900 mb-0.5 tracking-tight leading-tight">
                       {event.candidate_name}
                     </h4>
 
                     {/* Subtitle */}
-                    <p className="text-sm text-[#4B5563] mb-4">
+                    <p className="text-xs text-gray-500 font-medium mb-3.5 leading-normal">
                       {[event.candidate_company, event.candidate_position].filter(Boolean).join(' | ') || ws.details || '-'}
                     </p>
 
                     {/* Bottom Row: Mode + Action Buttons */}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium px-3 py-1 bg-white rounded-full text-gray-700">
+                      <div className='flex item-center gap-4'>
+
+                      <span className="text-[10px] font-semibold px-2.5 py-0.5 bg-white border border-gray-250 text-gray-600 rounded-md shadow-sm">
                         {event.mode || 'Virtual'}
                       </span>
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-wider mb-1 px-2.5 py-0.5 bg-white border border-gray-250 text-gray-600 rounded-md shadow-sm bg-green-500/20 text-green-500 font-bold"
+                        style={{ color: config.text }}
+                      >
+                        {ws.interview_type || event.stage?.name || '-'}
+                      </p>
+                      </div>
+
 
                       {/* Action Buttons - Green Check & Red Cross */}
                       {isActionable && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5">
                           <button
                             onClick={async (e) => {
                               e.stopPropagation();
@@ -214,9 +230,10 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                                 toast.error("Failed");
                               }
                             }}
-                            className="w-8 h-8 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-all"
+                            className="w-7 h-7 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-[0_4px_12px_rgba(16,185,129,0.35)]"
+                            title="Complete"
                           >
-                            <Check className="w-4 h-4" />
+                            <Check className="w-3.5 h-3.5" />
                           </button>
 
                           <button
@@ -230,9 +247,10 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                                 toast.error("Failed");
                               }
                             }}
-                            className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all"
+                            className="w-7 h-7 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-[0_4px_12px_rgba(244,63,94,0.35)]"
+                            title="Cancel"
                           >
-                            <X className="w-4 h-4" />
+                            <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       )}
