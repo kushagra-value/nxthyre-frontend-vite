@@ -5,6 +5,8 @@ export interface SortableStage {
   sort_order: number;
 }
 
+// there will also be a client round as well which should be addded at the end of the hr round 
+
 export const getLNumber = (name: string): number | null => {
   const match = name.match(/\bL(\d+)\b/i);
   return match ? parseInt(match[1], 10) : null;
@@ -16,6 +18,8 @@ export const isPostInterview = (name: string, slug: string): boolean => {
   return n.includes("offer") || n.includes("hired") || n.includes("joined") || n.includes("select") ||
          s.includes("offer") || s.includes("hired") || s.includes("joined") || s.includes("select");
 };
+
+
 
 export const isHRStage = (name: string, slug: string): boolean => {
   const n = (name || "").toLowerCase();
@@ -32,8 +36,22 @@ export const isHRStage = (name: string, slug: string): boolean => {
   );
 };
 
+export const isClientRound=(name:string,slug:string)=>{
+    const n = (name || "").toLowerCase();
+    const s = (slug || "").toLowerCase();
+    return (
+        /\bclient\b/i.test(n) ||
+        n.includes("client round") ||
+        /\bclient\b/i.test(s) ||
+        s.includes("client-round")
+    );
+}
+
 export const getStageGroup = (name: string, slug: string): number => {
   if (isPostInterview(name, slug)) {
+    return 5;
+  }
+  if(isClientRound(name,slug)){
     return 4;
   }
   if (isHRStage(name, slug)) {
