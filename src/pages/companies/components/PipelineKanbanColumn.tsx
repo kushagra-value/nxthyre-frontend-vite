@@ -60,6 +60,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const columnRef = useRef<HTMLDivElement>(null);
+  const dropDownRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchStageCandidates = useCallback(
@@ -219,6 +220,18 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
   );
 
   useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropDownRef.current && !dropDownRef.current.contains(e.target as Node)) {
+        setStageMenuOpenId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [])
+
+  useEffect(() => {
     setPage(1);
     setHasMore(true);
     fetchStageCandidates(1, true);
@@ -289,11 +302,11 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
             onDragStart={(e) => {
               e.dataTransfer.setData("text/plain", `stage:${stage.id}`);
               e.dataTransfer.effectAllowed = "move";
-              
+
               if (columnRef.current) {
                 // Set the entire column card as the drag ghost image
                 e.dataTransfer.setDragImage(columnRef.current, 160, 40);
-                
+
                 // Change the opacity of the dragged column
                 const columnEl = columnRef.current;
                 requestAnimationFrame(() => {
@@ -348,6 +361,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
 
           {stageMenuOpenId === stage.id && (
             <div
+              ref={dropDownRef}
               className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
               style={{ top: stageMenuPos.top, left: stageMenuPos.left }}
             >
@@ -370,16 +384,6 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-[#FEE2E2] flex items-center gap-2"
               >
                 Delete Stage
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert("Shift Stage feature coming soon");
-                  setStageMenuOpenId(null);
-                }}
-                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-              >
-                Shift Stage
               </button>
               <button
                 onClick={(e) => {
