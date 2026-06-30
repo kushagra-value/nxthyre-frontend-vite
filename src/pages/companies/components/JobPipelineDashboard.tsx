@@ -934,8 +934,69 @@ export default function JobPipelineDashboard({
     e.preventDefault();
   };
 
+  const handleStageReorder = async (draggedStageId: number, targetStageId: number) => {
+    if (!jobId) return;
+    const activeStages = stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s));
+    const draggedIndex = activeStages.findIndex(s => s.id === draggedStageId);
+    const targetIndex = activeStages.findIndex(s => s.id === targetStageId);
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    // Perform reorder
+    const updatedActiveStages = [...activeStages];
+    const [removed] = updatedActiveStages.splice(draggedIndex, 1);
+    updatedActiveStages.splice(targetIndex, 0, removed);
+
+    // Re-assign sort_orders sequentially for all stages
+    const activeIds = new Set(updatedActiveStages.map(s => s.id));
+    const otherStages = stages.filter(s => !activeIds.has(s.id));
+    const allUpdatedStages = [...updatedActiveStages, ...otherStages].map((stage, idx) => ({
+      ...stage,
+      sort_order: idx + 1
+    }));
+
+    // Update local state immediately
+    setStages(allUpdatedStages);
+
+    // Try hitting API endpoint for persistence
+    try {
+      await apiClient.patch(`/jobs/roles/${jobId}/custom-stages/reorder/`, {
+        stages: allUpdatedStages.map((s) => ({
+          id: s.id,
+          sort_order: s.sort_order
+        }))
+      });
+      showToast.success("Stage order updated successfully");
+    } catch (error: any) {
+      console.warn(
+        "Backend API for reordering custom stages is not yet implemented. " +
+        "Please implement PATCH /jobs/roles/:jobId/custom-stages/reorder/ with payload:",
+        {
+          stages: allUpdatedStages.map((s) => ({
+            id: s.id,
+            sort_order: s.sort_order
+          }))
+        },
+        error
+      );
+      showToast.error("Stage reorder failed");
+      // Keep local order for now, so that recruitment team can see column moving
+    }
+  };
+
   const handleDrop = async (e: React.DragEvent, toStageSlug: string) => {
     e.preventDefault();
+
+    // Check if it's a stage/column drag and drop reordering
+    const data = e.dataTransfer.getData("text/plain");
+    if (data && data.startsWith("stage:")) {
+      const draggedStageId = parseInt(data.split(":")[1], 10);
+      const toStage = stages.find((s) => s.slug === toStageSlug);
+      if (toStage && draggedStageId !== toStage.id) {
+        await handleStageReorder(draggedStageId, toStage.id);
+      }
+      return;
+    }
+
     if (!draggedCandidateId || !jobId) return;
 
     const toStage = stages.find((s) => s.slug === toStageSlug);
@@ -1253,6 +1314,12 @@ export default function JobPipelineDashboard({
       fetchStages(jobId);
     }
   }, [jobId, fetchStages, externalStages]);
+
+  useEffect(() => {
+    if (externalStages && externalStages.length > 0) {
+      setStages(externalStages);
+    }
+  }, [externalStages]);
 
   // ── Fetch Archived Candidates (For in-place Kanban/Table view)
   const fetchArchivedCandidates = useCallback(async (jId: number) => {

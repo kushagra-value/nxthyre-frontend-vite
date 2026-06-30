@@ -46,7 +46,7 @@ const STATUS_BADGE_CONFIG: Record<string, { bg: string; text: string; label: str
   CANCELLED: { bg: 'rgba(239, 68, 68, 0.1)', text: '#DC2626', label: 'Cancelled' },
 };
 
-export type ScheduleFilterLabel = 'Today' | 'Tomorrow' | 'Upcoming' | 'Past';
+export type ScheduleFilterLabel = 'Today' | 'Tomorrow' | 'Upcoming' ;
 
 interface ScheduleWidgetProps {
   events: ScheduleEventAPI[];
@@ -56,11 +56,32 @@ interface ScheduleWidgetProps {
   onFilterChange: (filter: ScheduleFilterLabel) => void;
 }
 
-const FILTER_OPTIONS: ScheduleFilterLabel[] = ['Today', 'Tomorrow', 'Upcoming', 'Past'];
+const FILTER_OPTIONS: ScheduleFilterLabel[] = ['Today', 'Tomorrow', 'Upcoming'];
+
+const formatDateLabel = (dateStr?: string) => {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const currentYear = new Date().getFullYear();
+      const eventYear = d.getFullYear();
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: eventYear !== currentYear ? 'numeric' : undefined,
+      });
+    }
+  } catch (e) {
+    // fallback
+  }
+  return dateStr;
+};
 
 export default function ScheduleWidget({ events, isLoading, onEventClick, activeFilter, onFilterChange }: ScheduleWidgetProps) {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  console.log("check what events am i getting at here ",events)
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -167,12 +188,28 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                   >
                     {/* Top Row: Time + Status Badge */}
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-gray-600 flex-wrap">
                         <Clock className="w-3.5 h-3.5 text-gray-400" />
                         <span className="tabular-nums">{ws.time}</span>
+                        {activeFilter === 'Tomorrow' && (
+                          <>
+                            <span className="text-gray-300">•</span>
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                              Tomorrow
+                            </span>
+                          </>
+                        )}
+                        {(activeFilter === 'Upcoming') && event.modal_details?.date && (
+                          <>
+                            <span className="text-gray-300">•</span>
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                              {formatDateLabel(event.modal_details.date)}
+                            </span>
+                          </>
+                        )}
                       </div>
                       <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider uppercase"
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider uppercase shrink-0"
                         style={{
                           backgroundColor: statusConfig.bg,
                           color: statusConfig.text
