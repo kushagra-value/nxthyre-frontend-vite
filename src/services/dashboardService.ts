@@ -675,7 +675,11 @@ class DashboardService {
             candidate_id: ev.candidate_id,
             job_id: ev.job_role?.id,
             interview_type: ev.title || 'Interview',
-            date: start.toLocaleDateString(),
+            date: start.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            }),
             time_range: `${formatTime(start)} – ${formatTime(end)}`,
             timezone: ev.timezone || 'IST',
             description: ev.description || '',

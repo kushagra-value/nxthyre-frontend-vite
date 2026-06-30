@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronDown, Building2, Settings, LogOut, Check } from 'lucide-react';
 import { useAuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +36,19 @@ export default function Header({ title, subtitle, onBreadcrumbNavigate }: Header
   const [showPopup, setShowPopup] = useState(false);
   const [isLoadingInvites, setIsLoadingInvites] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const dropDownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropDownRef.current && !dropDownRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -187,7 +200,9 @@ export default function Header({ title, subtitle, onBreadcrumbNavigate }: Header
           </button>
 
           {showUserMenu && (
-            <div className="absolute top-[100%] right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-[100]">
+            <div
+              ref={dropDownRef}
+              className="absolute top-[100%] right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-[100]">
               <div className="py-1">
                 <div className="px-4 py-3 border-b border-gray-100">
                   <p className="text-sm font-medium text-gray-900">

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import apiClient from "../../../services/api";
 import { Stage } from "./JobPipelineDashboard";
 import { candidateService } from "../../../services/candidateService";
+import { GripVertical } from "lucide-react";
 
 interface PipelineKanbanColumnProps {
   jobId: number;
@@ -58,6 +59,8 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
   const [totalCount, setTotalCount] = useState(stage.candidate_count || 0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const columnRef = useRef<HTMLDivElement>(null);
+  const dropDownRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchStageCandidates = useCallback(
@@ -217,6 +220,18 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
   );
 
   useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropDownRef.current && !dropDownRef.current.contains(e.target as Node)) {
+        setStageMenuOpenId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [])
+
+  useEffect(() => {
     setPage(1);
     setHasMore(true);
     fetchStageCandidates(1, true);
@@ -275,12 +290,40 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
 
   return (
     <div
-      className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full relative"
+      ref={columnRef}
+      className="min-w-[320px] w-[320px] bg-white border border-[#E5E7EB] rounded-xl flex flex-col pt-3 pb-2 h-full relative transition-opacity duration-200"
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, stage.slug)}
     >
       <div className="px-5 pb-3 border-b border-[#E5E7EB] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
+          <div
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData("text/plain", `stage:${stage.id}`);
+              e.dataTransfer.effectAllowed = "move";
+
+              if (columnRef.current) {
+                // Set the entire column card as the drag ghost image
+                e.dataTransfer.setDragImage(columnRef.current, 160, 40);
+
+                // Change the opacity of the dragged column
+                const columnEl = columnRef.current;
+                requestAnimationFrame(() => {
+                  columnEl.style.opacity = "0.4";
+                });
+              }
+            }}
+            onDragEnd={(e) => {
+              if (columnRef.current) {
+                columnRef.current.style.opacity = "1";
+              }
+            }}
+            className="cursor-grab text-gray-400 hover:text-gray-600 mr-0.5 shrink-0 flex items-center active:cursor-grabbing"
+            title="Drag column to reorder"
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
           <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: stageBarColor }} />
           <h3 className="text-sm font-bold text-[#4B5563] capitalize">{stage.name}</h3>
           <span className="text-xs bg-[#F9FAFB] border border-[#D1D1D6] text-[#8E8E93] rounded-full px-2 py-0.5 font-bold">
@@ -318,6 +361,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
 
           {stageMenuOpenId === stage.id && (
             <div
+              ref={dropDownRef}
               className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
               style={{ top: stageMenuPos.top, left: stageMenuPos.left }}
             >
@@ -340,16 +384,6 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-[#FEE2E2] flex items-center gap-2"
               >
                 Delete Stage
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert("Shift Stage feature coming soon");
-                  setStageMenuOpenId(null);
-                }}
-                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-              >
-                Shift Stage
               </button>
               <button
                 onClick={(e) => {

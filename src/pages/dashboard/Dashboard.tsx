@@ -159,7 +159,7 @@ export default function Dashboard() {
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [scheduleEvents, setScheduleEvents] = useState<ScheduleEventAPI[]>([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
-  const [activeScheduleFilter, setActiveScheduleFilter] = useState<ScheduleFilterLabel>('Today');
+  const [activeScheduleFilter, setActiveScheduleFilter] = useState<ScheduleFilterLabel>('Upcoming');
   const [agendaData, setAgendaData] = useState<AgendaResponse | null>(null);
   const [agendaLoading, setAgendaLoading] = useState(false);
   const [dailyActivitiesData, setDailyActivitiesData] = useState<DailyActivitiesResponse | null>(null);
@@ -320,7 +320,7 @@ export default function Dashboard() {
   const fetchScheduleEvents = useCallback(async (filterLabel: ScheduleFilterLabel) => {
     setScheduleLoading(true);
     try {
-      let filter: ScheduleFilterType = 'today';
+      let filter: ScheduleFilterType = 'upcoming';
       let date: string | undefined = undefined;
       const now = new Date();
       if (filterLabel === 'Tomorrow') {
@@ -343,7 +343,7 @@ export default function Dashboard() {
     if (!isAuthenticated) return;
     const now = new Date();
     fetchCalendarActivity(now.getMonth() + 1, now.getFullYear());
-    fetchScheduleEvents('Today');
+    fetchScheduleEvents('Upcoming');
   }, [isAuthenticated, fetchScheduleEvents]);
 
   // ── Derive display data from API or fall back to static data ──

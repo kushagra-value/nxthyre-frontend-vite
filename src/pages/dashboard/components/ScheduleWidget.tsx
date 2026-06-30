@@ -46,7 +46,7 @@ const STATUS_BADGE_CONFIG: Record<string, { bg: string; text: string; label: str
   CANCELLED: { bg: 'rgba(239, 68, 68, 0.1)', text: '#DC2626', label: 'Cancelled' },
 };
 
-export type ScheduleFilterLabel = 'Today' | 'Tomorrow' | 'Upcoming' | 'Past';
+export type ScheduleFilterLabel = 'Today' | 'Tomorrow' | 'Upcoming';
 
 interface ScheduleWidgetProps {
   events: ScheduleEventAPI[];
@@ -56,11 +56,31 @@ interface ScheduleWidgetProps {
   onFilterChange: (filter: ScheduleFilterLabel) => void;
 }
 
-const FILTER_OPTIONS: ScheduleFilterLabel[] = ['Today', 'Tomorrow', 'Upcoming', 'Past'];
+const FILTER_OPTIONS: ScheduleFilterLabel[] = ['Today', 'Tomorrow', 'Upcoming'];
+
+const formatDateLabel = (dateStr?: string) => {
+  // can we return the day as well and color alo from heer so that we dont have do it getStatusPillColor
+  if (!dateStr) return { label: "", color: "" }
+  const date = new Date(dateStr)
+  const today = new Date()
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  if (date.toDateString() === today.toDateString()) return { label: "Today", color: "bg-green-500/20 text-green-500 border-green-200" }
+  if (date.toDateString() === tomorrow.toDateString()) return { label: "Tomorrow", color: "bg-yellow-500/20 text-yellow-500 border-yellow-200" }
+  return {
+    label: date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined,
+    }), color: "bg-blue-500/20 text-blue-500 border-blue-200"
+  };
+};
 
 export default function ScheduleWidget({ events, isLoading, onEventClick, activeFilter, onFilterChange }: ScheduleWidgetProps) {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  console.log("check what events am i getting at here ", events)
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -167,12 +187,28 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                   >
                     {/* Top Row: Time + Status Badge */}
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-gray-600 flex-wrap">
                         <Clock className="w-3.5 h-3.5 text-gray-400" />
                         <span className="tabular-nums">{ws.time}</span>
+                        {activeFilter === 'Tomorrow' && (
+                          <>
+                            <span className="text-gray-300">•</span>
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                              Tomorrow
+                            </span>
+                          </>
+                        )}
+                        {(activeFilter === 'Upcoming') && event.modal_details?.date && (
+                          <>
+                            <span className="text-gray-300">•</span>
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${formatDateLabel(event.modal_details?.date).color}`}>
+                              {formatDateLabel(event.modal_details?.date).label}
+                            </span>
+                          </>
+                        )}
                       </div>
                       <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider uppercase"
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider uppercase shrink-0"
                         style={{
                           backgroundColor: statusConfig.bg,
                           color: statusConfig.text
@@ -181,14 +217,6 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                         {statusConfig.label}
                       </span>
                     </div>
-
-                    {/* Title */}
-                    {/* <p
-                      className="text-[10px] font-bold uppercase tracking-wider mb-1"
-                      style={{ color: config.text }}
-                    >
-                      {ws.interview_type || event.stage?.name || '-'}
-                    </p> */}
 
                     {/* Candidate Name */}
                     <h4 className="text-base font-bold text-gray-900 mb-0.5 tracking-tight leading-tight">
@@ -204,15 +232,15 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                     <div className="flex items-center justify-between">
                       <div className='flex item-center gap-4'>
 
-                      <span className="text-[10px] font-semibold px-2.5 py-0.5 bg-white border border-gray-250 text-gray-600 rounded-md shadow-sm">
-                        {event.mode || 'Virtual'}
-                      </span>
-                      <p
-                        className="text-[10px] font-bold uppercase tracking-wider mb-1 px-2.5 py-0.5 bg-white border border-gray-250 text-gray-600 rounded-md shadow-sm bg-green-500/20 text-green-500 font-bold"
-                        style={{ color: config.text }}
-                      >
-                        {ws.interview_type || event.stage?.name || '-'}
-                      </p>
+                        <span className="text-[10px] font-semibold px-2.5 py-0.5 bg-white border border-gray-250 text-gray-600 rounded-md shadow-sm">
+                          {event.mode || 'Virtual'}
+                        </span>
+                        <p
+                          className="text-[10px] font-bold uppercase tracking-wider mb-1 px-2.5 py-0.5 bg-white border border-gray-250 text-gray-600 rounded-md shadow-sm bg-green-500/20 text-green-500 font-bold"
+                          style={{ color: config.text }}
+                        >
+                          {ws.interview_type || event.stage?.name || '-'}
+                        </p>
                       </div>
 
 
