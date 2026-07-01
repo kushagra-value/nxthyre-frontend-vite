@@ -53,6 +53,7 @@ const NOTICE_PERIOD_OPTIONS = [
   { value: "Immediate", label: "Immediate" },
   { value: "15 days", label: "15 days" },
   { value: "30 days", label: "30 days" },
+  { value: "45 days", label: "45 days" },
   { value: "60 days", label: "60 days" },
   { value: "90 days", label: "90 days" },
 ];

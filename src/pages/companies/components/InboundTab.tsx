@@ -52,6 +52,7 @@ function buildFilterPayload(filters: PipelineFiltersState): Record<string, any> 
     Immediate: 0,
     "15 days": 15,
     "30 days": 30,
+    "45 days": 45,
     "60 days": 60,
     "90 days": 90,
   };

@@ -343,8 +343,6 @@ const EditJobRoleModal: React.FC<EditJobRoleModalProps> = ({
 
           setFormData((prev: any) => ({
             ...prev,
-            minExp: prev.minExp || minExp,
-            maxExp: prev.maxExp || maxExp,
             mustHaveRequirements: prev.mustHaveRequirements || implicitReqs,
             niceToHaveRequirements: prev.niceToHaveRequirements || niceToHave,
             aiSelectedSkills: newAiSelectedSkills,

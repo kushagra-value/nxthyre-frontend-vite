@@ -130,7 +130,30 @@ const JobListing: React.FC<JobListingProps> = ({
     selectedPocEmail,
     onPocFilterApply,
 }) => {
-    const ITEMS_PER_PAGE = 10;
+    const ITEMS_PER_PAGE = 8;
+
+    const [headerHeight, setHeaderHeight] = useState(0);
+
+    useEffect(() => {
+        const measureHeader = () => {
+            const headerEl = document.querySelector('header');
+            if (headerEl) {
+                const scrollContainer = document.querySelector('.overflow-y-auto');
+                if (scrollContainer && scrollContainer.contains(headerEl)) {
+                    setHeaderHeight(headerEl.offsetHeight);
+                } else {
+                    setHeaderHeight(0);
+                }
+            }
+        };
+        measureHeader();
+        const timer = setTimeout(measureHeader, 100);
+        window.addEventListener('resize', measureHeader);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', measureHeader);
+        };
+    }, []);
 
     // Mapping from UI column keys to backend ordering field names
     const orderingMap: Record<string, string> = {
@@ -198,7 +221,7 @@ const JobListing: React.FC<JobListingProps> = ({
 
     // --- Column Visibility Filter ---
     const ALL_COLUMNS = [
-        { key: 'checkbox', label: 'Checkbox', width: '40px', alwaysVisible: true },
+        { key: 'checkbox', label: 'Checkbox', width: '42px', alwaysVisible: true },
         { key: 'jobTitle', label: 'Job Title', width: '220px', alwaysVisible: true },
         { key: 'position', label: 'Position', width: '80px' },
         { key: 'yoe', label: 'YOE', width: '80px' },
@@ -933,8 +956,6 @@ const JobListing: React.FC<JobListingProps> = ({
                     </div>
                 </div>
 
-
-
                 <div className="overflow-x-auto overflow-y-visible custom-scrollbar">
                     <table className="w-full text-left border-collapse" style={{ minWidth: `${totalTableWidth}px` }}>
                         <colgroup>
@@ -947,13 +968,23 @@ const JobListing: React.FC<JobListingProps> = ({
                                 {columnsToRender.map(col => {
                                     if (col.key === 'checkbox') {
                                         return (
-                                            <th key={col.key} className="px-4 py-3">
+                                            <th
+                                                key={col.key}
+                                                className="px-4 py-3 sticky left-0 z-30 bg-[#F9FAFB]"
+                                                style={{ top: `calc(${headerHeight}px)` }}
+                                            >
                                                 <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded border-gray-300" />
                                             </th>
                                         );
                                     }
                                     if (col.key === 'actions') {
-                                        return <th key={col.key} className="px-4 py-3"></th>;
+                                        return (
+                                            <th
+                                                key={col.key}
+                                                className="px-4 py-3 sticky right-0 z-30 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)]"
+                                                style={{ top: `calc(${headerHeight}px)` }}
+                                            ></th>
+                                        );
                                     }
                                     const sortKey = ALL_COLUMNS.find(c => c.key === col.key)?.label || col.label;
                                     const canSort = !!orderingMap[sortKey];
@@ -961,7 +992,11 @@ const JobListing: React.FC<JobListingProps> = ({
                                     return (
                                         <th
                                             key={col.key}
-                                            className={`px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider ${col.key !== 'jobTitle' && col.key !== 'pipelineStages' && col.key !== 'note' ? 'text-center' : ''}  whitespace-nowrap`}
+                                            className={`px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider ${col.key !== 'jobTitle' && col.key !== 'pipelineStages' && col.key !== 'note' ? 'text-center' : ''}  whitespace-nowrap ${col.key === 'jobTitle'
+                                                ? 'sticky left-[42px] z-30 bg-[#F9FAFB] border-r border-[#E5E7EB]'
+                                                : 'sticky z-20 bg-[#F9FAFB]'
+                                                }`}
+                                            style={{ top: `calc(${headerHeight}px)` }}
                                         >
                                             <div
                                                 className={`flex items-center gap-1.5 ${col.key !== 'jobTitle' && col.key !== 'pipelineStages' && col.key !== 'note' ? 'justify-center' : ''} ${canSort ? 'cursor-pointer hover:text-[#0F47F2] transition-colors' : ''}`}
@@ -1008,14 +1043,14 @@ const JobListing: React.FC<JobListingProps> = ({
                                             switch (col.key) {
                                                 case 'checkbox':
                                                     return (
-                                                        <td key={col.key} className="px-4 py-3">
+                                                        <td key={col.key} className="px-4 py-3 sticky left-0 bg-white group-hover:bg-[#FAFBFC] transition-colors z-[2]">
                                                             <input type="checkbox" className="w-4 h-4 accent-[#0F47F2] rounded border-gray-300" />
                                                         </td>
                                                     );
                                                 case 'jobTitle': {
                                                     const pocValue = pocOverrides[job.id] !== undefined ? pocOverrides[job.id] : ((job as any).poc_email || "");
                                                     return (
-                                                        <td key={col.key} className="px-4 py-3">
+                                                        <td key={col.key} className="px-4 py-3 sticky left-[42px] bg-white group-hover:bg-[#FAFBFC] transition-colors border-r border-[#E5E7EB] z-[2]">
                                                             <div className="flex items-center gap-2">
                                                                 <span
                                                                     className="text-[14px] font-[600] text-[#1C1C1E] leading-[17px] cursor-pointer hover:text-[#0F47F2] transition-colors truncate max-w-[200px]"
@@ -1264,7 +1299,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                     );
                                                 case 'actions':
                                                     return (
-                                                        <td key={col.key} className="px-4 py-3 text-center relative" onClick={(e) => e.stopPropagation()}>
+                                                        <td key={col.key} className="px-4 py-3 text-center relative sticky right-0 bg-white group-hover:bg-[#FAFBFC] transition-colors z-[2] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]" onClick={(e) => e.stopPropagation()}>
                                                             <button
                                                                 onClick={(e) => {
                                                                     if (menuOpenJobId === job.id) {
@@ -1751,12 +1786,12 @@ const JobListing: React.FC<JobListingProps> = ({
                 >
                     <div className="bg-[#1C1C1E] text-white text-[12px] py-2 px-3 rounded-lg shadow-xl max-w-[250px] relative animate-in fade-in zoom-in duration-150">
                         <div className="flex items-center gap-2 mb-1 border-b border-white/10 pb-1">
-                            <div 
-                                className="w-2 h-2 rounded-full" 
-                                style={{ 
-                                    backgroundColor: healthTooltip.status === "On Track" ? "#16A34A" : 
-                                                    healthTooltip.status === "Needs Attention" ? "#F59E0B" : "#DC2626" 
-                                }} 
+                            <div
+                                className="w-2 h-2 rounded-full"
+                                style={{
+                                    backgroundColor: healthTooltip.status === "On Track" ? "#16A34A" :
+                                        healthTooltip.status === "Needs Attention" ? "#F59E0B" : "#DC2626"
+                                }}
                             />
                             <span className="font-bold uppercase text-[10px] tracking-wider text-white/90">
                                 {healthTooltip.status}
@@ -1769,11 +1804,11 @@ const JobListing: React.FC<JobListingProps> = ({
                             <div className="mt-2 pt-1 border-t border-white/5 text-[9px] text-white/40 flex items-center gap-1">
                                 <Calendar className="w-2.5 h-2.5" />
                                 <span>
-                                    Last evaluated: {new Date(healthTooltip.updatedAt).toLocaleDateString(undefined, { 
-                                        month: 'short', 
-                                        day: 'numeric', 
-                                        hour: '2-digit', 
-                                        minute: '2-digit' 
+                                    Last evaluated: {new Date(healthTooltip.updatedAt).toLocaleDateString(undefined, {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
                                     })}
                                 </span>
                             </div>
