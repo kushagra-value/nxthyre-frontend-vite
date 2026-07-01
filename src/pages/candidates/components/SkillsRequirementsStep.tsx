@@ -6,6 +6,7 @@ const NOTICE_PERIOD_OPTIONS = [
   "Immediate",
   "15 Days",
   "30 Days",
+  "45 Days",
   "60 Days",
   "90 Days",
 ];

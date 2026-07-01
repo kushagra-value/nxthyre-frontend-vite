@@ -117,7 +117,7 @@ export default function Companies() {
     const [jobStatusCounts, setJobStatusCounts] = useState<JobsApiResponse["status_counts"] | null>(null);
     const [jobPagination, setJobPagination] = useState<JobsApiResponse["pagination"] | null>(null);
     const [jobCurrentPage, setJobCurrentPage] = useState(1);
-    const [jobPageSize] = useState(10);
+    const [jobPageSize] = useState(8);
     const [createdAfter, setCreatedAfter] = useState<string | undefined>(undefined);
     const [createdBefore, setCreatedBefore] = useState<string | undefined>(undefined);
     const [jobDateFilterLabel, setJobDateFilterLabel] = useState("Date Filter");
