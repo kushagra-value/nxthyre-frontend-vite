@@ -2569,14 +2569,14 @@ export default function JobPipelineDashboard({
             {loadingJob ? (
               <div className="animate-pulse space-y-4">
                 <div className="h-4 bg-gray-200 rounded w-1/3" />
-                <div className="grid grid-cols-6 gap-4">
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <div key={i} className="h-4 bg-gray-200 rounded" />
+                <div className="grid grid-cols-7 gap-4">
+                  {Array.from({ length: 13 }).map((_, i) => (
+                    <div key={i} className={`h-4 bg-gray-200 rounded ${i === 12 ? 'col-span-2' : ''}`} />
                   ))}
                 </div>
               </div>
             ) : jobDetails ? (
-              <div className="grid grid-cols-6 gap-x-8 gap-y-6 text-sm">
+              <div className="grid grid-cols-7 gap-x-8 gap-y-6 text-sm">
                 <div>
                   <div className="text-[#8E8E93] text-xs font-medium">
                     Year of Experience
@@ -2626,6 +2626,7 @@ export default function JobPipelineDashboard({
                     {jobDetails.seniority || "--"}
                   </div>
                 </div>
+                <div /> {/* Empty slot to fill 7th column of first row */}
 
                 {/* Second row */}
                 <div>
@@ -2657,6 +2658,14 @@ export default function JobPipelineDashboard({
                     Hired
                   </div>
                   <div className="font-medium text-[#4B5563] mt-1">--</div>
+                </div>
+                <div>
+                  <div className="text-[#8E8E93] text-xs font-medium">
+                    Notice Period
+                  </div>
+                  <div className="font-medium text-[#4B5563] mt-1">
+                    {jobDetails.notice_period || "--"}
+                  </div>
                 </div>
                 <div className="col-span-2">
                   <div className="text-[#8E8E93] text-xs font-medium mb-1.5">
