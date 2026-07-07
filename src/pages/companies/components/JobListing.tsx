@@ -42,6 +42,34 @@ import CompanyInfoDrawer from "./CompanyInfoDrawer";
 import JobDateRangeFilter from "./JobDateRangeFilter";
 import JobTimelineDrawer from "./JobTimelineDrawer";
 import JobPocFilter from "./JobPocFilter";
+import { naukbotService } from "../../../services/naukbotService";
+
+const NaukbotCount: React.FC<{ jobId: number; initialCount?: number }> = ({ jobId, initialCount }) => {
+    const [count, setCount] = useState<number | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        naukbotService.getNaukbotCandidates({
+            job_id: jobId,
+            page: 1,
+            page_size: 1
+        })
+        .then(res => {
+            if (isMounted) {
+                setCount(res.count);
+            }
+        })
+        .catch(err => {
+            console.error("Error fetching naukbot candidate count:", err);
+        });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [jobId]);
+
+    return <>{count !== null ? count : (initialCount ?? 0)}</>;
+};
 
 interface JobListingProps {
     selectedWorkspace: MyWorkspace;
@@ -1158,7 +1186,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                                 case 'naukbot':
                                                     return (
                                                         <td key={col.key} className="px-4 py-3 text-[13px] text-[#4B5563] text-center">
-                                                            {job.naukri_bot_candidates_count ?? 0}
+                                                            <NaukbotCount jobId={job.id} initialCount={job.naukri_bot_candidates_count} />
                                                         </td>
                                                     );
                                                 case 'linkedinBot':

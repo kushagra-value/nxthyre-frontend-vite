@@ -53,6 +53,7 @@ import EditJobRoleModal from "../../candidates/components/EditJobRoleModal";
 import CompanyInfoTab from "./CompanyInfoTab";
 
 import NaukbotTab from "./NaukbotTab";
+import { naukbotService } from "../../../services/naukbotService";
 import LinkedinBotTab from "./LinkedinBotTab";
 import InboundTab from "./InboundTab";
 import NxthyreTab from "./NxthyreTab";
@@ -809,6 +810,7 @@ export default function JobPipelineDashboard({
   }, [activeTab, jobId]);
 
   const [linkedinBotFilteredCount, setLinkedinBotFilteredCount] = useState<number | null>(null);
+  const [naukbotFilteredCount, setNaukbotFilteredCount] = useState<number | null>(null);
 
   const [isKanbanView, setIsKanbanView] = useState(() => {
     if (jobId) {
@@ -1269,6 +1271,25 @@ export default function JobPipelineDashboard({
   useEffect(() => {
     refreshJobDetails();
   }, [refreshJobDetails]);
+
+  useEffect(() => {
+    if (jobId == null) {
+      setNaukbotFilteredCount(null);
+      return;
+    }
+    setNaukbotFilteredCount(null);
+    naukbotService.getNaukbotCandidates({
+      job_id: jobId,
+      page: 1,
+      page_size: 1
+    })
+    .then(res => {
+      setNaukbotFilteredCount(res.count);
+    })
+    .catch(err => {
+      console.error("Error fetching initial naukbot candidates count:", err);
+    });
+  }, [jobId]);
 
   // ── Sync Stages from Prop
   useEffect(() => {
@@ -2726,7 +2747,7 @@ export default function JobPipelineDashboard({
             {
               key: "naukbot" as const,
               label: "Naukbot",
-              count: jobDetails?.naukri_bot_candidates_count ?? 0,
+              count: naukbotFilteredCount ?? jobDetails?.naukri_bot_candidates_count ?? 0,
             },
             {
               key: "inbound" as const,
@@ -4137,7 +4158,7 @@ export default function JobPipelineDashboard({
         </>
       )}
 
-      {activeTab === "naukbot" && <NaukbotTab jobId={jobId} />}
+      {activeTab === "naukbot" && <NaukbotTab jobId={jobId} onFilterCountChange={setNaukbotFilteredCount} />}
       {activeTab === "linkedinbot" && <LinkedinBotTab jobId={jobId} onFilterCountChange={setLinkedinBotFilteredCount} />}
       {activeTab === "inbound" && (
         <InboundTab
