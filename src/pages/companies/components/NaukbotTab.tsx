@@ -10,9 +10,10 @@ import { getAttentionPill } from "../../../utils/candidateAttention";
 
 interface NaukbotTabProps {
   jobId: number | null;
+  onFilterCountChange?: (count: number | null) => void;
 }
 
-export default function NaukbotTab({ jobId }: NaukbotTabProps) {
+export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabProps) {
   const [showDismiss, setShowDismiss] = useState(true);
   const [candidates, setCandidates] = useState<NaukbotCandidate[]>([]);
   const [loading, setLoading] = useState(false);
@@ -127,14 +128,16 @@ export default function NaukbotTab({ jobId }: NaukbotTabProps) {
       setTotalPages(res.total_pages);
       setTotalCount(res.count);
       setSummary(res.summary);
+      onFilterCountChange?.(res.count);
     } catch (error: any) {
       if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return;
       console.error(error);
       showToast.error("Failed to load Naukbot candidates");
+      onFilterCountChange?.(null);
     } finally {
       setLoading(false);
     }
-  }, [jobId, page, pageSize, debouncedSearch, sortBy, botFilters]);
+  }, [jobId, page, pageSize, debouncedSearch, sortBy, botFilters, onFilterCountChange]);
 
   const fetchJobStatus = useCallback(async () => {
     if (!jobId) return;
