@@ -217,6 +217,26 @@ interface CandidateListItem {
   activities?: any[];
 }
 
+const DuplicateProfileIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={`${className} shrink-0`}
+  >
+    <circle cx="12" cy="12" r="10" fill="#EF4444" />
+    <line x1="7" y1="7" x2="17" y2="17" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+  </svg>
+);
+
+const VerifiedProfileIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg
+    viewBox="0 0 22 22"
+    fill="currentColor"
+    className={`${className} text-[#1D9BF0] shrink-0`}
+  >
+    <path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.44 1.245-.222.607-.27 1.263-.14 1.896.13.634.437 1.218.88 1.687.47.445 1.054.75 1.688.88.634.132 1.292.08 1.897-.143.272.585.702 1.084 1.243 1.437.54.354 1.168.552 1.814.569.647-.016 1.275-.213 1.815-.568.54-.355.97-.854 1.24-1.44.608.223 1.267.273 1.902.14.635-.13 1.22-.435 1.69-.88.445-.472.75-1.056.88-1.69.13-.632.08-1.29-.144-1.895.587-.274 1.087-.705 1.44-1.245.356-.54.555-1.17.575-1.817zm-10.42 2.633l-3.33-3.33 1.42-1.42 1.91 1.91 4.54-4.54 1.42 1.42-5.96 5.96z" />
+  </svg>
+);
+
 const isAscendionWorkspaceName = (name?: string | null) =>
   (name || "").toLowerCase().includes("ascendion");
 
@@ -722,12 +742,12 @@ export default function JobPipelineDashboard({
   const [sortConfig, setSortConfig] = useState<{
     key: CandidateSortKey;
     direction: "asc" | "desc";
-  } | null>({ key: "Resume", direction: "desc" });
+  } | null>({ key: "Attention", direction: "desc" });
 
   const handleSort = (key: CandidateSortKey) => {
     let direction: "asc" | "desc" = "asc";
     if (
-      ["Resume ", "Screening", "Exp", "CTC", "E_CTC", "NP"].includes(key)
+      ["Resume ", "Screening", "Exp", "CTC", "E_CTC", "NP", "Attention"].includes(key)
     ) {
       direction = "desc"; // Default desc for numeric/score values
     }
@@ -1389,6 +1409,7 @@ export default function JobPipelineDashboard({
     "E_CTC": "expected_ctc",
     "NP": "notice_period",
     "Stage": "stage",
+    "Attention": "created_at",
   };
 
   const fetchCandidates = useCallback(
@@ -2222,9 +2243,7 @@ export default function JobPipelineDashboard({
                     stageSlug === "uncontacted" &&
                     (verifiedNonDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === false) && !ascendionCheckingIds.has(cand.id) && (
                       <div title="Not a duplicate in Ascendion portal">
-                        <Check
-                          className="w-4 h-4 text-green-600 shrink-0"
-                        />
+                        <VerifiedProfileIcon />
                       </div>
                     )}
                   {isAscendionWorkspace &&
@@ -2240,7 +2259,7 @@ export default function JobPipelineDashboard({
                     (confirmedDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === true) &&
                     !verifiedNonDuplicateIds.has(cand.id) && (
                       <div title="Duplicate found in Ascendion portal">
-                        <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                        <DuplicateProfileIcon />
                       </div>
                     )}
                   {isArchived ? (
@@ -2290,12 +2309,12 @@ export default function JobPipelineDashboard({
                               title={
                                 verifiedNonDuplicateIds.has(cand.id)
                                   ? "Already verified as not duplicate"
-                                  : "Check Ascendion portal duplicate"
+                                  : "Submit to Ascendion portal"
                               }
                             >
                               {ascendionCheckingIds.has(cand.id)
                                 ? "Checking..."
-                                : "Check dup"}
+                                : "Submit"}
                             </button>
                           )}
                           <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
@@ -3554,16 +3573,12 @@ export default function JobPipelineDashboard({
                                     )}
                                     {showAscendionUncontacted && isVerifiedNonDuplicate && !ascendionCheckingIds.has(cand.id) && (
                                       <div title="Not a duplicate in Ascendion portal">
-                                        <Check
-                                          className="w-4 h-4 text-green-600 shrink-0"
-                                        />
+                                        <VerifiedProfileIcon />
                                       </div>
                                     )}
                                     {showAscendionUncontacted && isConfirmedDuplicate && !ascendionCheckingIds.has(cand.id) && (
                                       <div title="Duplicate found in Ascendion portal">
-                                        <XCircle
-                                          className="w-4 h-4 text-red-500 shrink-0"
-                                        />
+                                        <DuplicateProfileIcon />
                                       </div>
                                     )}
                                   </div>
@@ -3826,10 +3841,10 @@ export default function JobPipelineDashboard({
                                           title={
                                             isVerifiedNonDuplicate
                                               ? "Already verified as not duplicate"
-                                              : "Check Ascendion portal duplicate"
+                                              : "Submit to Ascendion portal"
                                           }
                                         >
-                                          {isAscendionDupChecking ? "Checking..." : "Check dup"}
+                                          {isAscendionDupChecking ? "Checking..." : "Submit"}
                                         </button>
                                       )}
                                       <button

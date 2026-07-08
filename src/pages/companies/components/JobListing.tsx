@@ -54,14 +54,14 @@ const NaukbotCount: React.FC<{ jobId: number; initialCount?: number }> = ({ jobI
             page: 1,
             page_size: 1
         })
-        .then(res => {
-            if (isMounted) {
-                setCount(res.count);
-            }
-        })
-        .catch(err => {
-            console.error("Error fetching naukbot candidate count:", err);
-        });
+            .then(res => {
+                if (isMounted) {
+                    setCount(res.count);
+                }
+            })
+            .catch(err => {
+                console.error("Error fetching naukbot candidate count:", err);
+            });
 
         return () => {
             isMounted = false;
