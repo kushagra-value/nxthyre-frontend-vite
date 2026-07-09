@@ -37,6 +37,17 @@ const VerifiedProfileIcon = ({ className = "w-4 h-4" }: { className?: string }) 
   </svg>
 );
 
+const formatDate = (iso?: string): string => {
+  if (!iso) return "--";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
 /** Convert PipelineFiltersState → backend search API payload fields */
 function buildFilterPayload(filters: PipelineFiltersState): Record<string, any> {
   const payload: Record<string, any> = {};
@@ -101,7 +112,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
   const [totalCount, setTotalCount] = useState(0);
   const [sortBy, setSortBy] = useState("score_desc");
   const pageSize = 10;
-  
+
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
 
@@ -445,8 +456,8 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
       } catch (err: any) {
         showToast.error(
           err?.response?.data?.detail ||
-            err?.message ||
-            "Failed to check Ascendion duplicate",
+          err?.message ||
+          "Failed to check Ascendion duplicate",
         );
       } finally {
         setAscendionCheckingIds((prev) => {
@@ -493,9 +504,9 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
         <div className="bg-white border-x border-t border-[#E5E7EB] rounded-t-xl px-6 py-4 flex items-center justify-between">
           <div className="relative w-[340px]">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-            <input 
-              type="text" 
-              placeholder="Search for Candidates" 
+            <input
+              type="text"
+              placeholder="Search for Candidates"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-10 pl-10 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none border border-[#E5E7EB] focus:border-[#0F47F2] transition-colors"
@@ -556,12 +567,12 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
             <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
               <tr>
                 <th className="w-12 px-6 py-4">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={candidates.length > 0 && selectedCandidates.size === candidates.length}
                     onChange={toggleSelectAll}
                     disabled={candidates.length === 0}
-                    className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
+                    className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]"
                   />
                 </th>
                 <th className="px-6 py-4 text-left text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Candidate</th>
@@ -577,279 +588,288 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
-               {loading ? (
-                 <tr>
-                   <td colSpan={11} className="px-6 py-12 text-center text-[#8E8E93]">Loading candidates...</td>
-                 </tr>
-               ) : candidates.length === 0 ? (
-                 <tr>
-                   <td colSpan={11} className="px-6 py-12 text-center text-[#8E8E93]">No candidates found.</td>
-                 </tr>
-               ) : (() => {
-                 const inboundCandidatesMapped = candidates.map(c => ({ id: null, candidate: { ...c, application_type: "inbound" }, application_type: "inbound" }));
-                 return candidates.map((item, index) => {
+              {loading ? (
+                <tr>
+                  <td colSpan={11} className="px-6 py-12 text-center text-[#8E8E93]">Loading candidates...</td>
+                </tr>
+              ) : candidates.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="px-6 py-12 text-center text-[#8E8E93]">No candidates found.</td>
+                </tr>
+              ) : (() => {
+                const inboundCandidatesMapped = candidates.map(c => ({ id: null, candidate: { ...c, application_type: "inbound" }, application_type: "inbound" }));
+                return candidates.map((item, index) => {
                   const scoreRaw = item.job_score?.candidate_match_score?.score?.replace("%", "") || "0";
                   const score = parseInt(scoreRaw, 10);
                   const scoreColor = score >= 80 ? "#00C8B3" : score >= 60 ? "#F59E0B" : "#EA580C";
-                  
+
+                  const isVerifiedNonDuplicate =
+                    verifiedNonDuplicateIds.has(item.id) || (item as any).is_ascendion_duplicate === false;
+                  const isConfirmedDuplicate =
+                    (confirmedDuplicateIds.has(item.id) || (item as any).is_ascendion_duplicate === true) && !isVerifiedNonDuplicate;
+
                   return (
-                  <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => onSelectCandidate && onSelectCandidate(inboundCandidatesMapped[index], inboundCandidatesMapped, index)}>
-                    <td className="px-6 py-6 border-transparent" onClick={(e) => e.stopPropagation()}>
-                      <input 
-                        type="checkbox" 
-                        checked={selectedCandidates.has(item.id)}
-                        onChange={() => toggleSelection(item.id)}
-                        className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
-                      />
-                    </td>
-                    <td className="px-6 py-6 border-transparent min-w-0 max-w-[200px]">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="font-semibold text-[14px] text-[#4B5563] truncate" title={item.full_name}>{item.full_name}</div>
-                        {isAscendionWorkspace && ascendionCheckingIds.has(item.id) && (
-                          <div title="Checking for duplicates...">
-                            <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
-                          </div>
-                        )}
-                        {isAscendionWorkspace && !ascendionCheckingIds.has(item.id) && verifiedNonDuplicateIds.has(item.id) && (
-                          <div title="Not a duplicate in Ascendion portal">
-                            <VerifiedProfileIcon />
-                          </div>
-                        )}
-                        {isAscendionWorkspace && !ascendionCheckingIds.has(item.id) && (confirmedDuplicateIds.has(item.id) || (item as any).is_ascendion_duplicate === true) && !verifiedNonDuplicateIds.has(item.id) && (
-                          <div title="Duplicate found in Ascendion portal">
-                            <DuplicateProfileIcon />
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-[13px] text-[#8E8E93] mt-0.5 truncate" title={item.headline || ""}>{item.headline || "-"}</div>
-                    </td>
-                    <td className="px-6 py-6 border-transparent">
-                       <div className="relative w-10 h-10 mx-auto">
+                    <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => onSelectCandidate && onSelectCandidate(inboundCandidatesMapped[index], inboundCandidatesMapped, index)}>
+                      <td className="px-6 py-6 border-transparent" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedCandidates.has(item.id)}
+                          onChange={() => toggleSelection(item.id)}
+                          className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]"
+                        />
+                      </td>
+                      <td className="px-6 py-6 border-transparent min-w-0 max-w-[200px]">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="font-semibold text-[14px] text-[#4B5563] truncate" title={item.full_name}>{item.full_name}</div>
+                          {isAscendionWorkspace && ascendionCheckingIds.has(item.id) && (
+                            <div title="Checking for duplicates...">
+                              <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
+                            </div>
+                          )}
+                          {isAscendionWorkspace && !ascendionCheckingIds.has(item.id) && isVerifiedNonDuplicate && (
+                            <div title="Not a duplicate in Ascendion portal">
+                              <VerifiedProfileIcon />
+                            </div>
+                          )}
+                          {isAscendionWorkspace && !ascendionCheckingIds.has(item.id) && isConfirmedDuplicate && (
+                            <div title="Duplicate found in Ascendion portal">
+                              <DuplicateProfileIcon />
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-[13px] text-[#8E8E93] mt-0.5 truncate" title={item.headline || ""}>{item.headline || "-"}</div>
+                      </td>
+                      <td className="px-6 py-6 border-transparent">
+                        <div className="relative w-10 h-10 mx-auto">
                           <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
                             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F3F5F7" strokeWidth="4" />
                             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={scoreColor} strokeWidth="4" strokeDasharray={`${score}, 100`} />
                           </svg>
                           <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{score}</div>
                         </div>
-                    </td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_salary_lpa || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent whitespace-nowrap">{item.notice_period_summary || "-"}</td>
-                    <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center whitespace-nowrap">
-                       {item.source?.source?.replace("_", " ") || "-"}
-                    </td>
-                    <td className="px-6 py-6 whitespace-nowrap border-transparent">
-                      <div className="flex justify-center">
-                        {(() => {
-                          const attentionTag = item.status_tags?.find((t: any) => t.text);
-                          const pill = getAttentionPill(item, attentionTag);
-                          if (!pill) return <span className="text-xs text-[#8E8E93]">--</span>;
-                          const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
-                          const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
-                          return (
-                            <span
-                              className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full truncate max-w-[150px]"
-                              style={{ backgroundColor: bgColor, color: textColor }}
-                              title={pill.text}
-                            >
-                              {pill.text}
-                            </span>
-                          );
-                        })()}
-                      </div>
-                    </td>
-                    <td className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-6 py-6 border-transparent shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`} onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end items-center gap-2 z-10 flex-row">
-                        <button
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            try {
-                              if (jobId) {
-                                await candidateService.saveToPipeline(jobId, item.id);
-                                showToast.success("Candidate added to pipeline");
-                                fetchInboundCandidates(currentPage);
-                              }
-                            } catch (err) {
-                              showToast.error("Failed to add candidate to pipeline");
-                            }
-                          }}
-                          className="flex items-center gap-2 bg-[#E7EDFF] text-[#0F47F2] px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-[#D5E1FF] transition whitespace-nowrap"
-                        >
-                          <Plus className="w-3.5 h-3.5" /> Shortlist
-                        </button>
-                        
-                        <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (menuOpenId === item.id) {
-                                setMenuOpenId(null);
-                                return;
-                              }
-                              const rect = e.currentTarget.getBoundingClientRect();
-                              const menuWidth = 192;
-                              const menuHeight = 180;
-                              const gap = 8;
-                              const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
-                              const preferredTop = openUp
-                                ? rect.top - menuHeight - gap
-                                : rect.bottom + gap;
-                              const top = Math.min(
-                                Math.max(8, preferredTop),
-                                Math.max(8, window.innerHeight - menuHeight - 8)
+                      </td>
+                      <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "-"}</td>
+                      <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years || "-"}</td>
+                      <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_salary_lpa || "-"}</td>
+                      <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc || "-"}</td>
+                      <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent whitespace-nowrap">{item.notice_period_summary || "-"}</td>
+                      <td className="px-6 py-6 text-[13px] font-medium border-transparent text-center whitespace-nowrap">
+                        {item.source?.source?.replace("_", " ") || "-"}
+                      </td>
+                      <td className="px-6 py-6 whitespace-nowrap border-transparent">
+                        <div className="flex justify-center">
+                          {(() => {
+                            const dateVal =
+                              item.time_applied ??
+                              item.time_added ??
+                              item.created_at;
+
+                            if (dateVal) {
+                              return (
+                                <span className="text-xs text-[#8E8E93]">
+                                  {formatDate(dateVal)}
+                                </span>
                               );
-                              let left = rect.right - menuWidth;
-                              if (left < 8) left = 8;
-                              if (left + menuWidth > window.innerWidth - 8) {
-                                left = window.innerWidth - menuWidth - 8;
+                            }
+
+                            return (
+                              <span className="text-xs text-[#8E8E93]">
+                                --
+                              </span>
+                            );
+                          })()}
+                        </div>
+                      </td>
+                      <td className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-6 py-6 border-transparent shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end items-center gap-2 z-10 flex-row">
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                if (jobId) {
+                                  await candidateService.saveToPipeline(jobId, item.id);
+                                  showToast.success("Candidate added to pipeline");
+                                  fetchInboundCandidates(currentPage);
+                                }
+                              } catch (err) {
+                                showToast.error("Failed to add candidate to pipeline");
                               }
-                              setMenuPos({ top, left });
-                              setMenuOpenId(item.id);
                             }}
-                            className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
-                            title="Options"
+                            className="flex items-center gap-2 bg-[#E7EDFF] text-[#0F47F2] px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-[#D5E1FF] transition whitespace-nowrap"
                           >
-                            <MoreHorizontal className="w-4 h-4 text-[#4B5563]" />
+                            <Plus className="w-3.5 h-3.5" /> Shortlist
                           </button>
 
-                          {menuOpenId === item.id && (
-                            <div
-                              className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
-                              style={{ top: menuPos.top, left: menuPos.left }}
+                          <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (menuOpenId === item.id) {
+                                  setMenuOpenId(null);
+                                  return;
+                                }
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const menuWidth = 192;
+                                const menuHeight = 180;
+                                const gap = 8;
+                                const openUp = rect.bottom + menuHeight + gap > window.innerHeight;
+                                const preferredTop = openUp
+                                  ? rect.top - menuHeight - gap
+                                  : rect.bottom + gap;
+                                const top = Math.min(
+                                  Math.max(8, preferredTop),
+                                  Math.max(8, window.innerHeight - menuHeight - 8)
+                                );
+                                let left = rect.right - menuWidth;
+                                if (left < 8) left = 8;
+                                if (left + menuWidth > window.innerWidth - 8) {
+                                  left = window.innerWidth - menuWidth - 8;
+                                }
+                                setMenuPos({ top, left });
+                                setMenuOpenId(item.id);
+                              }}
+                              className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
+                              title="Options"
                             >
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const callData = {
-                                    id: item.id,
-                                    name: item.full_name || "Unknown",
-                                    avatarInitials: item.full_name
-                                      ? item.full_name.substring(0, 2).toUpperCase()
-                                      : "UN",
-                                    headline: item.headline || "--",
-                                    phone:
-                                      item.premium_data?.phone ||
-                                      item.premium_data?.all_phone_numbers?.[0] ||
-                                      "+91 98765 43210",
-                                    experience: item.experience_years || "--",
-                                    currentCtc: item.current_salary_lpa || "--",
-                                    expectedCtc: item.expected_ctc || "--",
-                                    noticePeriod: item.notice_period_summary || "--",
-                                    location: item.location || "--",
-                                    resumeUrl: item.premium_data?.resume_url || item.resume_url || "",
-                                  };
-                                  const candidateIds = candidates.map(c => c.id);
-                                  sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ 
-                                    candidate: callData,
-                                    candidateList: candidateIds
-                                  }));
-                                  setMenuOpenId(null);
-                                  window.location.href = `/call/${item.id}/${jobId || 0}?mode=manual`;
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                              <MoreHorizontal className="w-4 h-4 text-[#4B5563]" />
+                            </button>
+
+                            {menuOpenId === item.id && (
+                              <div
+                                className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                                style={{ top: menuPos.top, left: menuPos.left }}
                               >
-                                Call
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setCandidateEditing(item);
-                                  setShowCandidateEditModal(true);
-                                  setMenuOpenId(null);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                              >
-                                Edit Details
-                              </button>
-                              <button
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  await handleCopyCandidateEmail(item);
-                                  setMenuOpenId(null);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                              >
-                                Copy Mail ID
-                              </button>
-                              {isAscendionWorkspace && (
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    runAscendionDuplicateCheck(item.id);
+                                    const callData = {
+                                      id: item.id,
+                                      name: item.full_name || "Unknown",
+                                      avatarInitials: item.full_name
+                                        ? item.full_name.substring(0, 2).toUpperCase()
+                                        : "UN",
+                                      headline: item.headline || "--",
+                                      phone:
+                                        item.premium_data?.phone ||
+                                        item.premium_data?.all_phone_numbers?.[0] ||
+                                        "+91 98765 43210",
+                                      experience: item.experience_years || "--",
+                                      currentCtc: item.current_salary_lpa || "--",
+                                      expectedCtc: item.expected_ctc || "--",
+                                      noticePeriod: item.notice_period_summary || "--",
+                                      location: item.location || "--",
+                                      resumeUrl: item.premium_data?.resume_url || item.resume_url || "",
+                                    };
+                                    const candidateIds = candidates.map(c => c.id);
+                                    sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({
+                                      candidate: callData,
+                                      candidateList: candidateIds
+                                    }));
+                                    setMenuOpenId(null);
+                                    window.location.href = `/call/${item.id}/${jobId || 0}?mode=manual`;
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                >
+                                  Call
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCandidateEditing(item);
+                                    setShowCandidateEditModal(true);
                                     setMenuOpenId(null);
                                   }}
-                                  disabled={verifiedNonDuplicateIds.has(item.id) || ascendionCheckingIds.has(item.id) || confirmedDuplicateIds.has(item.id)}
-                                  className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
-                                                                    title={
-                                    verifiedNonDuplicateIds.has(item.id)
-                                      ? "Already verified as not duplicate"
-                                      : "Submit to Ascendion portal"
-                                  }
+                                  className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
                                 >
-                                  {ascendionCheckingIds.has(item.id) ? "Checking..." : "Submit"}
+                                  Edit Details
                                 </button>
-                              )}
-                              <div className="h-px bg-[#F3F5F7] my-1" />
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/candidate-profiles/${item.id}?job_id=${jobId}`, {
-                                    state: {
-                                      shareOption: "full_profile",
-                                      resumeUrl: item.premium_data?.resume_url || item.resume_url || ""
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    await handleCopyCandidateEmail(item);
+                                    setMenuOpenId(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                >
+                                  Copy Mail ID
+                                </button>
+                                {isAscendionWorkspace && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      runAscendionDuplicateCheck(item.id);
+                                      setMenuOpenId(null);
+                                    }}
+                                    disabled={verifiedNonDuplicateIds.has(item.id) || ascendionCheckingIds.has(item.id) || confirmedDuplicateIds.has(item.id)}
+                                    className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
+                                    title={
+                                      verifiedNonDuplicateIds.has(item.id)
+                                        ? "Already verified as not duplicate"
+                                        : "Submit to Ascendion portal"
                                     }
-                                  });
-                                  setMenuOpenId(null);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
-                              >
-                                Share Profile
-                              </button>
-                            </div>
-                          )}
+                                  >
+                                    {ascendionCheckingIds.has(item.id) ? "Submiting..." : "Submit"}
+                                  </button>
+                                )}
+                                <div className="h-px bg-[#F3F5F7] my-1" />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/candidate-profiles/${item.id}?job_id=${jobId}`, {
+                                      state: {
+                                        shareOption: "full_profile",
+                                        resumeUrl: item.premium_data?.resume_url || item.resume_url || ""
+                                      }
+                                    });
+                                    setMenuOpenId(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"
+                                >
+                                  Share Profile
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                 );
-                 });
-                })()}
+                      </td>
+                    </tr>
+                  );
+                });
+              })()}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
         <div className="bg-white border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between">
-            <div className="text-[12px] text-[#8E8E93]">
-                Showing {Math.min((currentPage - 1) * pageSize + 1, totalCount)}–{Math.min(currentPage * pageSize, totalCount)} of {totalCount} candidates
-            </div>
-            <div className="flex items-center gap-1.5">
-               <button 
-                 disabled={currentPage === 1}
-                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                 className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50">
-                 <ArrowLeft className="w-4 h-4"/>
-               </button>
-               {getPageNumbers().map((p) => (
-                  <button 
-                    key={`page-${p}`} 
-                    onClick={() => setCurrentPage(p)}
-                    className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-medium ${p === currentPage ? 'border-[#0F47F2] text-white bg-[#0F47F2]' : 'border-[#E5E7EB] text-[#4B5563] bg-white hover:bg-gray-50'}`}>
-                      {p}
-                  </button>
-               ))}
-               <button 
-                 disabled={currentPage === totalPages || totalPages === 0}
-                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                 className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50">
-                 <ArrowRight className="w-4 h-4"/>
-               </button>
-            </div>
+          <div className="text-[12px] text-[#8E8E93]">
+            Showing {Math.min((currentPage - 1) * pageSize + 1, totalCount)}–{Math.min(currentPage * pageSize, totalCount)} of {totalCount} candidates
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50">
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            {getPageNumbers().map((p) => (
+              <button
+                key={`page-${p}`}
+                onClick={() => setCurrentPage(p)}
+                className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-medium ${p === currentPage ? 'border-[#0F47F2] text-white bg-[#0F47F2]' : 'border-[#E5E7EB] text-[#4B5563] bg-white hover:bg-gray-50'}`}>
+                {p}
+              </button>
+            ))}
+            <button
+              disabled={currentPage === totalPages || totalPages === 0}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50">
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
-      
+
       {showCandidateEditModal && candidateEditing && (
         <div
           className="fixed inset-0 z-[1002] flex items-center justify-center bg-black/25 backdrop-blur-sm"
