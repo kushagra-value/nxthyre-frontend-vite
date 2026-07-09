@@ -2313,7 +2313,7 @@ export default function JobPipelineDashboard({
                               }
                             >
                               {ascendionCheckingIds.has(cand.id)
-                                ? "Checking..."
+                                ? "Submiting..."
                                 : "Submit"}
                             </button>
                           )}
