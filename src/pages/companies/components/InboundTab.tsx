@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check, MoreHorizontal, Loader2, XCircle } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check, MoreHorizontal, Loader2, XCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
@@ -88,17 +88,27 @@ function buildFilterPayload(filters: PipelineFiltersState): Record<string, any> 
     "90 days": 90,
   };
   if (filters.noticePeriod.selected.length > 0) {
-    // Pick the max selected bucket so the backend returns candidates within that range
-    const maxDays = Math.max(
-      ...filters.noticePeriod.selected.map((s) => noticePeriodMap[s] ?? 0)
-    );
+    // Pass as array, comma-separated string, and individual min/max days/notice_period params for maximum robustness across endpoints
+    payload.notice_period = filters.noticePeriod.selected;
+    payload.notice_periods = filters.noticePeriod.selected;
+    payload.notice_period_str = filters.noticePeriod.selected.join(",");
+    
+    const daysValues = filters.noticePeriod.selected.map((s) => noticePeriodMap[s] ?? 0);
+    const minDays = Math.min(...daysValues);
+    const maxDays = Math.max(...daysValues);
+    
+    payload.notice_period_min_days = minDays;
     payload.notice_period_max_days = maxDays;
+    payload.min_notice_period = minDays;
+    payload.max_notice_period = maxDays;
   }
   if (filters.noticePeriod.maxDays) {
     payload.notice_period_max_days = Number(filters.noticePeriod.maxDays);
+    payload.max_notice_period = Number(filters.noticePeriod.maxDays);
   }
   if (filters.noticePeriod.minDays) {
     payload.notice_period_min_days = Number(filters.noticePeriod.minDays);
+    payload.min_notice_period = Number(filters.noticePeriod.minDays);
   }
 
   return payload;
@@ -397,6 +407,30 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
     setCurrentPage(1); // Reset to first page when filters change
   }, []);
 
+  const removeFilter = (key: keyof PipelineFiltersState, value: string | null = null) => {
+    setPipelineFilters((prev) => {
+      const updated = { ...prev };
+      if (key === 'location' && value) {
+        updated.location = updated.location.filter(v => v !== value);
+      } else if (key === 'designation' && value) {
+        updated.designation = updated.designation.filter(v => v !== value);
+      } else if (key === 'attention' && value) {
+        updated.attention = updated.attention.filter(v => v !== value);
+      } else if (key === 'salaryRange') {
+        updated.salaryRange = { min: "", max: "" };
+      } else if (key === 'experience') {
+        updated.experience = { min: "", max: "" };
+      } else if (key === 'noticePeriod') {
+        if (value && updated.noticePeriod.selected.includes(value)) {
+          updated.noticePeriod.selected = updated.noticePeriod.selected.filter(v => v !== value);
+        } else {
+          updated.noticePeriod = { selected: [], minDays: "", maxDays: "" };
+        }
+      }
+      return updated;
+    });
+  };
+
   const fetchInboundCandidates = async (page: number) => {
     try {
       setLoading(true);
@@ -517,7 +551,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
               <button
                 ref={filterButtonRef}
                 onClick={() => setShowFilterPanel(!showFilterPanel)}
-                className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 ${showFilterPanel ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]" : "bg-white text-[#8E8E93] border-[#E5E7EB] hover:bg-[#F3F5F7]"}`}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 ${showFilterPanel || activeFilterCount > 0 ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]" : "bg-white text-[#8E8E93] border-[#E5E7EB] hover:bg-[#F3F5F7]"}`}
               >
                 <SlidersHorizontal className="w-4 h-4" /> Filters
                 {activeFilterCount > 0 && (
@@ -560,6 +594,60 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
             </button>
           </div>
         </div>
+
+        {/* Active Filters Bar */}
+        {activeFilterCount > 0 && (
+          <div className="bg-white border-x border-[#E5E7EB] px-6 py-3 flex items-center gap-2 flex-wrap">
+            {pipelineFilters.location.map(loc => (
+              <span key={`loc-${loc}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {loc}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('location', loc)} />
+              </span>
+            ))}
+            {pipelineFilters.designation.map(desig => (
+              <span key={`desig-${desig}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {desig}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('designation', desig)} />
+              </span>
+            ))}
+            {pipelineFilters.attention.map(att => (
+              <span key={`att-${att}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {att}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('attention', att)} />
+              </span>
+            ))}
+            {(pipelineFilters.salaryRange.min || pipelineFilters.salaryRange.max) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                CTC: {pipelineFilters.salaryRange.min || 0} - {pipelineFilters.salaryRange.max || 'Any'} LPA
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('salaryRange')} />
+              </span>
+            )}
+            {(pipelineFilters.experience.min || pipelineFilters.experience.max) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                Exp: {pipelineFilters.experience.min || 0} - {pipelineFilters.experience.max || 'Any'} Yrs
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('experience')} />
+              </span>
+            )}
+            {pipelineFilters.noticePeriod.selected.map(np => (
+              <span key={`np-${np}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                {np}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod', np)} />
+              </span>
+            ))}
+            {(pipelineFilters.noticePeriod.minDays || pipelineFilters.noticePeriod.maxDays) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                Notice (Days): {pipelineFilters.noticePeriod.minDays || 0} - {pipelineFilters.noticePeriod.maxDays || 'Any'}
+                <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod')} />
+              </span>
+            )}
+            <button
+              onClick={() => { setPipelineFilters(EMPTY_PIPELINE_FILTERS); setCurrentPage(1); }}
+              className="text-xs font-semibold text-[#8E8E93] hover:text-[#4B5563] ml-2 underline decoration-dashed underline-offset-2"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
 
         {/* Table View */}
         <div className="bg-white border-x border-t border-[#E5E7EB] overflow-x-auto">
