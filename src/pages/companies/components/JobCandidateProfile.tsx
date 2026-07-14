@@ -127,6 +127,121 @@ export default function JobCandidateProfile({
   const aiScores = aiReport?.score || {};
   const aiSummary = aiReport?.feedbacks?.overallFeedback || "";
 
+  // ── Contact Editing State ──
+  const [localFullName, setLocalFullName] = useState("");
+  const [localEmail, setLocalEmail] = useState("");
+  const [localDob, setLocalDob] = useState("");
+  const [localPhone, setLocalPhone] = useState("");
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [isSavingContact, setIsSavingContact] = useState(false);
+  const [editContactData, setEditContactData] = useState({
+    name: "",
+    email: "",
+    dob: "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    const c = candidate?.candidate || {};
+    const pd = c.premium_data || {};
+    setLocalFullName(c.full_name || "");
+    setLocalEmail(pd.email || c.email || "");
+    setLocalDob(c.dob || "");
+    setLocalPhone(pd.phone || c.phone || "");
+  }, [candidate]);
+
+  const startEditingContact = () => {
+    setEditContactData({
+      name: localFullName,
+      email: localEmail,
+      dob: localDob,
+      phone: localPhone,
+    });
+    setIsEditingContact(true);
+  };
+
+  const handleSaveContact = async () => {
+    const { name, email, dob, phone } = editContactData;
+
+    if (!name || !name.trim()) {
+      showToast.error("Name is required");
+      return;
+    }
+    const nameRegex = /^[a-zA-Z\s]*$/;
+    if (!nameRegex.test(name)) {
+      showToast.error("Name can only contain letters and spaces");
+      return;
+    }
+
+    if (!email || !email.trim()) {
+      showToast.error("Email is required");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showToast.error("Please enter a valid email address");
+      return;
+    }
+
+    if (dob && dob.trim()) {
+      const dobDate = new Date(dob);
+      const today = new Date();
+      if (isNaN(dobDate.getTime())) {
+        showToast.error("Please enter a valid date of birth");
+        return;
+      }
+      if (dobDate > today) {
+        showToast.error("Date of birth cannot be in the future");
+        return;
+      }
+    }
+
+    if (phone && phone.trim()) {
+      const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
+      if (cleanPhone.length < 7 || cleanPhone.length > 15 || isNaN(Number(cleanPhone))) {
+        showToast.error("Please enter a valid phone number (7-15 digits)");
+        return;
+      }
+    }
+
+    setIsSavingContact(true);
+    const toastId = showToast.loading("Saving contact details...");
+    try {
+      const targetCandId = cand.id || candidate.candidate_id || candidate.id;
+      await candidateService.updateCandidateProfile(targetCandId, {
+        name: name.trim(),
+        email: email.trim(),
+        dob: (dob && dob.trim()) ? dob : null,
+        phone: phone || ''
+      });
+
+      setLocalFullName(name.trim());
+      setLocalEmail(email.trim());
+      setLocalDob(dob || '');
+      setLocalPhone(phone || '');
+
+      if (candidate?.candidate) {
+        candidate.candidate.full_name = name.trim();
+        candidate.candidate.dob = dob || '';
+        if (candidate.candidate.premium_data) {
+          candidate.candidate.premium_data.email = email.trim();
+          candidate.candidate.premium_data.phone = phone || '';
+        } else {
+          candidate.candidate.email = email.trim();
+          candidate.candidate.phone = phone || '';
+        }
+      }
+
+      showToast.success("Contact details updated successfully!");
+      setIsEditingContact(false);
+    } catch (error: any) {
+      showToast.error(error.message || "Failed to update contact details");
+    } finally {
+      setIsSavingContact(false);
+      showToast.dismiss(toastId);
+    }
+  };
+
   // States
   const [activeTab, setActiveTab] = useState<
     "info" | "activity" | "call" | "notes"
@@ -1678,13 +1793,32 @@ export default function JobCandidateProfile({
               <>
                 {/* ── Contact Info ── */}
                 <div className=" overflow-y-auto max-h-[500px] hide-scrollbar">
-                  <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
-                    CONTACT INFO
-                  </h4>
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] tracking-wider">
+                      CONTACT INFO
+                    </h4>
+                    {!isEditingContact && (
+                      <button
+                        onClick={startEditingContact}
+                        className="text-[10px] uppercase font-bold text-[#0F47F2] hover:underline"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
                   <div className="flex flex-col gap-4">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">Name</span>
-                      <span className="font-bold text-black">{fullName}</span>
+                      {isEditingContact ? (
+                        <input
+                          type="text"
+                          value={editContactData.name}
+                          onChange={(e) => setEditContactData(prev => ({ ...prev, name: e.target.value }))}
+                          className="px-2 py-1 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-[#0F47F2] focus:border-[#0F47F2] outline-none text-black font-semibold text-right w-2/3 bg-white"
+                        />
+                      ) : (
+                        <span className="font-bold text-black">{localFullName || "--"}</span>
+                      )}
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">
@@ -1696,55 +1830,81 @@ export default function JobCandidateProfile({
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">D.O.B</span>
-                      <span className="font-medium text-black">--</span>
+                      {isEditingContact ? (
+                        <input
+                          type="date"
+                          value={editContactData.dob}
+                          onChange={(e) => setEditContactData(prev => ({ ...prev, dob: e.target.value }))}
+                          className="px-2 py-0.5 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-[#0F47F2] focus:border-[#0F47F2] outline-none text-black font-medium text-right w-2/3 bg-white"
+                        />
+                      ) : (
+                        <span className="font-medium text-black">{localDob || "--"}</span>
+                      )}
                     </div>
                     <div className="flex justify-between items-center text-sm text-black">
                       <span className="text-[#AEAEB2] font-medium">Email</span>
+                      {isEditingContact ? (
+                        <input
+                          type="email"
+                          value={editContactData.email}
+                          onChange={(e) => setEditContactData(prev => ({ ...prev, email: e.target.value }))}
+                          className="px-2 py-1 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-[#0F47F2] focus:border-[#0F47F2] outline-none text-black font-medium text-right w-2/3 bg-white"
+                        />
+                      ) : (
+                        <div className="flex items-center gap-2 ml-4">
+                          <span
+                            className="truncate text-[#0F47F2] font-medium cursor-pointer"
+                            onClick={() =>
+                              localEmail &&
+                              window.open(`mailto:${localEmail}`)
+                            }
+                          >
+                            {localEmail || "--"}
+                          </span>
 
-                      <div className="flex items-center gap-2 ml-4">
-                        <span
-                          className="truncate text-[#0F47F2] font-medium cursor-pointer"
-                          onClick={() =>
-                            premiumData.email &&
-                            window.open(`mailto:${premiumData.email}`)
-                          }
-                        >
-                          {premiumData.email || "--"}
-                        </span>
-
-                        {premiumData.email && (
-                          <Copy
-                            size={16}
-                            className="cursor-pointer text-[#0F47F2]"
-                            onClick={() => handleCopy(premiumData.email)}
-                          />
-                        )}
-                      </div>
+                          {localEmail && (
+                            <Copy
+                              size={16}
+                              className="cursor-pointer text-[#0F47F2]"
+                              onClick={() => handleCopy(localEmail)}
+                            />
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">Phone</span>
-
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="text-[#0F47F2] font-medium cursor-pointer"
-                          onClick={() =>
-                            (premiumData.phone || cand.phone) &&
-                            window.open(`tel:${premiumData.phone || cand.phone}`)
-                          }
-                        >
-                          {premiumData.phone || cand.phone || "--"}
-                        </span>
-
-                        {(premiumData.phone || cand.phone) && (
-                          <Copy
-                            size={16}
-                            className="cursor-pointer text-[#0F47F2]"
+                      {isEditingContact ? (
+                        <input
+                          type="tel"
+                          value={editContactData.phone}
+                          onChange={(e) => setEditContactData(prev => ({ ...prev, phone: e.target.value }))}
+                          className="px-2 py-1 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-[#0F47F2] focus:border-[#0F47F2] outline-none text-black font-medium text-right w-2/3 bg-white"
+                          placeholder="Phone number"
+                        />
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="text-[#0F47F2] font-medium cursor-pointer"
                             onClick={() =>
-                              handleCopy(premiumData.phone || cand.phone || "")
+                              localPhone &&
+                              window.open(`tel:${localPhone}`)
                             }
-                          />
-                        )}
-                      </div>
+                          >
+                            {localPhone || "--"}
+                          </span>
+
+                          {localPhone && (
+                            <Copy
+                              size={16}
+                              className="cursor-pointer text-[#0F47F2]"
+                              onClick={() =>
+                                handleCopy(localPhone)
+                              }
+                            />
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">Links</span>
@@ -1882,6 +2042,27 @@ export default function JobCandidateProfile({
                           )}
                       </div>
                     </div>
+                    {isEditingContact && (
+                      <div className="flex justify-end gap-2 mt-2">
+                        <button
+                          onClick={handleSaveContact}
+                          disabled={isSavingContact}
+                          className="px-3 py-1.5 text-xs font-semibold bg-[#0F47F2] hover:bg-[#0F47F2]/90 text-white rounded-md transition-colors flex items-center gap-1 shadow-sm disabled:opacity-50"
+                        >
+                          {isSavingContact && (
+                            <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></span>
+                          )}
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setIsEditingContact(false)}
+                          disabled={isSavingContact}
+                          className="px-3 py-1.5 text-xs font-semibold border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 

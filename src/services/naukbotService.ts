@@ -62,6 +62,7 @@ export interface NaukbotCandidate {
   is_skipped: boolean;
   is_moved_to_pipeline: boolean;
   created_at: string;
+  source_tag?: string;
 }
 
 export interface NaukbotCandidatesResponse {
@@ -200,6 +201,19 @@ class NaukbotService {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to trigger Naukri Bot job");
+    }
+  }
+
+  async sourceByUrl(jobId: number, url: string, tag: string): Promise<any> {
+    try {
+      const response = await apiClient.post("/candidates/naukri-bot/source-by-url/", {
+        job_id: jobId,
+        url,
+        tag,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || error.response?.data?.error || "Failed to trigger sourcing by URL");
     }
   }
 }
