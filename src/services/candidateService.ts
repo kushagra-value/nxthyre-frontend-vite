@@ -951,6 +951,28 @@ class CandidateService {
     }
   }
 
+  async updateCandidateProfile(
+    candidateId: string,
+    data: {
+      name: string;
+      email: string;
+      dob: string | null;
+      phone: string;
+    },
+  ): Promise<any> {
+    try {
+      const response = await apiClient.patch(
+        `/candidates/${candidateId}/profile/`,
+        data,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || "Failed to update candidate profile",
+      );
+    }
+  }
+
   async bulkAddToPipeline(
     jobId: number,
     candidateIds: string[],

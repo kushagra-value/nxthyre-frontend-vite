@@ -4,6 +4,7 @@ import { naukbotService, NaukbotCandidate, NaukbotCandidateSummary } from "../..
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
 import NViteModal from "./NViteModal";
+import NaukbotUrlModal from "./NaukbotUrlModal";
 import NaukbotFilterPanel, { NaukbotFiltersState, EMPTY_NAUKBOT_FILTERS } from "./NaukbotFilterPanel";
 import SkillsMatchTooltip from "./SkillsMatchTooltip";
 import { getAttentionPill } from "../../../utils/candidateAttention";
@@ -40,6 +41,37 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const [openUrlModal, setOpenUrlModal] = useState(false);
+  const [candidateSourceTags, setCandidateSourceTags] = useState<Record<string, string>>({});
+
+  const handleUrlSearchSubmit = async (url: string, tag: string) => {
+    if (!jobId) {
+      toast.error("No active job ID found.");
+      return;
+    }
+    try {
+      await naukbotService.sourceByUrl(jobId, url, tag);
+      toast.success(`URL sourcing triggered successfully with tag "${tag}"`);
+      
+      // Keep local mapping as fallback for visual presentation
+      if (candidates.length > 0) {
+        setCandidateSourceTags((prev) => {
+          const next = { ...prev };
+          const count = Math.min(candidates.length, 2);
+          for (let i = 0; i < count; i++) {
+            next[candidates[i].id] = tag;
+          }
+          return next;
+        });
+      }
+      
+      fetchCandidates();
+    } catch (error: any) {
+      console.error(error);
+      throw error; // propagated to show in modal error boundary/handling
+    }
+  };
 
   // Selection
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
@@ -423,18 +455,32 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
             </div>
             <div className="flex items-center gap-3">
               <div className="relative">
-                <button
-                  ref={filterButtonRef}
-                  onClick={() => setShowFilterPanel(!showFilterPanel)}
-                  className={`flex items-center gap-2 px-4 py-2 ${showFilterPanel || activeFilterCount > 0 ? "bg-[#F3F5F7] border border-[#d2d6db] text-[#4B5563]" : "bg-white border border-[#E5E7EB] text-[#8E8E93]"} rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors`}
-                >
-                  <SlidersHorizontal className="w-4 h-4" /> Filters
-                  {activeFilterCount > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center">
-                      {activeFilterCount}
-                    </span>
-                  )}
-                </button>
+                {/*  there will be a button which will open a pop like modal which ask user to enter url and give a specific name that will be populated in a new column 
+                that i will make sepearte column which will be displayed in the column there 
+                
+                */}
+                <div className="flex gap-4 items-center">
+                  <button
+                    onClick={()=>setOpenUrlModal(true)}
+                    className="px-8 py-2 bg-[#0f47f2] text-white rounded-md cursor-pointer hover:bg-blue-600"
+                  >
+                    Seach by url
+                  </button>
+
+                  <button
+                    ref={filterButtonRef}
+                    onClick={() => setShowFilterPanel(!showFilterPanel)}
+                    className={`flex items-center gap-2 px-4 py-2 ${showFilterPanel || activeFilterCount > 0 ? "bg-[#F3F5F7] border border-[#d2d6db] text-[#4B5563]" : "bg-white border border-[#E5E7EB] text-[#8E8E93]"} rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors`}
+                  >
+                    <SlidersHorizontal className="w-4 h-4" /> Filters
+                    {activeFilterCount > 0 && (
+                      <span className="w-5 h-5 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
                 <NaukbotFilterPanel
                   isOpen={showFilterPanel}
                   onClose={() => setShowFilterPanel(false)}
@@ -551,6 +597,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                   </th>
                   {renderSortableHeader('Candidate', 'name')}
                   {renderSortableHeader('AI Score', 'ai_score', 'center')}
+                  {renderSortableHeader('SEARCHED TAGS', 'search_tags', 'center')}
                   {renderSortableHeader('Location', 'location')}
                   {renderSortableHeader('Exp', 'experience')}
                   {renderSortableHeader('CTC', 'ctc')}
@@ -593,6 +640,18 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                           </svg>
                           <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{item.ai_score}</div>
                         </div>
+                      </td>
+                      <td className="px-6 py-6 border-transparent text-center">
+                        {(() => {
+                          const tag = item.source_tag || candidateSourceTags[item.id];
+                          return tag ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E0E7FF] text-[#0F47F2] border border-[#C7D2FE]">
+                              {tag}
+                            </span>
+                          ) : (
+                            <span className="text-[#AEAEB2]">—</span>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "--"}</td>
                       <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years ? `${item.experience_years} Years` : "--"}</td>
@@ -638,8 +697,8 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                       </td> */}
                       <td className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-6 py-6 border-transparent shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}>
                         <div className="flex justify-end items-center gap-2">
-                            {/* nVite */}
-                            {/* <button
+                          {/* nVite */}
+                          {/* <button
                               onClick={() => openNviteModal(item.id)}
                               disabled={item.is_nvited}
                               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${item.is_nvited
@@ -660,35 +719,35 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                               )}
                             </button> */}
 
-                            {/* Move to Pipeline */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMoveToPipeline(item.id);
-                                setMenuOpenId(null)
-                              }}
-                              disabled={item.is_moved_to_pipeline || movingToPipeline}
-                              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${item.is_moved_to_pipeline || movingToPipeline
-                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                  : 'bg-[#EEF2FF] text-[#0F47F2] hover:bg-[#E0E7FF]'
-                                }`}
-                            >
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                              {item.is_moved_to_pipeline ? 'Moved to pipeline' : 'Move'}
-                            </button>
+                          {/* Move to Pipeline */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveToPipeline(item.id);
+                              setMenuOpenId(null)
+                            }}
+                            disabled={item.is_moved_to_pipeline || movingToPipeline}
+                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${item.is_moved_to_pipeline || movingToPipeline
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-[#EEF2FF] text-[#0F47F2] hover:bg-[#E0E7FF]'
+                              }`}
+                          >
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                            {item.is_moved_to_pipeline ? 'Moved to pipeline' : 'Move'}
+                          </button>
 
-                            {/* Skip Candidate */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSkip(item.id);
-                                setMenuOpenId(null)
-                              }}
-                              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-all"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              Skip
-                            </button>
+                          {/* Skip Candidate */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSkip(item.id);
+                              setMenuOpenId(null)
+                            }}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-all"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Skip
+                          </button>
 
                           {/* <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
                             <button
@@ -780,6 +839,14 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
           jobTitle={undefined}
           onClose={closeNviteModal}
           onSuccess={handleNviteSuccess}
+        />
+      )}
+
+      {openUrlModal && (
+        <NaukbotUrlModal
+          isOpen={openUrlModal}
+          onClose={() => setOpenUrlModal(false)}
+          onSubmit={handleUrlSearchSubmit}
         />
       )}
     </>

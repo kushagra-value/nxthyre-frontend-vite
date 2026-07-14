@@ -120,6 +120,14 @@ export default function JobPipeline({
       setCandidateList([]);
       setCurrentCandidateIndex(-1);
     }
+
+    return () => {
+      if (jobId) {
+        sessionStorage.removeItem(`_nxthyre_selected_candidate_${jobId}`);
+        sessionStorage.removeItem(`_nxthyre_candidate_list_${jobId}`);
+        sessionStorage.removeItem(`_nxthyre_candidate_index_${jobId}`);
+      }
+    };
   }, [jobId, fetchStages]);
 
   // Fetch full candidate details from the application endpoint or candidates endpoint
