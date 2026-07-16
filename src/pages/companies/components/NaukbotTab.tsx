@@ -154,13 +154,25 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
       if (botFilters.noticePeriod.minDays) params.min_notice_period = parseInt(botFilters.noticePeriod.minDays);
       if (botFilters.noticePeriod.maxDays) params.max_notice_period = parseInt(botFilters.noticePeriod.maxDays);
       if (botFilters.skills.length) params.skills = botFilters.skills.join(',');
+      if (botFilters.isUrlSourced) params.is_url_sourced = true;
 
       const res = await naukbotService.getNaukbotCandidates(params);
-      setCandidates(res.results);
-      setTotalPages(res.total_pages);
-      setTotalCount(res.count);
+      console.log("Naukbot candidates fetched:", res.results);
+
+      let displayCandidates = res.results;
+      if (botFilters.isUrlSourced) {
+        displayCandidates = displayCandidates.filter(item => {
+          const tag = item.source_tag || (item as any).search_tags?.[0] || (item as any).search_tags?.length || candidateSourceTags[item.id];
+          return !!tag;
+        });
+      }
+
+      setCandidates(displayCandidates);
+      setTotalPages(botFilters.isUrlSourced ? Math.ceil(displayCandidates.length / pageSize) || 1 : res.total_pages);
+      const count = botFilters.isUrlSourced ? displayCandidates.length : res.count;
+      setTotalCount(count);
       setSummary(res.summary);
-      onFilterCountChange?.(res.count);
+      onFilterCountChange?.(count);
     } catch (error: any) {
       if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') return;
       console.error(error);
@@ -204,6 +216,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
     if (botFilters.jobRole.length) count++;
     if (botFilters.noticePeriod.selected.length || botFilters.noticePeriod.minDays || botFilters.noticePeriod.maxDays) count++;
     if (botFilters.skills.length) count++;
+    if (botFilters.isUrlSourced) count++;
     return count;
   }, [botFilters]);
 
@@ -226,6 +239,8 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
         } else {
           updated.noticePeriod = { selected: [], minDays: "", maxDays: "" };
         }
+      } else if (key === 'isUrlSourced') {
+        updated.isUrlSourced = false;
       }
       return updated;
     });
@@ -572,6 +587,12 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                   <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod')} />
                 </span>
               )}
+              {botFilters.isUrlSourced && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E7EDFF] text-[#0F47F2] text-xs rounded-full font-medium">
+                  Sourced by URL
+                  <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('isUrlSourced')} />
+                </span>
+              )}
               <button
                 onClick={() => { setBotFilters(EMPTY_NAUKBOT_FILTERS); setPage(1); }}
                 className="text-xs font-semibold text-[#8E8E93] hover:text-[#4B5563] ml-2 underline decoration-dashed underline-offset-2"
@@ -643,11 +664,20 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                       </td>
                       <td className="px-6 py-6 border-transparent text-center">
                         {(() => {
-                          const tag = item.source_tag || candidateSourceTags[item.id];
-                          return tag ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E0E7FF] text-[#0F47F2] border border-[#C7D2FE]">
-                              {tag}
-                            </span>
+                          const tags = item.source_tag ? [item.source_tag] : ((item as any).search_tags || []);
+                          const localTag = candidateSourceTags[item.id];
+                          const allTags = [...tags];
+                          if (allTags.length === 0 && localTag) {
+                            allTags.push(localTag);
+                          }
+                          return allTags.length > 0 ? (
+                            <div className="flex flex-wrap gap-1 justify-center">
+                              {allTags.map((t: string) => (
+                                <span key={t} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E0E7FF] text-[#0F47F2] border border-[#C7D2FE]">
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
                           ) : (
                             <span className="text-[#AEAEB2]">—</span>
                           );
