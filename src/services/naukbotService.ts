@@ -100,6 +100,7 @@ export interface GetNaukbotCandidatesParams {
   tier?: string;
   show_skipped?: boolean;
   sourced_after?: string;
+  is_url_sourced?: boolean;
 }
 
 class NaukbotService {

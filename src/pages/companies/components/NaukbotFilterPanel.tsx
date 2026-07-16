@@ -17,6 +17,7 @@ export interface NaukbotFiltersState {
   jobRole: string[];
   noticePeriod: { selected: string[]; minDays: string; maxDays: string };
   skills: string[];
+  isUrlSourced: boolean;
 }
 
 export const EMPTY_NAUKBOT_FILTERS: NaukbotFiltersState = {
@@ -26,6 +27,7 @@ export const EMPTY_NAUKBOT_FILTERS: NaukbotFiltersState = {
   jobRole: [],
   noticePeriod: { selected: [], minDays: "", maxDays: "" },
   skills: [],
+  isUrlSourced: false,
 };
 
 interface NaukbotFilterPanelProps {
@@ -46,6 +48,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "jobRole", label: "Job Role" },
   { key: "noticePeriod", label: "Notice Period" },
   { key: "skills", label: "Skills" },
+  { key: "isUrlSourced", label: "Sourced by URL" },
 ];
 
 const NOTICE_PERIOD_OPTIONS = [
@@ -231,6 +234,7 @@ export default function NaukbotFilterPanel({
       if (filters.noticePeriod.minDays || filters.noticePeriod.maxDays) c += 1;
       return c;
     }
+    if (tab === "isUrlSourced") return filters.isUrlSourced ? 1 : 0;
     return 0;
   };
 
@@ -302,6 +306,47 @@ export default function NaukbotFilterPanel({
   };
 
   const renderContent = () => {
+    if (activeTab === "isUrlSourced") {
+      return (
+        <div className="flex-1 flex flex-col p-6 bg-white">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-base font-semibold text-[#0F47F2]">Sourced by URL</h3>
+          </div>
+          <div className="flex flex-col gap-4">
+            <label className="flex items-start gap-3 cursor-pointer group py-0.5">
+              <input
+                type="checkbox"
+                className="hidden"
+                checked={filters.isUrlSourced || false}
+                onChange={() => setFilters(prev => ({ ...prev, isUrlSourced: !prev.isUrlSourced }))}
+              />
+              <div
+                className={`w-[18px] h-[18px] rounded flex items-center justify-center transition-colors flex-shrink-0 mt-0.5 ${
+                  filters.isUrlSourced
+                    ? "bg-[#0F47F2] border-[#0F47F2]"
+                    : "bg-white border-gray-300 border group-hover:border-[#0F47F2]"
+                }`}
+              >
+                {filters.isUrlSourced && (
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+              <div className="flex flex-col">
+                <span className={`text-sm select-none ${filters.isUrlSourced ? "text-[#0F47F2] font-medium" : "text-gray-600"}`}>
+                  Show only candidates sourced from URLs
+                </span>
+                <span className="text-xs text-gray-400 mt-0.5 font-normal">
+                  Filter to candidates imported via a custom Naukri search/job URL.
+                </span>
+              </div>
+            </label>
+          </div>
+        </div>
+      );
+    }
+
     if (activeTab === "experience") {
       return (
         <div className="flex-1 flex flex-col p-6 bg-white">
