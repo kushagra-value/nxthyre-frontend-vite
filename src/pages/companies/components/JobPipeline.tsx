@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import JobPipelineDashboard, { Stage } from "./JobPipelineDashboard";
 import JobCandidateProfile from "./JobCandidateProfile";
+import IncompleteProfileModal from "./icompleted-profile-modal/IncompleteProfileModal";
 import apiClient from "../../../services/api";
 import { sortStages } from "../../../utils/stageUtils";
 
@@ -24,6 +25,7 @@ export default function JobPipeline({
     }
     return null;
   });
+  const [pendingProfileCandidate, setPendingProfileCandidate] = useState<any>(null);
   const [loadingCandidate, setLoadingCandidate] = useState(false);
   // Track candidate list for pagination
   const [candidateList, setCandidateList] = useState<any[]>(() => {
@@ -156,13 +158,33 @@ export default function JobPipeline({
             notice_period_summary: inboundCand.notice_period_days != null ? `${inboundCand.notice_period_days} Days` : undefined
           },
         };
-        setSelectedCandidate(enrichedData);
+        const c = enrichedData.candidate || {};
+        const pd = c.premium_data || {};
+        const email = pd.email || c.email || "";
+        const phone = pd.phone || c.phone || "";
+        const isEmailPlaceholder = email.includes("@placeholder.nxthyre") || email.startsWith("noemail-");
+        const isIncomplete = !email.trim() || isEmailPlaceholder || !phone.trim();
+        if (isIncomplete) {
+          setPendingProfileCandidate(enrichedData);
+        } else {
+          setSelectedCandidate(enrichedData);
+        }
       } else {
         // Normal pipeline flow
         const response = await apiClient.get(
           `/jobs/applications/${candidateItem.id}/`,
         );
-        setSelectedCandidate(response.data);
+        const c = response.data?.candidate || {};
+        const pd = c.premium_data || {};
+        const email = pd.email || c.email || "";
+        const phone = pd.phone || c.phone || "";
+        const isEmailPlaceholder = email.includes("@placeholder.nxthyre") || email.startsWith("noemail-");
+        const isIncomplete = !email.trim() || isEmailPlaceholder || !phone.trim();
+        if (isIncomplete) {
+          setPendingProfileCandidate(response.data);
+        } else {
+          setSelectedCandidate(response.data);
+        }
 
         // Log the candidate response from /candidates/Uuid API endpoint
         if (response.data?.candidate?.id) {
@@ -248,6 +270,16 @@ export default function JobPipeline({
           onSelectCandidate={handleSelectCandidate}
           externalStages={stages}
           onRefreshStages={() => jobId && fetchStages(jobId)}
+        />
+      )}
+      {pendingProfileCandidate && (
+        <IncompleteProfileModal
+          isOpen={true}
+          candidate={pendingProfileCandidate}
+          onClose={() => setPendingProfileCandidate(null)}
+          onSuccess={(updated) => {
+            setSelectedCandidate(updated);
+          }}
         />
       )}
     </div>

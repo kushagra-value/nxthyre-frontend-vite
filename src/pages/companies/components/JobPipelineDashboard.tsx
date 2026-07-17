@@ -64,6 +64,7 @@ import * as XLSX from "xlsx";
 import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } from "./PipelineFilterPanel";
 import DateRangeFilter from "./DateRangeFilter";
 import PipelineKanbanColumn from "./PipelineKanbanColumn";
+import IncompleteProfileModal from "./icompleted-profile-modal/IncompleteProfileModal";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import { getAttentionPill, formatTimeAgo, formatMovedDate } from "../../../utils/candidateAttention";
 import { EventForm } from "../../schedules/components/EventForm";
@@ -481,6 +482,8 @@ export default function JobPipelineDashboard({
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [totalCandidates, setTotalCandidates] = useState(0);
   const [callModalCandidate, setCallModalCandidate] = useState<CallCandidateData | null>(null);
+  const [pendingMoveCandidate, setPendingMoveCandidate] = useState<any>(null);
+  const [pendingMoveAction, setPendingMoveAction] = useState<any>(null);
 
 
   // ── Candidate Edit Modal State
@@ -1303,12 +1306,12 @@ export default function JobPipelineDashboard({
       page: 1,
       page_size: 1
     })
-    .then(res => {
-      setNaukbotFilteredCount(res.count);
-    })
-    .catch(err => {
-      console.error("Error fetching initial naukbot candidates count:", err);
-    });
+      .then(res => {
+        setNaukbotFilteredCount(res.count);
+      })
+      .catch(err => {
+        console.error("Error fetching initial naukbot candidates count:", err);
+      });
   }, [jobId]);
 
   // ── Sync Stages from Prop
@@ -1972,6 +1975,45 @@ export default function JobPipelineDashboard({
     targetStageId?: number;
     targetStageName?: string;
   }) => {
+    const getCandidateItemById = (id: number) => {
+      if (draggedCandidateItemRef.current && draggedCandidateItemRef.current.id === id) {
+        return draggedCandidateItemRef.current;
+      }
+      if (selectedCandidatesMap && selectedCandidatesMap[id]) {
+        return selectedCandidatesMap[id];
+      }
+      return candidates.find((c) => c.id === id) || archivedCandidates.find((c: any) => c.id === id);
+    };
+
+    const isEmailPlaceholder = (email?: string) => {
+      if (!email) return true;
+      const cleanEmail = email.trim();
+      return cleanEmail.endsWith("@placeholder.nxthyre") || cleanEmail.startsWith("noemail-");
+    };
+
+    const isProfileIncomplete = (item: any) => {
+      if (!item) return false;
+      const candObj = item.candidate || item || {};
+      const pdObj = candObj.premium_data || {};
+      const email = pdObj.email || candObj.email || "";
+      const phone = pdObj.phone || candObj.phone || "";
+
+      const isEmailMissing = !email.trim() || isEmailPlaceholder(email);
+      const isPhoneMissing = !phone.trim();
+
+      return isEmailMissing || isPhoneMissing;
+    };
+
+    const incompleteItem = action.applicationIds
+      .map(id => getCandidateItemById(id))
+      .find(item => isProfileIncomplete(item));
+
+    if (incompleteItem) {
+      setPendingMoveAction(action);
+      setPendingMoveCandidate(incompleteItem);
+      return;
+    }
+
     if (action.type === "move" && action.targetStageId) {
       const targetStage = stages.find(s => s.id === action.targetStageId);
       const interviewTypes = ["VIRTUAL_INTERVIEW", "FACE_TO_FACE_INTERVIEW", "EXTERNAL_PLATFORM_INTERVIEW"];
@@ -4183,6 +4225,37 @@ export default function JobPipelineDashboard({
         />
       )}
       {/* {activeTab === "nxthyre" && <NxthyreTab jobId={jobId} onSelectCandidate={onSelectCandidate} />} */}
+
+      {pendingMoveCandidate && (
+        <IncompleteProfileModal
+          isOpen={true}
+          candidate={pendingMoveCandidate}
+          onClose={() => {
+            setPendingMoveCandidate(null);
+            setPendingMoveAction(null);
+          }}
+          onSuccess={(updatedCandidate) => {
+            setCandidates((prev) =>
+              prev.map((c) => (c.id === updatedCandidate.id ? { ...c, ...updatedCandidate } : c))
+            );
+            setArchivedCandidates((prev) =>
+              prev.map((c) => (c.id === updatedCandidate.id ? { ...c, ...updatedCandidate } : c))
+            );
+            const currentSlug = (updatedCandidate.current_stage?.slug || updatedCandidate.stage_slug || "").toLowerCase();
+            if (currentSlug) {
+              triggerKanbanRefresh([currentSlug]);
+            }
+            const actionToResume = pendingMoveAction;
+            setPendingMoveCandidate(null);
+            setPendingMoveAction(null);
+            if (actionToResume) {
+              setTimeout(() => {
+                openFeedbackModal(actionToResume);
+              }, 100);
+            }
+          }}
+        />
+      )}
 
       {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal
