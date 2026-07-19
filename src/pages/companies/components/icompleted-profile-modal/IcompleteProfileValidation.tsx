@@ -13,6 +13,19 @@ export interface FormValues {
 export const isPlaceholderEmail = (email: string): boolean =>
     email.startsWith("noemail-") || email.endsWith("@placeholder.nxthyre");
 
+export const isProfileIncomplete = (item: any): boolean => {
+    if (!item) return false;
+    const candObj = item.candidate || item || {};
+    const pdObj = candObj.premium_data || {};
+    const email = pdObj.email || candObj.email || "";
+    const phone = pdObj.phone || candObj.phone || "";
+
+    const isEmailMissing = !email.trim() || isPlaceholderEmail(email);
+    const isPhoneMissing = !phone.trim();
+
+    return isEmailMissing || isPhoneMissing;
+};
+
 
 export const validateForm = ({ name, email, phone }: FormValues): string | null => {
     const trimmedName = name.trim();

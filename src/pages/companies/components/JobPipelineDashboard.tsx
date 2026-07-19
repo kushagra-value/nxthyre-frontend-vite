@@ -40,6 +40,7 @@ import {
   CheckCircle2,
   RotateCcw,
   Copy,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
@@ -65,6 +66,7 @@ import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } fro
 import DateRangeFilter from "./DateRangeFilter";
 import PipelineKanbanColumn from "./PipelineKanbanColumn";
 import IncompleteProfileModal from "./icompleted-profile-modal/IncompleteProfileModal";
+import { isPlaceholderEmail as isEmailPlaceholder, isProfileIncomplete } from "./icompleted-profile-modal/IcompleteProfileValidation";
 import CallCandidateModal, { CallCandidateData } from "./CallCandidateModal";
 import { getAttentionPill, formatTimeAgo, formatMovedDate } from "../../../utils/candidateAttention";
 import { EventForm } from "../../schedules/components/EventForm";
@@ -248,6 +250,7 @@ interface JobPipelineDashboardProps {
   workspaceId: number;
   workspaces: { id: number; name: string }[];
   onJobUpdated?: () => void;
+  isPendingCandidateModal?: boolean;
   onSelectCandidate?: (
     candidate: CandidateListItem,
     allCandidates?: CandidateListItem[],
@@ -279,6 +282,8 @@ const formatDate = (iso?: string): string => {
     year: "numeric",
   });
 };
+
+
 
 // Moved formatTimeAgo and getAttentionPill to src/utils/candidateAttention.ts
 
@@ -374,6 +379,7 @@ export default function JobPipelineDashboard({
   onSelectCandidate,
   externalStages,
   onRefreshStages,
+  isPendingCandidateModal,
 }: JobPipelineDashboardProps) {
   const navigate = useNavigate();
 
@@ -1985,25 +1991,6 @@ export default function JobPipelineDashboard({
       return candidates.find((c) => c.id === id) || archivedCandidates.find((c: any) => c.id === id);
     };
 
-    const isEmailPlaceholder = (email?: string) => {
-      if (!email) return true;
-      const cleanEmail = email.trim();
-      return cleanEmail.endsWith("@placeholder.nxthyre") || cleanEmail.startsWith("noemail-");
-    };
-
-    const isProfileIncomplete = (item: any) => {
-      if (!item) return false;
-      const candObj = item.candidate || item || {};
-      const pdObj = candObj.premium_data || {};
-      const email = pdObj.email || candObj.email || "";
-      const phone = pdObj.phone || candObj.phone || "";
-
-      const isEmailMissing = !email.trim() || isEmailPlaceholder(email);
-      const isPhoneMissing = !phone.trim();
-
-      return isEmailMissing || isPhoneMissing;
-    };
-
     const incompleteItem = action.applicationIds
       .map(id => getCandidateItemById(id))
       .find(item => isProfileIncomplete(item));
@@ -2281,6 +2268,11 @@ export default function JobPipelineDashboard({
                   >
                     {cand.full_name || "--"}
                   </h4>
+                  {isProfileIncomplete(item) && (
+                    <div title="Incomplete Profile" className="shrink-0 flex items-center">
+                      <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                    </div>
+                  )}
                   {isAscendionWorkspace &&
                     stageSlug === "uncontacted" &&
                     (verifiedNonDuplicateIds.has(cand.id) || cand.is_ascendion_duplicate === false) && !ascendionCheckingIds.has(cand.id) && (
@@ -3608,6 +3600,13 @@ export default function JobPipelineDashboard({
                                     <div className="font-medium text-[#4B5563] group-hover:underline group-hover:text-blue-600 transition truncate">
                                       {cand.full_name || "--"}
                                     </div>
+                                    {
+                                      isProfileIncomplete(item) && (
+                                        <div title="Incomplete Profile" className="shrink-0 flex items-center">
+                                          <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                                        </div>
+                                      )
+                                    }
                                     {showAscendionUncontacted && ascendionCheckingIds.has(cand.id) && (
                                       <div title="Checking for duplicates...">
                                         <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />

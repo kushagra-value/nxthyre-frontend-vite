@@ -269,6 +269,7 @@ export default function JobPipeline({
           onJobUpdated={onJobUpdated}
           onSelectCandidate={handleSelectCandidate}
           externalStages={stages}
+          isPendingCandidateModal={pendingProfileCandidate}
           onRefreshStages={() => jobId && fetchStages(jobId)}
         />
       )}
