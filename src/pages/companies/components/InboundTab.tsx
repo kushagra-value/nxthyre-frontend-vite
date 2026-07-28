@@ -462,33 +462,76 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
       if (!jobId) return;
       setAscendionCheckingIds((prev) => new Set(prev).add(candidateId));
       try {
-        const res = await apiClient.post("/candidates/ascendion/check-duplicate/", {
-          candidate_id: candidateId,
-          job_id: jobId,
-        });
+        let resData: any = null;
+        try {
+          const res = await apiClient.post("/candidates/ascendion/check-duplicate/", {
+            candidate_id: candidateId,
+            job_id: jobId,
+          });
+          resData = res?.data;
+        } catch (err: any) {
+          if (err?.response?.data) {
+            resData = err.response.data;
+          } else {
+            throw err;
+          }
+        }
 
-        const isDup = res.data?.is_duplicate;
-        if (isDup === true) {
-          showToast.error("Duplicate in Ascendion portal");
+        const isDup =
+          resData?.is_duplicate === true ||
+          resData?.payload?.is_duplicate === true ||
+          resData?.payload?.code === "AGENCY_DUPLICATE_PROFILE";
+
+        const isNonDup =
+          !isDup &&
+          (resData?.is_duplicate === false || resData?.payload?.is_duplicate === false);
+
+        if (isDup) {
+          showToast.error(resData?.payload?.message || resData?.detail || "Duplicate in Ascendion portal");
           setConfirmedDuplicateIds((prev) => {
             const next = new Set(prev);
             next.add(candidateId);
             return next;
           });
-        } else if (isDup === false) {
-          showToast.success("Not a duplicate in Ascendion portal");
+          setVerifiedNonDuplicateIds((prev) => {
+            const next = new Set(prev);
+            next.delete(candidateId);
+            return next;
+          });
+          setCandidates((prev) =>
+            prev.map((c) =>
+              String(c.id) === candidateId
+                ? { ...c, is_ascendion_duplicate: true }
+                : c
+            )
+          );
+        } else if (isNonDup) {
+          showToast.success(resData?.payload?.message || resData?.detail || "Not a duplicate in Ascendion portal");
           setVerifiedNonDuplicateIds((prev) => {
             const next = new Set(prev);
             next.add(candidateId);
             return next;
           });
+          setConfirmedDuplicateIds((prev) => {
+            const next = new Set(prev);
+            next.delete(candidateId);
+            return next;
+          });
+          setCandidates((prev) =>
+            prev.map((c) =>
+              String(c.id) === candidateId
+                ? { ...c, is_ascendion_duplicate: false }
+                : c
+            )
+          );
         } else {
-          showToast.info("Ascendion duplicate check completed");
+          showToast.info(resData?.payload?.message || resData?.detail || "Ascendion duplicate check completed");
         }
 
         fetchInboundCandidates(currentPage);
       } catch (err: any) {
         showToast.error(
+          err?.response?.data?.payload?.message ||
           err?.response?.data?.detail ||
           err?.message ||
           "Failed to check Ascendion duplicate",
@@ -501,7 +544,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
         });
       }
     },
-    [jobId, currentPage, fetchInboundCandidates],
+    [jobId, currentPage, fetchInboundCandidates, showToast],
   );
 
   const toggleSelection = (id: string) => {
@@ -692,9 +735,11 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                   const scoreColor = score >= 80 ? "#00C8B3" : score >= 60 ? "#F59E0B" : "#EA580C";
 
                   const isVerifiedNonDuplicate =
-                    verifiedNonDuplicateIds.has(item.id) || (item as any).is_ascendion_duplicate === false;
+                    verifiedNonDuplicateIds.has(item.id) ||
+                    ((item as any).is_ascendion_duplicate === false && !confirmedDuplicateIds.has(item.id));
                   const isConfirmedDuplicate =
-                    (confirmedDuplicateIds.has(item.id) || (item as any).is_ascendion_duplicate === true) && !isVerifiedNonDuplicate;
+                    confirmedDuplicateIds.has(item.id) ||
+                    ((item as any).is_ascendion_duplicate === true && !verifiedNonDuplicateIds.has(item.id));
 
                   return (
                     <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors cursor-pointer" onClick={() => onSelectCandidate && onSelectCandidate(inboundCandidatesMapped[index], inboundCandidatesMapped, index)}>
@@ -888,11 +933,15 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                                       runAscendionDuplicateCheck(item.id);
                                       setMenuOpenId(null);
                                     }}
-                                    disabled={verifiedNonDuplicateIds.has(item.id) || ascendionCheckingIds.has(item.id) || confirmedDuplicateIds.has(item.id)}
+                                    disabled={
+                                      ascendionCheckingIds.has(item.id) ||
+                                      confirmedDuplicateIds.has(item.id) ||
+                                      ((item as any).is_ascendion_duplicate === true && !verifiedNonDuplicateIds.has(item.id))
+                                    }
                                     className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
                                     title={
-                                      verifiedNonDuplicateIds.has(item.id)
-                                        ? "Already verified as not duplicate"
+                                      confirmedDuplicateIds.has(item.id) || ((item as any).is_ascendion_duplicate === true && !verifiedNonDuplicateIds.has(item.id))
+                                        ? "Duplicate found in Ascendion portal"
                                         : "Submit to Ascendion portal"
                                     }
                                   >
