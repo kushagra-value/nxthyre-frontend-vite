@@ -31,7 +31,8 @@ import {
   CheckCircle2,
   XCircle,
   FastForward,
-  Copy
+  Copy,
+  Loader2
 } from "lucide-react";
 import candidateService, { Note } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
@@ -269,7 +270,7 @@ export default function JobCandidateProfile({
   const [showStageMenu, setShowStageMenu] = useState(false);
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
   const [pendingEventAction, setPendingEventAction] = useState<any>(null);
-
+  const [isSubmittingFeedback,setIsSubmittingFeedback] = useState(false);
   // ── Match Description Editing State ──
   const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
   const [editedMatchDesc, setEditedMatchDesc] = useState("");
@@ -317,9 +318,11 @@ export default function JobCandidateProfile({
       showToast.error("Please enter a comment");
       return;
     }
+    if (isSubmittingFeedback) return;
 
     const { type, applicationIds, targetStageId, targetStageName } =
       pendingAction;
+    setIsSubmittingFeedback(true);
 
     try {
       if (type === "archive") {
@@ -371,6 +374,8 @@ export default function JobCandidateProfile({
     } catch (error: any) {
       console.error("Action error:", error);
       showToast.error(`Failed to ${type} candidate`);
+    } finally {
+      setIsSubmittingFeedback(false);
     }
   };
 
@@ -2799,22 +2804,31 @@ export default function JobCandidateProfile({
                 </button>
                 <button
                   onClick={handleFeedbackSubmit}
-                  disabled={!feedbackComment.trim()}
+                  disabled={!feedbackComment.trim() || isSubmittingFeedback}
                   className={`flex items-center gap-2 px-5 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm
-                  ${!feedbackComment.trim()
+                  ${(!feedbackComment.trim() || isSubmittingFeedback)
                       ? "bg-gray-300 cursor-not-allowed"
                       : pendingAction.type === "archive"
                         ? "bg-red-600 hover:bg-red-700 hover:shadow-md"
                         : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
                     }`}
                 >
-                  {pendingAction.type === "archive" ? (
-                    <Archive className="w-4 h-4" />
+                  {isSubmittingFeedback ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Moving...
+                    </>
                   ) : (
-                    <Check className="w-4 h-4" />
+                    <>
+                      {pendingAction.type === "archive" ? (
+                        <Archive className="w-4 h-4" />
+                      ) : (
+                        <Check className="w-4 h-4" />
+                      )}
+                      Confirm{" "}
+                      {pendingAction.type === "archive" ? "Archive" : "Move"}
+                    </>
                   )}
-                  Confirm{" "}
-                  {pendingAction.type === "archive" ? "Archive" : "Action"}
                 </button>
               </div>
             </div>
