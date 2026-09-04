@@ -176,6 +176,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
         location,
         noticePeriod,
         resumeUrl: candidate?.premium_data?.resume_url || candidate?.resume_url || undefined,
+        matchScore: candidateMatchScore?.score || (matchPercentage ? `${matchPercentage}%` : null),
       }
     : null;
 
