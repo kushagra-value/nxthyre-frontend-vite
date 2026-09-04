@@ -957,6 +957,7 @@ export default function JobCandidateProfile({
                           noticePeriod: cand.notice_period_days != null ? `${cand.notice_period_days} Days` : "--",
                           location: cand.location || "--",
                           resumeUrl: premiumData.resume_url || cand.resume_url || "",
+                          matchScore: matchScore?.score || cand.job_score?.candidate_match_score?.score || null,
                         };
                         const candidateIds = candidateList?.map(c => c?.candidate?.id || c?.id).filter(Boolean) || [];
                         sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({

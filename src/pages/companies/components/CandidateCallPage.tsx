@@ -123,6 +123,46 @@ interface CandidateCallParams {
   phone?: string;
   callAttention?: string[];
   resumeUrl?: string;
+  matchScore?: string | number | null;
+}
+
+function ScoreCircleBadge({ scoreVal }: { scoreVal?: string | number | null }) {
+  let scoreNum = 0;
+  if (scoreVal != null && scoreVal !== "" && scoreVal !== "--" && scoreVal !== "--%") {
+    const parsed = parseInt(String(scoreVal).replace("%", ""), 10);
+    if (!isNaN(parsed)) scoreNum = parsed;
+  }
+
+  const displayText =
+    scoreVal == null || scoreVal === "" || scoreVal === "--" || scoreVal === "--%"
+      ? "--%"
+      : String(scoreVal).trim().endsWith("%")
+      ? String(scoreVal).trim()
+      : `${scoreVal}%`;
+
+  return (
+    <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+      <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+        <path
+          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          fill="none"
+          stroke="#E5E7EB"
+          strokeWidth="3"
+        />
+        <path
+          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          fill="none"
+          stroke="#00C8B3"
+          strokeWidth="3"
+          strokeDasharray={`${scoreNum}, 100`}
+          strokeLinecap="round"
+        />
+      </svg>
+      <span className="absolute text-[#00C8B3] font-black text-[10px]">
+        {displayText}
+      </span>
+    </div>
+  );
 }
 
 const DUMMY_FALLBACK: CandidateCallParams = {
@@ -136,6 +176,7 @@ const DUMMY_FALLBACK: CandidateCallParams = {
   location: "--",
   experience: "0 yrs",
   resumeUrl: "",
+  matchScore: null,
 };
 
 export default function CandidateCallPage() {
@@ -163,7 +204,16 @@ export default function CandidateCallPage() {
 
   const incomingCandidate = location.state?.candidate || sessionData?.candidate || null;
   const [candidate, setCandidate] = useState<CandidateCallParams | null>(
-    incomingCandidate,
+    incomingCandidate
+      ? {
+          ...incomingCandidate,
+          matchScore:
+            incomingCandidate.matchScore ??
+            incomingCandidate.score ??
+            incomingCandidate.job_score?.candidate_match_score?.score ??
+            null,
+        }
+      : null,
   );
 
   // Initialize call state from session if available
@@ -344,8 +394,23 @@ export default function CandidateCallPage() {
     if (!candidateId) return;
     (async () => {
       try {
-        const details = await candidateService.getCandidateDetails(candidateId);
-        const c = details?.candidate;
+        let detailsData: any = null;
+        if (jobId && jobId !== "0") {
+          try {
+            detailsData = await candidateService.getCandidateInboundScore(candidateId, jobId);
+          } catch (err) {
+            console.error("Failed to fetch candidate inbound score:", err);
+          }
+        }
+        if (!detailsData) {
+          detailsData = await candidateService.getCandidateDetails(candidateId);
+        }
+
+        const c = detailsData?.candidate || detailsData;
+        const jobScore = c?.job_score || detailsData?.job_score;
+        const fetchedMatchScore =
+          jobScore?.candidate_match_score?.score ?? c?.matchScore ?? c?.score ?? null;
+
         if (c) {
           setCandidate((prev) => {
             const base = prev || DUMMY_FALLBACK;
@@ -372,6 +437,7 @@ export default function CandidateCallPage() {
                 : base.experience,
               phone: c.phone || c.premium_data?.phone || base.phone,
               resumeUrl: c.premium_data?.resume_url || c.resume_url || base.resumeUrl,
+              matchScore: fetchedMatchScore ?? base.matchScore ?? null,
             };
           });
         }
@@ -379,7 +445,7 @@ export default function CandidateCallPage() {
         console.error("Failed to re-fetch candidate details:", err);
       }
     })();
-  }, [candidateId]);
+  }, [candidateId, jobId]);
 
   useEffect(() => {
     if (candidate?.id && jobId) {
@@ -1771,11 +1837,7 @@ export default function CandidateCallPage() {
                           <h4 className="text-blue-700 font-bold text-lg">
                             {candidate.name}
                           </h4>
-                          <div className="w-10 h-10 rounded-full border-[3px] border-[#00C8B3] flex items-center justify-center relative">
-                            <span className="text-[#00C8B3] font-black text-[10px]">
-                              84%
-                            </span>
-                          </div>
+                          <ScoreCircleBadge scoreVal={candidate?.matchScore} />
                         </div>
                         <p className="text-slate-400 text-xs font-semibold mb-6">
                           {candidate.headline}
@@ -1850,9 +1912,7 @@ export default function CandidateCallPage() {
             <div className="p-5 border-b border-slate-100">
               <div className="flex items-center justify-between mb-1">
                 <h4 className="text-slate-800 font-bold text-sm">{candidate.name}</h4>
-                <div className="w-10 h-10 rounded-full border-[3px] border-[#00C8B3] flex items-center justify-center">
-                  <span className="text-[#00C8B3] font-black text-[10px]">84%</span>
-                </div>
+                <ScoreCircleBadge scoreVal={candidate?.matchScore} />
               </div>
               <p className="text-slate-400 text-xs">{candidate.headline}</p>
             </div>

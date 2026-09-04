@@ -892,6 +892,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                                       noticePeriod: item.notice_period_summary || "--",
                                       location: item.location || "--",
                                       resumeUrl: item.premium_data?.resume_url || item.resume_url || "",
+                                      matchScore: item.job_score?.candidate_match_score?.score || null,
                                     };
                                     const candidateIds = candidates.map(c => c.id);
                                     sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({

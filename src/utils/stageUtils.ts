@@ -19,8 +19,6 @@ export const isPostInterview = (name: string, slug: string): boolean => {
          s.includes("offer") || s.includes("hired") || s.includes("joined") || s.includes("select");
 };
 
-
-
 export const isHRStage = (name: string, slug: string): boolean => {
   const n = (name || "").toLowerCase();
   const s = (slug || "").toLowerCase();
@@ -36,25 +34,39 @@ export const isHRStage = (name: string, slug: string): boolean => {
   );
 };
 
-export const isClientRound=(name:string,slug:string)=>{
-    const n = (name || "").toLowerCase();
-    const s = (slug || "").toLowerCase();
-    return (
-        /\bclient\b/i.test(n) ||
-        n.includes("client round") ||
-        /\bclient\b/i.test(s) ||
-        s.includes("client-round")
-    );
-}
+export const isClientRound = (name: string, slug: string) => {
+  const n = (name || "").toLowerCase();
+  const s = (slug || "").toLowerCase();
+  return (
+    /\bclient\b/i.test(n) ||
+    n.includes("client round") ||
+    /\bclient\b/i.test(s) ||
+    s.includes("client-round")
+  );
+};
+
+export const isManagerialStage = (name: string, slug: string): boolean => {
+  const n = (name || "").toLowerCase();
+  const s = (slug || "").toLowerCase();
+  return (
+    n.includes("managerial") ||
+    n.includes("manager") ||
+    s.includes("managerial") ||
+    s.includes("manager")
+  );
+};
 
 export const getStageGroup = (name: string, slug: string): number => {
   if (isPostInterview(name, slug)) {
+    return 6;
+  }
+  if (isClientRound(name, slug)) {
     return 5;
   }
-  if(isClientRound(name,slug)){
+  if (isHRStage(name, slug)) {
     return 4;
   }
-  if (isHRStage(name, slug)) {
+  if (isManagerialStage(name, slug)) {
     return 3;
   }
   if (getLNumber(name) !== null) {
@@ -109,13 +121,16 @@ export const sortStages = <T extends SortableStage>(stagesList: T[]): T[] => {
     if (groupA !== groupB) {
       return groupA - groupB;
     }
-    if (a.sort_order !== b.sort_order) {
+    if (a.sort_order !== undefined && b.sort_order !== undefined && a.sort_order !== b.sort_order) {
       return a.sort_order - b.sort_order;
     }
     const lA = getLNumber(a.name);
     const lB = getLNumber(b.name);
     if (lA !== null && lB !== null) {
       return lA - lB;
+    }
+    if (a.id !== undefined && b.id !== undefined && a.id !== b.id) {
+      return Number(a.id) - Number(b.id);
     }
     return a.name.localeCompare(b.name);
   });

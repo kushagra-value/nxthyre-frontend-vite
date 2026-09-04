@@ -131,6 +131,7 @@ const NewMatchCandidateModal: React.FC<NewMatchCandidateModalProps> = ({
         location,
         noticePeriod,
         resumeUrl: candidate?.premium_data?.resume_url || candidate?.resume_url || undefined,
+        matchScore: candidateMatchScore?.score || (matchPercentage ? `${matchPercentage}%` : null),
     } : null;
 
     // SVG arc for the match percentage ring
