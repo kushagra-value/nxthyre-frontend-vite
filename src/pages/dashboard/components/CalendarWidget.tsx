@@ -175,6 +175,7 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
           const calls = items.filter((i: any) => i.type?.toLowerCase().includes('call')).length;
           const followUps = items.filter((i: any) => i.type?.toLowerCase().includes('follow')).length;
           const shortlisted = items.filter((i: any) => i.type?.toLowerCase().includes('shortlist')).length;
+          const hired = items.filter((i: any) => i.type?.toLowerCase().includes('hire')).length;
 
           setHoverDetails((prev) => ({
             ...prev,
@@ -184,7 +185,7 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
                 calls,
                 follow_ups: followUps,
                 shortlisted,
-                hired: 0,
+                hired,
               },
               totalEvents: total,
               loading: false,
@@ -451,10 +452,6 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
                     ) : (
                       <>
                         <div className="flex items-center justify-between gap-4">
-                          <span className="text-xs text-[#4B5563]">Interviews</span>
-                          <span className="text-xs font-medium text-black">{breakdown.interviews}</span>
-                        </div>
-                        <div className="flex items-center justify-between gap-4">
                           <span className="text-xs text-[#4B5563]">Calls Made</span>
                           <span className="text-xs font-medium text-black">{breakdown.calls}</span>
                         </div>
@@ -465,6 +462,10 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
                         <div className="flex items-center justify-between gap-4">
                           <span className="text-xs text-[#4B5563]">Shortlisted</span>
                           <span className="text-xs font-medium text-black">{breakdown.shortlisted}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-xs text-[#4B5563]">Hired</span>
+                          <span className="text-xs font-medium text-black">{breakdown.hired}</span>
                         </div>
                         <div className="flex items-center justify-between gap-4 border-t border-[#F3F5F7] pt-2 mt-1">
                           <span className="text-xs font-semibold text-black">Total Events</span>
