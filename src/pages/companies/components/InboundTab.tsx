@@ -979,7 +979,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
         </div>
 
         {/* Pagination */}
-        <div className="bg-white border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between">
+        <div className="bg-white border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between mb-10">
           <div className="text-[12px] text-[#8E8E93]">
             Showing {Math.min((currentPage - 1) * pageSize + 1, totalCount)}–{Math.min(currentPage * pageSize, totalCount)} of {totalCount} candidates
           </div>

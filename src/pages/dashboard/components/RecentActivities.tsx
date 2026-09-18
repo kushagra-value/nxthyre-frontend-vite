@@ -3,6 +3,7 @@ import type { ActivitySection } from "../../../services/dashboardService";
 import DailyActivitiesModal from "./DailyActivitiesModal";
 
 import dashboardService from "../../../services/dashboardService";
+import { formatActivityTime } from "../../../utils/activityTimeUtils";
 
 const CalendarIcon = (
   <svg
@@ -389,7 +390,7 @@ const RecentActivities = () => {
                           {item.text}
                         </p>
                         <span className="text-xs text-gray-400 mt-1 block font-inter uppercase tracking-wide">
-                          {item.time}
+                          {formatActivityTime(item)}
                         </span>
                       </div>
                     </div>

@@ -2564,7 +2564,7 @@ export default function JobPipelineDashboard({
   const sc = statusColor(jobDetails?.status);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#F3F5F7] min-h-screen pb-12">
+    <div className="flex-1 overflow-y-auto bg-[#F3F5F7] min-h-screen pb-24">
       {/* ═══════════════════════════════════════════════════════
           Title Bar — Job Title, Status, JD-ID, View JD, Edit, + Candidate
          ═══════════════════════════════════════════════════════ */}
@@ -3272,7 +3272,7 @@ export default function JobPipelineDashboard({
           Content View (Table or Kanban)
          ═══════════════════════════════════════════════════════ */}
           {isKanbanView ? (
-            <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch">
+            <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch mb-10">
               {stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).map((stage) => {
                 return (
                   <div key={stage.id} className="relative h-full">
@@ -3404,7 +3404,7 @@ export default function JobPipelineDashboard({
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto overflow-y-visible mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl">
+            <div className="overflow-x-auto overflow-y-visible mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl mb-10">
               <table className="w-full min-w-[1480px] table-fixed text-left border-collapse">
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
@@ -4211,7 +4211,7 @@ export default function JobPipelineDashboard({
               </table>
 
               {/* Pagination */}
-              <div className="px-8 py-5 border-t border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB]">
+              <div className="px-8 py-5 border-t border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB] rounded-b-2xl">
                 <div className="text-xs text-[#6B7280]">
                   Showing {candidates.length > 0 ? startIndex + 1 : 0}–
                   {Math.min(startIndex + pageSize, totalCandidates)} of{" "}

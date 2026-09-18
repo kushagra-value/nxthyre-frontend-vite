@@ -5,6 +5,7 @@ import type {
   DailyActivityDetailItem,
   DailyActivityGroupedItem,
 } from '../../../services/dashboardService';
+import { formatActivityTime } from '../../../utils/activityTimeUtils';
 
 interface DailyActivitiesModalProps {
   isOpen: boolean;
@@ -220,7 +221,7 @@ function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number 
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mb-1">{item.time}</p>
+          <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mb-1">{formatActivityTime(item)}</p>
           <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
           {item.candidate_number && (
             <a href={`tel:${item.candidate_number}`} className="m-0 text-xs text-[#0F47F2] leading-[16px] mt-0.5 block no-underline hover:underline">
