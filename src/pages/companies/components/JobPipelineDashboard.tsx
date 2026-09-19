@@ -579,37 +579,7 @@ export default function JobPipelineDashboard({
   const [isDateRangeFilterApplied, setIsDateRangeFilterApplied] = useState<boolean>(false);
   const [dateRange, setDateRange] = useState<{ from: string, to: string }>({ from: "", to: "" });
 
-  // ── Recruiter Filter
-  const [selectedRecruiter, setSelectedRecruiter] = useState<string | null>(() => {
-    if (jobId) {
-      return sessionStorage.getItem(`_nxthyre_selected_recruiter_${jobId}`);
-    }
-    return null;
-  });
-  const [isRecruiterDropdownOpen, setIsRecruiterDropdownOpen] = useState(false);
-  const [recruiterSearchQuery, setRecruiterSearchQuery] = useState("");
-  const recruiterDropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (jobId) {
-      if (selectedRecruiter) {
-        sessionStorage.setItem(`_nxthyre_selected_recruiter_${jobId}`, selectedRecruiter);
-      } else {
-        sessionStorage.removeItem(`_nxthyre_selected_recruiter_${jobId}`);
-      }
-    }
-  }, [selectedRecruiter, jobId]);
-
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (recruiterDropdownRef.current && !recruiterDropdownRef.current.contains(e.target as Node)) {
-        setIsRecruiterDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
-
+  // ── Recruiter Helpers
   const formatRecruiterName = (name: string) => {
     if (!name) return "";
     if (name.includes("@")) {
@@ -646,40 +616,129 @@ export default function JobPipelineDashboard({
     return null;
   };
 
-  const matchesRecruiter = (item: any, selected: string | null) => {
-    if (!selected) return true;
-    const initialRec = getInitialRecruiter(item);
-    return initialRec === selected;
-  };
+  // ── Recruiter Filter
+  const [recruiterData, setRecruiterData] = useState<{
+    recruiters: { id: string; name: string; email: string; count: number }[];
+    system_count: number;
+  }>({ recruiters: [], system_count: 0 });
 
-  const availableRecruiters = useMemo(() => {
-    const recruiters = new Set<string>();
-    const scanItem = (item: any) => {
-      const rec = getInitialRecruiter(item);
-      if (rec && rec !== "System" && rec !== "External Upload") {
-        recruiters.add(rec);
+  const [selectedRecruiter, setSelectedRecruiter] = useState<string | null>(() => {
+    if (jobId) {
+      return sessionStorage.getItem(`_nxthyre_selected_recruiter_${jobId}`);
+    }
+    return null;
+  });
+  const [isRecruiterDropdownOpen, setIsRecruiterDropdownOpen] = useState(false);
+  const [recruiterSearchQuery, setRecruiterSearchQuery] = useState("");
+  const recruiterDropdownRef = useRef<HTMLDivElement>(null);
+
+  const loadRecruiterOptions = useCallback(async (jId: number) => {
+    try {
+      const res = await apiClient.get(`/jobs/applications/recruiter-list/?job_id=${jId}`);
+      if (res.status === 200 && res.data) {
+        setRecruiterData({
+          recruiters: Array.isArray(res.data.recruiters) ? res.data.recruiters : [],
+          system_count: typeof res.data.system_count === "number" ? res.data.system_count : 0,
+        });
+      } else {
+        setRecruiterData({ recruiters: [], system_count: 0 });
+      }
+    } catch (error) {
+      console.error("Error fetching recruiter list:", error);
+      setRecruiterData({ recruiters: [], system_count: 0 });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (jobId != null) {
+      setSelectedRecruiter(null);
+      if (sessionStorage.getItem(`_nxthyre_selected_recruiter_${jobId}`)) {
+        sessionStorage.removeItem(`_nxthyre_selected_recruiter_${jobId}`);
+      }
+      loadRecruiterOptions(jobId);
+    }
+  }, [jobId, loadRecruiterOptions]);
+
+  useEffect(() => {
+    if (jobId) {
+      if (selectedRecruiter) {
+        sessionStorage.setItem(`_nxthyre_selected_recruiter_${jobId}`, selectedRecruiter);
+      } else {
+        sessionStorage.removeItem(`_nxthyre_selected_recruiter_${jobId}`);
+      }
+    }
+  }, [selectedRecruiter, jobId]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (recruiterDropdownRef.current && !recruiterDropdownRef.current.contains(e.target as Node)) {
+        setIsRecruiterDropdownOpen(false);
       }
     };
-    candidates.forEach(scanItem);
-    archivedCandidates.forEach(scanItem);
-    return Array.from(recruiters).sort();
-  }, [candidates, archivedCandidates]);
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const recruiterOptions = useMemo(() => {
+    const list: { value: string | null; label: string; name: string; count?: number }[] = [
+      { value: null, label: "All recruiters", name: "All recruiters" },
+    ];
+
+    recruiterData.recruiters.forEach((r) => {
+      const displayName = r.name?.trim() || r.email?.trim() || "Unknown Recruiter";
+      list.push({
+        value: r.id,
+        label: `${displayName} (${r.count})`,
+        name: displayName,
+        count: r.count,
+      });
+    });
+
+    if (recruiterData.system_count > 0) {
+      list.push({
+        value: "system",
+        label: `System / Autopilot (${recruiterData.system_count})`,
+        name: "System / Autopilot",
+        count: recruiterData.system_count,
+      });
+    }
+
+    return list;
+  }, [recruiterData]);
+
+  const showRecruiterDropdown = useMemo(() => {
+    return recruiterData.recruiters.length + (recruiterData.system_count > 0 ? 1 : 0) > 0;
+  }, [recruiterData]);
 
   const filteredRecruiterOptions = useMemo(() => {
-    return availableRecruiters.filter((rec) =>
-      formatRecruiterName(rec).toLowerCase().includes(recruiterSearchQuery.toLowerCase())
+    if (!recruiterSearchQuery.trim()) return recruiterOptions;
+    const q = recruiterSearchQuery.toLowerCase();
+    return recruiterOptions.filter(
+      (opt) => opt.label.toLowerCase().includes(q) || opt.name.toLowerCase().includes(q)
     );
-  }, [availableRecruiters, recruiterSearchQuery]);
+  }, [recruiterOptions, recruiterSearchQuery]);
+
+  const handleSelectRecruiter = (val: string | null) => {
+    setSelectedRecruiter(val);
+    setCurrentPage(1);
+    setIsRecruiterDropdownOpen(false);
+    setRecruiterSearchQuery("");
+  };
 
   const renderRecruiterSelect = () => {
+    if (!showRecruiterDropdown) return null;
+
+    const currentOpt = recruiterOptions.find((o) => o.value === selectedRecruiter);
+    const buttonLabel = currentOpt ? currentOpt.label : "All recruiters";
+
     return (
       <div className="relative shrink-0" ref={recruiterDropdownRef}>
         <button
           onClick={() => setIsRecruiterDropdownOpen(!isRecruiterDropdownOpen)}
           className="flex items-center gap-2 px-3 h-9 bg-white border border-[#E5E7EB] rounded-lg text-sm text-[#4B5563] hover:bg-[#F3F5F7] transition-colors"
         >
-          <span className="truncate max-w-[150px]">
-            {selectedRecruiter ? formatRecruiterName(selectedRecruiter) : "All Recruiters"}
+          <span className="truncate max-w-[170px]">
+            {buttonLabel}
           </span>
           <svg
             className={`w-4 h-4 text-[#8E8E93] transition-transform ${isRecruiterDropdownOpen ? "rotate-180" : ""}`}
@@ -704,30 +763,30 @@ export default function JobPipelineDashboard({
                 className="w-full h-8 pl-8 pr-2.5 rounded-lg text-xs text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 border border-[#E5E7EB]"
               />
             </div>
-            <div className="max-h-48 overflow-y-auto custom-scrollbar flex flex-col">
-              <div
-                onClick={() => {
-                  setSelectedRecruiter(null);
-                  setIsRecruiterDropdownOpen(false);
-                  setRecruiterSearchQuery("");
-                }}
-                className={`p-2 rounded-lg cursor-pointer text-xs transition-colors hover:bg-gray-100 ${!selectedRecruiter ? "bg-[#E7EDFF] text-[#0F47F2] font-semibold" : "text-[#4B5563]"}`}
-              >
-                All Recruiters
-              </div>
-              {filteredRecruiterOptions.map((rec) => (
+            <div className="max-h-56 overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+              {filteredRecruiterOptions.map((opt) => (
                 <div
-                  key={rec}
-                  onClick={() => {
-                    setSelectedRecruiter(rec);
-                    setIsRecruiterDropdownOpen(false);
-                    setRecruiterSearchQuery("");
-                  }}
-                  className={`p-2 rounded-lg cursor-pointer text-xs transition-colors hover:bg-gray-100 ${selectedRecruiter === rec ? "bg-[#E7EDFF] text-[#0F47F2] font-semibold" : "text-[#4B5563]"}`}
+                  key={opt.value ?? "all"}
+                  onClick={() => handleSelectRecruiter(opt.value)}
+                  className={`p-2 rounded-lg cursor-pointer text-xs transition-colors flex items-center justify-between hover:bg-gray-100 ${
+                    selectedRecruiter === opt.value
+                      ? "bg-[#E7EDFF] text-[#0F47F2] font-semibold"
+                      : "text-[#4B5563]"
+                  }`}
                 >
-                  {formatRecruiterName(rec)}
+                  <span className="truncate">{opt.name}</span>
+                  {opt.count !== undefined && (
+                    <span className="ml-2 text-[11px] text-gray-400 font-normal">
+                      ({opt.count})
+                    </span>
+                  )}
                 </div>
               ))}
+              {filteredRecruiterOptions.length === 0 && (
+                <div className="p-2 text-xs text-gray-400 text-center">
+                  No recruiters found
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -792,10 +851,6 @@ export default function JobPipelineDashboard({
       (c) => (c.current_stage?.slug || c.stage_slug) === activeStageSlug,
     );
   }
-
-  if (selectedRecruiter) {
-    combinedCands = combinedCands.filter((c) => matchesRecruiter(c, selectedRecruiter));
-  }
   const sortedCandidates = combinedCands;
 
   // Derived list for archived candidates (separated to avoid duplication in the main active list)
@@ -813,11 +868,6 @@ export default function JobPipelineDashboard({
       const name = item.candidate.full_name?.toLowerCase() || "";
       const headline = item.candidate.headline?.toLowerCase() || "";
       if (!name.includes(q) && !headline.includes(q)) return false;
-    }
-
-    // 3. Filter by selected recruiter if present
-    if (selectedRecruiter && !matchesRecruiter(item, selectedRecruiter)) {
-      return false;
     }
 
     return true;
@@ -1269,6 +1319,7 @@ export default function JobPipelineDashboard({
       if (jobId) {
         fetchCandidates(jobId, activeStageSlug, currentPage, searchQuery);
         fetchStages(jobId);
+        loadRecruiterOptions(jobId);
       }
     } catch (error) {
       console.error(error);
@@ -1372,11 +1423,12 @@ export default function JobPipelineDashboard({
   }, [externalStages]);
 
   // ── Fetch Archived Candidates (For in-place Kanban/Table view)
-  const fetchArchivedCandidates = useCallback(async (jId: number) => {
+  const fetchArchivedCandidates = useCallback(async (jId: number, recruiter: string | null = selectedRecruiter) => {
     try {
-      const res = await apiClient.get(
-        `/jobs/roles/${jId}/archived-applications/`,
-      );
+      const url = recruiter
+        ? `/jobs/roles/${jId}/archived-applications/?added_by=${encodeURIComponent(recruiter)}`
+        : `/jobs/roles/${jId}/archived-applications/`;
+      const res = await apiClient.get(url);
       const data = res.data;
       const results = data.results || (Array.isArray(data) ? data : []);
       // add an is_archived manual flag
@@ -1443,6 +1495,7 @@ export default function JobPipelineDashboard({
         queryParams.append("page", page.toString());
         queryParams.append("page_size", limit.toString());
         if (search.trim()) queryParams.append("search", search.trim());
+        if (selectedRecruiter) queryParams.append("added_by", selectedRecruiter);
 
         if (sortConfig && orderingMap[sortConfig.key]) {
           const prefix = sortConfig.direction === "desc" ? "-" : "";
@@ -1558,7 +1611,7 @@ export default function JobPipelineDashboard({
         setLoadingCandidates(false);
       }
     },
-    [pipelineFilters, dateRange, sortConfig, pageSize],
+    [pipelineFilters, dateRange, sortConfig, pageSize, selectedRecruiter],
   );
 
   const runAscendionDuplicateCheck = useCallback(
@@ -1683,6 +1736,7 @@ export default function JobPipelineDashboard({
     currentPage,
     isKanbanView,
     searchQuery,
+    selectedRecruiter,
     fetchCandidates,
     fetchArchivedCandidates,
   ]);
@@ -2564,7 +2618,7 @@ export default function JobPipelineDashboard({
   const sc = statusColor(jobDetails?.status);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#F3F5F7] min-h-screen pb-12">
+    <div className="flex-1 overflow-y-auto bg-[#F3F5F7] min-h-screen pb-24">
       {/* ═══════════════════════════════════════════════════════
           Title Bar — Job Title, Status, JD-ID, View JD, Edit, + Candidate
          ═══════════════════════════════════════════════════════ */}
@@ -3272,7 +3326,7 @@ export default function JobPipelineDashboard({
           Content View (Table or Kanban)
          ═══════════════════════════════════════════════════════ */}
           {isKanbanView ? (
-            <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch">
+            <div className="mx-8 bg-[#F3F5F7] border border-[#E5E7EB] rounded-b-2xl overflow-x-auto p-6 flex gap-6 h-[75vh] items-stretch mb-10">
               {stages.filter(s => s.slug !== 'archives' && !isHiddenStage(s)).map((stage) => {
                 return (
                   <div key={stage.id} className="relative h-full">
@@ -3404,7 +3458,7 @@ export default function JobPipelineDashboard({
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto overflow-y-visible mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl">
+            <div className="overflow-x-auto overflow-y-visible mx-8 bg-white border border-[#E5E7EB] rounded-b-2xl mb-10">
               <table className="w-full min-w-[1480px] table-fixed text-left border-collapse">
                 {/* width of columns according to the space needed so it looks good using col group make sure total sum of width is 100%*/}
                 <colgroup>
@@ -4211,7 +4265,7 @@ export default function JobPipelineDashboard({
               </table>
 
               {/* Pagination */}
-              <div className="px-8 py-5 border-t border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB]">
+              <div className="px-8 py-5 border-t border-[#E5E7EB] flex items-center justify-between bg-[#F9FAFB] rounded-b-2xl">
                 <div className="text-xs text-[#6B7280]">
                   Showing {candidates.length > 0 ? startIndex + 1 : 0}–
                   {Math.min(startIndex + pageSize, totalCandidates)} of{" "}

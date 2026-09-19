@@ -80,6 +80,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
         queryParams.append("page", currentPage.toString());
         queryParams.append("page_size", "15");
         if (searchQuery.trim()) queryParams.append("search", searchQuery.trim());
+        if (selectedRecruiter) queryParams.append("added_by", selectedRecruiter);
 
         const orderingMap: Record<string, string> = {
           "Name": "full_name",
@@ -136,10 +137,14 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
 
         const url = `/jobs/applications/?${queryParams.toString()}`;
 
+        const archivedUrl = selectedRecruiter
+          ? `/jobs/roles/${jobId}/archived-applications/?added_by=${encodeURIComponent(selectedRecruiter)}`
+          : `/jobs/roles/${jobId}/archived-applications/`;
+
         const [response, archivedRes] = await Promise.all([
           apiClient.get(url, { signal: abortControllerRef.current?.signal }),
           reset && visibleArchives.has(stage.slug)
-            ? apiClient.get(`/jobs/roles/${jobId}/archived-applications/`, { signal: abortControllerRef.current?.signal })
+            ? apiClient.get(archivedUrl, { signal: abortControllerRef.current?.signal })
             : Promise.resolve({ data: { results: archivedCandidates } })
         ]);
 
@@ -216,7 +221,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
         setLoading(false);
       }
     },
-    [jobId, stage.slug, stage.name, filters, dateRange, searchQuery, visibleArchives, archivedCandidates]
+    [jobId, stage.slug, stage.name, filters, dateRange, searchQuery, selectedRecruiter, visibleArchives, archivedCandidates]
   );
 
   useEffect(() => {
@@ -235,7 +240,7 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
     setPage(1);
     setHasMore(true);
     fetchStageCandidates(1, true);
-  }, [filters, dateRange, searchQuery, visibleArchives, refreshCounter, sortConfig]);
+  }, [filters, dateRange, searchQuery, selectedRecruiter, visibleArchives, refreshCounter, sortConfig]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
@@ -246,47 +251,10 @@ const PipelineKanbanColumn: React.FC<PipelineKanbanColumnProps> = ({
     }
   };
 
-  const getInitialRecruiter = (item: any): string | null => {
-    const stageMoves = item.activities?.filter((a: any) => a.type === "stage_move") || [];
-    if (stageMoves.length > 0) {
-      const sorted = [...stageMoves].sort((a: any, b: any) => {
-        const timeA = a.timestamp || a.data?.moved_at || "";
-        const timeB = b.timestamp || b.data?.moved_at || "";
-        return timeA.localeCompare(timeB);
-      });
-      const oldest = sorted[0];
-      const name = oldest.data?.moved_by_name;
-      if (name && name.trim()) {
-        return name.trim();
-      }
-      const extEmail = oldest.data?.external_mover_email;
-      if (extEmail && extEmail.trim()) {
-        return extEmail.trim();
-      }
-    }
-    if (item.last_moved_by_name && item.last_moved_by_name.trim()) {
-      return item.last_moved_by_name.trim();
-    }
-    return null;
-  };
-
-  const matchesRecruiter = (item: any, selected: string | null) => {
-    if (!selected) return true;
-    const initialRec = getInitialRecruiter(item);
-    return initialRec === selected;
-  };
-
   let displayedCandidates = candidates;
   let displayedArchived = archivedCandidates;
 
-  if (selectedRecruiter) {
-    displayedCandidates = candidates.filter((c) => matchesRecruiter(c, selectedRecruiter));
-    displayedArchived = archivedCandidates.filter((c) => matchesRecruiter(c, selectedRecruiter));
-  }
-
-  const displayCount = selectedRecruiter
-    ? displayedCandidates.length
-    : (stageCountOverride !== undefined ? stageCountOverride : totalCount);
+  const displayCount = stageCountOverride !== undefined ? stageCountOverride : totalCount;
 
   return (
     <div

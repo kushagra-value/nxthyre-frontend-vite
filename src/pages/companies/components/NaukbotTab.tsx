@@ -836,7 +836,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
           </div>
 
           {/* Pagination */}
-          <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between">
+          <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between mb-10">
             <div className="text-[13px] text-[#8E8E93]">
               Showing {totalCount > 0 ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, totalCount)} of {totalCount} candidates
             </div>

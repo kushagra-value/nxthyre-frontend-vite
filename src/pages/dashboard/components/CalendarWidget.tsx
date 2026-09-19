@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
+import { dashboardService } from '../../../services/dashboardService';
 
 /**
  * Activity level controls the blue intensity on each date bubble.
@@ -75,11 +76,134 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Normalize date string helper (handles YYYY-MM-DD, YYYY-M-D, ISO strings)
+  const normalizeDateStr = (rawDate: string) => {
+    if (!rawDate) return '';
+    const cleanDate = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate;
+    const parts = cleanDate.split('-');
+    if (parts.length === 3) {
+      const y = parts[0];
+      const m = parts[1].padStart(2, '0');
+      const d = parts[2].padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    return cleanDate;
+  };
+
   // Build activity lookup
   const activityMap = new Map<string, CalendarDayActivity>();
-  activities.forEach((a) => activityMap.set(a.date, a));
+  activities.forEach((a) => {
+    if (a.date) {
+      activityMap.set(normalizeDateStr(a.date), a);
+    }
+  });
 
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
+  const [hoverDetails, setHoverDetails] = useState<Record<string, {
+    breakdown: {
+      interviews: number;
+      calls: number;
+      follow_ups: number;
+      shortlisted: number;
+      hired: number;
+    };
+    totalEvents: number;
+    loading?: boolean;
+  }>>({});
+
+  const handleMouseEnterDate = (dateStr: string, dateObj: Date) => {
+    setHoveredDate(dateStr);
+
+    if (hoverDetails[dateStr]) return;
+
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const isPast = dateObj < todayStart;
+
+    setHoverDetails((prev) => ({
+      ...prev,
+      [dateStr]: {
+        breakdown: { interviews: 0, calls: 0, follow_ups: 0, shortlisted: 0, hired: 0 },
+        totalEvents: 0,
+        loading: true,
+      },
+    }));
+
+    if (isPast) {
+      dashboardService
+        .getDailyActivities(dateStr)
+        .then((data) => {
+          const summary = data?.summary || {};
+          const calls = summary.calls_made ?? 0;
+          const followUps = summary.follow_ups ?? 0;
+          const shortlisted = summary.shortlisted ?? 0;
+          const hired = summary.hired ?? 0;
+          const total = data?.total_activities ?? (calls + followUps + shortlisted + hired);
+
+          setHoverDetails((prev) => ({
+            ...prev,
+            [dateStr]: {
+              breakdown: {
+                interviews: 0,
+                calls,
+                follow_ups: followUps,
+                shortlisted,
+                hired,
+              },
+              totalEvents: total,
+              loading: false,
+            },
+          }));
+        })
+        .catch(() => {
+          setHoverDetails((prev) => ({
+            ...prev,
+            [dateStr]: {
+              breakdown: { interviews: 0, calls: 0, follow_ups: 0, shortlisted: 0, hired: 0 },
+              totalEvents: 0,
+              loading: false,
+            },
+          }));
+        });
+    } else {
+      dashboardService
+        .getAgenda(dateStr)
+        .then((data) => {
+          const items = data?.items || [];
+          const alerts = data?.alerts || [];
+          const total = items.length + alerts.length;
+          const interviews = items.filter((i: any) => i.type?.toLowerCase().includes('interview')).length;
+          const calls = items.filter((i: any) => i.type?.toLowerCase().includes('call')).length;
+          const followUps = items.filter((i: any) => i.type?.toLowerCase().includes('follow')).length;
+          const shortlisted = items.filter((i: any) => i.type?.toLowerCase().includes('shortlist')).length;
+          const hired = items.filter((i: any) => i.type?.toLowerCase().includes('hire')).length;
+
+          setHoverDetails((prev) => ({
+            ...prev,
+            [dateStr]: {
+              breakdown: {
+                interviews,
+                calls,
+                follow_ups: followUps,
+                shortlisted,
+                hired,
+              },
+              totalEvents: total,
+              loading: false,
+            },
+          }));
+        })
+        .catch(() => {
+          setHoverDetails((prev) => ({
+            ...prev,
+            [dateStr]: {
+              breakdown: { interviews: 0, calls: 0, follow_ups: 0, shortlisted: 0, hired: 0 },
+              totalEvents: 0,
+              loading: false,
+            },
+          }));
+        });
+    }
+  };
 
   // Calendar math
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -263,14 +387,32 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
           const selectedStyle = isSelected && !hasActivity ? 'bg-[#0F47F2] !text-white' : '';
 
           const isHovered = hoveredDate === dateStr;
-          const showTooltip = isHovered && dayActivity && dayActivity.breakdown;
+          const showTooltip = isHovered;
+
+          const cached = hoverDetails[dateStr];
+          const hasCachedBreakdown = cached && !cached.loading;
+
+          const breakdown = hasCachedBreakdown
+            ? cached.breakdown
+            : {
+              interviews: dayActivity?.breakdown?.interviews || 0,
+              calls: (dayActivity?.breakdown as any)?.calls_made ?? dayActivity?.breakdown?.calls ?? 0,
+              follow_ups: dayActivity?.breakdown?.follow_ups || 0,
+              shortlisted: dayActivity?.breakdown?.shortlisted || 0,
+              hired: dayActivity?.breakdown?.hired || 0,
+            };
+
+          const totalEvents = hasCachedBreakdown
+            ? cached.totalEvents
+            : (dayActivity?.totalEvents ??
+              (breakdown.interviews + breakdown.calls + breakdown.follow_ups + breakdown.shortlisted + breakdown.hired));
 
           return (
             <div
               key={day}
               className="flex items-center justify-center cursor-pointer relative"
               onClick={() => handleDateSelect(day)}
-              onMouseEnter={() => setHoveredDate(dateStr)}
+              onMouseEnter={() => handleMouseEnterDate(dateStr, dateObj)}
               onMouseLeave={() => setHoveredDate(null)}
             >
               {hasActivity || isSelected ? (
@@ -295,43 +437,49 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
               {/* Hover Breakdown Tooltip */}
               {showTooltip && (
                 <div
-                  className={`absolute left-1/2 -translate-x-1/2 z-[9999] pointer-events-none ${
-                    Math.floor((firstDayOfWeek + day - 1) / 7) <= 1 ? "top-full mt-2" : "bottom-full mb-2"
-                  }`}
+                  className={`absolute left-1/2 -translate-x-1/2 z-[9999] pointer-events-none ${Math.floor((firstDayOfWeek + day - 1) / 7) <= 1 ? "top-full mt-2" : "bottom-full mb-2"
+                    }`}
                 >
                   <div className="bg-white border border-[#D1D1D6] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.12)] p-3 min-w-[170px] flex flex-col gap-2 relative">
                     <div className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
                       Activity Breakdown
                     </div>
 
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-[#4B5563]">Interviews</span>
-                      <span className="text-xs font-medium text-black">{dayActivity.breakdown?.interviews || 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-[#4B5563]">Calls Made</span>
-                      <span className="text-xs font-medium text-black">{dayActivity.breakdown?.calls || 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-[#4B5563]">Follow Ups</span>
-                      <span className="text-xs font-medium text-black">{dayActivity.breakdown?.follow_ups || 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-[#4B5563]">Shortlisted</span>
-                      <span className="text-xs font-medium text-black">{dayActivity.breakdown?.shortlisted || 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-4 border-t border-[#F3F5F7] pt-2 mt-1">
-                      <span className="text-xs font-semibold text-black">Total Events</span>
-                      <span className="text-xs font-bold text-[#0F47F2]">{dayActivity.totalEvents || 0}</span>
-                    </div>
+                    {cached?.loading ? (
+                      <div className="flex items-center justify-center py-3">
+                        <Loader2 className="w-4 h-4 text-[#0F47F2] animate-spin" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-xs text-[#4B5563]">Calls Made</span>
+                          <span className="text-xs font-medium text-black">{breakdown.calls}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-xs text-[#4B5563]">Follow Ups</span>
+                          <span className="text-xs font-medium text-black">{breakdown.follow_ups}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-xs text-[#4B5563]">Shortlisted</span>
+                          <span className="text-xs font-medium text-black">{breakdown.shortlisted}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-xs text-[#4B5563]">Hired</span>
+                          <span className="text-xs font-medium text-black">{breakdown.hired}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 border-t border-[#F3F5F7] pt-2 mt-1">
+                          <span className="text-xs font-semibold text-black">Total Events</span>
+                          <span className="text-xs font-bold text-[#0F47F2]">{totalEvents}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                   {/* Tooltip Arrow */}
                   <div
-                    className={`w-2.5 h-2.5 bg-white rotate-45 absolute left-1/2 -translate-x-1/2 ${
-                      Math.floor((firstDayOfWeek + day - 1) / 7) <= 1
-                        ? "-top-1.5 border-l border-t border-[#D1D1D6]"
-                        : "-bottom-1.5 border-r border-b border-[#D1D1D6]"
-                    }`}
+                    className={`w-2.5 h-2.5 bg-white rotate-45 absolute left-1/2 -translate-x-1/2 ${Math.floor((firstDayOfWeek + day - 1) / 7) <= 1
+                      ? "-top-1.5 border-l border-t border-[#D1D1D6]"
+                      : "-bottom-1.5 border-r border-b border-[#D1D1D6]"
+                      }`}
                   />
                 </div>
               )}
