@@ -407,6 +407,19 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
             : (dayActivity?.totalEvents ??
               (breakdown.interviews + breakdown.calls + breakdown.follow_ups + breakdown.shortlisted + breakdown.hired));
 
+          const dayColIndex = (firstDayOfWeek + day - 1) % 7;
+          const tooltipHorizClass = dayColIndex >= 4
+            ? "right-0 translate-x-0"
+            : (dayColIndex <= 1 ? "left-0 translate-x-0" : "left-1/2 -translate-x-1/2");
+          const arrowHorizClass = dayColIndex >= 4
+            ? "right-3"
+            : (dayColIndex <= 1 ? "left-3" : "left-1/2 -translate-x-1/2");
+          const isTopHalf = Math.floor((firstDayOfWeek + day - 1) / 7) <= 1;
+          const tooltipVertClass = isTopHalf ? "top-full mt-2" : "bottom-full mb-2";
+          const arrowVertClass = isTopHalf
+            ? "-top-1.5 border-l border-t border-[#D1D1D6]"
+            : "-bottom-1.5 border-r border-b border-[#D1D1D6]";
+
           return (
             <div
               key={day}
@@ -436,10 +449,7 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
 
               {/* Hover Breakdown Tooltip */}
               {showTooltip && (
-                <div
-                  className={`absolute left-1/2 -translate-x-1/2 z-[9999] pointer-events-none ${Math.floor((firstDayOfWeek + day - 1) / 7) <= 1 ? "top-full mt-2" : "bottom-full mb-2"
-                    }`}
-                >
+                <div className={`absolute z-[9999] pointer-events-none ${tooltipVertClass} ${tooltipHorizClass}`}>
                   <div className="bg-white border border-[#D1D1D6] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.12)] p-3 min-w-[170px] flex flex-col gap-2 relative">
                     <div className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
                       Activity Breakdown
@@ -475,12 +485,7 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
                     )}
                   </div>
                   {/* Tooltip Arrow */}
-                  <div
-                    className={`w-2.5 h-2.5 bg-white rotate-45 absolute left-1/2 -translate-x-1/2 ${Math.floor((firstDayOfWeek + day - 1) / 7) <= 1
-                      ? "-top-1.5 border-l border-t border-[#D1D1D6]"
-                      : "-bottom-1.5 border-r border-b border-[#D1D1D6]"
-                      }`}
-                  />
+                  <div className={`w-2.5 h-2.5 bg-white rotate-45 absolute ${arrowVertClass} ${arrowHorizClass}`} />
                 </div>
               )}
             </div>

@@ -322,12 +322,22 @@ export interface DailyActivityItemAPI {
 export interface DailyActivityDetailItem {
   id: string;
   time: string;                     // e.g. "9:00 AM"
-  candidate_name: string;
+  candidate_name?: string;
   candidate_id?: string;            // UUID
   application_id?: number;          // application ID for navigation
   candidate_number?: string;        // e.g. "+91 98765 43210"
-  company_name: string;
-  job_role: string;
+  company_name?: string;
+  company?: string;
+  workspace_name?: string;
+  job_role?: string;
+  job_name?: string;
+  job?: string;
+  title?: string;
+  recruiter_name?: string;
+  recruiter?: string;
+  caller_name?: string;
+  created_by_name?: string;
+  user_name?: string;
   experience?: string;              // e.g. "4 years"
   type: 'call' | 'follow-up' | 'shortlist' | 'hired' | 'naukbot' | string;
   detail_text?: string;             // e.g. "Call Screening · 46 Mins"
