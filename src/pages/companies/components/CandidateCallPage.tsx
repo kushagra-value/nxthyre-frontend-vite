@@ -241,12 +241,40 @@ export default function CandidateCallPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Clear candidate from session storage once we've consumed it, but keep the list for navigation
+  // Clear transient candidate and call session details from session storage once consumed, retaining candidateList for navigation
   useEffect(() => {
     if (sessionData) {
-      sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ ...sessionData, candidate: null }));
+      sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({ candidateList: sessionData.candidateList || [] }));
     }
   }, []);
+
+  // Sync callUuid state to callUuidRef so handleSaveNotes always uses current callUuid
+  useEffect(() => {
+    callUuidRef.current = callUuid;
+  }, [callUuid]);
+
+  // Reset call session state when candidateId changes
+  useEffect(() => {
+    setCallUuid(null);
+    callUuidRef.current = null;
+    setSeconds(0);
+    setManualCallConnected(false);
+    setIsPaused(false);
+    setIsMuted(false);
+    setIsRecording(false);
+    setIsManualRecording(false);
+    isManualRecordingRef.current = false;
+    setNotes("");
+    setActiveTags([]);
+    setChecklist({
+      ctcConfirmed: false,
+      ctcFlexibility: false,
+      noticePeriod: false,
+      location: false,
+    });
+    setSkillsChecklist({});
+    lastSavedDataRef.current = "";
+  }, [candidateId]);
 
   const candidateList = sessionData?.candidateList || [];
   const currentCandidateIndex = candidateList.indexOf(candidateId || "");
