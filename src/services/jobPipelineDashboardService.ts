@@ -286,7 +286,15 @@ export async function getCandidateCallHistory(
   phoneNumber?: string,
 ): Promise<CallHistoryEntry[]> {
   const params = new URLSearchParams();
-  if (phoneNumber) params.set("phone_number", phoneNumber);
+  if (
+    phoneNumber &&
+    phoneNumber !== "91undefined" &&
+    phoneNumber !== "91null" &&
+    phoneNumber !== "91" &&
+    phoneNumber.trim() !== ""
+  ) {
+    params.set("phone_number", phoneNumber);
+  }
   const qs = params.toString() ? `?${params.toString()}` : "";
 
   const response = await fetch(

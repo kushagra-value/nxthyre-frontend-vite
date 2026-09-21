@@ -438,7 +438,8 @@ export default function JobCandidateProfile({
   useEffect(() => {
     if (!cand.id || activeTab !== "call") return;
     setLoadingCalls(true);
-    const candidatePhone = "91" + premiumData.phone || "";
+    const rawPhone = premiumData?.phone || (cand as any)?.phone || "";
+    const candidatePhone = rawPhone ? (rawPhone.startsWith("91") ? rawPhone : `91${rawPhone.replace(/\D/g, "")}`) : undefined;
     getCandidateCallHistory(cand.id, candidatePhone)
       .then((data) => setCallHistory(data))
       .catch((err) => {

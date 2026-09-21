@@ -524,7 +524,7 @@ export default function Dashboard() {
     }
   };
 
- 
+
 
   // Handle company selection (stage it for Apply)
   const handleCompanySelect = (option: CompanyOption) => {
@@ -598,7 +598,7 @@ export default function Dashboard() {
           </div>
 
           {/* Priority Actions from new API */}
-          <section className="bg-white rounded-xl p-5 flex flex-col gap-5 max-h-[90vh]">
+          <section className="bg-white rounded-xl p-5 flex flex-col gap-5 max-h-[110vh]">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
               <div className="flex items-center gap-2.5">
@@ -742,7 +742,7 @@ export default function Dashboard() {
                     column.cards.sort((a, b) => b.daysAgo - a.daysAgo);
                   }
                   return (
-                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 flex-1 h-full max-h-[500px] lg:max-h-none min-h-0">
+                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 flex-1 h-full min-h-[300px]">
                       <div className="flex items-center justify-between px-1 py-1 shrink-0">
                         <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
@@ -752,7 +752,7 @@ export default function Dashboard() {
                           <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
                         </div>
                       </div>
-                      
+
                       <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col gap-2.5 min-h-0">
                         {column.cards.length === 0 && (
                           <div className="flex items-center justify-center py-8 text-sm text-[#8E8E93]">
@@ -786,11 +786,11 @@ export default function Dashboard() {
         <aside className="w-96 flex flex-col gap-4 shrink-0">
           <CalendarWidget
             onDateClick={handleDateClick}
-            activities={calendarActivities.map(day => ({ 
-              date: day.date, 
+            activities={calendarActivities.map(day => ({
+              date: day.date,
               activityLevel: day.activity_level as any,
               totalEvents: day.total_events,
-              breakdown: day.breakdown 
+              breakdown: day.breakdown
             }))}
             onMonthChange={fetchCalendarActivity}
             isLoading={calendarLoading}

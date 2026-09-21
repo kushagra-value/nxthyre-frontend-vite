@@ -232,17 +232,175 @@ const RecentActivities = () => {
     setSelectedCategories(newSelection);
   };
 
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case "calendar":
-        return CalendarIcon;
-      case "check":
-        return CheckIcon;
-      case "phone":
-        return PhoneIcon;
-      default:
-        return CheckIcon;
+const MailIcon = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="20" height="16" x="2" y="4" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </svg>
+);
+
+const MessageIcon = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const InterviewIcon = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.934a.5.5 0 0 0-.777-.416L16 11" />
+    <rect width="14" height="12" x="2" y="6" rx="2" />
+  </svg>
+);
+
+const DocumentIcon = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    <path d="M10 9H8" />
+    <path d="M16 13H8" />
+  </svg>
+);
+
+const StarIcon = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+const BellIcon = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+  </svg>
+);
+
+const HiredIcon = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F47F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+
+  const getIcon = (itemOrIconName: any, textContent?: string) => {
+    let iconKey = "";
+    let text = "";
+
+    if (typeof itemOrIconName === "string") {
+      iconKey = itemOrIconName;
+      text = textContent || "";
+    } else if (itemOrIconName && typeof itemOrIconName === "object") {
+      iconKey =
+        itemOrIconName.icon ||
+        itemOrIconName.type ||
+        itemOrIconName.category ||
+        itemOrIconName.activity_type ||
+        itemOrIconName.source ||
+        "";
+      text = itemOrIconName.text || textContent || "";
     }
+
+    const t = (iconKey || "").toLowerCase().trim();
+    const txt = (text || "").toLowerCase().trim();
+
+    // Calls / Phone
+    if (
+      t === "phone" ||
+      t.includes("call") ||
+      txt.includes("call") ||
+      txt.includes("phone")
+    ) {
+      return PhoneIcon;
+    }
+
+    // Mail / Email / Feedback / Profile Shared / Presented / Mail Reader / Naukri / Agency
+    if (
+      t.includes("mail") ||
+      t.includes("email") ||
+      t.includes("envelope") ||
+      t.includes("nauk") ||
+      t.includes("reader") ||
+      txt.includes("mail") ||
+      txt.includes("email") ||
+      txt.includes("feedback") ||
+      txt.includes("presented") ||
+      txt.includes("profile") ||
+      txt.includes("shared") ||
+      txt.includes("hiring manager") ||
+      txt.includes("agency") ||
+      txt.includes("naukri")
+    ) {
+      return MailIcon;
+    }
+
+    // Message / Chat / Conversation
+    if (
+      t.includes("message") ||
+      t.includes("chat") ||
+      t.includes("conversation") ||
+      txt.includes("message") ||
+      txt.includes("chat")
+    ) {
+      return MessageIcon;
+    }
+
+    // Interview / Meeting / Calendar
+    if (
+      t.includes("calendar") ||
+      t.includes("interview") ||
+      t.includes("video") ||
+      t.includes("meeting") ||
+      txt.includes("interview") ||
+      txt.includes("meeting")
+    ) {
+      return InterviewIcon;
+    }
+
+    // Document / Application / Resume
+    if (
+      t.includes("application") ||
+      t.includes("document") ||
+      t.includes("file") ||
+      t.includes("resume") ||
+      txt.includes("resume") ||
+      txt.includes("application")
+    ) {
+      return DocumentIcon;
+    }
+
+    // Shortlist
+    if (
+      t.includes("shortlist") ||
+      t.includes("star") ||
+      txt.includes("shortlist")
+    ) {
+      return StarIcon;
+    }
+
+    // Followup / Bell
+    if (t.includes("follow") || txt.includes("follow")) {
+      return BellIcon;
+    }
+
+    // Hired
+    if (t.includes("hire") || txt.includes("hire") || txt.includes("hired")) {
+      return HiredIcon;
+    }
+
+    // Active Category Filter Fallbacks
+    if (selectedCategories.includes("Mail Reader")) {
+      return MailIcon;
+    }
+    if (selectedCategories.includes("Calls")) {
+      return PhoneIcon;
+    }
+    if (selectedCategories.includes("Shortlist")) {
+      return StarIcon;
+    }
+    if (selectedCategories.includes("Followup")) {
+      return BellIcon;
+    }
+
+    return MailIcon;
   };
 
   return (
@@ -378,23 +536,80 @@ const RecentActivities = () => {
                   {section.label}
                 </h4>
                 <div className="space-y-[18px]">
-                  {section.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="flex gap-3">
-                      <div className="mt-0.5 min-w-[32px]">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-sm">
-                          {getIcon(item.icon)}
+                  {section.items.map((item: any, itemIndex) => {
+                    const iconKey = item.icon || item.type || item.category || "";
+                    const isCall =
+                      iconKey.toLowerCase().includes("phone") ||
+                      iconKey.toLowerCase().includes("call") ||
+                      (item.text && item.text.toLowerCase().includes("call"));
+
+                    if (isCall) {
+                      const jobName =
+                        item.job_name ||
+                        item.job_title ||
+                        item.job_role ||
+                        item.job ||
+                        item.title;
+
+                      const companyName =
+                        item.company_name ||
+                        item.company ||
+                        item.workspace_name;
+
+                      const recruiterName =
+                        item.recruiter_name ||
+                        item.recruiter ||
+                        item.caller_name ||
+                        item.created_by_name ||
+                        item.user_name;
+
+                      return (
+                        <div key={itemIndex} className="flex gap-3">
+                          <div className="mt-0.5 min-w-[32px]">
+                            <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-sm text-[#0F47F2]">
+                              {getIcon("phone")}
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[14px] font-semibold text-gray-900 font-inter leading-snug truncate">
+                              {jobName || item.text}
+                            </p>
+                            {companyName && (
+                              <p className="text-xs text-gray-600 font-inter mt-0.5">
+                                <span className="text-gray-500 font-medium">Company:</span> {companyName}
+                              </p>
+                            )}
+                            {recruiterName && (
+                              <p className="text-xs text-gray-600 font-inter mt-0.5">
+                                <span className="text-gray-500 font-medium">Recruiter:</span> {recruiterName}
+                              </p>
+                            )}
+                            <span className="text-[11px] text-gray-400 mt-1 block font-inter uppercase tracking-wide">
+                              {formatActivityTime(item)}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={itemIndex} className="flex gap-3">
+                        <div className="mt-0.5 min-w-[32px]">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-sm">
+                            {getIcon(item, item.text)}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[14px] text-gray-800 font-inter leading-relaxed">
+                            {item.text}
+                          </p>
+                          <span className="text-xs text-gray-400 mt-1 block font-inter uppercase tracking-wide">
+                            {formatActivityTime(item)}
+                          </span>
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-[14px] text-gray-800 font-inter leading-relaxed">
-                          {item.text}
-                        </p>
-                        <span className="text-xs text-gray-400 mt-1 block font-inter uppercase tracking-wide">
-                          {formatActivityTime(item)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* Subtle Separator */}
                   {sectionIndex < activities.length - 1 && (

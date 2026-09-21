@@ -18,19 +18,31 @@ type TabKey = 'all' | 'call' | 'follow-up' | 'shortlist' | 'hired';
 
 // ── Icons ──
 const CallIcon = (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M18.3 15.27c0 .3-.07.6-.2.9-.13.3-.3.58-.54.84-.41.45-.86.77-1.37.96-.5.21-.98.31-1.56.31-.84 0-1.73-.2-2.68-.61-1-.4-1.93-.97-2.88-1.66-.96-.7-1.86-1.48-2.73-2.33a29.6 29.6 0 01-2.33-2.73c-.69-.95-1.23-1.87-1.66-2.87C2.18 7.14 2 6.25 2 5.4c0-.57.1-1.1.3-1.59.21-.5.53-.95.95-1.36.27-.25.56-.4.87-.42.3-.03.59.06.84.2l1.93 2.59c.15.21.26.41.34.58.07.18.11.35.11.5 0 .18-.06.36-.16.53a4.5 4.5 0 01-.42.52l-.79.82a.32.32 0 00-.09.2c0 .07.01.14.04.2l.08.2c.3.57.7 1.16 1.17 1.76.47.6.97 1.2 1.53 1.81.57.6 1.13 1.14 1.7 1.61.58.46 1.12.81 1.63 1.07l.22.08c.07.03.14.04.22.04.12 0 .24-.06.33-.15l.77-.79c.16-.16.32-.29.5-.38.17-.11.34-.16.53-.16.16 0 .33.04.5.12.18.08.37.2.54.34L16.85 15c.2.15.36.32.44.55.1.22.15.47.15.72h-.14z" fill="currentColor"/></svg>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
 );
-const BellIcon = (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 18.33c-1.62 0-2.96-1.15-3.26-2.7h6.52a3.33 3.33 0 01-3.26 2.7zm7.95-4.85c-1.09-.5-1.72-1.58-1.72-2.76V7.92c0-2.53-2.06-4.58-4.6-4.58h-3.26c-2.53 0-4.6 2.06-4.6 4.58v2.8c0 1.18-.63 2.26-1.72 2.76-.68.32-1-.84-.74-1.54a1.4 1.4 0 011.33-.88h11.62c.6 0 1.12.38 1.33.88.26.7-.06 1.86-.74 1.54zM10 2.08c.69 0 1.25-.56 1.25-1.25A.83.83 0 0010.42 0h-.83c-.46 0-.84.37-.84.83 0 .7.56 1.25 1.25 1.25z" fill="currentColor"/></svg>
+const MailIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+);
+const MessageIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+);
+const InterviewIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.934a.5.5 0 0 0-.777-.416L16 11" /><rect width="14" height="12" x="2" y="6" rx="2" /></svg>
+);
+const DocumentIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /></svg>
 );
 const StarIcon = (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 1.67l2.58 5.21 5.75.84-4.16 4.06.98 5.73L10 14.81l-5.15 2.7.98-5.73L1.67 7.72l5.75-.84L10 1.67z" fill="currentColor"/></svg>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+);
+const BellIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
 );
 const HiredIcon = (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 18.33a8.33 8.33 0 100-16.66 8.33 8.33 0 000 16.66z" stroke="currentColor" strokeWidth="1.5"/><path d="M6.67 10l2.5 2.5 4.16-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
 );
 const NaukbotIcon = (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M7 9h6M7 12h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="14" height="10" rx="2" /><path d="M7 9h6M7 12h4" /></svg>
 );
 const DownloadIcon = (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3.33v9.17M6.67 10l3.33 3.33L13.33 10M5 15h10" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -47,11 +59,16 @@ const TAB_CONFIG: { key: TabKey; label: string; icon: JSX.Element; color: string
 ];
 
 const getIconForType = (type: string) => {
-  if (type === 'call' || type === 'call-cancel') return { icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF' };
-  if (type === 'follow-up') return { icon: BellIcon, color: '#FF8D28', bg: '#FEF3C7' };
-  if (type === 'shortlist') return { icon: StarIcon, color: '#059669', bg: '#D1FAE5' };
-  if (type === 'hired') return { icon: HiredIcon, color: '#6155F5', bg: '#EDE9FE' };
-  if (type === 'naukbot') return { icon: NaukbotIcon, color: '#0F47F2', bg: '#E7EDFF' };
+  const t = (type || "").toLowerCase().trim();
+  if (t.includes('call') || t === 'phone') return { icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF' };
+  if (t.includes('mail') || t.includes('email') || t.includes('envelope')) return { icon: MailIcon, color: '#2563EB', bg: '#DBEAFE' };
+  if (t.includes('message') || t.includes('chat') || t.includes('conversation')) return { icon: MessageIcon, color: '#8B5CF6', bg: '#F3E8FF' };
+  if (t.includes('interview') || t.includes('meeting') || t.includes('video') || t.includes('calendar')) return { icon: InterviewIcon, color: '#0284C7', bg: '#E0F2FE' };
+  if (t.includes('application') || t.includes('document') || t.includes('resume') || t.includes('file')) return { icon: DocumentIcon, color: '#D97706', bg: '#FEF3C7' };
+  if (t.includes('follow')) return { icon: BellIcon, color: '#FF8D28', bg: '#FEF3C7' };
+  if (t.includes('shortlist')) return { icon: StarIcon, color: '#059669', bg: '#D1FAE5' };
+  if (t.includes('hired') || t.includes('hire')) return { icon: HiredIcon, color: '#6155F5', bg: '#EDE9FE' };
+  if (t.includes('naukbot')) return { icon: NaukbotIcon, color: '#0F47F2', bg: '#E7EDFF' };
   return { icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF' };
 };
 
@@ -210,6 +227,11 @@ function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number 
   const [showNote, setShowNote] = useState(false);
   const { icon, color, bg } = getIconForType(item.type);
   const isFailedCall = item.call_status && item.call_status.toLowerCase().includes("didn't pick");
+  const isCall = (item.type || '').toLowerCase().includes('call') || item.type === 'phone';
+
+  const jobName = item.job_role || item.job_name || item.job || item.title;
+  const companyName = item.company_name || item.company || item.workspace_name;
+  const recruiterName = item.recruiter_name || item.recruiter || item.caller_name || item.created_by_name || item.user_name;
 
   return (
     <div className={`py-3.5 ${idx > 0 ? 'border-t border-[#F3F5F7]' : ''}`}>
@@ -221,22 +243,48 @@ function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number 
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mb-1">{formatActivityTime(item)}</p>
-          <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
-          {item.candidate_number && (
-            <a href={`tel:${item.candidate_number}`} className="m-0 text-xs text-[#0F47F2] leading-[16px] mt-0.5 block no-underline hover:underline">
-              {item.candidate_number}
-            </a>
-          )}
-          {(item.company_name || item.job_role) && (
-            <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
-              {[item.company_name, item.job_role, item.experience].filter(Boolean).join(' | ')}
-            </p>
-          )}
-          {item.detail_text && (
-            <p className="m-0 text-xs leading-[16px] mt-1" style={{ color: isFailedCall ? '#DC2626' : (item.detail_color || color) }}>
-              {item.detail_text}
-            </p>
+          {isCall ? (
+            <>
+              {jobName && (
+                <p className="m-0 text-sm font-semibold text-[#1C1C1E] leading-[18px]">
+                  {jobName}
+                </p>
+              )}
+              {companyName && (
+                <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
+                  <span className="font-medium text-[#4B5563]">Company:</span> {companyName}
+                </p>
+              )}
+              {recruiterName && (
+                <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
+                  <span className="font-medium text-[#4B5563]">Recruiter:</span> {recruiterName}
+                </p>
+              )}
+              {item.candidate_name && !jobName && (
+                <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
+              )}
+              <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mt-1">{formatActivityTime(item)}</p>
+            </>
+          ) : (
+            <>
+              <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mb-1">{formatActivityTime(item)}</p>
+              <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
+              {item.candidate_number && (
+                <a href={`tel:${item.candidate_number}`} className="m-0 text-xs text-[#0F47F2] leading-[16px] mt-0.5 block no-underline hover:underline">
+                  {item.candidate_number}
+                </a>
+              )}
+              {(item.company_name || item.job_role) && (
+                <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
+                  {[item.company_name, item.job_role, item.experience].filter(Boolean).join(' | ')}
+                </p>
+              )}
+              {item.detail_text && (
+                <p className="m-0 text-xs leading-[16px] mt-1" style={{ color: isFailedCall ? '#DC2626' : (item.detail_color || color) }}>
+                  {item.detail_text}
+                </p>
+              )}
+            </>
           )}
         </div>
 
