@@ -238,6 +238,8 @@ export default function CandidateCallPage() {
   // Manual recording states
   const [isManualRecording, setIsManualRecording] = useState(false);
   const isManualRecordingRef = useRef(false);
+  const [isManualRecordingPaused, setIsManualRecordingPaused] = useState(false);
+  const isManualRecordingPausedRef = useRef(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
@@ -264,6 +266,8 @@ export default function CandidateCallPage() {
     setIsRecording(false);
     setIsManualRecording(false);
     isManualRecordingRef.current = false;
+    setIsManualRecordingPaused(false);
+    isManualRecordingPausedRef.current = false;
     setNotes("");
     setActiveTags([]);
     setChecklist({
@@ -665,9 +669,9 @@ export default function CandidateCallPage() {
   // Timer logic
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
-    // For manual mode, only run timer when connected
+    // For manual mode, only run timer when connected and recording is not paused
     const shouldRun = isManual
-      ? (manualCallConnected && !isPaused)
+      ? (manualCallConnected && !isPaused && !isManualRecordingPaused)
       : (!isPaused && callState !== "completed");
     if (shouldRun) {
       interval = setInterval(() => {
@@ -677,7 +681,7 @@ export default function CandidateCallPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPaused, callState, isManual, manualCallConnected]);
+  }, [isPaused, callState, isManual, manualCallConnected, isManualRecordingPaused]);
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -769,6 +773,8 @@ export default function CandidateCallPage() {
       // ── STOP VOICE RECORDING ──
       isManualRecordingRef.current = false;
       setIsManualRecording(false);
+      isManualRecordingPausedRef.current = false;
+      setIsManualRecordingPaused(false);
 
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
         mediaRecorderRef.current.stop();
@@ -821,10 +827,39 @@ export default function CandidateCallPage() {
         mediaRecorder.start();
         isManualRecordingRef.current = true;
         setIsManualRecording(true);
+        isManualRecordingPausedRef.current = false;
+        setIsManualRecordingPaused(false);
       } catch (err: any) {
         if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
           showToast.error("Microphone access failed. Please check permissions.");
         }
+      }
+    }
+  };
+
+  const handlePauseResumeRecording = () => {
+    // Edge case: recording not active or media recorder inactive
+    if (!isManualRecordingRef.current || !mediaRecorderRef.current || mediaRecorderRef.current.state === "inactive") {
+      return;
+    }
+
+    if (isManualRecordingPausedRef.current || mediaRecorderRef.current.state === "paused") {
+      // ── RESUME RECORDING ──
+      try {
+        mediaRecorderRef.current.resume();
+        isManualRecordingPausedRef.current = false;
+        setIsManualRecordingPaused(false);
+      } catch (err) {
+        console.error("Failed to resume recording:", err);
+      }
+    } else if (mediaRecorderRef.current.state === "recording") {
+      // ── PAUSE RECORDING ──
+      try {
+        mediaRecorderRef.current.pause();
+        isManualRecordingPausedRef.current = true;
+        setIsManualRecordingPaused(true);
+      } catch (err) {
+        console.error("Failed to pause recording:", err);
       }
     }
   };
@@ -1041,16 +1076,17 @@ export default function CandidateCallPage() {
                 </div>
 
                 {/* Manual Call Controls */}
-                <div className="mt-6 flex items-center gap-6">
+                <div className="mt-6 flex items-center gap-5">
+                  {/* RECORD / STOP REC BUTTON */}
                   <div className="flex flex-col items-center gap-2">
                     <div className="relative">
                       <button
                         onClick={toggleManualRecording}
                         className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg z-10 relative ${isManualRecording ? "bg-red-500 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}
                       >
-                        <Mic className={`w-5 h-5 ${isManualRecording ? "animate-pulse" : ""}`} />
+                        <Mic className={`w-5 h-5 ${isManualRecording && !isManualRecordingPaused ? "animate-pulse" : ""}`} />
                       </button>
-                      {isManualRecording && (
+                      {isManualRecording && !isManualRecordingPaused && (
                         <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20 -z-0"></div>
                       )}
                     </div>
@@ -1059,7 +1095,38 @@ export default function CandidateCallPage() {
                     </span>
                   </div>
 
-                  {/* End Call Button */}
+                  {/* PAUSE / RESUME RECORDING BUTTON */}
+                  <div className="flex flex-col items-center gap-2">
+                    <button
+                      onClick={handlePauseResumeRecording}
+                      disabled={!isManualRecording}
+                      className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg disabled:opacity-40 disabled:cursor-not-allowed ${
+                        isManualRecordingPaused
+                          ? "bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/30"
+                          : isManualRecording
+                          ? "bg-white/20 hover:bg-white/30 text-white"
+                          : "bg-white/20 text-white opacity-40"
+                      }`}
+                      title={
+                        !isManualRecording
+                          ? "Start recording first"
+                          : isManualRecordingPaused
+                          ? "Resume Recording"
+                          : "Pause Recording"
+                      }
+                    >
+                      {isManualRecordingPaused ? (
+                        <Play className="w-5 h-5 fill-current ml-0.5" />
+                      ) : (
+                        <Pause className="w-5 h-5 fill-current" />
+                      )}
+                    </button>
+                    <span className="text-xs text-white uppercase tracking-widest font-semibold">
+                      {isManualRecordingPaused ? "Resume" : "Pause"}
+                    </span>
+                  </div>
+
+                  {/* END CALL BUTTON */}
                   <div className="flex flex-col items-center gap-2">
                     <button
                       onClick={() => {
@@ -1080,8 +1147,18 @@ export default function CandidateCallPage() {
                 </div>
 
                 {isManualRecording && (
-                  <div className="mt-4 w-full px-4 max-h-24 overflow-y-auto text-xs text-slate-300 italic text-center custom-scrollbar">
-                    Recording audio...
+                  <div className="mt-4 w-full px-4 max-h-24 overflow-y-auto text-xs text-slate-300 italic text-center custom-scrollbar flex items-center justify-center gap-1.5">
+                    {isManualRecordingPaused ? (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+                        <span className="text-amber-200 font-medium">Recording paused</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse inline-block"></span>
+                        <span>Recording audio...</span>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

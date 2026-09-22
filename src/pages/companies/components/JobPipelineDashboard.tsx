@@ -159,7 +159,11 @@ interface CandidateListItem {
       original_platform: string | null;
     } | null;
     is_ascendion_duplicate?: boolean | null;
+    job_score_obj?: any;
+    candidate_match_score?: any;
+    job_id?: number | string;
   };
+  job_id?: number | string;
   stage_slug: string;
   status_tags: {
     text: string;
@@ -504,6 +508,7 @@ export default function JobPipelineDashboard({
     last_working_day: "",
     location: "",
     exp: "",
+    match_reasoning: "",
   });
 
   // ── Pagination & search
@@ -1820,6 +1825,14 @@ export default function JobPipelineDashboard({
         }
       }
 
+      const existingReasoning =
+        cand.job_score?.candidate_match_score?.description ||
+        cand.job_score_obj?.candidate_match_score?.description ||
+        candidateEditing.job_score?.candidate_match_score?.description ||
+        candidateEditing.job_score_obj?.candidate_match_score?.description ||
+        (candidateEditing as any).candidate_match_score?.description ||
+        "";
+
       setCandidateEditForm({
         notice_period_days: noticePeriodDays,
         current_ctc_lpa: extractNum(
@@ -1830,6 +1843,7 @@ export default function JobPipelineDashboard({
         last_working_day: cand.last_working_day || "",
         location: cand.location || "",
         exp: extractNum(cand.total_experience ?? cand.experience_years),
+        match_reasoning: existingReasoning,
       });
     }
   }, [showCandidateEditModal, candidateEditing]);
@@ -1844,6 +1858,7 @@ export default function JobPipelineDashboard({
         last_working_day: "",
         location: "",
         exp: "",
+        match_reasoning: "",
       });
     }
   }, [showCandidateEditModal]);
@@ -1915,14 +1930,47 @@ export default function JobPipelineDashboard({
 
     if (!valid) return;
 
-    if (Object.keys(payload).length === 0) {
+    const cand = candidateEditing.candidate;
+    const existingReasoning =
+      cand.job_score?.candidate_match_score?.description ||
+      candidateEditing.job_score?.candidate_match_score?.description ||
+      candidateEditing.job_score_obj?.candidate_match_score?.description ||
+      (candidateEditing as any).candidate_match_score?.description ||
+      "";
+
+    const isMatchReasoningChanged =
+      candidateEditForm.match_reasoning !== existingReasoning;
+
+    if (Object.keys(payload).length === 0 && !isMatchReasoningChanged) {
       showToast.info("No changes to save");
       setShowCandidateEditModal(false);
       return;
     }
 
     try {
-      await apiClient.patch(`/candidates/${uuid}/editable-fields/`, payload);
+      if (Object.keys(payload).length > 0) {
+        await apiClient.patch(`/candidates/${uuid}/editable-fields/`, payload);
+      }
+
+      if (isMatchReasoningChanged) {
+        const effectiveJobId =
+          jobId ||
+          candidateEditing.job_id ||
+          (candidateEditing.candidate as any)?.job_id ||
+          (candidateEditing as any)?.jobId;
+
+        if (effectiveJobId) {
+          const numericJId =
+            typeof effectiveJobId === "number"
+              ? effectiveJobId
+              : parseInt(effectiveJobId, 10);
+          await candidateService.updateCandidateJobScoreDescription(
+            uuid,
+            numericJId,
+            candidateEditForm.match_reasoning,
+          );
+        }
+      }
 
       setCandidates((prev) =>
         prev.map((c) => {
@@ -1961,7 +2009,28 @@ export default function JobPipelineDashboard({
               updatedCand.total_experience = payload.exp;
               updatedCand.experience_years = `${payload.exp} years`;
             }
-            return { ...c, candidate: updatedCand };
+
+            let updatedJobScore = c.job_score ? { ...c.job_score } : null;
+            if (isMatchReasoningChanged) {
+              if (updatedJobScore?.candidate_match_score) {
+                updatedJobScore.candidate_match_score = {
+                  ...updatedJobScore.candidate_match_score,
+                  description: candidateEditForm.match_reasoning,
+                };
+              } else {
+                updatedJobScore = {
+                  ...(updatedJobScore || {}),
+                  candidate_match_score: {
+                    note: "",
+                    label: "",
+                    score: "0%",
+                    description: candidateEditForm.match_reasoning,
+                  },
+                };
+              }
+            }
+
+            return { ...c, candidate: updatedCand, job_score: updatedJobScore };
           }
           return c;
         }),
@@ -2342,8 +2411,8 @@ export default function JobPipelineDashboard({
         selectionType === (isArchived ? "ACTIVE" : "ARCHIVED") ||
         (selectionStage && selectionStage !== stageSlug);
 
-      let headline = cand.headline || "--";
-      let companyName = cand.experience_summary?.title || "--";
+      const headline = cand.headline || "--";
+      const companyName = cand.experience_summary?.title || "--";
 
       return (
         <div
@@ -5565,6 +5634,23 @@ export default function JobPipelineDashboard({
                       }
                       placeholder="e.g. Bengaluru"
                       className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 col-span-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Match Reasoning
+                    </label>
+                    <textarea
+                      rows={5}
+                      value={candidateEditForm.match_reasoning}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          match_reasoning: e.target.value,
+                        })
+                      }
+                      placeholder="Enter match reasoning..."
+                      className="w-full border border-[#D1D1D6] rounded-lg p-2.5 text-sm font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors resize-none"
                     />
                   </div>
                 </div>
