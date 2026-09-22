@@ -141,6 +141,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
     last_working_day: "",
     location: "",
     exp: "",
+    match_reasoning: "",
   });
 
   useEffect(() => {
@@ -163,6 +164,12 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
         }
       }
 
+      const existingReasoning =
+        cand.job_score?.candidate_match_score?.description ||
+        cand.job_score_obj?.candidate_match_score?.description ||
+        cand.candidate_match_score?.description ||
+        "";
+
       setCandidateEditForm({
         notice_period_days: noticePeriodDays,
         current_ctc_lpa: extractNum(cand.current_salary_lpa || cand.current_salary),
@@ -171,6 +178,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
         last_working_day: cand.last_working_day || "",
         location: cand.location || "",
         exp: extractNum(cand.total_experience ?? cand.experience_years),
+        match_reasoning: existingReasoning,
       });
     }
   }, [showCandidateEditModal, candidateEditing]);
@@ -185,6 +193,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
         last_working_day: "",
         location: "",
         exp: "",
+        match_reasoning: "",
       });
     }
   }, [showCandidateEditModal]);
@@ -256,14 +265,45 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
 
     if (!valid) return;
 
-    if (Object.keys(payload).length === 0) {
+    const cand = candidateEditing;
+    const existingReasoning =
+      cand.job_score?.candidate_match_score?.description ||
+      cand.job_score_obj?.candidate_match_score?.description ||
+      cand.candidate_match_score?.description ||
+      "";
+
+    const isMatchReasoningChanged =
+      candidateEditForm.match_reasoning !== existingReasoning;
+
+    if (Object.keys(payload).length === 0 && !isMatchReasoningChanged) {
       showToast.info("No changes to save");
       setShowCandidateEditModal(false);
       return;
     }
 
     try {
-      await apiClient.patch(`/candidates/${uuid}/editable-fields/`, payload);
+      if (Object.keys(payload).length > 0) {
+        await apiClient.patch(`/candidates/${uuid}/editable-fields/`, payload);
+      }
+
+      if (isMatchReasoningChanged) {
+        const effectiveJobId =
+          jobId ||
+          candidateEditing.job_id ||
+          candidateEditing.jobId;
+
+        if (effectiveJobId) {
+          const numericJId =
+            typeof effectiveJobId === "number"
+              ? effectiveJobId
+              : parseInt(effectiveJobId, 10);
+          await candidateService.updateCandidateJobScoreDescription(
+            uuid,
+            numericJId,
+            candidateEditForm.match_reasoning,
+          );
+        }
+      }
 
       setCandidates((prev) =>
         prev.map((c) => {
@@ -302,6 +342,27 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
               updatedCand.total_experience = payload.exp;
               updatedCand.experience_years = `${payload.exp} years`;
             }
+
+            if (isMatchReasoningChanged) {
+              if (updatedCand.job_score?.candidate_match_score) {
+                updatedCand.job_score = {
+                  ...updatedCand.job_score,
+                  candidate_match_score: {
+                    ...updatedCand.job_score.candidate_match_score,
+                    description: candidateEditForm.match_reasoning,
+                  },
+                };
+              } else if (updatedCand.job_score_obj?.candidate_match_score) {
+                updatedCand.job_score_obj = {
+                  ...updatedCand.job_score_obj,
+                  candidate_match_score: {
+                    ...updatedCand.job_score_obj.candidate_match_score,
+                    description: candidateEditForm.match_reasoning,
+                  },
+                };
+              }
+            }
+
             return updatedCand;
           }
           return c;
@@ -1282,6 +1343,23 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                       }
                       placeholder="e.g. Bengaluru"
                       className="w-full border-b border-[#D1D1D6] py-1 text-base font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 col-span-2">
+                    <label className="text-xs font-normal uppercase text-[#8E8E93]">
+                      Match Reasoning
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={candidateEditForm.match_reasoning}
+                      onChange={(e) =>
+                        setCandidateEditForm({
+                          ...candidateEditForm,
+                          match_reasoning: e.target.value,
+                        })
+                      }
+                      placeholder="Enter match reasoning..."
+                      className="w-full border border-[#D1D1D6] rounded-lg p-2.5 text-sm font-medium text-gray-700 outline-none focus:border-[#0F47F2] transition-colors resize-none"
                     />
                   </div>
                 </div>
