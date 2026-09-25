@@ -46,6 +46,8 @@ import {
   type LiveTranscript,
 } from "../../../services/jobPipelineDashboardService";
 
+const MIN_MANUAL_RECORDING_BYTES = 4096;
+
 function RecruiterGuidancePanel({ recruiter_guidance }: { recruiter_guidance?: string | null }) {
   const [showHelper, setShowHelper] = useState(false);
 
@@ -881,7 +883,7 @@ export default function CandidateCallPage() {
           const currentUuid = callUuid || callUuidRef.current;
           const currentJobId = getValidJobId();
 
-          if (candidate && currentUuid && audioBlob.size > 0) {
+          if (candidate && currentUuid && audioBlob.size >= MIN_MANUAL_RECORDING_BYTES) {
             console.log("Submitting manual recording audio file...");
             const formData = new FormData();
             formData.append("audio", audioBlob, "manual_call.webm");
@@ -901,6 +903,13 @@ export default function CandidateCallPage() {
             } catch (err) {
               console.error("Failed to submit manual recording audio:", err);
             }
+          } else if (audioBlob.size < MIN_MANUAL_RECORDING_BYTES) {
+            console.error("Recording capture produced an incomplete audio file", {
+              bytes: audioBlob.size,
+            });
+            showToast.error(
+              "No usable audio was captured. Check microphone access and record again.",
+            );
           }
 
           // Clean up the stream
