@@ -230,13 +230,19 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
 
                     {/* Bottom Row: Mode + Action Buttons */}
                     <div className="flex items-center justify-between">
-                      <div className='flex item-center gap-4'>
-
-                        <span className="text-[10px] font-semibold px-2.5 py-0.5 bg-white border border-gray-250 text-gray-600 rounded-md shadow-sm">
-                          {event.mode || 'Virtual'}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-semibold px-2 py-0.5 bg-white border border-gray-200 text-gray-700 rounded-md shadow-sm flex items-center gap-1">
+                          <span className="text-gray-500 font-medium">Screening Score:</span>
+                          <span className="font-bold text-[#0F47F2]">
+                            {event.screening_score !== undefined && event.screening_score !== null
+                              ? `${event.screening_score}`
+                              : event.resume_score !== undefined && event.resume_score !== null
+                              ? `${event.resume_score}`
+                              : 'N/A'}
+                          </span>
                         </span>
                         <p
-                          className="text-[10px] font-bold uppercase tracking-wider mb-1 px-2.5 py-0.5 bg-white border border-gray-250 text-gray-600 rounded-md shadow-sm bg-green-500/20 text-green-500 font-bold"
+                          className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-white border border-gray-250 rounded-md shadow-sm bg-green-500/20 font-bold"
                           style={{ color: config.text }}
                         >
                           {ws.interview_type || event.stage?.name || '-'}

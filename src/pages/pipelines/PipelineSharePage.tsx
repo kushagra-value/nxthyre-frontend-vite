@@ -1915,11 +1915,9 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             company: (company || "").trim(),
             role: (role || "").trim(),
             location: city || "",
-            notice_period_days: (app.candidate.notice_period_summary || "")
-              .toString()
-              .replace(" days", ""),
-            current_salary: app.candidate.current_salary_lpa || "",
-            total_experience: (app.candidate.experience_years || "")
+            notice_period_days: app.candidate.notice_period_summary || (app.candidate.notice_period_days != null ? `${app.candidate.notice_period_days} days` : ""),
+            current_salary: app.candidate.current_salary_lpa || app.candidate.current_salary || app.candidate.current_ctc || "",
+            total_experience: (app.candidate.experience_years || app.candidate.total_experience || "")
               .toString()
               .replace(/[^0-9+]/g, ""),
             avatar:
@@ -1932,11 +1930,11 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 .toUpperCase(),
             profile_picture_url: app.candidate.profile_picture_url || null,
             notes: "",
-            job_score: app.job_score_obj || app.job_score, // Use job_score_obj if available
+            job_score: app.job_score_obj || app.job_score || app.candidate?.job_score_obj || app.candidate?.job_score, // Use job_score_obj if available
             expected_salary:
-              app.candidate.expected_ctc_lpa ||
-              app.candidate.expected_ctc ||
-              "--",
+              app.candidate.expected_ctc
+                ? `${app.candidate.expected_ctc} LPA`
+                : app.candidate.expected_ctc_lpa || "--",
             time_added: app.time_added || "-- days ago",
             lastUpdated: new Date(app.last_active_at || Date.now()),
             stage_slug: app.stage_slug,

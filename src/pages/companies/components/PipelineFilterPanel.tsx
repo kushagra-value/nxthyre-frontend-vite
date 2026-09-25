@@ -450,81 +450,77 @@ export default function PipelineFilterPanel({
   if (!isOpen) return null;
 
   return createPortal(
-    <div
-      ref={panelRef}
-      className="fixed bg-white rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-[#E5E7EB] z-[9999] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
-      style={{ 
-        top: coords.top - window.scrollY, 
-        left: coords.left - window.scrollX,
-        width: coords.width,
-        maxHeight: "calc(100vh - 100px)"
-      }}
-    >
-      <div className="flex h-[450px] max-h-[60vh]">
-        {/* Left Sidebar */}
-        <div className="w-[200px] bg-[#F9FAFB] border-r border-[#E5E7EB] py-4 overflow-y-auto">
-          <div className="flex flex-col">
-            {TABS.map((tab) => {
-              const count = getFilterCount(tab.key);
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => {
-                    setActiveTab(tab.key);
-                    setSearchQuery("");
-                  }}
-                  className={`w-full flex items-center justify-between px-5 py-3 text-sm transition-colors ${
-                    activeTab === tab.key
-                      ? "text-[#0F47F2] bg-white border-y border-[#E5E7EB] font-medium"
-                      : "text-gray-600 hover:bg-gray-100 border-y border-transparent"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{tab.label}</span>
-                    {count > 0 && (
-                      <span className="w-5 h-5 rounded-full bg-[#E7EDFF] text-[#0F47F2] text-[11px] font-bold flex items-center justify-center">
-                        {count}
-                      </span>
-                    )}
-                  </div>
-                  <ChevronRight
-                    className={`w-4 h-4 ${
-                      activeTab === tab.key ? "text-[#0F47F2]" : "hidden"
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div
+        ref={panelRef}
+        className="bg-white rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.16)] border border-[#E5E7EB] w-full max-w-[650px] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+      >
+        <div className="flex h-[450px] max-h-[60vh]">
+          {/* Left Sidebar */}
+          <div className="w-[200px] bg-[#F9FAFB] border-r border-[#E5E7EB] py-4 overflow-y-auto">
+            <div className="flex flex-col">
+              {TABS.map((tab) => {
+                const count = getFilterCount(tab.key);
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => {
+                      setActiveTab(tab.key);
+                      setSearchQuery("");
+                    }}
+                    className={`w-full flex items-center justify-between px-5 py-3 text-sm transition-colors ${
+                      activeTab === tab.key
+                        ? "text-[#0F47F2] bg-white border-y border-[#E5E7EB] font-medium"
+                        : "text-gray-600 hover:bg-gray-100 border-y border-transparent"
                     }`}
-                  />
-                </button>
-              );
-            })}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{tab.label}</span>
+                      {count > 0 && (
+                        <span className="w-5 h-5 rounded-full bg-[#E7EDFF] text-[#0F47F2] text-[11px] font-bold flex items-center justify-center">
+                          {count}
+                        </span>
+                      )}
+                    </div>
+                    <ChevronRight
+                      className={`w-4 h-4 ${
+                        activeTab === tab.key ? "text-[#0F47F2]" : "hidden"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Content */}
+          <div className="flex-1 overflow-y-auto">
+            {renderContent()}
           </div>
         </div>
 
-        {/* Right Content */}
-        <div className="flex-1 overflow-y-auto">
-          {renderContent()}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="bg-white border-t border-[#E5E7EB] px-6 py-4 flex items-center justify-between flex-shrink-0">
-        <button
-          onClick={handleReset}
-          className="text-sm font-medium text-gray-500 hover:text-gray-700"
-        >
-          Reset All
-        </button>
-        <div className="flex items-center gap-3">
+        {/* Footer */}
+        <div className="bg-white border-t border-[#E5E7EB] px-6 py-4 flex items-center justify-between flex-shrink-0">
           <button
-            onClick={onClose}
-            className="px-6 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+            onClick={handleReset}
+            className="text-sm font-medium text-gray-500 hover:text-gray-700"
           >
-            Cancel
+            Reset All
           </button>
-          <button
-            onClick={handleApply}
-            className="px-6 py-2 rounded-lg text-sm font-medium bg-[#0F47F2] text-white hover:opacity-90"
-          >
-            Apply Filters
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="px-6 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleApply}
+              className="px-6 py-2 rounded-lg text-sm font-medium bg-[#0F47F2] text-white hover:opacity-90"
+            >
+              Apply Filters
+            </button>
+          </div>
         </div>
       </div>
     </div>,

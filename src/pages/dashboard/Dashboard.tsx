@@ -508,11 +508,11 @@ export default function Dashboard() {
       setDateRangePreset('today');
       setCustomStartDate(undefined);
       setCustomEndDate(undefined);
-    } else if (labelLower === 'last week') {
-      setDateRangePreset('last_week');
+    } else if (labelLower === 'last 7 days' || labelLower === 'last 1 week' || labelLower === 'last week') {
+      setDateRangePreset('last_1_week');
       setCustomStartDate(undefined);
       setCustomEndDate(undefined);
-    } else if (labelLower === 'last month') {
+    } else if (labelLower === 'last 1 month' || labelLower === 'last month') {
       setDateRangePreset('last_month');
       setCustomStartDate(undefined);
       setCustomEndDate(undefined);
@@ -742,38 +742,41 @@ export default function Dashboard() {
                     column.cards.sort((a, b) => b.daysAgo - a.daysAgo);
                   }
                   return (
-                    <div key={column.id} className="bg-[#F3F5F7] rounded-xl p-2.5 flex flex-col gap-2.5 flex-1 h-full min-h-[300px]">
-                      <div className="flex items-center justify-between px-1 py-1 shrink-0">
+                    <div key={column.id} className="bg-[#F8FAFC] rounded-2xl p-3 flex flex-col gap-3 flex-1 h-full min-h-[320px] border border-[#E2E8F0]/60">
+                      {/* Column Header */}
+                      <div className="flex items-center justify-between px-1 py-0.5 shrink-0">
                         <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: column.dotColor }}></div>
-                          <span className="text-sm font-normal text-[#4B5563] leading-[17px]">{column.title}</span>
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: column.dotColor }}></span>
+                          <h3 className="text-sm font-semibold text-[#1E293B]">{column.title}</h3>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-sm font-normal" style={{ color: column.accentColor }}>{column.totalCount}</span>
-                        </div>
+                        <span className="px-2 py-0.5 rounded-full bg-white text-[#0F47F2] text-xs font-semibold border border-[#E2E8F0] shadow-2xs">
+                          {column.totalCount}
+                        </span>
                       </div>
 
-                      <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col gap-2.5 min-h-0">
-                        {column.cards.length === 0 && (
-                          <div className="flex items-center justify-center py-8 text-sm text-[#8E8E93]">
-                            No items
+                      {/* Card Container List */}
+                      <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-2.5 min-h-0 pr-0.5">
+                        {column.cards.length === 0 ? (
+                          <div className="flex items-center justify-center py-10 text-xs font-medium text-[#94A3B8]">
+                            No priority items
                           </div>
+                        ) : (
+                          column.cards.map((card) => (
+                            <PriorityCard
+                              key={card.id}
+                              name={card.name}
+                              role={card.role}
+                              company={card.company}
+                              daysAgo={card.daysAgo}
+                              status={card.status}
+                              statusColor={card.statusColor}
+                              isDone={card.isDone}
+                              latestCallNote={card.latestCallNote}
+                              latestCallTags={card.latestCallTags}
+                              onClick={() => handlePriorityCardClick(card, tabKey)}
+                            />
+                          ))
                         )}
-                        {column.cards.map((card) => (
-                          <PriorityCard
-                            key={card.id}
-                            name={card.name}
-                            role={card.role}
-                            company={card.company}
-                            daysAgo={card.daysAgo}
-                            status={card.status}
-                            statusColor={card.statusColor}
-                            isDone={card.isDone}
-                            latestCallNote={card.latestCallNote}
-                            latestCallTags={card.latestCallTags}
-                            onClick={() => handlePriorityCardClick(card, tabKey)}
-                          />
-                        ))}
                       </div>
                     </div>
                   );

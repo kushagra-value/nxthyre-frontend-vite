@@ -41,6 +41,8 @@ import apiClient from "../../../services/api";
 import {
   getCandidateCallHistory,
   CallHistoryEntry,
+  getRecordingEvent,
+  RecordingEvent,
 } from "../../../services/jobPipelineDashboardService";
 import { EventForm } from "../../schedules/components/EventForm";
 import QuickFitSummaryProgress from "./QuickFitSummaryProgress";
@@ -89,7 +91,7 @@ export default function JobCandidateProfile({
   // Extract data from the raw API response
   const cand = candidate?.candidate || {};
   const contextualDetails = candidate?.contextual_details || {};
-  const jobScoreObj = contextualDetails?.job_score_obj || {};
+  const jobScoreObj = candidate?.job_score_obj || candidate?.job_score || contextualDetails?.job_score_obj || cand?.job_score_obj || cand?.job_score || {};
   const matchScore = jobScoreObj?.candidate_match_score || {};
   const quickFitSummary = jobScoreObj?.quick_fit_summary || [];
   const statusTags = candidate?.status_tags || [];
@@ -115,12 +117,19 @@ export default function JobCandidateProfile({
   const premiumData = cand.premium_data || {};
   const noticePeriod =
     cand.notice_period_summary ||
-    (cand.notice_period_days ? `${cand.notice_period_days} Days` : "--");
+    (cand.notice_period_days ? `${cand.notice_period_days} Days` : (cand.notice_period || "--"));
   const totalExp =
     cand.total_experience != null
       ? `${cand.total_experience} years`
       : cand.experience_years || "--";
-  const currentSalary = cand.current_salary_lpa || "--";
+  const currentSalary =
+    cand.current_salary_lpa ||
+    cand.current_salary ||
+    (cand.current_ctc ? `${cand.current_ctc} LPA` : "--");
+  const expectedSalary =
+    cand.expected_ctc
+      ? (cand.expected_ctc.toString().includes("LPA") ? cand.expected_ctc : `${cand.expected_ctc} LPA`)
+      : cand.expected_ctc_lpa || "--";
 
   // AI Interview Report
   const aiReport =
@@ -252,6 +261,7 @@ export default function JobCandidateProfile({
 
   // ── Call History State ────────────────────────────────────
   const [callHistory, setCallHistory] = useState<CallHistoryEntry[]>([]);
+  const [recordingEvents, setRecordingEvents] = useState<Record<string, RecordingEvent>>({});
   const [loadingCalls, setLoadingCalls] = useState(false);
   const [expandedCallId, setExpandedCallId] = useState<number | null>(null);
   const [showTranscript, setShowTranscript] = useState<number | null>(null);
@@ -434,14 +444,31 @@ export default function JobCandidateProfile({
       .finally(() => setLoadingActivities(false));
   }, [cand.id, applicationId, cand.full_name]);
 
-  // ── Fetch Call History ────────────────────────────────────
+  // ── Fetch Call History & Recording Events ─────────────────
   useEffect(() => {
     if (!cand.id || activeTab !== "call") return;
     setLoadingCalls(true);
     const rawPhone = premiumData?.phone || (cand as any)?.phone || "";
     const candidatePhone = rawPhone ? (rawPhone.startsWith("91") ? rawPhone : `91${rawPhone.replace(/\D/g, "")}`) : undefined;
     getCandidateCallHistory(cand.id, candidatePhone)
-      .then((data) => setCallHistory(data))
+      .then(async (data) => {
+        setCallHistory(data);
+        const eventsMap: Record<string, RecordingEvent> = {};
+        const uuids = data.map((c) => c.call_uuid).filter((u): u is string => !!u);
+        await Promise.all(
+          uuids.map(async (uuid) => {
+            try {
+              const evt = await getRecordingEvent(uuid);
+              if (evt) {
+                eventsMap[uuid] = evt;
+              }
+            } catch (e) {
+              // Ignore 404 when no recording event was logged for a call
+            }
+          })
+        );
+        setRecordingEvents(eventsMap);
+      })
       .catch((err) => {
         console.error("Error fetching call history:", err);
         setCallHistory([]);
@@ -2639,6 +2666,39 @@ export default function JobCandidateProfile({
                                 </ul>
                               </div>
                             )}
+
+                            {/* Recording Event Observability Badge (Start/Stop Timestamps) */}
+                            {call.call_uuid && recordingEvents[call.call_uuid] && (() => {
+                              const recEvt = recordingEvents[call.call_uuid];
+                              const startTimeStr = recEvt.started_at
+                                ? new Date(recEvt.started_at).toLocaleString([], { dateStyle: "short", timeStyle: "medium" })
+                                : null;
+                              const endTimeStr = recEvt.ended_at
+                                ? new Date(recEvt.ended_at).toLocaleString([], { dateStyle: "short", timeStyle: "medium" })
+                                : null;
+                              return (
+                                <div className="mt-4 p-3 bg-red-50/80 border border-red-200/80 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+                                  <div className="flex items-center gap-2 font-bold text-red-700">
+                                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                    <span>Recording Event Logged</span>
+                                  </div>
+                                  <div className="flex items-center gap-4 text-[11px] font-medium text-slate-700">
+                                    {startTimeStr && (
+                                      <span>
+                                        <strong className="text-slate-900">Start Time:</strong> {startTimeStr}
+                                      </span>
+                                    )}
+                                    {endTimeStr ? (
+                                      <span>
+                                        <strong className="text-slate-900">End Time:</strong> {endTimeStr}
+                                      </span>
+                                    ) : (
+                                      <span className="text-amber-700 font-bold">Ended: In Progress</span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
 
                             {/* Transcript Toggle */}
                             {call.recording?.transcript && (

@@ -12,6 +12,7 @@ import dashboardService, {
 } from "../../services/dashboardService";
 import {
     Search,
+    Loader2,
     ChevronLeft,
     ChevronRight,
     Plus,
@@ -664,7 +665,6 @@ export default function Companies() {
                                 <div className="flex items-center gap-2">
 
                                     <div className="relative w-full max-w-[240px]">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
                                         <input
                                             type="text"
                                             placeholder="Search for companies"

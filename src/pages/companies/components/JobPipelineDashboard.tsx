@@ -329,13 +329,15 @@ const statusColor = (
 };
 
 const getQuestionAnalysisScore = (item: CandidateListItem): number | null => {
-  if (item.question_analysis != null) return item.question_analysis;
-  if (item.questioion_analysis != null) return item.questioion_analysis;
+  if (item.question_analysis != null) return Number(item.question_analysis);
+  if (item.questioion_analysis != null) return Number(item.questioion_analysis);
+  if ((item as any).screening_score != null) return Number((item as any).screening_score);
 
   const cand = item.candidate;
   if (cand) {
-    if (cand.question_analysis != null) return cand.question_analysis;
-    if (cand.questioion_analysis != null) return cand.questioion_analysis;
+    if (cand.question_analysis != null) return Number(cand.question_analysis);
+    if (cand.questioion_analysis != null) return Number(cand.questioion_analysis);
+    if ((cand as any).screening_score != null) return Number((cand as any).screening_score);
   }
 
   const getAverage = (obj: any) => {
@@ -357,10 +359,12 @@ const getQuestionAnalysisScore = (item: CandidateListItem): number | null => {
   const candAvg = getAverage(cand);
   if (candAvg != null) return candAvg;
 
-  const jobScore = item.job_score || (item as any).contextual_details?.job_score_obj;
+  const jobScore = item.job_score || (item as any).contextual_details?.job_score_obj || (item as any).job_score_obj;
   if (jobScore) {
     const jsAvg = getAverage(jobScore);
     if (jsAvg != null) return jsAvg;
+    if (jobScore.question_analysis != null) return Number(jobScore.question_analysis);
+    if (jobScore.questioion_analysis != null) return Number(jobScore.questioion_analysis);
   }
 
   return null;
@@ -2403,9 +2407,15 @@ export default function JobPipelineDashboard({
   const renderCandidateCard = useCallback(
     (item: any, isArchived: boolean, list: any[], idx: number, stageSlug: string) => {
       const cand = item.candidate;
-      const aiScoreRaw = item.job_score?.candidate_match_score?.score || "--%";
+      const aiScoreRaw =
+        item.job_score?.candidate_match_score?.score ||
+        item.job_score_obj?.candidate_match_score?.score ||
+        cand?.job_score?.candidate_match_score?.score ||
+        cand?.job_score_obj?.candidate_match_score?.score ||
+        (item.score != null ? `${item.score}%` : null) ||
+        "--%";
       const aiScoreNum = parseInt(aiScoreRaw.replace("%", ""), 10) || 0;
-      const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : "#FF383C";
+      const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : aiScoreNum > 0 ? "#FF383C" : "#E5E7EB";
 
       const isDisabled =
         selectionType === (isArchived ? "ACTIVE" : "ARCHIVED") ||
@@ -2414,15 +2424,31 @@ export default function JobPipelineDashboard({
       const headline = cand.headline || "--";
       const companyName = cand.experience_summary?.title || "--";
 
+      const currentCtcDisplay = cand.current_salary_lpa
+        ? `CTC: ${cand.current_salary_lpa}`
+        : cand.current_salary
+          ? `CTC: ${cand.current_salary}`
+          : cand.current_ctc
+            ? `CTC: ${cand.current_ctc} LPA`
+            : null;
+
+      const expectedCtcDisplay = cand.expected_ctc
+        ? `Exp: ${cand.expected_ctc.toString().includes("LPA") ? cand.expected_ctc : `${cand.expected_ctc} LPA`}`
+        : cand.expected_ctc_lpa
+          ? `Exp: ${cand.expected_ctc_lpa} LPA`
+          : null;
+
+      const noticeText = cand.notice_period_summary || (cand.notice_period_days != null ? `${cand.notice_period_days} days` : (cand.notice_period || null));
+
       return (
         <div
           key={item.id}
           draggable={!isArchived}
           onDragStart={(e) => !isArchived && handleDragStart(e, item)}
-          className={`${isArchived ? "bg-[#F9FAFB] grayscale opacity-60" : "bg-white cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30"} border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm transition-all flex flex-col gap-3 relative ${isDisabled && !isArchived ? "opacity-60" : ""} ${isDisabled && isArchived ? "opacity-40" : ""}`}
+          className={`${isArchived ? "bg-[#F9FAFB] grayscale opacity-60 border-[#D1D5DB]" : "bg-white cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30"} border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm transition-all flex flex-col gap-3 relative ${isDisabled && !isArchived ? "opacity-60" : ""} ${isDisabled && isArchived ? "opacity-40" : ""}`}
         >
           <div className="flex justify-between items-start">
-            <div className="flex gap-3">
+            <div className="flex gap-3 min-w-0 flex-1">
               <div className="mt-1">
                 <input
                   type="checkbox"
@@ -2465,94 +2491,94 @@ export default function JobPipelineDashboard({
                         <DuplicateProfileIcon />
                       </div>
                     )}
-                  {isArchived ? (
-                    <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
-                  ) : (
-                    <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (menuOpenId === item.id) { setMenuOpenId(null); return; }
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          const mW = 192, mH = 260, gap = 8;
-                          const openUp = rect.bottom + mH + gap > window.innerHeight;
-                          const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
-                          const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
-                          let left = rect.right - mW;
-                          if (left < 8) left = 8;
-                          if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
-                          setMenuPos({ top, left });
-                          setMenuOpenId(item.id);
-                        }}
-                        className="p-0.5 hover:bg-gray-100 rounded-md transition-colors"
-                        title="Options"
+                  <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (menuOpenId === item.id) { setMenuOpenId(null); return; }
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const mW = 192, mH = 260, gap = 8;
+                        const openUp = rect.bottom + mH + gap > window.innerHeight;
+                        const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
+                        const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
+                        let left = rect.right - mW;
+                        if (left < 8) left = 8;
+                        if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
+                        setMenuPos({ top, left });
+                        setMenuOpenId(item.id);
+                      }}
+                      className="p-0.5 hover:bg-gray-100 rounded-md transition-colors"
+                      title="Options"
+                    >
+                      <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                    </button>
+                    {menuOpenId === item.id && (
+                      <div
+                        className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
+                        style={{ top: menuPos.top, left: menuPos.left }}
                       >
-                        <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
-                      </button>
-                      {menuOpenId === item.id && (
-                        <div
-                          className="fixed w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg z-[10000] py-1 animate-in fade-in slide-in-from-top-2 duration-200"
-                          style={{ top: menuPos.top, left: menuPos.left }}
-                        >
-                          <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), currentCtc: cand.current_ctc || "--", expectedCtc: cand.expected_ctc || "--", location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "", matchScore: item.job_score?.candidate_match_score?.score || cand.job_score?.candidate_match_score?.score || null }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
-                          <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
-                          <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
-                          {isAscendionWorkspace && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                runAscendionDuplicateCheck(cand.id);
-                                setMenuOpenId(null);
-                              }}
-                              disabled={
-                                (confirmedDuplicateIds.has(cand.id) || (cand.is_ascendion_duplicate === true && !verifiedNonDuplicateIds.has(cand.id))) ||
-                                ascendionCheckingIds.has(cand.id)
-                              }
-                              className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
-                              title={
-                                confirmedDuplicateIds.has(cand.id) || (cand.is_ascendion_duplicate === true && !verifiedNonDuplicateIds.has(cand.id))
-                                  ? "Duplicate found in Ascendion portal"
-                                  : "Submit to Ascendion portal"
-                              }
-                            >
-                              {ascendionCheckingIds.has(cand.id)
-                                ? "Submiting..."
-                                : "Submit"}
-                            </button>
-                          )}
-                          <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
-                          <button onClick={(e) => { e.stopPropagation(); setShiftStageItem(item); setShiftStageTargetId(null); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">Shift to Stage</button>
-                          <button onClick={(e) => { e.stopPropagation(); navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, { state: { shareOption: "full_profile", resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "" } }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Share Profile</button>
-                          <button onClick={(e) => { e.stopPropagation(); openFeedbackModal({ type: "archive", applicationIds: [item.id] }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Move to Archive</button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <p className="text-[13px] text-[#8E8E93] line-clamp-1 mt-0.5">{headline}</p>
-                {!isArchived && (
-                  <>
-                    <p className="text-[13px] font-medium text-[#4B5563] line-clamp-1">{companyName}</p>
-                    {(() => {
-                      const attentionTag = item.status_tags?.find((t: any) => t.text);
-                      const pill = getAttentionPill(item, attentionTag);
-                      if (!pill) return null;
-                      const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
-                      const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
-                      return (
-                        <div className="mt-1">
-                          <span
-                            className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full truncate max-w-full"
-                            style={{ backgroundColor: bgColor, color: textColor }}
-                            title={pill.text}
+                        <button onClick={(e) => { e.stopPropagation(); setCallModalCandidate({ id: cand.id, name: cand.full_name || "Unknown", avatarInitials: cand.full_name ? cand.full_name.substring(0, 2).toUpperCase() : "UN", headline: cand.headline || "--", phone: cand.premium_data?.phone || cand.premium_data?.all_phone_numbers?.[0] || "+91 98765 43210", experience: cand.total_experience != null ? `${cand.total_experience} Yrs` : (cand.experience_years?.replace(/\s*exp$/i, "") || "0"), currentCtc: cand.current_salary_lpa || cand.current_salary || (cand.current_ctc ? `${cand.current_ctc} LPA` : "--"), expectedCtc: cand.expected_ctc ? `${cand.expected_ctc} LPA` : (cand.expected_ctc_lpa || "--"), location: cand.location || "--", noticePeriod: cand.notice_period_summary || "--", callAttention: item.job_score?.call_attention || [], resumeUrl: cand.premium_data?.resume_url || "", matchScore: aiScoreRaw }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Call Candidate</button>
+                        <button onClick={(e) => { e.stopPropagation(); setCandidateEditing(item); setShowCandidateEditModal(true); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit Details</button>
+                        <button onClick={async (e) => { e.stopPropagation(); await handleCopyCandidateEmail(item); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Copy Mail ID</button>
+                        {isAscendionWorkspace && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              runAscendionDuplicateCheck(cand.id);
+                              setMenuOpenId(null);
+                            }}
+                            disabled={
+                              (confirmedDuplicateIds.has(cand.id) || (cand.is_ascendion_duplicate === true && !verifiedNonDuplicateIds.has(cand.id))) ||
+                              ascendionCheckingIds.has(cand.id)
+                            }
+                            className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] disabled:hover:bg-white disabled:opacity-50 flex items-center gap-2"
+                            title={
+                              confirmedDuplicateIds.has(cand.id) || (cand.is_ascendion_duplicate === true && !verifiedNonDuplicateIds.has(cand.id))
+                                ? "Duplicate found in Ascendion portal"
+                                : "Submit to Ascendion portal"
+                            }
                           >
-                            {pill.text}
-                          </span>
-                        </div>
-                      );
-                    })()}
-                  </>
+                            {ascendionCheckingIds.has(cand.id)
+                              ? "Submiting..."
+                              : "Submit"}
+                          </button>
+                        )}
+                        {!isArchived ? (
+                          <>
+                            <button onClick={(e) => { e.stopPropagation(); const ns = getNextStageForItem(item); if (!ns) { showToast.info("No next stage available"); return; } openFeedbackModal({ type: "move", applicationIds: [item.id], targetStageId: ns.id, targetStageName: ns.name }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">{getPrimaryMoveLabel(item)}</button>
+                            <button onClick={(e) => { e.stopPropagation(); setShiftStageItem(item); setShiftStageTargetId(null); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2">Shift to Stage</button>
+                            <button onClick={(e) => { e.stopPropagation(); navigate(`/candidate-profiles/${cand.id}?job_id=${jobId}`, { state: { shareOption: "full_profile", resumeUrl: cand.premium_data?.resume_url || cand.resume_url || "" } }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Share Profile</button>
+                            <button onClick={(e) => { e.stopPropagation(); openFeedbackModal({ type: "archive", applicationIds: [item.id] }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Move to Archive</button>
+                          </>
+                        ) : (
+                          <button onClick={async (e) => { e.stopPropagation(); try { const targetStage = stages.find((s) => s.slug === "shortlisted") || stages[0]; await apiClient.patch(`/jobs/applications/${item.id}/`, { current_stage: targetStage.id, status: "ACTIVE" }); showToast.success("Candidate unarchived successfully"); fetchStages(jobId); fetchArchivedCandidates(jobId); } catch (err) { showToast.error("Failed to unarchive candidate"); } setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#059669] hover:bg-[#ECFDF5] flex items-center gap-2"> Unarchive Candidate</button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <p className="text-[13px] text-[#6B7280] line-clamp-1 mt-0.5">{headline}</p>
+                {companyName && companyName !== "--" && (
+                  <p className="text-[13px] font-medium text-[#4B5563] line-clamp-1">{companyName}</p>
                 )}
+                {(() => {
+                  const attentionTag = item.status_tags?.find((t: any) => t.text);
+                  const pill = getAttentionPill(item, attentionTag);
+                  if (!pill) return null;
+                  const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
+                  const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                  return (
+                    <div className="mt-1">
+                      <span
+                        className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full truncate max-w-full"
+                        style={{ backgroundColor: bgColor, color: textColor }}
+                        title={pill.text}
+                      >
+                        {pill.text}
+                      </span>
+                    </div>
+                  );
+                })()}
                 {isArchived && item.archive_reason && (
                   <div className="bg-[#FEF2F2] px-2 py-1 rounded text-[10px] text-[#DC2626] font-medium mt-1 inline-flex items-center gap-1.5 w-fit max-w-[200px]">
                     <Archive className="w-3 h-3 shrink-0" />
@@ -2564,81 +2590,75 @@ export default function JobPipelineDashboard({
               </div>
             </div>
 
-            {!isArchived ? (
-              <div className="relative w-12 h-12 shrink-0">
-                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
-                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F2F2F7" strokeWidth="3" />
-                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="3" strokeDasharray={`${aiScoreNum}, 100`} strokeLinecap="round" />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#4B5563]">
-                  {aiScoreRaw === "--%" ? "0%" : aiScoreRaw}
-                </div>
+            <div className="relative w-12 h-12 shrink-0">
+              <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F2F2F7" strokeWidth="3" />
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="3" strokeDasharray={`${aiScoreNum}, 100`} strokeLinecap="round" />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#4B5563]">
+                {aiScoreRaw === "--%" ? "0%" : aiScoreRaw}
               </div>
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400 shrink-0">
-                --
-              </div>
-            )}
+            </div>
           </div>
 
-          <div className="flex justify-between items-center mt-auto">
-            {!isArchived && (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
-                  {cand.total_experience != null
-                    ? `${cand.total_experience} yrs`
-                    : cand.experience_years
-                      ? cand.experience_years.replace(/\s*exp$/i, "")
-                      : "--"}
-                </span>
+          <div className="flex justify-between items-center mt-auto pt-1 border-t border-gray-100">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
+                {cand.total_experience != null
+                  ? `${cand.total_experience} yrs`
+                  : cand.experience_years
+                    ? cand.experience_years.replace(/\s*exp$/i, "")
+                    : "--"}
+              </span>
+              {noticeText && (
                 <span
                   className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F3E8FF] text-[#7C3AED]"
                   title={cand.last_working_day ? `Last Working Day: ${formatDate(cand.last_working_day)}` : ""}
                 >
-                  {cand.notice_period_summary || "--"}
+                  {noticeText}
                   {cand.last_working_day && (
                     <span className="ml-1 opacity-80 text-[10px] font-normal italic">
                       ({formatDate(cand.last_working_day)})
                     </span>
                   )}
                 </span>
+              )}
+              {currentCtcDisplay && (
                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FFE4E6] text-[#E11D48]">
-                  {cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--"}
-                </span>
-                {(() => {
-                  const qaScore = getQuestionAnalysisScore(item);
-                  if (qaScore === null) return null;
-                  let bg = "bg-[#EBFFEE] text-[#069855]";
-                  if (qaScore < 60) {
-                    bg = "bg-[#FFF2F2] text-[#FF383C]";
-                  } else if (qaScore < 80) {
-                    bg = "bg-[#FFF7D6] text-[#D97706]";
-                  }
-                  return (
-                    <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${bg}`}>
-                      QA: {qaScore}%
+                  {currentCtcDisplay}
+                  {cand.current_take_home && (
+                    <span className="ml-1 opacity-80 text-[10px] font-normal italic">
+                      (fixed: {cand.current_take_home})
                     </span>
-                  );
-                })()}
-              </div>
-            )}
-            <div className={`flex items-center gap-1.5 shrink-0 ${isArchived ? "w-full justify-end" : ""}`}>
-              {isArchived && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F5F7] rounded-full">
-                  <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
-                  <span className="text-[11px] font-bold text-[#8E8E93]">
-                    {formatMovedDate(item.status_tags)}
-                  </span>
-                </div>
+                  )}
+                </span>
               )}
-              {!isArchived && (
-                <>
-                  <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
-                  <span className="text-[11px] font-bold text-[#8E8E93]">
-                    {formatMovedDate(item.status_tags)}
-                  </span>
-                </>
+              {expectedCtcDisplay && (
+                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FCE7F3] text-[#BE185D]">
+                  {expectedCtcDisplay}
+                </span>
               )}
+              {(() => {
+                const qaScore = getQuestionAnalysisScore(item);
+                if (qaScore === null) return null;
+                let bg = "bg-[#EBFFEE] text-[#069855]";
+                if (qaScore < 60) {
+                  bg = "bg-[#FFF2F2] text-[#FF383C]";
+                } else if (qaScore < 80) {
+                  bg = "bg-[#FFF7D6] text-[#D97706]";
+                }
+                return (
+                  <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${bg}`}>
+                    QA: {qaScore}%
+                  </span>
+                );
+              })()}
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+              <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
+              <span className="text-[11px] font-bold text-[#8E8E93]">
+                {formatMovedDate(item.status_tags)}
+              </span>
             </div>
           </div>
         </div>
@@ -4149,10 +4169,71 @@ export default function JobPipelineDashboard({
                             const cand = item.candidate;
                             const isDisabled = selectionType === "ACTIVE";
 
+                            const aiScoreRaw =
+                              item.job_score?.candidate_match_score?.score ||
+                              item.job_score_obj?.candidate_match_score?.score ||
+                              cand?.job_score?.candidate_match_score?.score ||
+                              cand?.job_score_obj?.candidate_match_score?.score ||
+                              (item.score != null ? `${item.score}%` : null) ||
+                              "--%";
+                            const aiScoreNum = parseInt(aiScoreRaw.replace("%", ""), 10) || 0;
+                            const aiScoreColor =
+                              aiScoreNum >= 70
+                                ? "#00C8B3"
+                                : aiScoreNum >= 40
+                                  ? "#FFCC00"
+                                  : aiScoreNum > 0
+                                    ? "#FF383C"
+                                    : "#E5E7EB";
+
+                            const ctcText =
+                              cand.current_salary_lpa ||
+                              (cand.current_ctc
+                                ? `${cand.current_ctc} LPA`
+                                : cand.current_salary
+                                  ? `${cand.current_salary}`
+                                  : "--");
+
+                            const ctcDisplay = (
+                              <span className="flex flex-col items-start gap-1">
+                                {ctcText}
+                                {cand.current_take_home && (
+                                  <span className="text-[#8E8E93] text-[10px] font-normal italic">
+                                    (fixed: {cand.current_take_home})
+                                  </span>
+                                )}
+                              </span>
+                            );
+
+                            const expectedCtc = cand.expected_ctc
+                              ? (cand.expected_ctc.toString().includes("LPA") ? cand.expected_ctc : `${cand.expected_ctc} LPA`)
+                              : cand.expected_ctc_lpa
+                                ? `${cand.expected_ctc_lpa} LPA`
+                                : "--";
+
+                            const noticePeriodText =
+                              cand.notice_period_summary ||
+                              (cand.notice_period_days != null
+                                ? `${cand.notice_period_days} Days`
+                                : cand.notice_period
+                                  ? `${cand.notice_period}`
+                                  : "--");
+
+                            const noticePeriodDisplay = (
+                              <span className="flex flex-col items-start gap-1">
+                                {noticePeriodText}
+                                {cand.last_working_day && (
+                                  <span className="text-[#8E8E93] text-[10px] font-normal italic">
+                                    (LWD: {formatDate(cand.last_working_day)})
+                                  </span>
+                                )}
+                              </span>
+                            );
+
                             return (
                               <tr
                                 key={item.id}
-                                className={`grayscale opacity-50 bg-gray-50/50 hover:bg-gray-100 transition-colors ${isDisabled ? "opacity-30" : ""}`}
+                                className={`grayscale opacity-60 bg-gray-50/50 hover:bg-gray-100 transition-colors ${isDisabled ? "opacity-30" : ""}`}
                               >
                                 <td className="px-4 py-5">
                                   <input
@@ -4197,8 +4278,28 @@ export default function JobPipelineDashboard({
                                   </div>
                                 </td>
                                 <td className="px-4 py-5">
-                                  <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400">
-                                    --%
+                                  <div className="relative w-9 h-9">
+                                    <svg
+                                      className="w-9 h-9 -rotate-90"
+                                      viewBox="0 0 36 36"
+                                    >
+                                      <path
+                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none"
+                                        stroke="#E5E7EB"
+                                        strokeWidth="3.5"
+                                      />
+                                      <path
+                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none"
+                                        stroke={aiScoreColor}
+                                        strokeWidth="3.5"
+                                        strokeDasharray={`${aiScoreNum}, 100`}
+                                      />
+                                    </svg>
+                                    <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#4B5563]">
+                                      {aiScoreNum}
+                                    </div>
                                   </div>
                                 </td>
                                 <td className="px-4 py-5">
@@ -4240,10 +4341,10 @@ export default function JobPipelineDashboard({
                                     );
                                   })()}
                                 </td>
-                                <td className="px-4 py-5 text-sm text-[#AEAEB2] whitespace-nowrap">
+                                <td className="px-4 py-5 text-sm text-[#8E8E93] whitespace-nowrap">
                                   <span className="truncate block" title={cand.location || "--"}>{cand.location || "--"}</span>
                                 </td>
-                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">
+                                <td className="px-4 py-5 text-sm text-[#8E8E93]">
                                   {cand.total_experience != null
                                     ? `${cand.total_experience} Yrs`
                                     : cand.experience_years
@@ -4253,14 +4354,14 @@ export default function JobPipelineDashboard({
                                       )
                                       : "--"}
                                 </td>
-                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">
-                                  --
+                                <td className="px-4 py-5 text-sm text-[#8E8E93] whitespace-nowrap">
+                                  {ctcDisplay}
                                 </td>
-                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">
-                                  --
+                                <td className="px-4 py-5 text-sm text-[#8E8E93] whitespace-nowrap">
+                                  {expectedCtc}
                                 </td>
-                                <td className="px-4 py-5 text-sm text-[#AEAEB2]">
-                                  --
+                                <td className="px-4 py-5 text-sm text-[#8E8E93] whitespace-nowrap">
+                                  {noticePeriodDisplay}
                                 </td>
                                 <td className="px-4 py-5 whitespace-nowrap">
                                   <span className="text-[10px] px-2 py-0.5 bg-gray-200 text-gray-500 rounded-full font-bold">

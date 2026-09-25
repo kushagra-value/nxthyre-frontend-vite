@@ -38,6 +38,9 @@ import {
   evaluateRoleQuestion,
   getLiveTranscript,
   processManualRecording,
+  logRecordingStartEvent,
+  logRecordingStopEvent,
+  getRecordingEvent,
   type CallStatus,
   type RoleQuestion,
   type LiveTranscript,
@@ -186,6 +189,12 @@ export default function CandidateCallPage() {
   const { candidateId, jobId: routeJobId } = useParams();
   const persistedJobId = sessionStorage.getItem("nxthyre_companies_jobId");
   const jobId = routeJobId && routeJobId !== "0" ? routeJobId : (persistedJobId || "0");
+  const effectiveJobId = (() => {
+    if (routeJobId && routeJobId !== "0" && routeJobId !== "undefined" && routeJobId !== "null") return routeJobId;
+    if (persistedJobId && persistedJobId !== "0" && persistedJobId !== "undefined" && persistedJobId !== "null") return persistedJobId;
+    if (jobId && jobId !== "0" && jobId !== "undefined" && jobId !== "null") return jobId;
+    return "";
+  })();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -709,11 +718,39 @@ export default function CandidateCallPage() {
     };
   }, [callUuid, callState]);
 
+
+  const getValidJobId = (): string => {
+    if (effectiveJobId) return effectiveJobId;
+    if (jobData?.id && String(jobData.id) !== "0") return String(jobData.id);
+    if (jobData?.job_id && String(jobData.job_id) !== "0") return String(jobData.job_id);
+    if ((candidate as any)?.job_id && String((candidate as any).job_id) !== "0") return String((candidate as any).job_id);
+    if ((candidate as any)?.jobId && String((candidate as any).jobId) !== "0") return String((candidate as any).jobId);
+    if (incomingCandidate?.job_id && String(incomingCandidate.job_id) !== "0") return String(incomingCandidate.job_id);
+    if (incomingCandidate?.jobId && String(incomingCandidate.jobId) !== "0") return String(incomingCandidate.jobId);
+    return "";
+  };
+
   // ─── Call Controls ───────────────────────────────────
   const handleEndCall = useCallback(async () => {
     if (isEndingCall) return;
     setIsEndingCall(true);
+    const targetJobId = getValidJobId();
     try {
+      if (isRecording && callUuid) {
+        try {
+          await stopRecording(callUuid);
+          if (candidate?.id && targetJobId) {
+            await logRecordingStopEvent({
+              callUuid,
+              candidateId: candidate.id,
+              jobId: targetJobId,
+            });
+          }
+        } catch (err) {
+          console.error("Error stopping recording on end call:", err);
+        }
+        setIsRecording(false);
+      }
       if (callUuid) {
         try {
           await hangupCall(callUuid);
@@ -739,22 +776,49 @@ export default function CandidateCallPage() {
     } finally {
       setIsEndingCall(false);
     }
-  }, [callUuid, isEndingCall]);
+  }, [callUuid, isEndingCall, isRecording, candidate?.id, jobData, incomingCandidate, effectiveJobId]);
 
   const handleToggleRecording = useCallback(async () => {
     if (!callUuid) return;
+    const targetJobId = getValidJobId();
     try {
       if (isRecording) {
         await stopRecording(callUuid);
         setIsRecording(false);
+        if (candidate?.id && targetJobId) {
+          try {
+            await logRecordingStopEvent({
+              callUuid,
+              candidateId: candidate.id,
+              jobId: targetJobId,
+            });
+          } catch (e) {
+            console.error("Failed to log recording stop event:", e);
+          }
+        }
       } else {
         await startRecording(callUuid);
         setIsRecording(true);
+        if (candidate?.id && targetJobId) {
+          try {
+            const eventRes = await logRecordingStartEvent({
+              callUuid,
+              candidateId: candidate.id,
+              jobId: targetJobId,
+            });
+            if (eventRes?.call_uuid) {
+              setCallUuid(eventRes.call_uuid);
+              callUuidRef.current = eventRes.call_uuid;
+            }
+          } catch (e) {
+            console.error("Failed to log recording start event:", e);
+          }
+        }
       }
     } catch (err) {
       console.error("Recording toggle error:", err);
     }
-  }, [callUuid, isRecording]);
+  }, [callUuid, isRecording, candidate?.id, jobData, incomingCandidate, effectiveJobId]);
 
   // const handleToggleHold = () => {
   //   setIsPaused((prev) => {
@@ -771,12 +835,26 @@ export default function CandidateCallPage() {
   // };
 
   const toggleManualRecording = async () => {
+    const targetJobId = getValidJobId();
     if (isManualRecordingRef.current) {
       // ── STOP VOICE RECORDING ──
       isManualRecordingRef.current = false;
       setIsManualRecording(false);
       isManualRecordingPausedRef.current = false;
       setIsManualRecordingPaused(false);
+
+      const activeUuid = callUuid || callUuidRef.current;
+      if (candidate?.id && targetJobId && activeUuid) {
+        try {
+          await logRecordingStopEvent({
+            callUuid: activeUuid,
+            candidateId: candidate.id,
+            jobId: targetJobId,
+          });
+        } catch (e) {
+          console.error("Failed to log manual recording stop event:", e);
+        }
+      }
 
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
         mediaRecorderRef.current.stop();
@@ -802,17 +880,19 @@ export default function CandidateCallPage() {
         mediaRecorder.onstop = async () => {
           // Compile chunks into a single Blob
           const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+          const currentUuid = callUuid || callUuidRef.current;
+          const currentJobId = getValidJobId();
 
-          if (candidate && callUuid && audioBlob.size >= MIN_MANUAL_RECORDING_BYTES) {
+          if (candidate && currentUuid && audioBlob.size >= MIN_MANUAL_RECORDING_BYTES) {
             console.log("Submitting manual recording audio file...");
             const formData = new FormData();
             formData.append("audio", audioBlob, "manual_call.webm");
-            formData.append("call_uuid", callUuid);
+            formData.append("call_uuid", currentUuid);
             formData.append("candidate_id", candidate.id);
-            formData.append("recording_duration", seconds.toString());
-            if (jobId && jobId !== "0") {
-              formData.append("job_id", jobId);
+            if (currentJobId) {
+              formData.append("job_id", currentJobId);
             }
+            formData.append("recording_duration", seconds.toString());
 
             try {
               await processManualRecording(formData);
@@ -841,6 +921,23 @@ export default function CandidateCallPage() {
         setIsManualRecording(true);
         isManualRecordingPausedRef.current = false;
         setIsManualRecordingPaused(false);
+
+        // Log recording start event for manual recording
+        if (candidate?.id && targetJobId) {
+          try {
+            const eventRes = await logRecordingStartEvent({
+              callUuid: callUuid || callUuidRef.current || undefined,
+              candidateId: candidate.id,
+              jobId: targetJobId,
+            });
+            if (eventRes?.call_uuid) {
+              setCallUuid(eventRes.call_uuid);
+              callUuidRef.current = eventRes.call_uuid;
+            }
+          } catch (e) {
+            console.error("Failed to log manual recording start event:", e);
+          }
+        }
       } catch (err: any) {
         if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
           showToast.error("Microphone access failed. Please check permissions.");

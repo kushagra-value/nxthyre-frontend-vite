@@ -125,7 +125,7 @@ export interface PriorityActionsResponse {
 }
 
 export type PriorityTab = 'sourcing' | 'screening' | 'interview';
-export type DateRangePreset = 'today' | 'last_week' | 'last_month' | 'custom';
+export type DateRangePreset = 'today' | 'last_1_week' | 'last_month' | 'custom';
 
 export interface PriorityActionsParams {
   tab: PriorityTab;
@@ -223,9 +223,30 @@ export interface SidebarData {
 }
 
 export interface ActivityItem {
-  icon: string;
-  text: string;
-  time: string;
+  icon?: string;
+  text?: string;
+  time?: string;
+  category?: string;
+  activity_type?: string;
+  type?: string;
+  candidate_name?: string;
+  job_name?: string;
+  job_title?: string;
+  job_role?: string;
+  company_name?: string;
+  company?: string;
+  workspace_name?: string;
+  recruiter_name?: string;
+  recruiter?: string;
+  caller_name?: string;
+  created_by_name?: string;
+  user_name?: string;
+  resume_score?: number | string | null;
+  candidate_resume_score?: number | string | null;
+  candidate?: {
+    resume_score?: number | string | null;
+  };
+  [key: string]: any;
 }
 export interface ActivitySection {
   label: string;
@@ -366,6 +387,7 @@ export interface DailyActivitiesResponse {
   date: string;
   date_label: string;
   total_activities: number;
+  total_daily_calls?: number;
   summary: DailyActivitySummary;
   activities: DailyActivityItemAPI[];
   /** New: grouped summaries for the "All" tab */
@@ -375,6 +397,8 @@ export interface DailyActivitiesResponse {
   follow_ups?: DailyActivityDetailItem[];
   shortlisted?: DailyActivityDetailItem[];
   hired?: DailyActivityDetailItem[];
+  recruiter_calls?: { recruiter_id?: string | number; recruiter_name: string; calls_count?: number; calls_made?: number; count?: number }[];
+  recruiter_wise_calls?: { recruiter_id?: string | number; recruiter_name: string; calls_count?: number; calls_made?: number; count?: number }[];
 }
 
 // ──────────────────────────────────────────────
@@ -443,6 +467,8 @@ export interface ScheduleEventAPI {
   candidate_company?: string;
   candidate_name?: string;
   title?: string;
+  screening_score?: number | string | null;
+  resume_score?: number | string | null;
   id: string;
   status: string;
   is_done: boolean;
@@ -668,6 +694,8 @@ class DashboardService {
           candidate_company: ev.candidate_company || ev.company?.name,
           candidate_name: ev.candidate_name,
           title: ev.title,
+          screening_score: ev.screening_score ?? ev.screening_round_score ?? ev.screening_score_value ?? null,
+          resume_score: ev.resume_score ?? ev.candidate?.resume_score ?? ev.candidate_resume_score ?? null,
 
           widget_summary: {
             time: `${formatTime(start)} – ${formatTime(end)}`,
