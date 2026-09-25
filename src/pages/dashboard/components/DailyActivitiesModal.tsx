@@ -190,7 +190,7 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
           {activeTab === 'all' ? (
             <AllTabContent groupedItems={groupedItems} data={data} />
           ) : (
-            <DetailTabContent items={detailItems} tabKey={activeTab} />
+            <DetailTabContent items={detailItems} tabKey={activeTab} data={data} />
           )}
         </div>
       </div>
@@ -202,6 +202,22 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
 /* ═══════════════════════════════════════════════
    Sub-components
    ═══════════════════════════════════════════════ */
+
+import RecruiterFilterBar, {
+  getRecruiterFromItem,
+  filterCallsByRecruiter,
+} from './RecruiterFilterBar';
+
+/* ═══════════════════════════════════════════════
+   Sub-components
+   ═══════════════════════════════════════════════ */
+
+const UserIcon = (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
 
 function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle: string; onClose: () => void }) {
   return (
@@ -223,15 +239,19 @@ function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle: st
 }
 
 /** Renders a single detail card row — shared between All-tab expansion and per-category tabs */
-function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number }) {
+function DetailCard({ item, idx, selectedRecruiter }: { item: DailyActivityDetailItem; idx: number; selectedRecruiter?: string }) {
   const [showNote, setShowNote] = useState(false);
   const { icon, color, bg } = getIconForType(item.type);
   const isFailedCall = item.call_status && item.call_status.toLowerCase().includes("didn't pick");
   const isCall = (item.type || '').toLowerCase().includes('call') || item.type === 'phone';
+  const isShortlist = (item.type || '').toLowerCase().includes('shortlist');
 
+  const candidateName = item.candidate_name;
   const jobName = item.job_role || item.job_name || item.job || item.title;
   const companyName = item.company_name || item.company || item.workspace_name;
-  const recruiterName = item.recruiter_name || item.recruiter || item.caller_name || item.created_by_name || item.user_name;
+
+  const rec = getRecruiterFromItem(item);
+  const recruiterName = rec.name || (selectedRecruiter && selectedRecruiter !== 'all' ? selectedRecruiter : undefined);
 
   return (
     <div className={`py-3.5 ${idx > 0 ? 'border-t border-[#F3F5F7]' : ''}`}>
@@ -245,24 +265,76 @@ function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number 
         <div className="flex-1 min-w-0">
           {isCall ? (
             <>
-              {jobName && (
+              {candidateName ? (
+                <p className="m-0 text-sm font-semibold text-[#1C1C1E] leading-[18px]">
+                  {candidateName}
+                </p>
+              ) : jobName ? (
                 <p className="m-0 text-sm font-semibold text-[#1C1C1E] leading-[18px]">
                   {jobName}
                 </p>
+              ) : null}
+
+              {item.candidate_number && (
+                <a href={`tel:${item.candidate_number}`} className="m-0 text-xs text-[#0F47F2] font-medium leading-[16px] mt-0.5 block no-underline hover:underline">
+                  {item.candidate_number}
+                </a>
               )}
-              {companyName && (
+
+              {(jobName || companyName || item.experience) && (
                 <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
-                  <span className="font-medium text-[#4B5563]">Company:</span> {companyName}
+                  {[companyName ? `Company: ${companyName}` : null, candidateName && jobName ? `Role: ${jobName}` : null, item.experience].filter(Boolean).join(' • ')}
                 </p>
               )}
+
               {recruiterName && (
-                <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
-                  <span className="font-medium text-[#4B5563]">Recruiter:</span> {recruiterName}
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="text-xs font-medium text-[#6B7280]">Recruiter:</span>
+                  <span className="inline-flex items-center gap-1 bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded-md font-medium text-[11px]">
+                    {UserIcon} {recruiterName}
+                  </span>
+                </div>
+              )}
+
+              {item.detail_text && (
+                <p className="m-0 text-xs leading-[16px] mt-1" style={{ color: isFailedCall ? '#DC2626' : (item.detail_color || color) }}>
+                  {item.detail_text}
                 </p>
               )}
-              {item.candidate_name && !jobName && (
-                <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
+
+              <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mt-1">
+                {formatActivityTime(item)}
+                {item.call_duration ? ` · ${item.call_duration}` : ''}
+                {item.call_status ? ` · ${item.call_status}` : ''}
+              </p>
+            </>
+          ) : isShortlist ? (
+            <>
+              {candidateName && (
+                <p className="m-0 text-sm font-semibold text-[#1C1C1E] leading-[18px]">
+                  {candidateName}
+                </p>
               )}
+              {item.candidate_number && (
+                <a href={`tel:${item.candidate_number}`} className="m-0 text-xs text-[#0F47F2] font-medium leading-[16px] mt-0.5 block no-underline hover:underline">
+                  {item.candidate_number}
+                </a>
+              )}
+              {(jobName || companyName || item.experience) && (
+                <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
+                  {[companyName ? `Company: ${companyName}` : null, jobName ? `Role: ${jobName}` : null, item.experience].filter(Boolean).join(' • ')}
+                </p>
+              )}
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 bg-[#D1FAE5] text-[#059669] px-2 py-0.5 rounded-md font-medium text-[11px]">
+                  ★ Shortlisted Stage
+                </span>
+                {recruiterName && (
+                  <span className="inline-flex items-center gap-1 bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded-md font-medium text-[11px]">
+                    {UserIcon} Moved by: {recruiterName}
+                  </span>
+                )}
+              </div>
               <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mt-1">{formatActivityTime(item)}</p>
             </>
           ) : (
@@ -279,6 +351,14 @@ function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number 
                   {[item.company_name, item.job_role, item.experience].filter(Boolean).join(' | ')}
                 </p>
               )}
+              {recruiterName && (
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="text-xs font-medium text-[#6B7280]">Recruiter:</span>
+                  <span className="inline-flex items-center gap-1 bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded-md font-medium text-[11px]">
+                    {UserIcon} {recruiterName}
+                  </span>
+                </div>
+              )}
               {item.detail_text && (
                 <p className="m-0 text-xs leading-[16px] mt-1" style={{ color: isFailedCall ? '#DC2626' : (item.detail_color || color) }}>
                   {item.detail_text}
@@ -288,18 +368,7 @@ function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number 
           )}
         </div>
 
-        {/* Action button */}
-        {item.action_label && (item.action_type !== 'view_call_note' || item.call_note) && (
-          <button
-            onClick={() => {
-              if (item.action_type === 'view_call_note' && item.call_note) setShowNote(!showNote);
-            }}
-            className="shrink-0 text-[11px] font-medium px-3 py-1.5 rounded-md border transition-colors hover:opacity-80 self-center"
-            style={{ color, borderColor: color, background: bg }}
-          >
-            {item.action_label}
-          </button>
-        )}
+       
       </div>
 
       {/* Expanded call note */}
@@ -317,10 +386,13 @@ function DetailCard({ item, idx }: { item: DailyActivityDetailItem; idx: number 
 /** "All" tab — grouped summaries that expand inline to show detail cards */
 function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGroupedItem[]; data: DailyActivitiesResponse }) {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+  const [selectedRecruiter, setSelectedRecruiter] = useState<string>('all');
 
   if (groupedItems.length === 0) {
     return <div className="flex items-center justify-center py-12 text-sm text-[#8E8E93]">No activities recorded.</div>;
   }
+
+  const apiRecruiterCalls = data.recruiter_wise_calls || data.recruiter_calls;
 
   return (
     <>
@@ -329,7 +401,14 @@ function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGrou
         {groupedItems.map((item, idx) => {
           const { icon, color, bg } = getIconForType(item.type);
           const isExpanded = expandedGroup === item.id;
+          const isCallGroup = (item.type || '').toLowerCase().includes('call') || item.type === 'phone';
+          const isShortlistGroup = (item.type || '').toLowerCase().includes('shortlist');
+          const isFilterableGroup = isCallGroup || isShortlistGroup;
           const detailItems = isExpanded ? getDetailsForGroupType(data, item.type) : [];
+
+          const filteredDetails = isExpanded && isFilterableGroup
+            ? filterCallsByRecruiter(detailItems, selectedRecruiter, isCallGroup ? apiRecruiterCalls : undefined)
+            : detailItems;
 
           return (
             <div key={item.id} className={idx > 0 ? 'border-t border-[#F3F5F7]' : ''}>
@@ -342,7 +421,14 @@ function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGrou
                   <p className="m-0 text-sm text-[#1C1C1E] leading-[20px]">{item.title}</p>
                   {item.action_label && (
                     <button
-                      onClick={() => setExpandedGroup(isExpanded ? null : item.id)}
+                      onClick={() => {
+                        if (isExpanded) {
+                          setExpandedGroup(null);
+                        } else {
+                          setExpandedGroup(item.id);
+                          setSelectedRecruiter('all');
+                        }
+                      }}
                       className="mt-1 text-xs font-medium bg-transparent border-none p-0 cursor-pointer hover:underline flex items-center gap-1"
                       style={{ color }}
                     >
@@ -361,11 +447,27 @@ function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGrou
               </div>
 
               {/* Expanded detail cards */}
-              {isExpanded && detailItems.length > 0 && (
+              {isExpanded && (
                 <div className="ml-6 pl-6 mb-3 border-l-2 rounded-bl-lg" style={{ borderColor: bg }}>
-                  {detailItems.map((detail, dIdx) => (
-                    <DetailCard key={detail.id} item={detail} idx={dIdx} />
-                  ))}
+                  {isFilterableGroup && (
+                    <RecruiterFilterBar
+                      calls={detailItems}
+                      selectedRecruiter={selectedRecruiter}
+                      onSelectRecruiter={setSelectedRecruiter}
+                      recruiterCallsFromApi={isCallGroup ? apiRecruiterCalls : undefined}
+                      totalCalls={isCallGroup ? (data.total_daily_calls || data.summary?.calls_made) : data.summary?.shortlisted}
+                    />
+                  )}
+
+                  {filteredDetails.length > 0 ? (
+                    filteredDetails.map((detail, dIdx) => (
+                      <DetailCard key={detail.id || dIdx} item={detail} idx={dIdx} selectedRecruiter={selectedRecruiter} />
+                    ))
+                  ) : (
+                    <div className="py-4 text-center text-xs text-[#8E8E93]">
+                      No activities found for selected recruiter.
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -377,9 +479,19 @@ function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGrou
 }
 
 /** Per-category tab — shows detailed activity cards */
-function DetailTabContent({ items, tabKey }: { items: DailyActivityDetailItem[]; tabKey: TabKey }) {
+function DetailTabContent({ items, tabKey, data }: { items: DailyActivityDetailItem[]; tabKey: TabKey; data?: DailyActivitiesResponse }) {
+  const [selectedRecruiter, setSelectedRecruiter] = useState<string>('all');
   const cfg = TAB_CONFIG.find(t => t.key === tabKey);
   const sectionTitle = cfg ? `${cfg.label.toUpperCase()} ON THIS DAY` : 'ACTIVITIES';
+  const isCallTab = tabKey === 'call';
+  const isShortlistTab = tabKey === 'shortlist';
+  const isFilterableTab = isCallTab || isShortlistTab;
+
+  const apiRecruiterCalls = data?.recruiter_wise_calls || data?.recruiter_calls;
+
+  const filteredItems = isFilterableTab
+    ? filterCallsByRecruiter(items, selectedRecruiter, isCallTab ? apiRecruiterCalls : undefined)
+    : items;
 
   if (items.length === 0) {
     return <div className="flex items-center justify-center py-12 text-sm text-[#8E8E93]">No {cfg?.label.toLowerCase() || 'activities'} recorded.</div>;
@@ -388,13 +500,29 @@ function DetailTabContent({ items, tabKey }: { items: DailyActivityDetailItem[];
   return (
     <>
       <h3 className="uppercase text-[11px] font-semibold text-[#8E8E93] tracking-wider m-0 mb-5">{sectionTitle}</h3>
+      {isFilterableTab && (
+        <RecruiterFilterBar
+          calls={items}
+          selectedRecruiter={selectedRecruiter}
+          onSelectRecruiter={setSelectedRecruiter}
+          recruiterCallsFromApi={isCallTab ? apiRecruiterCalls : undefined}
+          totalCalls={isCallTab ? (data?.total_daily_calls || data?.summary?.calls_made) : data?.summary?.shortlisted}
+        />
+      )}
       <div className="flex flex-col">
-        {items.map((item, idx) => (
-          <DetailCard key={item.id} item={item} idx={idx} />
-        ))}
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item, idx) => (
+            <DetailCard key={item.id || idx} item={item} idx={idx} selectedRecruiter={selectedRecruiter} />
+          ))
+        ) : (
+          <div className="py-8 text-center text-xs text-[#8E8E93]">
+            No activities found for selected recruiter.
+          </div>
+        )}
       </div>
     </>
   );
 }
 
 export default DailyActivitiesModal;
+

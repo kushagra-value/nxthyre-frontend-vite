@@ -89,7 +89,7 @@ export default function JobCandidateProfile({
   // Extract data from the raw API response
   const cand = candidate?.candidate || {};
   const contextualDetails = candidate?.contextual_details || {};
-  const jobScoreObj = contextualDetails?.job_score_obj || {};
+  const jobScoreObj = candidate?.job_score_obj || candidate?.job_score || contextualDetails?.job_score_obj || cand?.job_score_obj || cand?.job_score || {};
   const matchScore = jobScoreObj?.candidate_match_score || {};
   const quickFitSummary = jobScoreObj?.quick_fit_summary || [];
   const statusTags = candidate?.status_tags || [];
@@ -115,12 +115,19 @@ export default function JobCandidateProfile({
   const premiumData = cand.premium_data || {};
   const noticePeriod =
     cand.notice_period_summary ||
-    (cand.notice_period_days ? `${cand.notice_period_days} Days` : "--");
+    (cand.notice_period_days ? `${cand.notice_period_days} Days` : (cand.notice_period || "--"));
   const totalExp =
     cand.total_experience != null
       ? `${cand.total_experience} years`
       : cand.experience_years || "--";
-  const currentSalary = cand.current_salary_lpa || "--";
+  const currentSalary =
+    cand.current_salary_lpa ||
+    cand.current_salary ||
+    (cand.current_ctc ? `${cand.current_ctc} LPA` : "--");
+  const expectedSalary =
+    cand.expected_ctc
+      ? (cand.expected_ctc.toString().includes("LPA") ? cand.expected_ctc : `${cand.expected_ctc} LPA`)
+      : cand.expected_ctc_lpa || "--";
 
   // AI Interview Report
   const aiReport =

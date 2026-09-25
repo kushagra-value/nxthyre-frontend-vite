@@ -203,7 +203,56 @@ const RecentActivities = () => {
         endDateStr,
         selectedCategories,
       );
-      setActivities(data);
+
+      // Client-side category filtering safeguard
+      if (!selectedCategories.includes("All") && selectedCategories.length > 0) {
+        const filteredSections = (data || [])
+          .map((section) => {
+            const filteredItems = (section.items || []).filter((item: any) => {
+              const cat = (item.category || item.activity_type || item.type || item.icon || "").toLowerCase();
+              const txt = (item.text || "").toLowerCase();
+
+              return selectedCategories.some((selectedCat) => {
+                if (selectedCat === "Mail Reader") {
+                  if (cat.includes("mail") || cat.includes("email") || cat.includes("reader") || cat.includes("envelope")) return true;
+                  if (
+                    (txt.includes("mail") || txt.includes("email") || txt.includes("feedback") || txt.includes("client") || txt.includes("presented") || txt.includes("profile") || txt.includes("shared")) &&
+                    !txt.includes("interview has been scheduled") &&
+                    !txt.includes("interview scheduled") &&
+                    !txt.includes("call made") &&
+                    !txt.includes("phone call")
+                  ) {
+                    return true;
+                  }
+                  return false;
+                }
+                if (selectedCat === "Calls") {
+                  if (cat.includes("call") || cat.includes("phone")) return true;
+                  if (txt.includes("call") || txt.includes("phone")) return true;
+                  if (item.caller_name || item.recruiter_name) return true;
+                  return false;
+                }
+                if (selectedCat === "Shortlist") {
+                  if (cat.includes("shortlist") || cat.includes("star")) return true;
+                  if (txt.includes("shortlist")) return true;
+                  return false;
+                }
+                if (selectedCat === "Followup") {
+                  if (cat.includes("follow") || cat.includes("bell")) return true;
+                  if (txt.includes("follow")) return true;
+                  return false;
+                }
+                return false;
+              });
+            });
+            return { ...section, items: filteredItems };
+          })
+          .filter((section) => section.items.length > 0);
+
+        setActivities(filteredSections);
+      } else {
+        setActivities(data);
+      }
       setLoading(false);
     };
 
@@ -290,10 +339,10 @@ const HiredIcon = (
       text = textContent || "";
     } else if (itemOrIconName && typeof itemOrIconName === "object") {
       iconKey =
-        itemOrIconName.icon ||
-        itemOrIconName.type ||
         itemOrIconName.category ||
         itemOrIconName.activity_type ||
+        itemOrIconName.type ||
+        itemOrIconName.icon ||
         itemOrIconName.source ||
         "";
       text = itemOrIconName.text || textContent || "";
@@ -302,102 +351,70 @@ const HiredIcon = (
     const t = (iconKey || "").toLowerCase().trim();
     const txt = (text || "").toLowerCase().trim();
 
-    // Calls / Phone
-    if (
-      t === "phone" ||
-      t.includes("call") ||
-      txt.includes("call") ||
-      txt.includes("phone")
-    ) {
+    // 1. Explicit Category / Type Matching (Highest Priority)
+    if (t.includes("mail") || t.includes("email") || t.includes("reader") || t.includes("envelope")) {
+      return MailIcon;
+    }
+    if (t.includes("shortlist") || t.includes("star")) {
+      return StarIcon;
+    }
+    if (t === "phone" || t.includes("call")) {
       return PhoneIcon;
     }
+    if (t.includes("interview") || t.includes("video") || t.includes("calendar") || t.includes("meeting")) {
+      return InterviewIcon;
+    }
+    if (t.includes("follow")) {
+      return BellIcon;
+    }
+    if (t.includes("hire") || t.includes("hired")) {
+      return HiredIcon;
+    }
+    if (t.includes("document") || t.includes("application") || t.includes("resume") || t.includes("file")) {
+      return DocumentIcon;
+    }
+    if (t.includes("message") || t.includes("chat") || t.includes("conversation")) {
+      return MessageIcon;
+    }
 
-    // Mail / Email / Feedback / Profile Shared / Presented / Mail Reader / Naukri / Agency
+    // 2. Active Selected Category Filter Intent (If specific single category filter is active)
+    if (selectedCategories.length === 1 && !selectedCategories.includes("All")) {
+      const activeCategory = selectedCategories[0];
+      if (activeCategory === "Mail Reader") return MailIcon;
+      if (activeCategory === "Shortlist") return StarIcon;
+      if (activeCategory === "Calls") return PhoneIcon;
+      if (activeCategory === "Followup") return BellIcon;
+    }
+
+    // 3. Fallback Text Keyword Matching
+    if (txt.includes("interview") || txt.includes("meeting")) {
+      return InterviewIcon;
+    }
+    if (txt.includes("shortlist")) {
+      return StarIcon;
+    }
+    if (txt.includes("call") || txt.includes("phone")) {
+      return PhoneIcon;
+    }
     if (
-      t.includes("mail") ||
-      t.includes("email") ||
-      t.includes("envelope") ||
-      t.includes("nauk") ||
-      t.includes("reader") ||
       txt.includes("mail") ||
       txt.includes("email") ||
       txt.includes("feedback") ||
       txt.includes("presented") ||
       txt.includes("profile") ||
       txt.includes("shared") ||
-      txt.includes("hiring manager") ||
-      txt.includes("agency") ||
       txt.includes("naukri")
     ) {
       return MailIcon;
     }
-
-    // Message / Chat / Conversation
-    if (
-      t.includes("message") ||
-      t.includes("chat") ||
-      t.includes("conversation") ||
-      txt.includes("message") ||
-      txt.includes("chat")
-    ) {
+    if (txt.includes("message") || txt.includes("chat")) {
       return MessageIcon;
     }
-
-    // Interview / Meeting / Calendar
-    if (
-      t.includes("calendar") ||
-      t.includes("interview") ||
-      t.includes("video") ||
-      t.includes("meeting") ||
-      txt.includes("interview") ||
-      txt.includes("meeting")
-    ) {
-      return InterviewIcon;
-    }
-
-    // Document / Application / Resume
-    if (
-      t.includes("application") ||
-      t.includes("document") ||
-      t.includes("file") ||
-      t.includes("resume") ||
-      txt.includes("resume") ||
-      txt.includes("application")
-    ) {
-      return DocumentIcon;
-    }
-
-    // Shortlist
-    if (
-      t.includes("shortlist") ||
-      t.includes("star") ||
-      txt.includes("shortlist")
-    ) {
-      return StarIcon;
-    }
-
-    // Followup / Bell
-    if (t.includes("follow") || txt.includes("follow")) {
+    if (txt.includes("follow")) {
       return BellIcon;
     }
-
-    // Hired
-    if (t.includes("hire") || txt.includes("hire") || txt.includes("hired")) {
+    if (txt.includes("hired") || txt.includes("hire")) {
       return HiredIcon;
-    }
-
-    // Active Category Filter Fallbacks
-    if (selectedCategories.includes("Mail Reader")) {
-      return MailIcon;
-    }
-    if (selectedCategories.includes("Calls")) {
-      return PhoneIcon;
-    }
-    if (selectedCategories.includes("Shortlist")) {
-      return StarIcon;
-    }
-    if (selectedCategories.includes("Followup")) {
-      return BellIcon;
     }
 
     return MailIcon;
@@ -537,11 +554,11 @@ const HiredIcon = (
                 </h4>
                 <div className="space-y-[18px]">
                   {section.items.map((item: any, itemIndex) => {
-                    const iconKey = item.icon || item.type || item.category || "";
+                    const iconKey = (item.category || item.activity_type || item.type || item.icon || "").toLowerCase();
                     const isCall =
-                      iconKey.toLowerCase().includes("phone") ||
-                      iconKey.toLowerCase().includes("call") ||
-                      (item.text && item.text.toLowerCase().includes("call"));
+                      iconKey.includes("phone") ||
+                      iconKey.includes("call") ||
+                      (selectedCategories.includes("Calls") && (item.caller_name || item.recruiter_name));
 
                     if (isCall) {
                       const jobName =
@@ -563,6 +580,9 @@ const HiredIcon = (
                         item.created_by_name ||
                         item.user_name;
 
+                      const candidateName = item.candidate_name || item.name;
+                      const resumeScore = item.resume_score ?? item.candidate_resume_score ?? item.candidate?.resume_score;
+
                       return (
                         <div key={itemIndex} className="flex gap-3">
                           <div className="mt-0.5 min-w-[32px]">
@@ -571,9 +591,16 @@ const HiredIcon = (
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[14px] font-semibold text-gray-900 font-inter leading-snug truncate">
-                              {jobName || item.text}
-                            </p>
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-[14px] font-semibold text-gray-900 font-inter leading-snug truncate">
+                                {candidateName || jobName || item.text}
+                              </p>
+                              {resumeScore !== undefined && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 border border-blue-100 text-[#0F47F2] rounded text-[10px] font-semibold shrink-0">
+                                  Score: {resumeScore !== null ? `${resumeScore}` : 'N/A'}
+                                </span>
+                              )}
+                            </div>
                             {companyName && (
                               <p className="text-xs text-gray-600 font-inter mt-0.5">
                                 <span className="text-gray-500 font-medium">Company:</span> {companyName}

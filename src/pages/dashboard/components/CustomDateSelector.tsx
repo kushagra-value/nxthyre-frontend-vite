@@ -6,7 +6,7 @@ interface CustomDateSelectorProps {
   onClose: () => void;
 }
 
-type Preset = 'Today' | 'Last Week' | 'Last Month' | 'Custom Date';
+type Preset = 'Today' | 'Last 7 Days' | 'Last 1 Month' | 'Custom Date';
 
 const CustomDateSelector: React.FC<CustomDateSelectorProps> = ({ onApply, onClose }) => {
   const [selectedPreset, setSelectedPreset] = useState<Preset>('Today');
@@ -15,7 +15,7 @@ const CustomDateSelector: React.FC<CustomDateSelectorProps> = ({ onApply, onClos
   const [endDate, setEndDate] = useState<Date | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const presets: Preset[] = ['Today', 'Last Week', 'Last Month', 'Custom Date'];
+  const presets: Preset[] = ['Today', 'Last 7 Days', 'Last 1 Month', 'Custom Date'];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -84,9 +84,9 @@ const CustomDateSelector: React.FC<CustomDateSelectorProps> = ({ onApply, onClos
       let end = new Date(today);
       end.setHours(23, 59, 59, 999);
 
-      if (preset === 'Last Week') {
+      if (preset === 'Last 7 Days') {
         start.setDate(today.getDate() - 7);
-      } else if (preset === 'Last Month') {
+      } else if (preset === 'Last 1 Month') {
         start.setMonth(today.getMonth() - 1);
       }
 

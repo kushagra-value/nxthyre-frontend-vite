@@ -16,6 +16,7 @@ import {
     UserCheck,
     UserCircle,
     Search,
+    Loader2,
     LayoutGrid,
     DownloadCloud,
     Pencil,
@@ -893,7 +894,7 @@ const JobListing: React.FC<JobListingProps> = ({
                     <div className="flex items-center gap-3">
                         {/* Column Visibility Filter */}
                         <div className="relative w-full max-w-[248px]">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
                             <input
                                 type="text"
                                 placeholder="Search for Jobs"
@@ -1039,7 +1040,68 @@ const JobListing: React.FC<JobListingProps> = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#F3F5F7]">
-                            {paginatedJobs.map((job: Job) => {
+                            {jobsLoading ? (
+                                [...Array(6)].map((_, rowIndex) => (
+                                    <tr key={`job-skel-${rowIndex}`} className="h-[72px] animate-pulse">
+                                        {columnsToRender.map((col) => {
+                                            if (col.key === 'checkbox') {
+                                                return (
+                                                    <td key={col.key} className="px-4 py-3 sticky left-0 bg-white z-[2]">
+                                                        <div className="w-4 h-4 rounded bg-gray-200" />
+                                                    </td>
+                                                );
+                                            }
+                                            if (col.key === 'jobTitle') {
+                                                return (
+                                                    <td key={col.key} className="px-4 py-3 sticky left-[42px] bg-white border-r border-[#E5E7EB] z-[2]">
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <div className="w-36 h-3.5 rounded-full bg-gray-200" />
+                                                            <div className="w-24 h-2.5 rounded-full bg-gray-100" />
+                                                        </div>
+                                                    </td>
+                                                );
+                                            }
+                                            if (col.key === 'actions') {
+                                                return (
+                                                    <td key={col.key} className="px-4 py-3 sticky right-0 bg-white shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] z-[2]">
+                                                        <div className="w-5 h-5 rounded bg-gray-200 mx-auto" />
+                                                    </td>
+                                                );
+                                            }
+                                            if (col.key === 'pipelineStages') {
+                                                return (
+                                                    <td key={col.key} className="px-4 py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-16 h-5 rounded-full bg-gray-200" />
+                                                            <div className="w-14 h-5 rounded-full bg-gray-100" />
+                                                            <div className="w-16 h-5 rounded-full bg-gray-200" />
+                                                        </div>
+                                                    </td>
+                                                );
+                                            }
+                                            if (col.key === 'status') {
+                                                return (
+                                                    <td key={col.key} className="px-4 py-3 text-center">
+                                                        <div className="w-16 h-6 rounded-full bg-gray-200 mx-auto" />
+                                                    </td>
+                                                );
+                                            }
+                                            return (
+                                                <td key={col.key} className="px-4 py-3 text-center">
+                                                    <div className="w-12 h-3.5 rounded-full bg-gray-200 mx-auto" />
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))
+                            ) : paginatedJobs.length === 0 ? (
+                                <tr>
+                                    <td colSpan={columnsToRender.length} className="py-12 text-center text-sm text-[#8E8E93]">
+                                        No jobs found
+                                    </td>
+                                </tr>
+                            ) : (
+                                paginatedJobs.map((job: Job) => {
                                 const daysOpen = job.days_open;
                                 const noOfPositions = job.num_positions || job.No_of_opening_or_positions_ || 2;
 
@@ -1431,15 +1493,9 @@ const JobListing: React.FC<JobListingProps> = ({
                                         })}
                                     </tr>
                                 );
-                            })}
+                            }))}
 
-                            {paginatedJobs.length === 0 && !jobsLoading && (
-                                <tr>
-                                    <td colSpan={columnsToRender.length} className="px-5 py-10 text-center text-[#8E8E93]">
-                                        No jobs found for this criteria.
-                                    </td>
-                                </tr>
-                            )}
+
                         </tbody>
                     </table>
                 </div>

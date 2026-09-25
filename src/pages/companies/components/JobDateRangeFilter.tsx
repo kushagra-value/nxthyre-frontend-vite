@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
-type Preset = "Today" | "Last Week" | "Last Month" | "Custom Date";
+type Preset = "Today" | "Last 7 Days" | "Last 1 Month" | "Custom Date";
 
 interface JobDateRangeFilterProps {
   valueLabel: string;
@@ -36,7 +36,7 @@ const JobDateRangeFilter: React.FC<JobDateRangeFilterProps> = ({
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const presets: Preset[] = ["Today", "Last Week", "Last Month", "Custom Date"];
+  const presets: Preset[] = ["Today", "Last 7 Days", "Last 1 Month", "Custom Date"];
 
   useEffect(() => {
     const onOutsideClick = (event: MouseEvent) => {
@@ -62,8 +62,8 @@ const JobDateRangeFilter: React.FC<JobDateRangeFilterProps> = ({
     const today = new Date();
     const start = new Date(today);
     const end = new Date(today);
-    if (preset === "Last Week") start.setDate(today.getDate() - 7);
-    if (preset === "Last Month") start.setMonth(today.getMonth() - 1);
+    if (preset === "Last 7 Days") start.setDate(today.getDate() - 7);
+    if (preset === "Last 1 Month") start.setMonth(today.getMonth() - 1);
 
     onApply({
       label: preset,
