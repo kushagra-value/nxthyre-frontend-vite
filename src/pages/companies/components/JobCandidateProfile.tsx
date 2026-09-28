@@ -41,7 +41,7 @@ import apiClient from "../../../services/api";
 import {
   getCandidateCallHistory,
   CallHistoryEntry,
-  getRecordingEvent,
+  listRecordingEvents,
   RecordingEvent,
 } from "../../../services/jobPipelineDashboardService";
 import { EventForm } from "../../schedules/components/EventForm";
@@ -450,23 +450,27 @@ export default function JobCandidateProfile({
     setLoadingCalls(true);
     const rawPhone = premiumData?.phone || (cand as any)?.phone || "";
     const candidatePhone = rawPhone ? (rawPhone.startsWith("91") ? rawPhone : `91${rawPhone.replace(/\D/g, "")}`) : undefined;
-    getCandidateCallHistory(cand.id, candidatePhone)
-      .then(async (data) => {
+
+    Promise.all([
+      getCandidateCallHistory(cand.id, candidatePhone),
+      listRecordingEvents({
+        candidateId: cand.id,
+        jobId: jobId ? String(jobId) : undefined,
+      }).catch((err) => {
+        console.error("Error fetching recording events:", err);
+        return [] as RecordingEvent[];
+      }),
+    ])
+      .then(([data, eventsData]) => {
         setCallHistory(data);
         const eventsMap: Record<string, RecordingEvent> = {};
-        const uuids = data.map((c) => c.call_uuid).filter((u): u is string => !!u);
-        await Promise.all(
-          uuids.map(async (uuid) => {
-            try {
-              const evt = await getRecordingEvent(uuid);
-              if (evt) {
-                eventsMap[uuid] = evt;
-              }
-            } catch (e) {
-              // Ignore 404 when no recording event was logged for a call
+        if (Array.isArray(eventsData)) {
+          eventsData.forEach((evt) => {
+            if (evt.call_uuid) {
+              eventsMap[evt.call_uuid] = evt;
             }
-          })
-        );
+          });
+        }
         setRecordingEvents(eventsMap);
       })
       .catch((err) => {
@@ -474,7 +478,7 @@ export default function JobCandidateProfile({
         setCallHistory([]);
       })
       .finally(() => setLoadingCalls(false));
-  }, [cand.id, activeTab]);
+  }, [cand.id, activeTab, jobId]);
 
   // ── Fetch Questions Analysis ──────────────────────────────
   useEffect(() => {
