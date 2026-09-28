@@ -2,14 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface CustomDateSelectorProps {
+  currentPreset?: string;
   onApply: (range: { start?: Date; end?: Date; label: string }) => void;
   onClose: () => void;
 }
 
 type Preset = 'Today' | 'Last 7 Days' | 'Last 1 Month' | 'Custom Date';
 
-const CustomDateSelector: React.FC<CustomDateSelectorProps> = ({ onApply, onClose }) => {
-  const [selectedPreset, setSelectedPreset] = useState<Preset>('Today');
+const CustomDateSelector: React.FC<CustomDateSelectorProps> = ({ currentPreset, onApply, onClose }) => {
+  const initialPreset: Preset = (currentPreset && ['Today', 'Last 7 Days', 'Last 1 Month', 'Custom Date'].includes(currentPreset))
+    ? (currentPreset as Preset)
+    : 'Last 7 Days';
+
+  const [selectedPreset, setSelectedPreset] = useState<Preset>(initialPreset);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);

@@ -133,8 +133,8 @@ export default function Dashboard() {
   const [companySearchQuery, setCompanySearchQuery] = useState('');
 
   // Date range state
-  const [dateRange, setDateRange] = useState('Today');
-  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('today');
+  const [dateRange, setDateRange] = useState('Last 7 Days');
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('last_1_week');
   const [customStartDate, setCustomStartDate] = useState<string | undefined>(undefined);
   const [customEndDate, setCustomEndDate] = useState<string | undefined>(undefined);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
@@ -598,7 +598,7 @@ export default function Dashboard() {
           </div>
 
           {/* Priority Actions from new API */}
-          <section className="bg-white rounded-xl p-5 flex flex-col gap-5 max-h-[110vh]">
+          <section className="bg-white rounded-xl p-3 flex flex-col gap-5 max-h-[104vh] overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
               <div className="flex items-center gap-2.5">
@@ -709,6 +709,7 @@ export default function Dashboard() {
                   {showDateDropdown && (
                     <div className="absolute top-full mt-1 right-0 z-20">
                       <CustomDateSelector
+                        currentPreset={dateRange}
                         onApply={handleDateRangeApply}
                         onClose={() => setShowDateDropdown(false)}
                       />

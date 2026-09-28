@@ -253,127 +253,74 @@ function DetailCard({ item, idx, selectedRecruiter }: { item: DailyActivityDetai
   const rec = getRecruiterFromItem(item);
   const recruiterName = rec.name || (selectedRecruiter && selectedRecruiter !== 'all' ? selectedRecruiter : undefined);
 
+  // Clean up status/detail text to avoid repeating call duration
+  let statusText = item.detail_text || item.call_status;
+  if (statusText && item.call_duration && statusText.includes(item.call_duration)) {
+    statusText = statusText.replace(`· ${item.call_duration}`, '').replace(`• ${item.call_duration}`, '').trim();
+  }
+
   return (
-    <div className={`py-3.5 ${idx > 0 ? 'border-t border-[#F3F5F7]' : ''}`}>
+    <div className={`py-3 px-2 rounded-xl hover:bg-gray-50/70 transition-colors ${idx > 0 ? 'border-t border-[#F3F5F7]' : ''}`}>
       <div className="flex items-start gap-3">
         {/* Icon */}
-        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: bg, color }}>
-          <span style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
+        <div className="w-8.5 h-8.5 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: bg, color }}>
+          <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
         </div>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          {isCall ? (
-            <>
-              {candidateName ? (
-                <p className="m-0 text-sm font-semibold text-[#1C1C1E] leading-[18px]">
-                  {candidateName}
-                </p>
-              ) : jobName ? (
-                <p className="m-0 text-sm font-semibold text-[#1C1C1E] leading-[18px]">
-                  {jobName}
-                </p>
-              ) : null}
+          {/* Header Row: Candidate Name & Time */}
+          <div className="flex items-center justify-between gap-2">
+            <p className="m-0 text-sm font-semibold text-[#1C1C1E] leading-[18px] truncate">
+              {candidateName || jobName || 'Activity'}
+            </p>
+            <span className="text-[11px] font-medium text-[#8E8E93] shrink-0">
+              {formatActivityTime(item)}
+            </span>
+          </div>
 
-              {item.candidate_number && (
-                <a href={`tel:${item.candidate_number}`} className="m-0 text-xs text-[#0F47F2] font-medium leading-[16px] mt-0.5 block no-underline hover:underline">
-                  {item.candidate_number}
-                </a>
-              )}
-
-              {(jobName || companyName || item.experience) && (
-                <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
-                  {[companyName ? `Company: ${companyName}` : null, candidateName && jobName ? `Role: ${jobName}` : null, item.experience].filter(Boolean).join(' • ')}
-                </p>
-              )}
-
-              {recruiterName && (
-                <div className="mt-1 flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-[#6B7280]">Recruiter:</span>
-                  <span className="inline-flex items-center gap-1 bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded-md font-medium text-[11px]">
-                    {UserIcon} {recruiterName}
-                  </span>
-                </div>
-              )}
-
-              {item.detail_text && (
-                <p className="m-0 text-xs leading-[16px] mt-1" style={{ color: isFailedCall ? '#DC2626' : (item.detail_color || color) }}>
-                  {item.detail_text}
-                </p>
-              )}
-
-              <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mt-1">
-                {formatActivityTime(item)}
-                {item.call_duration ? ` · ${item.call_duration}` : ''}
-                {item.call_status ? ` · ${item.call_status}` : ''}
-              </p>
-            </>
-          ) : isShortlist ? (
-            <>
-              {candidateName && (
-                <p className="m-0 text-sm font-semibold text-[#1C1C1E] leading-[18px]">
-                  {candidateName}
-                </p>
-              )}
-              {item.candidate_number && (
-                <a href={`tel:${item.candidate_number}`} className="m-0 text-xs text-[#0F47F2] font-medium leading-[16px] mt-0.5 block no-underline hover:underline">
-                  {item.candidate_number}
-                </a>
-              )}
-              {(jobName || companyName || item.experience) && (
-                <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
-                  {[companyName ? `Company: ${companyName}` : null, jobName ? `Role: ${jobName}` : null, item.experience].filter(Boolean).join(' • ')}
-                </p>
-              )}
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 bg-[#D1FAE5] text-[#059669] px-2 py-0.5 rounded-md font-medium text-[11px]">
-                  ★ Shortlisted Stage
-                </span>
-                {recruiterName && (
-                  <span className="inline-flex items-center gap-1 bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded-md font-medium text-[11px]">
-                    {UserIcon} Moved by: {recruiterName}
-                  </span>
-                )}
-              </div>
-              <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mt-1">{formatActivityTime(item)}</p>
-            </>
-          ) : (
-            <>
-              <p className="m-0 text-[11px] text-[#8E8E93] leading-[14px] mb-1">{formatActivityTime(item)}</p>
-              <p className="m-0 text-sm font-medium text-[#1C1C1E] leading-[18px]">{item.candidate_name}</p>
-              {item.candidate_number && (
-                <a href={`tel:${item.candidate_number}`} className="m-0 text-xs text-[#0F47F2] leading-[16px] mt-0.5 block no-underline hover:underline">
-                  {item.candidate_number}
-                </a>
-              )}
-              {(item.company_name || item.job_role) && (
-                <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5">
-                  {[item.company_name, item.job_role, item.experience].filter(Boolean).join(' | ')}
-                </p>
-              )}
-              {recruiterName && (
-                <div className="mt-1 flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-[#6B7280]">Recruiter:</span>
-                  <span className="inline-flex items-center gap-1 bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded-md font-medium text-[11px]">
-                    {UserIcon} {recruiterName}
-                  </span>
-                </div>
-              )}
-              {item.detail_text && (
-                <p className="m-0 text-xs leading-[16px] mt-1" style={{ color: isFailedCall ? '#DC2626' : (item.detail_color || color) }}>
-                  {item.detail_text}
-                </p>
-              )}
-            </>
+          {/* Subtitle Row: Role, Company, Experience & Candidate Phone */}
+          {(companyName || jobName || item.candidate_number || item.experience) && (
+            <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5 truncate">
+              {[
+                companyName ? `Company: ${companyName}` : null,
+                jobName ? `Role: ${jobName}` : null,
+                item.experience ? `${item.experience}` : null,
+              ].filter(Boolean).join(' • ')}
+            </p>
           )}
-        </div>
 
-       
+          {/* Action / Outcome & Recruiter Badges */}
+          <div className="mt-1.5 flex items-center gap-2 flex-wrap text-xs">
+            {isShortlist ? (
+              <span className="inline-flex items-center gap-1 bg-[#D1FAE5] text-[#059669] px-2 py-0.5 rounded-md font-medium text-[11px]">
+                ★ Shortlisted Stage
+              </span>
+            ) : statusText ? (
+              <span
+                className="inline-flex items-center px-2 py-0.5 rounded-md font-medium text-[11px]"
+                style={{
+                  background: isFailedCall ? '#FEE2E2' : bg,
+                  color: isFailedCall ? '#DC2626' : color,
+                }}
+              >
+                {statusText}
+                {item.call_duration && !statusText.includes(item.call_duration) ? ` (${item.call_duration})` : ''}
+              </span>
+            ) : null}
+
+            {recruiterName && (
+              <span className="inline-flex items-center gap-1 bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded-md font-medium text-[11px]">
+                {UserIcon} {recruiterName}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Expanded call note */}
       {showNote && item.call_note && (
-        <div className="ml-12 mt-2 p-3 rounded-lg text-xs text-[#4B5563] leading-[18px] border border-[#E5E7EB]" style={{ background: '#F9FAFB' }}>
+        <div className="ml-11 mt-2 p-3 rounded-lg text-xs text-[#4B5563] leading-[18px] border border-[#E5E7EB]" style={{ background: '#F9FAFB' }}>
           <p className="m-0 text-[10px] font-semibold text-[#8E8E93] uppercase mb-1">Call Note</p>
           <p className="m-0 whitespace-pre-wrap">{item.call_note}</p>
           {item.call_duration && <p className="m-0 mt-1.5 text-[10px] text-[#AEAEB2]">Duration: {item.call_duration} · Status: {item.call_status || 'Completed'}</p>}

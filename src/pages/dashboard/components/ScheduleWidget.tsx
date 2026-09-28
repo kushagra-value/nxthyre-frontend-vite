@@ -14,12 +14,12 @@ const colorConfig: Record<string, { bg: string; border: string; dot: string; tex
     badgeText: '#374151',
   },
   cyan: {
-    bg: 'rgba(6, 182, 212, 0.04)',
-    border: 'rgba(6, 182, 212, 0.15)',
-    dot: '#06B6D4',
-    text: '#0891B2',
-    badgeBg: 'rgba(6, 182, 212, 0.08)',
-    badgeText: '#0891B2',
+    bg: 'rgba(15, 71, 242, 0.03)',
+    border: 'rgba(15, 71, 242, 0.12)',
+    dot: '#0F47F2',
+    text: '#0F47F2',
+    badgeBg: '#E7EDFF',
+    badgeText: '#0F47F2',
   },
   purple: {
     bg: 'rgba(139, 92, 246, 0.04)',
@@ -30,17 +30,17 @@ const colorConfig: Record<string, { bg: string; border: string; dot: string; tex
     badgeText: '#7C3AED',
   },
   orange: {
-    bg: 'rgba(249, 115, 22, 0.04)',
-    border: 'rgba(249, 115, 22, 0.15)',
-    dot: '#F97316',
-    text: '#EA580C',
-    badgeBg: 'rgba(249, 115, 22, 0.08)',
-    badgeText: '#EA580C',
+    bg: 'rgba(15, 71, 242, 0.03)',
+    border: 'rgba(15, 71, 242, 0.12)',
+    dot: '#00C3D0',
+    text: '#0F47F2',
+    badgeBg: '#E7EDFF',
+    badgeText: '#0F47F2',
   },
 };
 
 const STATUS_BADGE_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
-  SCHEDULED: { bg: 'rgba(16, 185, 129, 0.1)', text: '#059669', label: 'Scheduled' },
+  SCHEDULED: { bg: '#E7EDFF', text: '#0F47F2', label: 'Scheduled' },
   OVERDUE: { bg: 'rgba(245, 158, 11, 0.1)', text: '#D97706', label: 'Overdue' },
   COMPLETED: { bg: 'rgba(107, 114, 128, 0.1)', text: '#4B5563', label: 'Completed' },
   CANCELLED: { bg: 'rgba(239, 68, 68, 0.1)', text: '#DC2626', label: 'Cancelled' },
@@ -59,20 +59,19 @@ interface ScheduleWidgetProps {
 const FILTER_OPTIONS: ScheduleFilterLabel[] = ['Today', 'Tomorrow', 'Upcoming'];
 
 const formatDateLabel = (dateStr?: string) => {
-  // can we return the day as well and color alo from heer so that we dont have do it getStatusPillColor
   if (!dateStr) return { label: "", color: "" }
   const date = new Date(dateStr)
   const today = new Date()
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  if (date.toDateString() === today.toDateString()) return { label: "Today", color: "bg-green-500/20 text-green-500 border-green-200" }
-  if (date.toDateString() === tomorrow.toDateString()) return { label: "Tomorrow", color: "bg-yellow-500/20 text-yellow-500 border-yellow-200" }
+  if (date.toDateString() === today.toDateString()) return { label: "Today", color: "bg-blue-50 text-[#0F47F2] border-blue-200" }
+  if (date.toDateString() === tomorrow.toDateString()) return { label: "Tomorrow", color: "bg-amber-50 text-amber-600 border-amber-200" }
   return {
     label: date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined,
-    }), color: "bg-blue-500/20 text-blue-500 border-blue-200"
+    }), color: "bg-blue-50 text-[#0F47F2] border-blue-200"
   };
 };
 
@@ -158,7 +157,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
           ) : (
             events.map((event, index) => {
               const ws = event.widget_summary;
-              const config = colorConfig[ws.color_theme] || colorConfig.orange;
+              const config = colorConfig[ws.color_theme] || colorConfig.cyan;
 
               const rawStatus = event.status || ws.status || 'SCHEDULED';
               const status = rawStatus.toUpperCase();
@@ -242,7 +241,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                           </span>
                         </span>
                         <p
-                          className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-white border border-gray-250 rounded-md shadow-sm bg-green-500/20 font-bold"
+                          className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-white border border-gray-200 rounded-md shadow-sm"
                           style={{ color: config.text }}
                         >
                           {ws.interview_type || event.stage?.name || '-'}
@@ -250,7 +249,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                       </div>
 
 
-                      {/* Action Buttons - Green Check & Red Cross */}
+                      {/* Action Buttons - Blue Check & Red Cross */}
                       {isActionable && (
                         <div className="flex gap-1.5">
                           <button
@@ -264,7 +263,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                                 toast.error("Failed");
                               }
                             }}
-                            className="w-7 h-7 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-[0_4px_12px_rgba(16,185,129,0.35)]"
+                            className="w-7 h-7 flex items-center justify-center bg-[#0F47F2] hover:bg-[#0D3ED4] text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-[0_4px_12px_rgba(15,71,242,0.35)]"
                             title="Complete"
                           >
                             <Check className="w-3.5 h-3.5" />

@@ -204,6 +204,8 @@ const RecentActivities = () => {
         selectedCategories,
       );
 
+      console.log("check the data that we are recieveing",data);
+
       // Client-side category filtering safeguard
       if (!selectedCategories.includes("All") && selectedCategories.length > 0) {
         const filteredSections = (data || [])
@@ -561,9 +563,9 @@ const HiredIcon = (
                       (selectedCategories.includes("Calls") && (item.caller_name || item.recruiter_name));
 
                     if (isCall) {
-                      const jobName =
-                        item.job_name ||
+                      const jobTitle =
                         item.job_title ||
+                        item.job_name ||
                         item.job_role ||
                         item.job ||
                         item.title;
@@ -584,55 +586,76 @@ const HiredIcon = (
                       const resumeScore = item.resume_score ?? item.candidate_resume_score ?? item.candidate?.resume_score;
 
                       return (
-                        <div key={itemIndex} className="flex gap-3">
-                          <div className="mt-0.5 min-w-[32px]">
-                            <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-sm text-[#0F47F2]">
+                        <div key={itemIndex} className="flex gap-3.5 p-2.5 rounded-xl hover:bg-gray-50/70 transition-all border border-transparent hover:border-gray-100">
+                          <div className="mt-0.5 min-w-[34px]">
+                            <div className="w-8.5 h-8.5 rounded-xl bg-blue-50/90 border border-blue-100/60 flex items-center justify-center text-[#0F47F2] shadow-2xs">
                               {getIcon("phone")}
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <p className="text-[14px] font-semibold text-gray-900 font-inter leading-snug truncate">
-                                {candidateName || jobName || item.text}
+                              <p className="text-[14px] font-semibold text-gray-900 leading-snug truncate">
+                                {candidateName || jobTitle || item.text}
                               </p>
-                              {resumeScore !== undefined && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 border border-blue-100 text-[#0F47F2] rounded text-[10px] font-semibold shrink-0">
-                                  Score: {resumeScore !== null ? `${resumeScore}` : 'N/A'}
+                              <div className="flex items-center gap-2 shrink-0">
+                                {resumeScore !== undefined && resumeScore !== null && (
+                                  <span className="inline-flex items-center px-2 py-0.5 bg-[#E7EDFF] border border-[#0F47F2]/20 text-[#0F47F2] rounded-full text-[10px] font-semibold">
+                                    Score: {resumeScore}
+                                  </span>
+                                )}
+                                <span className="text-[11px] text-gray-400 font-medium">
+                                  {formatActivityTime(item)}
                                 </span>
-                              )}
+                              </div>
                             </div>
-                            {companyName && (
-                              <p className="text-xs text-gray-600 font-inter mt-0.5">
-                                <span className="text-gray-500 font-medium">Company:</span> {companyName}
-                              </p>
+
+                            {/* Job Title & Company */}
+                            {(jobTitle || companyName) && (
+                              <div className="flex items-center gap-1.5 text-xs text-gray-600 mt-1 flex-wrap">
+                                {jobTitle && (
+                                  <span className="font-medium text-gray-800">
+                                    {jobTitle}
+                                  </span>
+                                )}
+                                {jobTitle && companyName && (
+                                  <span className="text-gray-300">•</span>
+                                )}
+                                {companyName && (
+                                  <span className="text-gray-500">
+                                    {companyName}
+                                  </span>
+                                )}
+                              </div>
                             )}
+
+                            {/* Recruiter */}
                             {recruiterName && (
-                              <p className="text-xs text-gray-600 font-inter mt-0.5">
-                                <span className="text-gray-500 font-medium">Recruiter:</span> {recruiterName}
+                              <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+                                <span>Recruiter:</span>
+                                <span className="font-medium text-gray-700">{recruiterName}</span>
                               </p>
                             )}
-                            <span className="text-[11px] text-gray-400 mt-1 block font-inter uppercase tracking-wide">
-                              {formatActivityTime(item)}
-                            </span>
                           </div>
                         </div>
                       );
                     }
 
                     return (
-                      <div key={itemIndex} className="flex gap-3">
-                        <div className="mt-0.5 min-w-[32px]">
-                          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-sm">
+                      <div key={itemIndex} className="flex gap-3.5 p-2.5 rounded-xl hover:bg-gray-50/70 transition-all border border-transparent hover:border-gray-100">
+                        <div className="mt-0.5 min-w-[34px]">
+                          <div className="w-8.5 h-8.5 rounded-xl bg-blue-50/90 border border-blue-100/60 flex items-center justify-center text-[#0F47F2] shadow-2xs">
                             {getIcon(item, item.text)}
                           </div>
                         </div>
-                        <div className="flex-1">
-                          <p className="text-[14px] text-gray-800 font-inter leading-relaxed">
-                            {item.text}
-                          </p>
-                          <span className="text-xs text-gray-400 mt-1 block font-inter uppercase tracking-wide">
-                            {formatActivityTime(item)}
-                          </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-[14px] text-gray-800 font-medium leading-relaxed truncate">
+                              {item.text}
+                            </p>
+                            <span className="text-[11px] text-gray-400 font-medium shrink-0">
+                              {formatActivityTime(item)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );

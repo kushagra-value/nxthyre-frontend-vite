@@ -2,10 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
 import { dashboardService } from '../../../services/dashboardService';
 
-/**
- * Activity level controls the blue intensity on each date bubble.
- * 0 = no activity (plain text), 1–5 = increasing intensity.
- */
 export interface CalendarDayActivity {
   date: string; // "YYYY-MM-DD"
   activityLevel: 0 | 1 | 2 | 3 | 4 | 5;
@@ -20,13 +16,9 @@ export interface CalendarDayActivity {
 }
 
 export interface CalendarWidgetProps {
-  /** Called when a date is clicked. Receives the selected Date and whether it is today or in the future. */
   onDateClick?: (date: Date, isTodayOrFuture: boolean) => void;
-  /** Optional activity data for each day. If not provided, all days appear as plain. */
   activities?: CalendarDayActivity[];
-  /** Called when the displayed month changes — use this to fetch new calendar-activity data. */
   onMonthChange?: (month: number, year: number) => void;
-  /** Whether activity data is currently loading */
   isLoading?: boolean;
 }
 
@@ -37,22 +29,95 @@ const MONTHS = [
 
 const DAYS_OF_WEEK = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
 
-/** Bubble colour by activity level (1 = lightest, 5 = darkest) */
-const ACTIVITY_COLORS: Record<number, { bg: string; text: string }> = {
-  1: { bg: '#BBCCFF', text: '#000000' },
-  2: { bg: '#88A5FF', text: '#000000' },
-  3: { bg: '#5982FD', text: '#FFFFFF' },
-  4: { bg: '#0F47F2', text: '#FFFFFF' },
-  5: { bg: '#0034D2', text: '#FFFFFF' },
+const CATEGORY_COLORS = {
+  calls: { dot: 'bg-[#06B6D4]', label: 'Calls', text: 'text-[#06B6D4]' },
+  follow_ups: { dot: 'bg-[#3B82F6]', label: 'Follow-ups', text: 'text-[#3B82F6]' },
+  shortlisted: { dot: 'bg-[#6366F1]', label: 'Shortlisted', text: 'text-[#6366F1]' },
+  hired: { dot: 'bg-[#0284C7]', label: 'Hired', text: 'text-[#0284C7]' },
+  interviews: { dot: 'bg-[#8B5CF6]', label: 'Interviews', text: 'text-[#8B5CF6]' },
 };
 
-/** Grey shades for past dates that had activity */
-const PAST_ACTIVITY_COLORS: Record<number, { bg: string; text: string }> = {
-  1: { bg: '#E5E7EB', text: '#6B7280' },
-  2: { bg: '#D1D5DB', text: '#4B5563' },
-  3: { bg: '#9CA3AF', text: '#FFFFFF' },
-  4: { bg: '#6B7280', text: '#FFFFFF' },
-  5: { bg: '#4B5563', text: '#FFFFFF' },
+/**
+ * Bubble Dimensions (1 = small dot, 5 = large overlapping cluster circle)
+ */
+const BUBBLE_SIZES: Record<number, string> = {
+  1: 'w-5 h-5',       // 20px
+  2: 'w-7.5 h-7.5',   // 30px
+  3: 'w-10 h-10',     // 40px
+  4: 'w-12 h-12',     // 48px
+  5: 'w-14 h-14',     // 56px (overlaps adjacent date cells gracefully)
+};
+
+/**
+ * Helper to compute soft translucent bubble gradient/style based on breakdown mix & level
+ */
+const getBubbleStyle = (level: number, breakdown?: CalendarDayActivity['breakdown'], isPast?: boolean) => {
+  if (isPast) {
+    switch (level) {
+      case 1: return 'bg-[#3B82F6]/15 border border-[#3B82F6]/25';
+      case 2: return 'bg-[#3B82F6]/25 border border-[#3B82F6]/35';
+      case 3: return 'bg-[#3B82F6]/35 border border-[#3B82F6]/45';
+      case 4: return 'bg-[#3B82F6]/45 border border-[#3B82F6]/55 shadow-xs';
+      case 5: return 'bg-gradient-to-br from-[#06B6D4]/45 via-[#3B82F6]/55 to-[#6366F1]/55 border border-[#3B82F6]/60 shadow-sm';
+      default: return '';
+    }
+  }
+
+  // Determine dominant activity type for visual color accent
+  const calls = breakdown?.calls || 0;
+  const followUps = breakdown?.follow_ups || 0;
+  const shortlisted = breakdown?.shortlisted || 0;
+  const hired = breakdown?.hired || 0;
+  const interviews = breakdown?.interviews || 0;
+
+  const total = calls + followUps + shortlisted + hired + interviews;
+
+  // Multi-type mixed gradient if varied activity
+  const isMixed = total > 0 && ((calls > 0 ? 1 : 0) + (followUps > 0 ? 1 : 0) + (shortlisted > 0 ? 1 : 0) + (hired > 0 ? 1 : 0)) >= 2;
+
+  if (isMixed) {
+    switch (level) {
+      case 1: return 'bg-gradient-to-br from-[#06B6D4]/20 to-[#3B82F6]/25 border border-[#3B82F6]/30';
+      case 2: return 'bg-gradient-to-br from-[#06B6D4]/30 to-[#3B82F6]/35 border border-[#3B82F6]/35';
+      case 3: return 'bg-gradient-to-br from-[#06B6D4]/40 via-[#3B82F6]/40 to-[#6366F1]/40 border border-[#3B82F6]/45';
+      case 4: return 'bg-gradient-to-br from-[#06B6D4]/50 via-[#3B82F6]/50 to-[#6366F1]/50 border border-[#6366F1]/50 shadow-[0_2px_12px_rgba(59,130,246,0.18)]';
+      case 5: return 'bg-gradient-to-br from-[#06B6D4]/60 via-[#3B82F6]/60 to-[#6366F1]/65 border border-[#6366F1]/60 shadow-[0_4px_18px_rgba(99,102,241,0.25)]';
+      default: return '';
+    }
+  }
+
+  // Single dominant activity hue
+  if (calls > followUps && calls > shortlisted) {
+    // Cyan Theme
+    switch (level) {
+      case 1: return 'bg-[#06B6D4]/20 border border-[#06B6D4]/30';
+      case 2: return 'bg-[#06B6D4]/30 border border-[#06B6D4]/40';
+      case 3: return 'bg-[#06B6D4]/40 border border-[#06B6D4]/50';
+      case 4: return 'bg-[#06B6D4]/50 border border-[#06B6D4]/60 shadow-xs';
+      case 5: return 'bg-[#06B6D4]/65 border border-[#06B6D4]/75 shadow-sm';
+      default: return '';
+    }
+  } else if (shortlisted > calls && shortlisted > followUps) {
+    // Indigo Theme
+    switch (level) {
+      case 1: return 'bg-[#6366F1]/20 border border-[#6366F1]/30';
+      case 2: return 'bg-[#6366F1]/30 border border-[#6366F1]/40';
+      case 3: return 'bg-[#6366F1]/40 border border-[#6366F1]/50';
+      case 4: return 'bg-[#6366F1]/50 border border-[#6366F1]/60 shadow-xs';
+      case 5: return 'bg-[#6366F1]/65 border border-[#6366F1]/75 shadow-sm';
+      default: return '';
+    }
+  } else {
+    // Royal Blue Default Theme
+    switch (level) {
+      case 1: return 'bg-[#3B82F6]/20 border border-[#3B82F6]/30';
+      case 2: return 'bg-[#3B82F6]/30 border border-[#3B82F6]/40';
+      case 3: return 'bg-[#3B82F6]/40 border border-[#3B82F6]/50';
+      case 4: return 'bg-[#3B82F6]/50 border border-[#3B82F6]/60 shadow-xs';
+      case 5: return 'bg-[#3B82F6]/65 border border-[#3B82F6]/75 shadow-sm';
+      default: return '';
+    }
+  }
 };
 
 export default function CalendarWidget({ onDateClick, activities = [], onMonthChange, isLoading }: CalendarWidgetProps) {
@@ -65,7 +130,6 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
   const [showMonthYearPicker, setShowMonthYearPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
-  // Close picker on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
@@ -76,7 +140,6 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Normalize date string helper (handles YYYY-MM-DD, YYYY-M-D, ISO strings)
   const normalizeDateStr = (rawDate: string) => {
     if (!rawDate) return '';
     const cleanDate = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate;
@@ -90,7 +153,6 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
     return cleanDate;
   };
 
-  // Build activity lookup
   const activityMap = new Map<string, CalendarDayActivity>();
   activities.forEach((a) => {
     if (a.date) {
@@ -142,13 +204,7 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
           setHoverDetails((prev) => ({
             ...prev,
             [dateStr]: {
-              breakdown: {
-                interviews: 0,
-                calls,
-                follow_ups: followUps,
-                shortlisted,
-                hired,
-              },
+              breakdown: { interviews: 0, calls, follow_ups: followUps, shortlisted, hired },
               totalEvents: total,
               loading: false,
             },
@@ -180,13 +236,7 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
           setHoverDetails((prev) => ({
             ...prev,
             [dateStr]: {
-              breakdown: {
-                interviews,
-                calls,
-                follow_ups: followUps,
-                shortlisted,
-                hired,
-              },
+              breakdown: { interviews, calls, follow_ups: followUps, shortlisted, hired },
               totalEvents: total,
               loading: false,
             },
@@ -205,7 +255,6 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
     }
   };
 
-  // Calendar math
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDayOfWeek = (() => {
     const d = new Date(currentYear, currentMonth, 1).getDay();
@@ -213,28 +262,16 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
   })();
 
   const prevMonth = () => {
-    let newMonth = currentMonth;
-    let newYear = currentYear;
-    if (currentMonth === 0) {
-      newMonth = 11;
-      newYear = currentYear - 1;
-    } else {
-      newMonth = currentMonth - 1;
-    }
+    let newMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    let newYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     setCurrentMonth(newMonth);
     setCurrentYear(newYear);
     onMonthChange?.(newMonth + 1, newYear);
   };
 
   const nextMonth = () => {
-    let newMonth = currentMonth;
-    let newYear = currentYear;
-    if (currentMonth === 11) {
-      newMonth = 0;
-      newYear = currentYear + 1;
-    } else {
-      newMonth = currentMonth + 1;
-    }
+    let newMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+    let newYear = currentMonth === 11 ? currentYear + 1 : currentYear;
     setCurrentMonth(newMonth);
     setCurrentYear(newYear);
     onMonthChange?.(newMonth + 1, newYear);
@@ -250,100 +287,83 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
     onDateClick?.(dateObj, isTodayOrFuture);
   };
 
-  // Year range for dropdown
   const yearStart = now.getFullYear() - 2;
   const yearEnd = now.getFullYear() + 3;
   const years = Array.from({ length: yearEnd - yearStart + 1 }, (_, i) => yearStart + i);
 
   return (
-    <div className={`bg-white rounded-[10px] p-5 relative ${isLoading ? 'pointer-events-none' : ''}`}>
+    <div className={`bg-white rounded-[16px] p-5 relative border border-[#E2E8F0] shadow-xs ${isLoading ? 'pointer-events-none' : ''}`}>
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-[10px]">
+        <div className="absolute inset-0 bg-white/60 z-30 flex items-center justify-center rounded-[16px] backdrop-blur-[1px]">
           <div className="w-6 h-6 border-2 border-[#0F47F2] border-t-transparent rounded-full animate-spin" />
         </div>
       )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="relative" ref={pickerRef}>
           <button
             onClick={() => setShowMonthYearPicker(!showMonthYearPicker)}
-            className="flex items-center gap-1.5 text-sm font-normal text-black leading-[17px] cursor-pointer bg-transparent border-none outline-none"
+            className="flex items-center gap-1.5 text-sm font-semibold text-[#0F172A] leading-[17px] cursor-pointer bg-transparent border-none outline-none hover:text-[#0F47F2] transition-colors"
           >
             {MONTHS[currentMonth]}, {currentYear}
-            <ChevronDown className={`w-5 h-5 opacity-60 transition-transform ${showMonthYearPicker ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 opacity-60 transition-transform duration-200 ${showMonthYearPicker ? 'rotate-180' : ''}`} />
           </button>
 
-          {/* Month/Year picker dropdown */}
           {showMonthYearPicker && (
-            <div className="absolute top-full left-0 mt-1 bg-white border border-[#D1D1D6] rounded-[12px] shadow-lg z-20 p-3 min-w-[260px]">
-              {/* Year selector */}
+            <div className="absolute top-full left-0 mt-1 bg-white border border-[#E2E8F0] rounded-[14px] shadow-xl z-40 p-3 min-w-[260px]">
               <div className="flex items-center justify-between mb-3">
-                <button
-                  onClick={() => setCurrentYear((y) => y - 1)}
-                  className="p-1 hover:bg-slate-100 rounded text-[#8E8E93]"
-                >
+                <button onClick={() => setCurrentYear((y) => y - 1)} className="p-1 hover:bg-slate-100 rounded-md text-[#64748B]">
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <select
                   value={currentYear}
                   onChange={(e) => setCurrentYear(Number(e.target.value))}
-                  className="text-sm font-medium text-[#4B5563] bg-transparent border-none outline-none cursor-pointer text-center"
+                  className="text-sm font-semibold text-[#1E293B] bg-transparent border-none outline-none cursor-pointer text-center"
                 >
-                  {years.map((y) => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
+                  {years.map((y) => <option key={y} value={y}>{y}</option>)}
                 </select>
-                <button
-                  onClick={() => setCurrentYear((y) => y + 1)}
-                  className="p-1 hover:bg-slate-100 rounded text-[#8E8E93]"
-                >
+                <button onClick={() => setCurrentYear((y) => y + 1)} className="p-1 hover:bg-slate-100 rounded-md text-[#64748B]">
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-              {/* Month grid */}
               <div className="grid grid-cols-3 gap-1.5">
-                {MONTHS.map((m, idx) => {
-                  const isCurrentMonth = idx === currentMonth;
-                  return (
-                    <button
-                      key={m}
-                      onClick={() => {
-                        setCurrentMonth(idx);
-                        setShowMonthYearPicker(false);
-                        onMonthChange?.(idx + 1, currentYear);
-                      }}
-                      className={`px-2 py-2 rounded-lg text-xs font-normal transition-colors ${isCurrentMonth
-                        ? 'bg-[#0F47F2] text-white'
-                        : 'text-[#4B5563] hover:bg-[#F3F5F7]'
-                        }`}
-                    >
-                      {m.slice(0, 3)}
-                    </button>
-                  );
-                })}
+                {MONTHS.map((m, idx) => (
+                  <button
+                    key={m}
+                    onClick={() => {
+                      setCurrentMonth(idx);
+                      setShowMonthYearPicker(false);
+                      onMonthChange?.(idx + 1, currentYear);
+                    }}
+                    className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors ${idx === currentMonth ? 'bg-[#0F47F2] text-white font-semibold' : 'text-[#475569] hover:bg-[#F1F5F9]'}`}
+                  >
+                    {m.slice(0, 3)}
+                  </button>
+                ))}
               </div>
             </div>
           )}
         </div>
 
         <div className="flex items-center gap-1">
-          <button onClick={prevMonth} className="p-0.5 hover:bg-slate-100 rounded">
-            <ChevronLeft className="w-5 h-5 text-[#8E8E93] cursor-pointer" />
+          <button onClick={prevMonth} className="p-1 hover:bg-slate-100 rounded-md transition-colors" title="Previous Month">
+            <ChevronLeft className="w-4 h-4 text-[#64748B] cursor-pointer" />
           </button>
-          <button onClick={nextMonth} className="p-0.5 hover:bg-slate-100 rounded">
-            <ChevronRight className="w-5 h-5 text-[#8E8E93] cursor-pointer" />
+          <button onClick={nextMonth} className="p-1 hover:bg-slate-100 rounded-md transition-colors" title="Next Month">
+            <ChevronRight className="w-4 h-4 text-[#64748B] cursor-pointer" />
           </button>
         </div>
       </div>
 
-      {/* Days grid */}
-      <div className="grid grid-cols-7 gap-y-5">
+      {/* Calendar Grid with Organic Translucent Bubbles */}
+      <div className="grid grid-cols-7 gap-y-1 gap-x-1 relative">
         {/* Day-of-week headers */}
         {DAYS_OF_WEEK.map((day) => (
           <div
             key={day}
-            className="text-xs font-normal text-[#8E8E93] leading-[14px] text-center"
+            className="text-[11px] font-semibold text-[#94A3B8] text-center tracking-wider mb-2 uppercase"
           >
             {day}
           </div>
@@ -351,43 +371,20 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
 
         {/* Empty cells for offset */}
         {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-          <div key={`empty-${i}`} />
+          <div key={`empty-${i}`} className="h-11" />
         ))}
 
-        {/* Date cells */}
+        {/* Date cells with Organic Translucent Overlapping Activity Bubbles */}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const isToday = dateStr === todayStr;
           const isSelected = dateStr === selectedDate;
           const dayActivity = activityMap.get(dateStr);
-          const activityLevel = dayActivity?.activityLevel || 0;
+          let activityLevel = dayActivity?.activityLevel || 0;
 
           const dateObj = new Date(currentYear, currentMonth, day);
           const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
           const isPast = dateObj < todayStart;
-
-          // Determine rendering
-          const hasActivity = activityLevel > 0;
-          let bgColor: string | undefined;
-          let textColor = '#4B5563';
-
-          if (hasActivity) {
-            if (isPast) {
-              const colors = PAST_ACTIVITY_COLORS[activityLevel] || PAST_ACTIVITY_COLORS[1];
-              bgColor = colors.bg;
-              textColor = colors.text;
-            } else {
-              const colors = ACTIVITY_COLORS[activityLevel] || ACTIVITY_COLORS[1];
-              bgColor = colors.bg;
-              textColor = colors.text;
-            }
-          }
-
-          const todayRing = isToday ? 'ring-2 ring-[#0F47F2] ring-offset-1' : '';
-          const selectedStyle = isSelected && !hasActivity ? 'bg-[#0F47F2] !text-white' : '';
-
-          const isHovered = hoveredDate === dateStr;
-          const showTooltip = isHovered;
 
           const cached = hoverDetails[dateStr];
           const hasCachedBreakdown = cached && !cached.loading;
@@ -407,52 +404,81 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
             : (dayActivity?.totalEvents ??
               (breakdown.interviews + breakdown.calls + breakdown.follow_ups + breakdown.shortlisted + breakdown.hired));
 
+          if (activityLevel === 0 && totalEvents > 0) {
+            if (totalEvents <= 2) activityLevel = 1;
+            else if (totalEvents <= 4) activityLevel = 2;
+            else if (totalEvents <= 6) activityLevel = 3;
+            else if (totalEvents <= 9) activityLevel = 4;
+            else activityLevel = 5;
+          }
+
+          const hasActivity = activityLevel > 0;
+          const bubbleSizeClass = BUBBLE_SIZES[activityLevel] || '';
+          const bubbleStyleClass = getBubbleStyle(activityLevel, breakdown, isPast);
+
+          const isHovered = hoveredDate === dateStr;
+          const showTooltip = isHovered;
+
+          // Tooltip position math
           const dayColIndex = (firstDayOfWeek + day - 1) % 7;
           const tooltipHorizClass = dayColIndex >= 4
             ? "right-0 translate-x-0"
             : (dayColIndex <= 1 ? "left-0 translate-x-0" : "left-1/2 -translate-x-1/2");
           const arrowHorizClass = dayColIndex >= 4
-            ? "right-3"
-            : (dayColIndex <= 1 ? "left-3" : "left-1/2 -translate-x-1/2");
+            ? "right-4"
+            : (dayColIndex <= 1 ? "left-4" : "left-1/2 -translate-x-1/2");
           const isTopHalf = Math.floor((firstDayOfWeek + day - 1) / 7) <= 1;
           const tooltipVertClass = isTopHalf ? "top-full mt-2" : "bottom-full mb-2";
           const arrowVertClass = isTopHalf
-            ? "-top-1.5 border-l border-t border-[#D1D1D6]"
-            : "-bottom-1.5 border-r border-b border-[#D1D1D6]";
+            ? "-top-1.5 border-l border-t border-[#E2E8F0]"
+            : "-bottom-1.5 border-r border-b border-[#E2E8F0]";
 
           return (
             <div
               key={day}
-              className="flex items-center justify-center cursor-pointer relative"
+              className="relative flex items-center justify-center h-11 w-full cursor-pointer group select-none"
               onClick={() => handleDateSelect(day)}
               onMouseEnter={() => handleMouseEnterDate(dateStr, dateObj)}
               onMouseLeave={() => setHoveredDate(null)}
             >
-              {hasActivity || isSelected ? (
-                <span
-                  className={`w-[26px] h-[26px] rounded-full flex items-center justify-center text-xs font-normal leading-[14px] transition-all ${todayRing} ${isSelected && hasActivity ? 'ring-2 ring-[#0F47F2] ring-offset-1' : ''}`}
-                  style={{
-                    backgroundColor: isSelected && !hasActivity ? '#0F47F2' : bgColor,
-                    color: isSelected && !hasActivity ? '#FFFFFF' : textColor,
-                  }}
-                >
-                  {String(day).padStart(2, '0')}
-                </span>
+              {/* Soft Translucent Activity Bubble Layer */}
+              {hasActivity && !isSelected && (
+                <div
+                  className={`absolute rounded-full transition-all duration-300 pointer-events-none group-hover:scale-110 group-hover:z-20 ${bubbleSizeClass} ${bubbleStyleClass}`}
+                />
+              )}
+
+              {/* Clean Date Number */}
+              {isSelected ? (
+                <div className="relative z-20 w-7 h-7 rounded-full bg-[#0F47F2] text-white flex items-center justify-center text-xs font-semibold shadow-md ring-2 ring-[#0F47F2] ring-offset-2 transition-transform duration-200 group-hover:scale-110">
+                  {day}
+                </div>
+              ) : isToday ? (
+                <div className="relative z-20 w-7 h-7 rounded-full ring-2 ring-[#0F47F2] ring-offset-1 bg-white text-[#0F47F2] flex items-center justify-center text-xs font-bold">
+                  {day}
+                </div>
               ) : (
                 <span
-                  className={`w-[26px] h-[26px] rounded-full flex items-center justify-center text-xs font-normal leading-[14px] transition-all hover:bg-slate-100 ${todayRing} ${selectedStyle}`}
-                  style={{ color: isSelected ? '#FFFFFF' : (isPast ? '#AEAEB2' : '#4B5563') }}
+                  className={`relative z-10 text-[13px] font-medium tracking-tight transition-colors duration-200 group-hover:text-[#0F47F2] group-hover:font-semibold ${hasActivity
+                      ? 'text-[#1E293B] font-semibold'
+                      : (isPast ? 'text-[#94A3B8]' : 'text-[#475569]')
+                    }`}
                 >
-                  {String(day).padStart(2, '0')}
+                  {day}
                 </span>
               )}
 
               {/* Hover Breakdown Tooltip */}
               {showTooltip && (
-                <div className={`absolute z-[9999] pointer-events-none ${tooltipVertClass} ${tooltipHorizClass}`}>
-                  <div className="bg-white border border-[#D1D1D6] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.12)] p-3 min-w-[170px] flex flex-col gap-2 relative">
-                    <div className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
-                      Activity Breakdown
+                <div className={`absolute z-50 pointer-events-none ${tooltipVertClass} ${tooltipHorizClass}`}>
+                  <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0px_8px_30px_rgba(0,0,0,0.12)] p-3.5 min-w-[180px] flex flex-col gap-2 relative">
+                    <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-1.5 mb-0.5">
+                      <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">
+                        Activity Breakdown
+                      </span>
+                      <span className="text-[10px] font-semibold text-[#94A3B8]">
+                        {MONTHS[currentMonth].slice(0, 3)} {day}
+                      </span>
                     </div>
 
                     {cached?.loading ? (
@@ -462,24 +488,47 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
                     ) : (
                       <>
                         <div className="flex items-center justify-between gap-4">
-                          <span className="text-xs text-[#4B5563]">Calls Made</span>
-                          <span className="text-xs font-medium text-black">{breakdown.calls}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full ${CATEGORY_COLORS.calls.dot}`} />
+                            <span className="text-xs text-[#475569]">Calls Made</span>
+                          </div>
+                          <span className="text-xs font-semibold text-[#0F172A]">{breakdown.calls}</span>
                         </div>
                         <div className="flex items-center justify-between gap-4">
-                          <span className="text-xs text-[#4B5563]">Follow Ups</span>
-                          <span className="text-xs font-medium text-black">{breakdown.follow_ups}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full ${CATEGORY_COLORS.follow_ups.dot}`} />
+                            <span className="text-xs text-[#475569]">Follow-ups</span>
+                          </div>
+                          <span className="text-xs font-semibold text-[#0F172A]">{breakdown.follow_ups}</span>
                         </div>
                         <div className="flex items-center justify-between gap-4">
-                          <span className="text-xs text-[#4B5563]">Shortlisted</span>
-                          <span className="text-xs font-medium text-black">{breakdown.shortlisted}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full ${CATEGORY_COLORS.shortlisted.dot}`} />
+                            <span className="text-xs text-[#475569]">Shortlisted</span>
+                          </div>
+                          <span className="text-xs font-semibold text-[#0F172A]">{breakdown.shortlisted}</span>
                         </div>
                         <div className="flex items-center justify-between gap-4">
-                          <span className="text-xs text-[#4B5563]">Hired</span>
-                          <span className="text-xs font-medium text-black">{breakdown.hired}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full ${CATEGORY_COLORS.hired.dot}`} />
+                            <span className="text-xs text-[#475569]">Hired</span>
+                          </div>
+                          <span className="text-xs font-semibold text-[#0F172A]">{breakdown.hired}</span>
                         </div>
-                        <div className="flex items-center justify-between gap-4 border-t border-[#F3F5F7] pt-2 mt-1">
-                          <span className="text-xs font-semibold text-black">Total Events</span>
-                          <span className="text-xs font-bold text-[#0F47F2]">{totalEvents}</span>
+                        {breakdown.interviews > 0 && (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`w-1.5 h-1.5 rounded-full ${CATEGORY_COLORS.interviews.dot}`} />
+                              <span className="text-xs text-[#475569]">Interviews</span>
+                            </div>
+                            <span className="text-xs font-semibold text-[#0F172A]">{breakdown.interviews}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between gap-4 border-t border-[#F1F5F9] pt-2 mt-0.5">
+                          <span className="text-xs font-semibold text-[#0F172A]">Total Events</span>
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#0F47F2]/10 text-[#0F47F2]">
+                            {totalEvents}
+                          </span>
                         </div>
                       </>
                     )}
@@ -492,6 +541,21 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
           );
         })}
       </div>
+
+      {/* Footer Activity Density Legend */}
+      <div className="mt-5 pt-3 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#64748B]">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider">Activity Mix</span>
+        </div>
+
+        <div className="flex items-center gap-2 text-[10px] font-medium">
+          <span className="flex items-center gap-1 text-[#475569]"><span className="w-1.5 h-1.5 rounded-full bg-[#06B6D4]" />Calls</span>
+          <span className="flex items-center gap-1 text-[#475569]"><span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />Follow-ups</span>
+          <span className="flex items-center gap-1 text-[#475569]"><span className="w-1.5 h-1.5 rounded-full bg-[#6366F1]" />Shortlisted</span>
+          <span className="flex items-center gap-1 text-[#475569]"><span className="w-1.5 h-1.5 rounded-full bg-[#0284C7]" />Hired</span>
+        </div>
+      </div>
     </div>
   );
 }
+

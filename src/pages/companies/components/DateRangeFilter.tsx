@@ -31,12 +31,22 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
   onClear,
 }) => {
   const [open, setOpen] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState<Preset>("Today");
+  const initialPreset: Preset = (valueLabel && ["Today", "Last 7 Days", "Last 1 Month", "Custom Date"].includes(valueLabel))
+    ? (valueLabel as Preset)
+    : "Last 7 Days";
+
+  const [selectedPreset, setSelectedPreset] = useState<Preset>(initialPreset);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const presets: Preset[] = ["Today", "Last 7 Days", "Last 1 Month", "Custom Date"];
+
+  useEffect(() => {
+    if (valueLabel && ["Today", "Last 7 Days", "Last 1 Month", "Custom Date"].includes(valueLabel)) {
+      setSelectedPreset(valueLabel as Preset);
+    }
+  }, [valueLabel]);
 
   useEffect(() => {
     const onOutsideClick = (event: MouseEvent) => {
