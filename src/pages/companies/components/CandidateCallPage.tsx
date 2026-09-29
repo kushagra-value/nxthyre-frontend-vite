@@ -243,6 +243,7 @@ export default function CandidateCallPage() {
 
   // Call States
   const [seconds, setSeconds] = useState(0);
+  const callStartedAtRef = useRef<number | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -299,6 +300,7 @@ export default function CandidateCallPage() {
     });
     setSkillsChecklist({});
     lastSavedDataRef.current = "";
+    callStartedAtRef.current = null;
   }, [candidateId]);
 
   const candidateList = sessionData?.candidateList || [];
@@ -581,6 +583,7 @@ export default function CandidateCallPage() {
 
         plivoBrowser.client.on("onCallAnswered", () => {
           console.log("Plivo SDK: Call answered — audio should be flowing");
+          if (!callStartedAtRef.current) callStartedAtRef.current = Date.now();
           setCallState("answered");
         });
 
@@ -667,6 +670,7 @@ export default function CandidateCallPage() {
           setCallUuid(status.call_uuid);
         }
         if (status.status === "answered" || status.event === "answer") {
+          if (!callStartedAtRef.current) callStartedAtRef.current = Date.now();
           setCallState("answered");
         }
         if (
@@ -695,8 +699,14 @@ export default function CandidateCallPage() {
       ? (manualCallConnected && !isPaused && !isManualRecordingPaused)
       : (!isPaused && callState !== "completed");
     if (shouldRun) {
+      if (!callStartedAtRef.current) {
+        callStartedAtRef.current = Date.now();
+      }
       interval = setInterval(() => {
-        setSeconds((s) => s + 1);
+        if (callStartedAtRef.current) {
+          const elapsed = Math.round((Date.now() - callStartedAtRef.current) / 1000);
+          setSeconds(elapsed >= 0 ? elapsed : 0);
+        }
       }, 1000);
     }
     return () => {
@@ -980,12 +990,28 @@ export default function CandidateCallPage() {
     // Always use the latest UUID from the ref
     const finalCallUuid = callUuidRef.current;
 
+    // Determine wall-clock duration integer to send
+    const isCallCompleted = callState === "completed" || (!manualCallConnected && isManual) || isSilent;
+    let durationToSend: number | undefined = undefined;
+
+    if (isCallCompleted) {
+      if (callStartedAtRef.current) {
+        const wallClockSec = Math.round((Date.now() - callStartedAtRef.current) / 1000);
+        if (Number.isFinite(wallClockSec) && wallClockSec >= 0) {
+          durationToSend = wallClockSec;
+        }
+      }
+      if (durationToSend === undefined && seconds > 0) {
+        durationToSend = seconds;
+      }
+    }
+
     try {
       const callLogRes = await saveCallLog({
         call_uuid: finalCallUuid || undefined,
         candidate_id: candidate.id,
         note: notes || undefined,
-        duration_seconds: seconds,
+        duration_seconds: durationToSend,
         tags: activeTags.length > 0 ? activeTags : undefined,
         checklist_data: checklist,
         skills_data: skillsChecklist,
@@ -1020,7 +1046,8 @@ export default function CandidateCallPage() {
     skillsChecklist,
     roleQuestions,
     isManual,
-    manualCallConnected
+    manualCallConnected,
+    callState
   ]);
 
   const toggleTag = (tag: string) => {

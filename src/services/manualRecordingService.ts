@@ -311,13 +311,18 @@ function activeMsNow(s: ActiveSession): number {
 }
 
 function toStored(s: ActiveSession, status: StoredSession["status"]): StoredSession {
+  const activeMs = activeMsNow(s);
+  const ms = activeMs > 0 ? activeMs : (s.startedAt > 0 ? Date.now() - s.startedAt : 0);
+  const rawSec = Math.round(ms / 1000);
+  const durationSec = Number.isFinite(rawSec) && !isNaN(rawSec) && rawSec >= 0 ? Math.round(rawSec) : 0;
+
   return {
     ...s.ctx,
     sessionId: s.sessionId,
     mimeType: s.mimeType,
     startedAt: s.startedAt,
     updatedAt: Date.now(),
-    durationSec: Math.round(activeMsNow(s) / 1000),
+    durationSec,
     status,
     stopLogged: false,
   };
@@ -345,12 +350,17 @@ async function uploadWithRetry(session: StoredSession, blob: Blob): Promise<void
   for (const delay of RETRY_DELAYS_MS) {
     if (delay) await sleep(delay);
 
+    const rawDur = session.durationSec;
+    const durationInt = typeof rawDur === "number" && Number.isFinite(rawDur) && !isNaN(rawDur) && rawDur >= 0
+      ? Math.round(rawDur)
+      : 0;
+
     const form = new FormData();
     form.append("call_uuid", session.callUuid);
     form.append("candidate_id", session.candidateId);
     form.append("job_id", String(session.jobId));
     if (session.callerUid) form.append("caller_uid", session.callerUid);
-    form.append("recording_duration", String(session.durationSec));
+    form.append("recording_duration", String(durationInt));
     form.append("audio", blob, `${session.callUuid}.${fileExtension(session.mimeType)}`);
 
     try {
