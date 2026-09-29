@@ -37,7 +37,6 @@ import {
   getRoleQuestions,
   evaluateRoleQuestion,
   getLiveTranscript,
-  processManualRecording,
   logRecordingStartEvent,
   logRecordingStopEvent,
   getRecordingEvent,
@@ -45,8 +44,15 @@ import {
   type RoleQuestion,
   type LiveTranscript,
 } from "../../../services/jobPipelineDashboardService";
-
-const MIN_MANUAL_RECORDING_BYTES = 4096;
+import {
+  startManualRecording,
+  stopManualRecording,
+  pauseManualRecording,
+  resumeManualRecording,
+  updateManualRecordingContext,
+  waitForPendingUploads,
+} from "../../../services/manualRecordingService";
+import { useManualRecordingState } from "../../../hooks/useManualRecordingState";
 
 function RecruiterGuidancePanel({ recruiter_guidance }: { recruiter_guidance?: string | null }) {
   const [showHelper, setShowHelper] = useState(false);
@@ -251,8 +257,9 @@ export default function CandidateCallPage() {
   const isManualRecordingRef = useRef(false);
   const [isManualRecordingPaused, setIsManualRecordingPaused] = useState(false);
   const isManualRecordingPausedRef = useRef(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const isMountedRef = useRef(true);
+  const recordingState = useManualRecordingState();
+  const isSavingRecording = recordingState.pendingUploads > 0;
 
   // Clear transient candidate and call session details from session storage once consumed, retaining candidateList for navigation
   useEffect(() => {
@@ -268,6 +275,9 @@ export default function CandidateCallPage() {
 
   // Reset call session state when candidateId changes
   useEffect(() => {
+    if (isManualRecordingRef.current) {
+      void stopManualRecording();
+    }
     setCallUuid(null);
     callUuidRef.current = null;
     setSeconds(0);
@@ -838,145 +848,104 @@ export default function CandidateCallPage() {
     const targetJobId = getValidJobId();
     if (isManualRecordingRef.current) {
       // ── STOP VOICE RECORDING ──
+      // The recording service uploads first (with retry + IndexedDB backup), then logs
+      // the stop event. It owns the work, so unmounting this page can't lose the audio.
       isManualRecordingRef.current = false;
       setIsManualRecording(false);
       isManualRecordingPausedRef.current = false;
       setIsManualRecordingPaused(false);
 
-      const activeUuid = callUuid || callUuidRef.current;
-      if (candidate?.id && targetJobId && activeUuid) {
-        try {
-          await logRecordingStopEvent({
-            callUuid: activeUuid,
-            candidateId: candidate.id,
-            jobId: targetJobId,
-          });
-        } catch (e) {
-          console.error("Failed to log manual recording stop event:", e);
-        }
-      }
+      // Refresh IDs in case the call_uuid / job loaded after recording started.
+      updateManualRecordingContext({
+        callUuid: callUuidRef.current || callUuid || undefined,
+        jobId: targetJobId || undefined,
+      });
 
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-        mediaRecorderRef.current.stop();
-        // The submission logic is handled in the onstop callback
+      const result = await stopManualRecording();
+      if (result.status === "uploaded") {
+        showToast.success("Recording saved and processing...");
+        // Auto-save call log when recording stops
+        if (isMountedRef.current) handleSaveNotes(true);
+      } else if (result.status === "empty") {
+        showToast.error("No usable audio was captured. Check microphone access and record again.");
+      } else if (result.status === "failed") {
+        showToast.error(
+          result.permanent
+            ? `Recording could not be processed: ${result.error}`
+            : "Recording upload failed. It is saved on this device and will retry automatically.",
+        );
       }
     } else {
       // ── START VOICE RECORDING ──
+      if (!candidate?.id) return;
+      const recordingUuid = callUuidRef.current || callUuid || crypto.randomUUID();
+      if (!callUuidRef.current) {
+        callUuidRef.current = recordingUuid;
+        setCallUuid(recordingUuid);
+      }
+
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        // Use a supported mime type for Gemini
-        const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/ogg";
-        const mediaRecorder = new MediaRecorder(stream, { mimeType });
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            audioChunksRef.current.push(e.data);
-          }
-        };
-
-        mediaRecorder.onstop = async () => {
-          // Compile chunks into a single Blob
-          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-          const currentUuid = callUuid || callUuidRef.current;
-          const currentJobId = getValidJobId();
-
-          if (candidate && currentUuid && audioBlob.size >= MIN_MANUAL_RECORDING_BYTES) {
-            console.log("Submitting manual recording audio file...");
-            const formData = new FormData();
-            formData.append("audio", audioBlob, "manual_call.webm");
-            formData.append("call_uuid", currentUuid);
-            formData.append("candidate_id", candidate.id);
-            if (currentJobId) {
-              formData.append("job_id", currentJobId);
-            }
-            formData.append("recording_duration", seconds.toString());
-
-            try {
-              await processManualRecording(formData);
-              console.log("Audio recording submitted successfully.");
-              showToast.success("Recording saved and processing...");
-              // Auto-save call log when recording stops
-              handleSaveNotes(true);
-            } catch (err) {
-              console.error("Failed to submit manual recording audio:", err);
-            }
-          } else if (audioBlob.size < MIN_MANUAL_RECORDING_BYTES) {
-            console.error("Recording capture produced an incomplete audio file", {
-              bytes: audioBlob.size,
-            });
-            showToast.error(
-              "No usable audio was captured. Check microphone access and record again.",
-            );
-          }
-
-          // Clean up the stream
-          stream.getTracks().forEach((track) => track.stop());
-        };
-
-        mediaRecorder.start();
-        isManualRecordingRef.current = true;
-        setIsManualRecording(true);
-        isManualRecordingPausedRef.current = false;
-        setIsManualRecordingPaused(false);
-
-        // Log recording start event for manual recording
-        if (candidate?.id && targetJobId) {
-          try {
-            const eventRes = await logRecordingStartEvent({
-              callUuid: callUuid || callUuidRef.current || undefined,
-              candidateId: candidate.id,
-              jobId: targetJobId,
-            });
-            if (eventRes?.call_uuid) {
-              setCallUuid(eventRes.call_uuid);
-              callUuidRef.current = eventRes.call_uuid;
-            }
-          } catch (e) {
-            console.error("Failed to log manual recording start event:", e);
-          }
-        }
+        await startManualRecording({
+          callUuid: recordingUuid,
+          candidateId: candidate.id,
+          jobId: targetJobId,
+        });
       } catch (err: any) {
-        if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        if (err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError") {
           showToast.error("Microphone access failed. Please check permissions.");
+        } else {
+          console.error("Failed to start manual recording:", err);
+          showToast.error("Could not start recording. Please try again.");
+        }
+        return;
+      }
+
+      isManualRecordingRef.current = true;
+      setIsManualRecording(true);
+      isManualRecordingPausedRef.current = false;
+      setIsManualRecordingPaused(false);
+
+      // Log start only after the recorder has actually started capturing audio.
+      if (targetJobId) {
+        try {
+          const eventRes = await logRecordingStartEvent({
+            callUuid: recordingUuid,
+            candidateId: candidate.id,
+            jobId: targetJobId,
+          });
+          if (eventRes?.call_uuid && eventRes.call_uuid !== recordingUuid) {
+            setCallUuid(eventRes.call_uuid);
+            callUuidRef.current = eventRes.call_uuid;
+            updateManualRecordingContext({ callUuid: eventRes.call_uuid });
+          }
+        } catch (e) {
+          console.error("Failed to log manual recording start event:", e);
         }
       }
     }
   };
 
   const handlePauseResumeRecording = () => {
-    // Edge case: recording not active or media recorder inactive
-    if (!isManualRecordingRef.current || !mediaRecorderRef.current || mediaRecorderRef.current.state === "inactive") {
-      return;
-    }
+    if (!isManualRecordingRef.current) return;
 
-    if (isManualRecordingPausedRef.current || mediaRecorderRef.current.state === "paused") {
-      // ── RESUME RECORDING ──
-      try {
-        mediaRecorderRef.current.resume();
-        isManualRecordingPausedRef.current = false;
-        setIsManualRecordingPaused(false);
-      } catch (err) {
-        console.error("Failed to resume recording:", err);
-      }
-    } else if (mediaRecorderRef.current.state === "recording") {
-      // ── PAUSE RECORDING ──
-      try {
-        mediaRecorderRef.current.pause();
-        isManualRecordingPausedRef.current = true;
-        setIsManualRecordingPaused(true);
-      } catch (err) {
-        console.error("Failed to pause recording:", err);
-      }
+    if (isManualRecordingPausedRef.current) {
+      resumeManualRecording();
+      isManualRecordingPausedRef.current = false;
+      setIsManualRecordingPaused(false);
+    } else {
+      pauseManualRecording();
+      isManualRecordingPausedRef.current = true;
+      setIsManualRecordingPaused(true);
     }
   };
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-        mediaRecorderRef.current.stop();
+      isMountedRef.current = false;
+      // Leaving the page mid-recording: stop and let the service finish the upload.
+      if (isManualRecordingRef.current) {
+        void stopManualRecording();
       }
     };
   }, []);
@@ -1191,6 +1160,7 @@ export default function CandidateCallPage() {
                     <div className="relative">
                       <button
                         onClick={toggleManualRecording}
+                        disabled={isSavingRecording && !isManualRecording}
                         className={`w-14 h-14 rounded-full backdrop-blur-md flex items-center justify-center transition shadow-lg z-10 relative ${isManualRecording ? "bg-red-500 text-white" : "bg-white/20 hover:bg-white/30 text-white"}`}
                       >
                         <Mic className={`w-5 h-5 ${isManualRecording && !isManualRecordingPaused ? "animate-pulse" : ""}`} />
@@ -1200,7 +1170,7 @@ export default function CandidateCallPage() {
                       )}
                     </div>
                     <span className="text-xs text-white uppercase tracking-widest font-semibold">
-                      {isManualRecording ? "Stop Rec" : "Record"}
+                      {isManualRecording ? "Stop Rec" : isSavingRecording ? "Saving…" : "Record"}
                     </span>
                   </div>
 
@@ -2230,7 +2200,11 @@ export default function CandidateCallPage() {
       {followUpReason && (
         <CallCandidateModal
           isOpen={!!followUpReason}
-          onClose={() => window.location.href = "/"} // Navigate cleanly back to pipeline board after follow up
+          onClose={async () => {
+            // Full reload aborts in-flight fetches — let the recording upload finish first.
+            await waitForPendingUploads();
+            window.location.href = "/"; // Navigate cleanly back to pipeline board after follow up
+          }}
           candidate={candidate ? {
             ...candidate,
             phone: candidate.phone || "",
