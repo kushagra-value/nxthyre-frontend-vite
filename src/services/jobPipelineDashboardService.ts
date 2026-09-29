@@ -370,10 +370,19 @@ export async function saveCallLog(
   payload: CallLogPayload
 ): Promise<CallLogResponse> {
   const headers = await getAuthHeaders();
+  const cleanPayload = { ...payload };
+  if (cleanPayload.duration_seconds !== undefined) {
+    const dur = cleanPayload.duration_seconds;
+    if (typeof dur === "number" && Number.isFinite(dur) && !isNaN(dur) && dur >= 0) {
+      cleanPayload.duration_seconds = Math.round(dur);
+    } else {
+      delete cleanPayload.duration_seconds;
+    }
+  }
   const res = await fetch(`${PLIVO_BASE}/call-log/`, {
     method: "POST",
     headers,
-    body: JSON.stringify(payload),
+    body: JSON.stringify(cleanPayload),
   });
   return handleResponse<CallLogResponse>(res);
 }
@@ -399,10 +408,19 @@ export async function scheduleFollowUp(
   payload: ScheduleFollowUpPayload
 ): Promise<ScheduleFollowUpResponse> {
   const headers = await getAuthHeaders();
+  const cleanPayload = { ...payload };
+  if (cleanPayload.duration_seconds !== undefined) {
+    const dur = cleanPayload.duration_seconds;
+    if (typeof dur === "number" && Number.isFinite(dur) && !isNaN(dur) && dur >= 0) {
+      cleanPayload.duration_seconds = Math.round(dur);
+    } else {
+      delete cleanPayload.duration_seconds;
+    }
+  }
   const res = await fetch(`${PLIVO_BASE}/schedule-followup/`, {
     method: "POST",
     headers,
-    body: JSON.stringify(payload),
+    body: JSON.stringify(cleanPayload),
   });
   return handleResponse<ScheduleFollowUpResponse>(res);
 }
