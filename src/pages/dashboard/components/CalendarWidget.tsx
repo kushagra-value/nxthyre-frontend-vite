@@ -51,72 +51,26 @@ const BUBBLE_SIZES: Record<number, string> = {
 /**
  * Helper to compute soft translucent bubble gradient/style based on breakdown mix & level
  */
-const getBubbleStyle = (level: number, breakdown?: CalendarDayActivity['breakdown'], isPast?: boolean) => {
+const getBubbleStyle = (level: number, _breakdown?: CalendarDayActivity['breakdown'], isPast?: boolean) => {
   if (isPast) {
     switch (level) {
-      case 1: return 'bg-[#3B82F6]/15 border border-[#3B82F6]/25';
-      case 2: return 'bg-[#3B82F6]/25 border border-[#3B82F6]/35';
-      case 3: return 'bg-[#3B82F6]/35 border border-[#3B82F6]/45';
-      case 4: return 'bg-[#3B82F6]/45 border border-[#3B82F6]/55 shadow-xs';
+      case 1: return 'bg-[#06B6D4]/15 border border-[#06B6D4]/25';
+      case 2: return 'bg-[#06B6D4]/25 border border-[#06B6D4]/35';
+      case 3: return 'bg-[#06B6D4]/35 border border-[#06B6D4]/45';
+      case 4: return 'bg-[#06B6D4]/45 border border-[#06B6D4]/55 shadow-xs';
       case 5: return 'bg-gradient-to-br from-[#06B6D4]/45 via-[#3B82F6]/55 to-[#6366F1]/55 border border-[#3B82F6]/60 shadow-sm';
       default: return '';
     }
   }
 
-  // Determine dominant activity type for visual color accent
-  const calls = breakdown?.calls || 0;
-  const followUps = breakdown?.follow_ups || 0;
-  const shortlisted = breakdown?.shortlisted || 0;
-  const hired = breakdown?.hired || 0;
-  const interviews = breakdown?.interviews || 0;
-
-  const total = calls + followUps + shortlisted + hired + interviews;
-
-  // Multi-type mixed gradient if varied activity
-  const isMixed = total > 0 && ((calls > 0 ? 1 : 0) + (followUps > 0 ? 1 : 0) + (shortlisted > 0 ? 1 : 0) + (hired > 0 ? 1 : 0)) >= 2;
-
-  if (isMixed) {
-    switch (level) {
-      case 1: return 'bg-gradient-to-br from-[#06B6D4]/20 to-[#3B82F6]/25 border border-[#3B82F6]/30';
-      case 2: return 'bg-gradient-to-br from-[#06B6D4]/30 to-[#3B82F6]/35 border border-[#3B82F6]/35';
-      case 3: return 'bg-gradient-to-br from-[#06B6D4]/40 via-[#3B82F6]/40 to-[#6366F1]/40 border border-[#3B82F6]/45';
-      case 4: return 'bg-gradient-to-br from-[#06B6D4]/50 via-[#3B82F6]/50 to-[#6366F1]/50 border border-[#6366F1]/50 shadow-[0_2px_12px_rgba(59,130,246,0.18)]';
-      case 5: return 'bg-gradient-to-br from-[#06B6D4]/60 via-[#3B82F6]/60 to-[#6366F1]/65 border border-[#6366F1]/60 shadow-[0_4px_18px_rgba(99,102,241,0.25)]';
-      default: return '';
-    }
-  }
-
-  // Single dominant activity hue
-  if (calls > followUps && calls > shortlisted) {
-    // Cyan Theme
-    switch (level) {
-      case 1: return 'bg-[#06B6D4]/20 border border-[#06B6D4]/30';
-      case 2: return 'bg-[#06B6D4]/30 border border-[#06B6D4]/40';
-      case 3: return 'bg-[#06B6D4]/40 border border-[#06B6D4]/50';
-      case 4: return 'bg-[#06B6D4]/50 border border-[#06B6D4]/60 shadow-xs';
-      case 5: return 'bg-[#06B6D4]/65 border border-[#06B6D4]/75 shadow-sm';
-      default: return '';
-    }
-  } else if (shortlisted > calls && shortlisted > followUps) {
-    // Indigo Theme
-    switch (level) {
-      case 1: return 'bg-[#6366F1]/20 border border-[#6366F1]/30';
-      case 2: return 'bg-[#6366F1]/30 border border-[#6366F1]/40';
-      case 3: return 'bg-[#6366F1]/40 border border-[#6366F1]/50';
-      case 4: return 'bg-[#6366F1]/50 border border-[#6366F1]/60 shadow-xs';
-      case 5: return 'bg-[#6366F1]/65 border border-[#6366F1]/75 shadow-sm';
-      default: return '';
-    }
-  } else {
-    // Royal Blue Default Theme
-    switch (level) {
-      case 1: return 'bg-[#3B82F6]/20 border border-[#3B82F6]/30';
-      case 2: return 'bg-[#3B82F6]/30 border border-[#3B82F6]/40';
-      case 3: return 'bg-[#3B82F6]/40 border border-[#3B82F6]/50';
-      case 4: return 'bg-[#3B82F6]/50 border border-[#3B82F6]/60 shadow-xs';
-      case 5: return 'bg-[#3B82F6]/65 border border-[#3B82F6]/75 shadow-sm';
-      default: return '';
-    }
+  // Cyan Theme for Calls Made
+  switch (level) {
+    case 1: return 'bg-[#06B6D4]/20 border border-[#06B6D4]/30';
+    case 2: return 'bg-[#06B6D4]/30 border border-[#06B6D4]/40';
+    case 3: return 'bg-[#06B6D4]/40 border border-[#06B6D4]/50';
+    case 4: return 'bg-[#06B6D4]/50 border border-[#06B6D4]/60 shadow-xs';
+    case 5: return 'bg-[#06B6D4]/65 border border-[#06B6D4]/75 shadow-sm';
+    default: return '';
   }
 };
 
@@ -380,7 +334,6 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
           const isToday = dateStr === todayStr;
           const isSelected = dateStr === selectedDate;
           const dayActivity = activityMap.get(dateStr);
-          let activityLevel = dayActivity?.activityLevel || 0;
 
           const dateObj = new Date(currentYear, currentMonth, day);
           const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -404,11 +357,13 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
             : (dayActivity?.totalEvents ??
               (breakdown.interviews + breakdown.calls + breakdown.follow_ups + breakdown.shortlisted + breakdown.hired));
 
-          if (activityLevel === 0 && totalEvents > 0) {
-            if (totalEvents <= 2) activityLevel = 1;
-            else if (totalEvents <= 4) activityLevel = 2;
-            else if (totalEvents <= 6) activityLevel = 3;
-            else if (totalEvents <= 9) activityLevel = 4;
+          const callsCount = breakdown.calls;
+          let activityLevel: 0 | 1 | 2 | 3 | 4 | 5 = 0;
+          if (callsCount > 0) {
+            if (callsCount <= 2) activityLevel = 1;
+            else if (callsCount <= 4) activityLevel = 2;
+            else if (callsCount <= 6) activityLevel = 3;
+            else if (callsCount <= 9) activityLevel = 4;
             else activityLevel = 5;
           }
 
