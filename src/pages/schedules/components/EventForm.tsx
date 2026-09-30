@@ -53,6 +53,17 @@ const INTERVIEW_MODES = [
   { id: 'mock-call', label: 'Mock Call', icon: '📱' },
 ];
 
+// Maps a pipeline stage's configured type to its default interview mode
+const getModeForStageType = (stageType?: string | null): string | null => {
+  switch (stageType) {
+    case 'FACE_TO_FACE_INTERVIEW': return 'face-to-face';
+    case 'EXTERNAL_PLATFORM_INTERVIEW': return 'external';
+    case 'VIRTUAL_INTERVIEW': return 'virtual';
+    case 'MOCK_CALL': return 'mock-call';
+    default: return null;
+  }
+};
+
 // Custom react-select styles matching the design system
 const candidateSelectStyles = {
   control: (base: any, state: any) => ({
@@ -274,6 +285,9 @@ export const EventForm = ({
     candidateSearch: '',
   });
 
+  // Stage whose default interview mode was last prefilled; lets the user override the default
+  const prefilledModeStageRef = useRef<string | null>(null);
+
   // ── Sync initial company/job props ──
   useEffect(() => {
     if (isOpen && initialCompanyId) {
@@ -326,6 +340,11 @@ export const EventForm = ({
       const job = allJobs.find(j => String(j.id) === selectedJobId);
 
       if (candidate && stage) {
+        const stageKey = String(formData.stageId);
+        const shouldPrefillMode = prefilledModeStageRef.current !== stageKey;
+        prefilledModeStageRef.current = stageKey;
+        const defaultMode = getModeForStageType(stage.custom_stage_type);
+
         setFormData(prev => {
           const newUpdates: any = {};
 
@@ -334,13 +353,9 @@ export const EventForm = ({
             newUpdates.title = `${stage.name} - ${candidate.candidate.full_name}${job ? ` (${job.title})` : ''}`;
           }
 
-          // Prefill Interview Mode based on stage type
-          if (!prev.interviewMode || prev.interviewMode === 'virtual') {
-            const stype = stage.custom_stage_type || '';
-            if (stype === 'FACE_TO_FACE_INTERVIEW') newUpdates.interviewMode = 'face-to-face';
-            else if (stype === 'EXTERNAL_PLATFORM_INTERVIEW') newUpdates.interviewMode = 'external';
-            else if (stype === 'VIRTUAL_INTERVIEW') newUpdates.interviewMode = 'virtual';
-            else if (stype === 'MOCK_CALL') newUpdates.interviewMode = 'mock-call';
+          // Prefill Interview Mode from stage type once per stage; user can override afterwards
+          if (shouldPrefillMode && defaultMode) {
+            newUpdates.interviewMode = defaultMode;
           }
 
           if (Object.keys(newUpdates).length > 0) {
@@ -495,6 +510,10 @@ export const EventForm = ({
 
   if (!isOpen) return null;
 
+  const stageDefaultMode = getModeForStageType(
+    pipelineStages.find((s) => String(s.id) === String(formData.stageId))?.custom_stage_type
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -579,6 +598,7 @@ export const EventForm = ({
   };
 
   const handleClose = () => {
+    prefilledModeStageRef.current = null;
     setFormData({
       title: '',
       attendee: '',
@@ -816,22 +836,24 @@ export const EventForm = ({
               </label>
               <div className="grid grid-cols-4 gap-3">
                 {INTERVIEW_MODES.map((mode) => {
-                  const isDisabled = isStageMove && formData.interviewMode !== mode.id;
+                  const isStageDefault = stageDefaultMode === mode.id;
                   return (
                     <button
                       key={mode.id}
                       type="button"
                       id={`mode-${mode.id}`}
-                      disabled={isDisabled}
-                      title={isDisabled ? "If you need to switch, then update the stage type in the pipeline dashboard." : ""}
-                      onClick={() => setFormData({ ...formData, interviewMode: mode.id })}
-                      className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 ${formData.interviewMode === mode.id
+                      title={isStageDefault ? 'Default mode set for this stage in the job pipeline' : ''}
+                      onClick={() => setFormData((prev) => ({ ...prev, interviewMode: mode.id }))}
+                      className={`relative flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 transition-all duration-200 ${formData.interviewMode === mode.id
                         ? 'border-[#0F47F2] bg-[#EEF2FF] shadow-sm'
-                        : isDisabled
-                          ? 'border-[#F3F4F6] bg-gray-50 opacity-60 cursor-not-allowed'
-                          : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
+                        : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
                         }`}
                     >
+                      {isStageDefault && (
+                        <span className="absolute top-1.5 right-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[#E0E7FF] text-[#0F47F2]">
+                          Default
+                        </span>
+                      )}
                       <span
                         className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${formData.interviewMode === mode.id
                           ? 'bg-[#0F47F2] text-white shadow-md'
