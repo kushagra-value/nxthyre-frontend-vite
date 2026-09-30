@@ -128,7 +128,14 @@ const CalendarFilterIcon = () => (
   </svg>
 );
 
+import { useAuthContext } from "../../../context/AuthContext";
+
 const RecentActivities = () => {
+  const authContext = useAuthContext();
+  const user = authContext?.user;
+  const userStatus = authContext?.userStatus;
+  const loggedInRecruiterId = userStatus?.recruiter_id || user?.recruiterId || user?.id;
+
   const [activities, setActivities] = useState<ActivitySection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -206,9 +213,21 @@ const RecentActivities = () => {
 
       console.log("check the data that we are recieveing",data);
 
+      // Filter sections to ensure items with a recruiter_id match the logged-in recruiter
+      const recruiterFilteredData = (data || []).map(section => {
+        const items = (section.items || []).filter((item: any) => {
+          const itemRecId = item.recruiter_id || item.recruiterId || (typeof item.recruiter === 'object' ? item.recruiter?.id || item.recruiter?.recruiter_id : undefined) || item.caller_id || item.created_by_id || item.user_id;
+          if (itemRecId && loggedInRecruiterId) {
+            return String(itemRecId) === String(loggedInRecruiterId);
+          }
+          return true;
+        });
+        return { ...section, items };
+      }).filter(section => section.items.length > 0);
+
       // Client-side category filtering safeguard
       if (!selectedCategories.includes("All") && selectedCategories.length > 0) {
-        const filteredSections = (data || [])
+        const filteredSections = (recruiterFilteredData || [])
           .map((section) => {
             const filteredItems = (section.items || []).filter((item: any) => {
               const cat = (item.category || item.activity_type || item.type || item.icon || "").toLowerCase();
@@ -253,7 +272,7 @@ const RecentActivities = () => {
 
         setActivities(filteredSections);
       } else {
-        setActivities(data);
+        setActivities(recruiterFilteredData);
       }
       setLoading(false);
     };

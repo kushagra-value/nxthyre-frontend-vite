@@ -36,7 +36,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   React.useEffect(() => {
     if (isAuthenticated && userStatus) {
       const user: User = {
-        id: firebaseUser?.uid,
+        id: firebaseUser?.uid || userStatus.recruiter_id,
+        recruiterId: userStatus.recruiter_id || firebaseUser?.uid,
         fullName: userStatus.full_name || "Unknown User",
         isSuperAdmin: userStatus.isSuperAdmin || false,
         email: userStatus.email || "Unknown@user.com",

@@ -71,19 +71,21 @@ const formatDateToYMD = (date: Date): string => {
 const mapTagToStatus = (tag: any): { status: string; statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' | 'green' } => {
   if (typeof tag !== 'string') return { status: String(tag || 'Unknown'), statusColor: 'grey' };
   const lower = tag.toLowerCase();
+  const cleanTag = tag.split('-')[0].replace(/\s*(?:·|for)?\s*\d+\s*days?/gi, '').trim() || tag;
+
   if (lower.includes('follow up')) {
-    return { status: tag, statusColor: 'blue' };
+    return { status: cleanTag, statusColor: 'blue' };
   }
   if (lower.includes('not called')) {
-    return { status: tag, statusColor: 'amber' };
+    return { status: cleanTag, statusColor: 'amber' };
   }
   if (lower.includes('not moved')) {
-    return { status: tag, statusColor: 'rose' };
+    return { status: cleanTag, statusColor: 'rose' };
   }
   if (lower.includes('feedback pending')) {
-    return { status: tag, statusColor: 'indigo' };
+    return { status: cleanTag, statusColor: 'indigo' };
   }
-  return { status: tag, statusColor: 'grey' };
+  return { status: cleanTag, statusColor: 'grey' };
 };
 
 // Priority column tabs

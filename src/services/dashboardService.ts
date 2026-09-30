@@ -354,6 +354,7 @@ export interface DailyActivityDetailItem {
   job_name?: string;
   job?: string;
   title?: string;
+  recruiter_id?: string;
   recruiter_name?: string;
   recruiter?: string;
   caller_name?: string;

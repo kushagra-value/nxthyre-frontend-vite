@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type {
   DailyActivitiesResponse,
   DailyActivityItemAPI,
@@ -6,6 +6,11 @@ import type {
   DailyActivityGroupedItem,
 } from '../../../services/dashboardService';
 import { formatActivityTime } from '../../../utils/activityTimeUtils';
+import { useAuthContext } from '../../../context/AuthContext';
+import RecruiterFilterBar, {
+  getRecruiterFromItem,
+  filterCallsByRecruiter,
+} from './RecruiterFilterBar';
 
 interface DailyActivitiesModalProps {
   isOpen: boolean;
@@ -50,6 +55,12 @@ const DownloadIcon = (
 const ChevronDownIcon = ({ className = '' }: { className?: string }) => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={className}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
+const UserIcon = (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
 
 const TAB_CONFIG: { key: TabKey; label: string; icon: JSX.Element; color: string; bg: string; typeMatch: string[] }[] = [
   { key: 'call', label: 'Calls Made', icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF', typeMatch: ['call', 'call-cancel'] },
@@ -72,11 +83,8 @@ const getIconForType = (type: string) => {
   return { icon: CallIcon, color: '#0F47F2', bg: '#E7EDFF' };
 };
 
-
-
 /** Get all detail items for a given group type from data. */
 function getDetailsForGroupType(data: DailyActivitiesResponse, groupType: string): DailyActivityDetailItem[] {
-  // Map group type to the matching tab config
   const matchingTab = TAB_CONFIG.find(t => t.typeMatch.includes(groupType));
   if (!matchingTab) return [];
 
@@ -88,9 +96,12 @@ function getDetailsForGroupType(data: DailyActivitiesResponse, groupType: string
   return [];
 }
 
-
 const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onClose, data, isLoading = false }) => {
   const [activeTab, setActiveTab] = useState<TabKey>('all');
+  const authContext = useAuthContext();
+  const user = authContext?.user;
+  const userStatus = authContext?.userStatus;
+  const loggedInRecruiterId = userStatus?.recruiter_id || user?.recruiterId || user?.id;
 
   const tabCounts = useMemo(() => {
     if (!data) return { all: 0, call: 0, 'follow-up': 0, shortlist: 0, hired: 0 };
@@ -188,9 +199,9 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
         {/* ── Content ── */}
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {activeTab === 'all' ? (
-            <AllTabContent groupedItems={groupedItems} data={data} />
+            <AllTabContent groupedItems={groupedItems} data={data} loggedInRecruiterId={loggedInRecruiterId} />
           ) : (
-            <DetailTabContent items={detailItems} tabKey={activeTab} data={data} />
+            <DetailTabContent items={detailItems} tabKey={activeTab} data={data} loggedInRecruiterId={loggedInRecruiterId} />
           )}
         </div>
       </div>
@@ -202,22 +213,6 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
 /* ═══════════════════════════════════════════════
    Sub-components
    ═══════════════════════════════════════════════ */
-
-import RecruiterFilterBar, {
-  getRecruiterFromItem,
-  filterCallsByRecruiter,
-} from './RecruiterFilterBar';
-
-/* ═══════════════════════════════════════════════
-   Sub-components
-   ═══════════════════════════════════════════════ */
-
-const UserIcon = (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
 
 function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle: string; onClose: () => void }) {
   return (
@@ -243,7 +238,6 @@ function DetailCard({ item, idx, selectedRecruiter }: { item: DailyActivityDetai
   const [showNote, setShowNote] = useState(false);
   const { icon, color, bg } = getIconForType(item.type);
   const isFailedCall = item.call_status && item.call_status.toLowerCase().includes("didn't pick");
-  const isCall = (item.type || '').toLowerCase().includes('call') || item.type === 'phone';
   const isShortlist = (item.type || '').toLowerCase().includes('shortlist');
 
   const candidateName = item.candidate_name;
@@ -331,7 +325,7 @@ function DetailCard({ item, idx, selectedRecruiter }: { item: DailyActivityDetai
 }
 
 /** "All" tab — grouped summaries that expand inline to show detail cards */
-function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGroupedItem[]; data: DailyActivitiesResponse }) {
+function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGroupedItem[]; data: DailyActivitiesResponse; loggedInRecruiterId?: string }) {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [selectedRecruiter, setSelectedRecruiter] = useState<string>('all');
 
@@ -426,8 +420,9 @@ function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGrou
 }
 
 /** Per-category tab — shows detailed activity cards */
-function DetailTabContent({ items, tabKey, data }: { items: DailyActivityDetailItem[]; tabKey: TabKey; data?: DailyActivitiesResponse }) {
+function DetailTabContent({ items, tabKey, data }: { items: DailyActivityDetailItem[]; tabKey: TabKey; data?: DailyActivitiesResponse; loggedInRecruiterId?: string }) {
   const [selectedRecruiter, setSelectedRecruiter] = useState<string>('all');
+
   const cfg = TAB_CONFIG.find(t => t.key === tabKey);
   const sectionTitle = cfg ? `${cfg.label.toUpperCase()} ON THIS DAY` : 'ACTIVITIES';
   const isCallTab = tabKey === 'call';
