@@ -45,12 +45,16 @@ export default function PriorityCard({
     ? statusStyles.green
     : (statusStyles[statusColor] || statusStyles.grey);
 
-  // Extract clean status tag
-  const rawTag = status.split('-')[0].trim();
-  
+  // Extract clean status tag by removing existing duration references (e.g. "for 57 days", "· 57 days")
+  let cleanTag = status.split('-')[0].trim();
+  cleanTag = cleanTag.replace(/\s*(?:·|for)?\s*\d+\s*days?/gi, '').trim();
+  if (!cleanTag) {
+    cleanTag = 'Pending';
+  }
+
   // Combine status tag and dynamic duration
   const durationText = formatDuration(daysAgo);
-  const pillText = `${rawTag} · ${durationText}`;
+  const pillText = `${cleanTag} · ${durationText}`;
 
   return (
     <div

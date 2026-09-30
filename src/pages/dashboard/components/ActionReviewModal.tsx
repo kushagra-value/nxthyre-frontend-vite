@@ -64,11 +64,12 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
   const workspaceName = currentItem?.workspace_name || "";
 
   // ── Status badge (from tags) ──
-  const status =
+  const rawStatus =
     currentItem?.tags?.[0] ||
     currentItem?.current_stage_name ||
     stageDetails?.name ||
     "";
+  const status = rawStatus.split('-')[0].replace(/\s*(?:·|for)?\s*\d+\s*days?/gi, '').trim() || rawStatus;
 
   // ── Match percentage — parse from candidate_match_score.score (e.g. "65%") ──
   let matchPercentage = 0;

@@ -1,5 +1,6 @@
 export interface User {
   id: string | undefined;
+  recruiterId?: string;
   fullName: string;
   isSuperAdmin?: boolean;
   email: string;
