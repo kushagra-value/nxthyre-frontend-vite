@@ -554,11 +554,16 @@ const SortIndicator = ({ column, currentSort }: { column: SortKey; currentSort: 
   return <ArrowUpDown className="w-3 h-3 ml-1 inline opacity-30" />;
 };
 
-// ── Helper: format date ──
 function formatDate(iso: string) {
   if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function formatLocationDisplay(loc?: string | null): string {
+  if (!loc || !loc.trim()) return '—';
+  const city = loc.split(',')[0].trim();
+  return city || loc;
 }
 
 // ── Helper: build API request from component state ──
@@ -760,7 +765,7 @@ export default function CandidateSearch() {
         // Merge workspaces like in Dashboard
         const mergedWs: V1Workspace[] = [];
         const seenWs = new Set<number>();
-        
+
         const myWorkspaces = (myWsData as any).workspaces || [];
         myWorkspaces.forEach((ws: any) => {
           if (!seenWs.has(ws.id)) {
@@ -823,7 +828,7 @@ export default function CandidateSearch() {
                       clients: prev.clients.map((c: any) => c.value === name ? { ...c, logo: logoUrl } : c),
                     }));
                   }
-                }).catch(() => { 
+                }).catch(() => {
                   setCompanyLogos(prev => ({ ...prev, [name]: null }));
                 });
             }
@@ -1239,7 +1244,7 @@ export default function CandidateSearch() {
                       {/* DESIGNATION: actual designation from profile */}
                       <td className="p-4 font-semibold text-gray-700">{c.designation || c.jobRole?.title || '—'}</td>
                       {/* LOCATION */}
-                      <td className="p-4 text-gray-600 text-nowrap">{c.location || '—'}</td>
+                      <td className="p-4 text-gray-600 text-nowrap" title={c.location || ''}>{formatLocationDisplay(c.location)}</td>
                       {/* EXP */}
                       <td className="p-4 text-gray-600 text-nowrap">{c.experience != null ? `${c.experience} yrs` : '—'}</td>
                       {/* CURRENT CTC */}

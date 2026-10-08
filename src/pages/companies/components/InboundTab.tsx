@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check, MoreHorizontal, Loader2, XCircle, X } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowRight, ArrowLeft, Plus, Check, MoreVertical, Loader2, XCircle, X, Copy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
@@ -17,24 +17,22 @@ interface InboundTabProps {
   ) => void;
 }
 
-const DuplicateProfileIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    className={`${className} shrink-0`}
+const DuplicateProfileIcon = ({ className = "shrink-0" }: { className?: string }) => (
+  <span
+    className={`inline-flex items-center gap-1 text-[10px] font-semibold text-[#DC2626] bg-[#FEE2E2] border border-[#FCA5A5] px-1.5 py-0.5 rounded-md ${className}`}
+    title="Duplicate profile found in portal"
   >
-    <circle cx="12" cy="12" r="10" fill="#EF4444" />
-    <line x1="7" y1="7" x2="17" y2="17" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-  </svg>
+    <Copy className="w-3 h-3 text-[#DC2626]" /> Duplicate
+  </span>
 );
 
-const VerifiedProfileIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
-  <svg
-    viewBox="0 0 22 22"
-    fill="currentColor"
-    className={`${className} text-[#1D9BF0] shrink-0`}
+const VerifiedProfileIcon = ({ className = "shrink-0" }: { className?: string }) => (
+  <span
+    className={`inline-flex items-center gap-1 text-[10px] font-semibold text-[#059669] bg-[#ECFDF5] border border-[#A7F3D0] px-1.5 py-0.5 rounded-md ${className}`}
+    title="Verified / Unique profile in portal"
   >
-    <path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.44 1.245-.222.607-.27 1.263-.14 1.896.13.634.437 1.218.88 1.687.47.445 1.054.75 1.688.88.634.132 1.292.08 1.897-.143.272.585.702 1.084 1.243 1.437.54.354 1.168.552 1.814.569.647-.016 1.275-.213 1.815-.568.54-.355.97-.854 1.24-1.44.608.223 1.267.273 1.902.14.635-.13 1.22-.435 1.69-.88.445-.472.75-1.056.88-1.69.13-.632.08-1.29-.144-1.895.587-.274 1.087-.705 1.44-1.245.356-.54.555-1.17.575-1.817zm-10.42 2.633l-3.33-3.33 1.42-1.42 1.91 1.91 4.54-4.54 1.42 1.42-5.96 5.96z" />
-  </svg>
+    <Check className="w-3 h-3 text-[#059669] stroke-[2.5]" /> Verified
+  </span>
 );
 
 const formatDate = (iso?: string): string => {
@@ -46,6 +44,12 @@ const formatDate = (iso?: string): string => {
     month: "2-digit",
     year: "numeric",
   });
+};
+
+const formatLocationDisplay = (loc?: string | null): string => {
+  if (!loc || !loc.trim()) return "-";
+  const city = loc.split(",")[0].trim();
+  return city || loc;
 };
 
 /** Convert PipelineFiltersState → backend search API payload fields */
@@ -92,11 +96,11 @@ function buildFilterPayload(filters: PipelineFiltersState): Record<string, any> 
     payload.notice_period = filters.noticePeriod.selected;
     payload.notice_periods = filters.noticePeriod.selected;
     payload.notice_period_str = filters.noticePeriod.selected.join(",");
-    
+
     const daysValues = filters.noticePeriod.selected.map((s) => noticePeriodMap[s] ?? 0);
     const minDays = Math.min(...daysValues);
     const maxDays = Math.max(...daysValues);
-    
+
     payload.notice_period_min_days = minDays;
     payload.notice_period_max_days = maxDays;
     payload.min_notice_period = minDays;
@@ -842,7 +846,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                           <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{score}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "-"}</td>
+                      <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{formatLocationDisplay(item.location)}</td>
                       <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years || "-"}</td>
                       <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_salary_lpa || "-"}</td>
                       <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc || "-"}</td>
@@ -925,7 +929,7 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
                               className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
                               title="Options"
                             >
-                              <MoreHorizontal className="w-4 h-4 text-[#4B5563]" />
+                              <MoreVertical className="w-4 h-4 text-[#4B5563]" />
                             </button>
 
                             {menuOpenId === item.id && (

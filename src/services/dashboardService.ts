@@ -115,6 +115,25 @@ export interface PriorityActionItem {
   archive_stage_id?: number;
   next_stage_id?: number;
   current_stage_id?: number;
+  recruiter_name?: string | null;
+  resume_score?: number | null;
+  screening_round?: string | null;
+}
+
+// Tab-specific Priority Action Interfaces
+export interface SourcingPriorityActionItem extends PriorityActionItem {
+  recruiter_name?: string | null;
+  resume_score?: number | null;
+}
+
+export interface ScreeningPriorityActionItem extends PriorityActionItem {
+  recruiter_name?: string | null;
+  screening_round?: string | null;
+}
+
+export interface InterviewPriorityActionItem extends PriorityActionItem {
+  recruiter_name?: string | null;
+  screening_round?: string | null;
 }
 
 export interface PriorityActionsResponse {
@@ -136,6 +155,7 @@ export interface PriorityActionsParams {
   history?: boolean;
   page?: number;
   page_size?: number;
+  recruiter_name?: string;
 }
 
 export interface CompletePriorityActionPayload {
@@ -342,7 +362,9 @@ export interface DailyActivityItemAPI {
 /** Detailed activity item for individual tab views (Calls, Follow-ups, etc.) */
 export interface DailyActivityDetailItem {
   id: string;
-  time: string;                     // e.g. "9:00 AM"
+  time: string;
+  user?:number;
+  created_by?:string;
   candidate_name?: string;
   candidate_id?: string;            // UUID
   application_id?: number;          // application ID for navigation
@@ -548,6 +570,7 @@ class DashboardService {
       if (params.history !== undefined) queryParams.append('history', params.history.toString());
       if (params.page !== undefined) queryParams.append('page', params.page.toString());
       if (params.page_size !== undefined) queryParams.append('page_size', params.page_size.toString());
+      if (params.recruiter_name) queryParams.append('recruiter_name', params.recruiter_name);
 
       const response = await apiClient.get(`/jobs/priority-actions/?${queryParams.toString()}`);
       return response.data;

@@ -15,8 +15,8 @@ export interface StatCardData {
 }
 
 export interface PriorityCardData {
-    latestCallTags: string[] | null | undefined;
-    latestCallNote: string | null | undefined;
+    latestCallTags?: string[] | null;
+    latestCallNote?: string | null;
     id: string;
     name: string;
     role: string;
@@ -25,6 +25,13 @@ export interface PriorityCardData {
     status: string;
     statusColor: 'blue' | 'rose' | 'amber' | 'indigo' | 'grey' | 'green';
     isDone?: boolean;
+    recruiterName?: string | null;
+    resumeScore?: number | null;
+    screeningScore?: number | null;
+    applicationId?: string | number;
+    candidateId?: string | number;
+    jobRole?: string;
+    jobRoleId?: string | number;
 }
 
 export interface PriorityColumnData {
@@ -226,110 +233,110 @@ export const statCardsData: StatCardData[] = [
 //  Priority Actions
 // ──────────────────────────────────────────────
 
-export const priorityColumnsData: PriorityColumnData[] = [
-    {
-        id: 'col-sourcing',
-        title: 'Sourcing',
-        dotColor: '#6155F5',
-        accentColor: '#6155F5',
-        urgentCount: 1,
-        totalCount: 4,
-        cards: [
-            {
-                id: 'pc-1',
-                name: 'Dwija Patel',
-                role: 'Senior Product Designer',
-                daysAgo: 4,
-                status: 'Follow up required',
-                statusColor: 'blue',
-                latestCallNote: undefined
-            },
-            {
-                id: 'pc-2',
-                name: 'Ana De Armas',
-                role: 'Product Manager',
-                daysAgo: 4,
-                status: 'Outreach Required',
-                statusColor: 'blue',
-                latestCallNote: undefined
-            },
-            {
-                id: 'pc-3',
-                name: 'Charles Leclerc',
-                role: 'Backend Engineer',
-                daysAgo: 4,
-                status: 'Follow up required',
-                statusColor: 'blue',
-                latestCallNote: undefined
-            },
-            {
-                id: 'pc-4',
-                name: 'Dwija Patel',
-                role: 'Senior Product Designer',
-                daysAgo: 4,
-                status: 'Follow up required',
-                statusColor: 'grey',
-                latestCallNote: undefined
-            },
-        ],
-    },
-    {
-        id: 'col-screening',
-        title: 'Screening',
-        dotColor: '#CB30E0',
-        accentColor: '#CB30E0',
-        urgentCount: 0,
-        totalCount: 1,
-        cards: [
-            {
-                id: 'pc-5',
-                name: 'Max Verstappen',
-                role: 'Senior Product Designer',
-                daysAgo: 4,
-                status: 'Availability Expires today',
-                statusColor: 'rose',
-                latestCallNote: undefined
-            },
-        ],
-    },
-    {
-        id: 'col-interview',
-        title: 'Interview',
-        dotColor: '#00C3D0',
-        accentColor: '#00C3D0',
-        urgentCount: 0,
-        totalCount: 3,
-        cards: [
-            {
-                id: 'pc-6',
-                name: 'Dwija Patel',
-                role: 'Senior Product Designer',
-                daysAgo: 4,
-                status: 'HM Feedback missing',
-                statusColor: 'amber',
-                latestCallNote: undefined
-            },
-            {
-                id: 'pc-7',
-                name: 'Ana De Armas',
-                role: 'Product Manager',
-                daysAgo: 4,
-                status: 'Required Scheduling',
-                statusColor: 'indigo',
-                latestCallNote: undefined
-            },
-            {
-                id: 'pc-8',
-                name: 'Charles Leclerc',
-                role: 'Backend Engineer',
-                daysAgo: 4,
-                status: 'Not Available',
-                statusColor: 'rose',
-                latestCallNote: undefined
-            },
-        ],
-    },
-];
+// export const priorityColumnsData: PriorityColumnData[] = [
+//     {
+//         id: 'col-sourcing',
+//         title: 'Sourcing',
+//         dotColor: '#6155F5',
+//         accentColor: '#6155F5',
+//         urgentCount: 1,
+//         totalCount: 4,
+//         cards: [
+//             {
+//                 id: 'pc-1',
+//                 name: 'Dwija Patel',
+//                 role: 'Senior Product Designer',
+//                 daysAgo: 4,
+//                 status: 'Follow up required',
+//                 statusColor: 'blue',
+//                 latestCallNote: undefined
+//             },
+//             {
+//                 id: 'pc-2',
+//                 name: 'Ana De Armas',
+//                 role: 'Product Manager',
+//                 daysAgo: 4,
+//                 status: 'Outreach Required',
+//                 statusColor: 'blue',
+//                 latestCallNote: undefined
+//             },
+//             {
+//                 id: 'pc-3',
+//                 name: 'Charles Leclerc',
+//                 role: 'Backend Engineer',
+//                 daysAgo: 4,
+//                 status: 'Follow up required',
+//                 statusColor: 'blue',
+//                 latestCallNote: undefined
+//             },
+//             {
+//                 id: 'pc-4',
+//                 name: 'Dwija Patel',
+//                 role: 'Senior Product Designer',
+//                 daysAgo: 4,
+//                 status: 'Follow up required',
+//                 statusColor: 'grey',
+//                 latestCallNote: undefined
+//             },
+//         ],
+//     },
+//     {
+//         id: 'col-screening',
+//         title: 'Screening',
+//         dotColor: '#CB30E0',
+//         accentColor: '#CB30E0',
+//         urgentCount: 0,
+//         totalCount: 1,
+//         cards: [
+//             {
+//                 id: 'pc-5',
+//                 name: 'Max Verstappen',
+//                 role: 'Senior Product Designer',
+//                 daysAgo: 4,
+//                 status: 'Availability Expires today',
+//                 statusColor: 'rose',
+//                 latestCallNote: undefined
+//             },
+//         ],
+//     },
+//     {
+//         id: 'col-interview',
+//         title: 'Interview',
+//         dotColor: '#00C3D0',
+//         accentColor: '#00C3D0',
+//         urgentCount: 0,
+//         totalCount: 3,
+//         cards: [
+//             {
+//                 id: 'pc-6',
+//                 name: 'Dwija Patel',
+//                 role: 'Senior Product Designer',
+//                 daysAgo: 4,
+//                 status: 'HM Feedback missing',
+//                 statusColor: 'amber',
+//                 latestCallNote: undefined
+//             },
+//             {
+//                 id: 'pc-7',
+//                 name: 'Ana De Armas',
+//                 role: 'Product Manager',
+//                 daysAgo: 4,
+//                 status: 'Required Scheduling',
+//                 statusColor: 'indigo',
+//                 latestCallNote: undefined
+//             },
+//             {
+//                 id: 'pc-8',
+//                 name: 'Charles Leclerc',
+//                 role: 'Backend Engineer',
+//                 daysAgo: 4,
+//                 status: 'Not Available',
+//                 statusColor: 'rose',
+//                 latestCallNote: undefined
+//             },
+//         ],
+//     },
+// ];
 
 // ──────────────────────────────────────────────
 //  Talent Matches
@@ -574,7 +581,7 @@ export const actionReviewCandidates: ActionReviewCandidate[] = [
 // ──────────────────────────────────────────────
 
 export const newMatchCandidates: NewMatchCandidate[] = [
-    
+
 ];
 
 // ──────────────────────────────────────────────

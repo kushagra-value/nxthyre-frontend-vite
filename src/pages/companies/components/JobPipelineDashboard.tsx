@@ -33,14 +33,15 @@ import {
   ArrowDown,
   MessageSquare,
   MoreHorizontal,
+  MoreVertical,
   Phone,
   Mail,
   Trash2,
   XCircle,
   CheckCircle2,
   RotateCcw,
-  Copy,
   AlertTriangle,
+  Copy,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
@@ -224,28 +225,57 @@ interface CandidateListItem {
   activities?: any[];
 }
 
-const DuplicateProfileIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    className={`${className} shrink-0`}
+const DuplicateProfileIcon = ({ className = "shrink-0" }: { className?: string }) => (
+  <span
+    className={`inline-flex items-center gap-1 text-[10px] font-semibold text-[#DC2626] bg-[#FEE2E2] border border-[#FCA5A5] px-1.5 py-0.5 rounded-md ${className}`}
+    title="Duplicate profile found in portal"
   >
-    <circle cx="12" cy="12" r="10" fill="#EF4444" />
-    <line x1="7" y1="7" x2="17" y2="17" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-  </svg>
+    <Copy className="w-3 h-3 text-[#DC2626]" /> Duplicate
+  </span>
 );
 
-const VerifiedProfileIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
-  <svg
-    viewBox="0 0 22 22"
-    fill="currentColor"
-    className={`${className} text-[#1D9BF0] shrink-0`}
+const VerifiedProfileIcon = ({ className = "shrink-0" }: { className?: string }) => (
+  <span
+    className={`inline-flex items-center gap-1 text-[10px] font-semibold text-[#059669] bg-[#ECFDF5] border border-[#A7F3D0] px-1.5 py-0.5 rounded-md ${className}`}
+    title="Verified / Unique profile in portal"
   >
-    <path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.44 1.245-.222.607-.27 1.263-.14 1.896.13.634.437 1.218.88 1.687.47.445 1.054.75 1.688.88.634.132 1.292.08 1.897-.143.272.585.702 1.084 1.243 1.437.54.354 1.168.552 1.814.569.647-.016 1.275-.213 1.815-.568.54-.355.97-.854 1.24-1.44.608.223 1.267.273 1.902.14.635-.13 1.22-.435 1.69-.88.445-.472.75-1.056.88-1.69.13-.632.08-1.29-.144-1.895.587-.274 1.087-.705 1.44-1.245.356-.54.555-1.17.575-1.817zm-10.42 2.633l-3.33-3.33 1.42-1.42 1.91 1.91 4.54-4.54 1.42 1.42-5.96 5.96z" />
-  </svg>
+    <Check className="w-3 h-3 text-[#059669] stroke-[2.5]" /> Verified
+  </span>
 );
 
 const isAscendionWorkspaceName = (name?: string | null) =>
   (name || "").toLowerCase().includes("ascendion");
+
+const getCandidateSubtext = (cand: any, item?: any): string => {
+  if (!cand && !item) return "--";
+
+  const company =
+    cand?.current_company ||
+    cand?.company ||
+    cand?.company_name ||
+    cand?.previous_company ||
+    cand?.last_company ||
+    cand?.experience_summary?.company ||
+    item?.current_company ||
+    item?.company ||
+    cand?.premium_data?.current_company ||
+    cand?.premium_data?.company ||
+    cand?.premium_data?.last_company ||
+    (Array.isArray(cand?.work_experience) && cand?.work_experience[0]?.company) ||
+    (Array.isArray(cand?.experience) && cand?.experience[0]?.company) ||
+    (Array.isArray(cand?.work_history) && cand?.work_history[0]?.company) ||
+    (Array.isArray(cand?.premium_data?.work_experience) && cand?.premium_data?.work_experience[0]?.company);
+
+  if (company && typeof company === "string" && company.trim() && company.trim() !== "--") {
+    const cleanCompany = company.trim();
+    if (cleanCompany.toLowerCase().startsWith("previously at")) {
+      return cleanCompany;
+    }
+    return `Previously at ${cleanCompany}`;
+  }
+
+  return cand?.headline || item?.headline || "--";
+};
 
 // ─── Props ─────────────────────────────────────────────────────
 
@@ -283,6 +313,23 @@ const formatDate = (iso?: string): string => {
   return d.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const formatLocationDisplay = (loc?: string | null): string => {
+  if (!loc || !loc.trim()) return "--";
+  const city = loc.split(",")[0].trim();
+  return city || loc;
+};
+
+const formatLwdDate = (iso?: string | null): string => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
     year: "numeric",
   });
 };
@@ -444,7 +491,7 @@ export default function JobPipelineDashboard({
   const [loadingJob, setLoadingJob] = useState(false);
 
   // ── Collapse/Expand metadata card
-  const [isMetadataExpanded, setIsMetadataExpanded] = useState(true);
+  const [isMetadataExpanded, setIsMetadataExpanded] = useState(false);
 
   // ── Edit Job Role modal
   const [showEditModal, setShowEditModal] = useState(false);
@@ -580,6 +627,18 @@ export default function JobPipelineDashboard({
   const [pipelineFilters, setPipelineFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
   const [showPipelineFilterPanel, setShowPipelineFilterPanel] = useState(false);
   const pipelineFilterButtonRef = useRef<HTMLButtonElement>(null);
+
+  const activeFilterCount = useMemo(() => {
+    if (!pipelineFilters) return 0;
+    let count = 0;
+    if (pipelineFilters.location && pipelineFilters.location.length > 0) count += pipelineFilters.location.length;
+    if (pipelineFilters.salaryRange?.min || pipelineFilters.salaryRange?.max) count += 1;
+    if (pipelineFilters.experience?.min || pipelineFilters.experience?.max) count += 1;
+    if (pipelineFilters.designation && pipelineFilters.designation.length > 0) count += pipelineFilters.designation.length;
+    if (pipelineFilters.noticePeriod?.selected?.length > 0 || pipelineFilters.noticePeriod?.minDays || pipelineFilters.noticePeriod?.maxDays) count += 1;
+    if (pipelineFilters.attention && pipelineFilters.attention.length > 0) count += pipelineFilters.attention.length;
+    return count;
+  }, [pipelineFilters]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const skipAutosuggestRef = useRef(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -777,11 +836,10 @@ export default function JobPipelineDashboard({
                 <div
                   key={opt.value ?? "all"}
                   onClick={() => handleSelectRecruiter(opt.value)}
-                  className={`p-2 rounded-lg cursor-pointer text-xs transition-colors flex items-center justify-between hover:bg-gray-100 ${
-                    selectedRecruiter === opt.value
-                      ? "bg-[#E7EDFF] text-[#0F47F2] font-semibold"
-                      : "text-[#4B5563]"
-                  }`}
+                  className={`p-2 rounded-lg cursor-pointer text-xs transition-colors flex items-center justify-between hover:bg-gray-100 ${selectedRecruiter === opt.value
+                    ? "bg-[#E7EDFF] text-[#0F47F2] font-semibold"
+                    : "text-[#4B5563]"
+                    }`}
                 >
                   <span className="truncate">{opt.name}</span>
                   {opt.count !== undefined && (
@@ -2510,7 +2568,7 @@ export default function JobPipelineDashboard({
                       className="p-0.5 hover:bg-gray-100 rounded-md transition-colors"
                       title="Options"
                     >
-                      <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
+                      <MoreVertical className="w-4 h-4 text-[#AEAEB2]" />
                     </button>
                     {menuOpenId === item.id && (
                       <div
@@ -2551,16 +2609,15 @@ export default function JobPipelineDashboard({
                             <button onClick={(e) => { e.stopPropagation(); openFeedbackModal({ type: "archive", applicationIds: [item.id] }); setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Move to Archive</button>
                           </>
                         ) : (
-                          <button onClick={async (e) => { e.stopPropagation(); try { const targetStage = stages.find((s) => s.slug === "shortlisted") || stages[0]; await apiClient.patch(`/jobs/applications/${item.id}/`, { current_stage: targetStage.id, status: "ACTIVE" }); showToast.success("Candidate unarchived successfully"); fetchStages(jobId); fetchArchivedCandidates(jobId); } catch (err) { showToast.error("Failed to unarchive candidate"); } setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#059669] hover:bg-[#ECFDF5] flex items-center gap-2"> Unarchive Candidate</button>
+                          jobId && <button onClick={async (e) => { e.stopPropagation(); try { const targetStage = stages.find((s) => s.slug === "shortlisted") || stages[0]; await apiClient.patch(`/jobs/applications/${item.id}/`, { current_stage: targetStage.id, status: "ACTIVE" }); showToast.success("Candidate unarchived successfully"); fetchStages(jobId); fetchArchivedCandidates(jobId); } catch (err) { showToast.error("Failed to unarchive candidate"); } setMenuOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-[#059669] hover:bg-[#ECFDF5] flex items-center gap-2"> Unarchive Candidate</button>
                         )}
                       </div>
                     )}
                   </div>
                 </div>
-                <p className="text-[13px] text-[#6B7280] line-clamp-1 mt-0.5">{headline}</p>
-                {companyName && companyName !== "--" && (
-                  <p className="text-[13px] font-medium text-[#4B5563] line-clamp-1">{companyName}</p>
-                )}
+                <p className="text-[13px] text-[#6B7280] line-clamp-1 mt-0.5" title={getCandidateSubtext(cand, item)}>
+                  {getCandidateSubtext(cand, item)}
+                </p>
                 {(() => {
                   const attentionTag = item.status_tags?.find((t: any) => t.text);
                   const pill = getAttentionPill(item, attentionTag);
@@ -2613,12 +2670,12 @@ export default function JobPipelineDashboard({
               {noticeText && (
                 <span
                   className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F3E8FF] text-[#7C3AED]"
-                  title={cand.last_working_day ? `Last Working Day: ${formatDate(cand.last_working_day)}` : ""}
+                  title={cand.last_working_day ? `Last Working Day: ${formatLwdDate(cand.last_working_day)}` : ""}
                 >
                   {noticeText}
                   {cand.last_working_day && (
-                    <span className="ml-1 opacity-80 text-[10px] font-normal italic">
-                      ({formatDate(cand.last_working_day)})
+                    <span className="ml-1 opacity-90 text-[10px] font-normal">
+                      LWD: {formatLwdDate(cand.last_working_day)}
                     </span>
                   )}
                 </span>
@@ -2975,63 +3032,65 @@ export default function JobPipelineDashboard({
         )}
       </div>
 
-      {/* ═══════════════════════════════════════════════════════
-          Pipeline / Naukbot / Inbound Tabs
-         ═══════════════════════════════════════════════════════ */}
-      <div className="mx-8 mt-6">
-        <div className="flex items-center gap-6 border-b border-[#E5E7EB]">
-          {[
-            {
-              key: "pipeline" as const,
-              label: "Pipeline",
-              count: jobDetails?.pipeline_candidate_count ?? 0,
-            },
-            {
-              key: "naukbot" as const,
-              label: "Naukbot",
-              count: naukbotFilteredCount ?? jobDetails?.naukri_bot_candidates_count ?? 0,
-            },
-            {
-              key: "inbound" as const,
-              label: "Inbound",
-              count: jobDetails?.inbound_candidates_count ?? 0,
-            },
-            {
-              key: "linkedinbot" as const,
-              label: "LinkedIn Bot",
-              count: linkedinBotFilteredCount ?? jobDetails?.linkedin_bot_candidates_count ?? 0,
-            },
-            // {
-            //   key: "nxthyre" as const,
-            //   label: "Nxthyre",
-            //   count: jobDetails?.candidates_count ?? 0,
-            // },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === tab.key
-                ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
-                : "text-[#8E8E93] hover:text-[#4B5563]"
-                }`}
-            >
-              {tab.label}{" "}
-              <span
-                className={`ml-1 text-xs px-1.5 py-0.5 rounded ${activeTab === tab.key ? "bg-[#E7EDFF] text-[#0F47F2]" : "text-[#AEAEB2]"}`}
-              >
-                {tab.count}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+
 
       {/* ═══════════════════════════════════════════════════════
+          Pipeline / Naukbot / Inbound Tabs & Toolbar (Sticky)
+         ═══════════════════════════════════════════════════════ */}
+      <div className="sticky top-0 z-30 bg-[#F3F5F7] pt-4 pb-1">
+        <div className="mx-8">
+          <div className="flex items-center gap-6 border-b border-[#E5E7EB]">
+            {[
+              {
+                key: "pipeline" as const,
+                label: "Pipeline",
+                count: jobDetails?.pipeline_candidate_count ?? 0,
+              },
+              {
+                key: "naukbot" as const,
+                label: "Naukbot",
+                count: naukbotFilteredCount ?? jobDetails?.naukri_bot_candidates_count ?? 0,
+              },
+              {
+                key: "inbound" as const,
+                label: "Inbound",
+                count: jobDetails?.inbound_candidates_count ?? 0,
+              },
+              {
+                key: "linkedinbot" as const,
+                label: "LinkedIn Bot",
+                count: linkedinBotFilteredCount ?? jobDetails?.linkedin_bot_candidates_count ?? 0,
+              },
+              // {
+              //   key: "nxthyre" as const,
+              //   label: "Nxthyre",
+              //   count: jobDetails?.candidates_count ?? 0,
+              // },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === tab.key
+                  ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
+                  : "text-[#8E8E93] hover:text-[#4B5563]"
+                  }`}
+              >
+                {tab.label}{" "}
+                <span
+                  className={`ml-1 text-xs px-1.5 py-0.5 rounded ${activeTab === tab.key ? "bg-[#E7EDFF] text-[#0F47F2]" : "text-[#AEAEB2]"}`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════
           Stage Filter Pills & Pipeline Content
          ═══════════════════════════════════════════════════════ */}
-      {activeTab === "pipeline" && (
-        <>
-          {isKanbanView ? (
+        {activeTab === "pipeline" && (
+          isKanbanView ? (
             /* ═══════════ KANBAN VIEW TOOLBAR ═══════════ */
             <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
               <div className="flex items-center gap-3">
@@ -3067,10 +3126,10 @@ export default function JobPipelineDashboard({
                     const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
                     window.open(url, "_blank");
                   }}
-                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
+                  className="flex items-center gap-1.5 px-3.5 h-9 bg-[#0F47F2] text-white rounded-lg text-xs font-semibold hover:bg-[#0D3ECF] transition-colors shrink-0 shadow-xs"
                   title="Share Pipeline"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
                     <g clipPath="url(#clip0_360_5904)">
                       <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="currentColor" strokeLinecap="round" />
                       <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
@@ -3081,6 +3140,7 @@ export default function JobPipelineDashboard({
                       </clipPath>
                     </defs>
                   </svg>
+                  <span>Share Pipeline</span>
                 </button>
                 {/* Export CSV */}
                 <button
@@ -3099,19 +3159,7 @@ export default function JobPipelineDashboard({
                     <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
-                {/* Calendar / Date */}
-                <button
-                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors"
-                  title={new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })}
-                  disabled
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="currentColor" strokeLinecap="round" />
-                    <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M4 5.3335H12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+
                 {/* Table View toggle */}
                 <button
                   onClick={() => {
@@ -3138,10 +3186,17 @@ export default function JobPipelineDashboard({
             /* ═══════════ TABLE VIEW TOOLBAR ═══════════ */
             <>
               {/* Stage pills row */}
-              <div className="mx-8 mt-4 flex items-center gap-3 bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
-                {/* Stage pills — horizontally scrollable, shrinks to give room to the action buttons */}
-                <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
-                  <div className="flex items-center gap-2 flex-nowrap">
+              <div className="mx-8 mt-4 flex items-center justify-between gap-3 bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
+                {/* Left Side: Stage pills area (max 4 visible, scrollable) + Add Stage button immediately after */}
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div
+                    onWheel={(e) => {
+                      if (e.deltaY !== 0) {
+                        e.currentTarget.scrollLeft += e.deltaY;
+                      }
+                    }}
+                    className="flex items-center gap-2 overflow-x-auto hide-scrollbar max-w-[480px] sm:max-w-[510px] shrink-0 min-w-0 py-0.5 scroll-smooth"
+                  >
                     <button
                       onClick={() => setActiveStageSlug(null)}
                       className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${activeStageSlug === null
@@ -3172,11 +3227,21 @@ export default function JobPipelineDashboard({
                         </button>
                       ))}
                   </div>
+
+                  {/* Add Stage button positioned immediately after visible stage pills area */}
+                  <button
+                    onClick={() => setShowAddStageForm(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#0F47F2] rounded-lg   text-white transition-colors border border-transparent shrink-0 whitespace-nowrap"
+                    title="Add Stage"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Stage</span>
+                  </button>
                 </div>
 
+                {/* Right Side: Search, Recruiter Filter, Filter Panel, Share Pipeline, Export, View Toggle */}
                 <div className="flex-shrink-0 flex items-center gap-2">
-
-                  <div ref={searchContainerRef} className="relative w-[240px] shrink-0">
+                  <div ref={searchContainerRef} className="relative w-[220px] shrink-0">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
                     <input
                       type="text"
@@ -3201,19 +3266,29 @@ export default function JobPipelineDashboard({
                   </div>
                   {renderRecruiterSelect()}
 
+                  {/* Recruiter / Candidate Filter Control */}
                   <div className="relative">
                     <button
                       ref={pipelineFilterButtonRef}
-                      title="Filters"
+                      title="Filter Candidates"
                       onClick={() => setShowPipelineFilterPanel(!showPipelineFilterPanel)}
-                      className={`flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs font-medium transition-colors ${showPipelineFilterPanel ? "text-[#AEAEB2] border-[#0F47F2]" : "text-[#AEAEB2] hover:bg-[#F3F5F7]"}`}
+                      className={`flex items-center gap-1.5 px-3 h-9 bg-white border rounded-lg text-xs font-medium transition-all ${showPipelineFilterPanel || activeFilterCount > 0
+                        ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]"
+                        : "text-[#374151] border-[#E5E7EB] hover:bg-[#F9FAFB] hover:border-[#D1D5DB]"
+                        }`}
                     >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
                         <path d="M2 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M5.33301 6H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M2 10H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M5.33301 14H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
+                      <span>Filter</span>
+                      {activeFilterCount > 0 && (
+                        <span className="w-4 h-4 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center ml-0.5">
+                          {activeFilterCount}
+                        </span>
+                      )}
                     </button>
                     <PipelineFilterPanel
                       isOpen={showPipelineFilterPanel}
@@ -3224,26 +3299,11 @@ export default function JobPipelineDashboard({
                       jobId={jobId}
                     />
                   </div>
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
-                      window.open(url, "_blank");
-                    }}
-                    title="Share Pipeline"
-                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <g clipPath="url(#clip0_360_5904_tbl)">
-                        <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="#374151" strokeLinecap="round" />
-                        <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_360_5904_tbl">
-                          <rect width="16" height="16" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-                  </button>
+
+                  {/* Share Pipeline Action Button */}
+
+
+                  {/* Export CSV */}
                   <button
                     onClick={() => {
                       if (selectedIds.size === 0) {
@@ -3253,33 +3313,21 @@ export default function JobPipelineDashboard({
                       setShowExportDialog(true);
                     }}
                     title="Export CSV"
-                    className="flex items-center gap-2 px-3 py-2 bg-white text-[#AEAEB2] border border-[#E5E7EB] rounded-lg text-xs font-medium hover:bg-[#F3F5F7] transition-colors"
+                    className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors shrink-0"
                   >
                     <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
                       <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </button>
-                  <DateRangeFilter
-                    valueLabel={dateRangeFilterLabel}
-                    isFilterApplied={isDateRangeFilterApplied}
-                    onApply={(payload) => {
-                      setDateRangeFilterLabel(payload.label);
-                      setIsDateRangeFilterApplied(true);
-                      setDateRange({ from: payload.createdAfter || "", to: payload.createdBefore || "" });
-                    }}
-                    onClear={() => {
-                      setDateRangeFilterLabel("Date Filter");
-                      setIsDateRangeFilterApplied(false);
-                      setDateRange({ from: "", to: "" });
-                    }}
-                  />
 
+                  {/* Kanban View Toggle */}
                   <button
                     onClick={() => {
                       setIsKanbanView(true);
                     }}
-                    className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors px-3 py-2 rounded-lg border border-[#D1D1D6] text-xs"
+                    className="flex items-center justify-center w-9 h-9 text-[#AEAEB2] hover:text-[#414141] transition-colors rounded-lg border border-[#D1D1D6] shrink-0"
+                    title="Kanban View"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <g clipPath="url(#clip0_360_5915)">
@@ -3296,21 +3344,38 @@ export default function JobPipelineDashboard({
                     </svg>
                   </button>
                   <button
-                    onClick={() => setShowAddStageForm(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#E7EDFF] text-[#0F47F2] rounded-lg hover:bg-[#D5E1FF] transition-colors border border-transparent mr-2"
+                    onClick={() => {
+                      const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
+                      window.open(url, "_blank");
+                    }}
+                    title="Share Pipeline"
+                    className="flex items-center gap-1.5 px-3.5 h-9 bg-[#0F47F2] text-white rounded-lg text-xs font-semibold hover:bg-[#0D3ECF] transition-colors shrink-0 shadow-xs"
                   >
-                    <Plus className="w-3.5 h-3.5" /> Add Stage
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                      <g clipPath="url(#clip0_360_5904_tbl)">
+                        <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="currentColor" strokeLinecap="round" />
+                        <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_360_5904_tbl">
+                          <rect width="16" height="16" fill="white" />
+                        </clipPath>
+                      </defs>
+                    </svg>
+                    <span>Share Pipeline</span>
                   </button>
-
-
                 </div>
               </div>
 
 
 
             </>
-          )}
+          )
+        )}
+      </div>
 
+      {activeTab === "pipeline" && (
+        <>
           {/* ═══════════════════════════════════════════════════════
           Bulk Action Bar
          ═══════════════════════════════════════════════════════ */}
@@ -3566,9 +3631,9 @@ export default function JobPipelineDashboard({
                   <col style={{ width: "10%" }} /> {/* actions */}
                 </colgroup>
 
-                <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+                <thead className=" z-20 bg-[#F9FAFB] border-b border-[#E5E7EB] shadow-xs">
                   <tr>
-                    <th className="w-10 px-4 py-4">
+                    <th className="w-10 px-4 py-4 bg-[#F9FAFB]">
                       <input
                         type="checkbox"
                         className="w-4 h-4 accent-[#0F47F2]"
@@ -3591,7 +3656,7 @@ export default function JobPipelineDashboard({
                     ].map((h) => (
                       <th
                         key={h}
-                        className="text-left px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
+                        className=" bg-[#F9FAFB] text-left px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider cursor-pointer group hover:text-[#4B5563] transition-colors select-none whitespace-nowrap"
                         onClick={() => handleSort(h as CandidateSortKey)}
                       >
                         <div className="flex items-center">
@@ -3599,7 +3664,7 @@ export default function JobPipelineDashboard({
                         </div>
                       </th>
                     ))}
-                    <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-right select-none whitespace-nowrap">
+                    <th className=" right-0 z-30 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-right select-none whitespace-nowrap">
                       Actions
                     </th>
                   </tr>
@@ -3733,11 +3798,11 @@ export default function JobPipelineDashboard({
 
                         // Notice period display for table/UI
                         const noticePeriodDisplay = (
-                          <span className="flex flex-col items-start gap-1">
-                            {noticePeriodText}
+                          <span className="flex flex-col items-start leading-tight">
+                            <span>{noticePeriodText}</span>
                             {cand.last_working_day && (
-                              <span className="text-[#8E8E93] text-[10px] font-normal italic">
-                                (LWD: {formatDate(cand.last_working_day)})
+                              <span className="text-[#8E8E93] text-[10px] font-normal mt-0.5 whitespace-nowrap">
+                                LWD: {formatLwdDate(cand.last_working_day)}
                               </span>
                             )}
                           </span>
@@ -3813,8 +3878,8 @@ export default function JobPipelineDashboard({
                                       </div>
                                     )}
                                   </div>
-                                  <div className="text-xs text-[#727272] truncate">
-                                    {cand.headline || "--"}
+                                  <div className="text-xs text-[#727272] truncate" title={getCandidateSubtext(cand, item)}>
+                                    {getCandidateSubtext(cand, item)}
                                   </div>
                                 </div>
                               </div>
@@ -3893,7 +3958,7 @@ export default function JobPipelineDashboard({
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563] whitespace-nowrap">
                               <div className="truncate" title={cand.location || "--"}>
-                                {cand.location || "--"}
+                                {formatLocationDisplay(cand.location)}
                               </div>
                             </td>
                             <td className="px-4 py-5 text-sm text-[#4B5563]">
@@ -3994,7 +4059,7 @@ export default function JobPipelineDashboard({
                                     className="w-8 h-8 flex items-center justify-center bg-[#F3F5F7] rounded-full hover:bg-gray-200 transition-colors"
                                     title="Options"
                                   >
-                                    <MoreHorizontal className="w-4 h-4 text-[#4B5563]" />
+                                    <MoreVertical className="w-4 h-4 text-[#4B5563]" />
                                   </button>
 
                                   {menuOpenId === item.id && (
@@ -4220,11 +4285,11 @@ export default function JobPipelineDashboard({
                                   : "--");
 
                             const noticePeriodDisplay = (
-                              <span className="flex flex-col items-start gap-1">
-                                {noticePeriodText}
+                              <span className="flex flex-col items-start leading-tight">
+                                <span>{noticePeriodText}</span>
                                 {cand.last_working_day && (
-                                  <span className="text-[#8E8E93] text-[10px] font-normal italic">
-                                    (LWD: {formatDate(cand.last_working_day)})
+                                  <span className="text-[#8E8E93] text-[10px] font-normal mt-0.5 whitespace-nowrap">
+                                    LWD: {formatLwdDate(cand.last_working_day)}
                                   </span>
                                 )}
                               </span>
@@ -4256,7 +4321,7 @@ export default function JobPipelineDashboard({
                                         {cand.full_name || "--"}
                                       </div>
                                       <div className="text-xs text-[#AEAEB2] truncate" title={cand.headline || "--"}>
-                                        {cand.headline || "--"}
+                                        {getCandidateSubtext(cand, item)}
                                       </div>
                                     </div>
                                     {(item as any).archive_reason && (
@@ -4342,7 +4407,7 @@ export default function JobPipelineDashboard({
                                   })()}
                                 </td>
                                 <td className="px-4 py-5 text-sm text-[#8E8E93] whitespace-nowrap">
-                                  <span className="truncate block" title={cand.location || "--"}>{cand.location || "--"}</span>
+                                  <span className="truncate block" title={cand.location || "--"}>{formatLocationDisplay(cand.location)}</span>
                                 </td>
                                 <td className="px-4 py-5 text-sm text-[#8E8E93]">
                                   {cand.total_experience != null
@@ -4527,7 +4592,7 @@ export default function JobPipelineDashboard({
         />
       )}
 
-      {/* ═══════════════════════════════════════════════════════
+      /.      {/* ═══════════════════════════════════════════════════════
           Edit Job Role Modal
          ═══════════════════════════════════════════════════════ */}
       {showEditModal && jobId && (
@@ -4779,122 +4844,91 @@ export default function JobPipelineDashboard({
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          Requisition Info Drawer (styled like CompanyInfoDrawer)
+          View JD Drawer / Modal (Nxthyre Redesign)
          ═══════════════════════════════════════════════════════ */}
       {showRequisitionInfoModal && (
         <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-start justify-end overflow-y-auto"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex justify-end overflow-hidden"
           onClick={handleCloseRequisitionModal}
         >
           <div
-            className="bg-white shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto"
+            className="bg-[#F8FAFC] shadow-2xl max-w-4xl w-full h-full flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {loadingCompetencies ? (
-              <div className="flex flex-col items-center justify-center py-24 gap-3">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>
-                <span className="text-sm text-[#8E8E93]">
+              <div className="flex flex-col items-center justify-center h-full gap-3">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0F47F2]"></div>
+                <span className="text-sm font-medium text-[#64748B]">
                   Loading requisition info...
                 </span>
               </div>
             ) : jobDataForModal ? (
               <>
-                {/* ── Header ── */}
-                <div
-                  className="px-[30px] py-[36px] flex flex-wrap gap-[30px] items-center justify-between"
-                  style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                >
-                  <div className="flex items-center gap-[10px]">
-                    <button
-                      onClick={handleCloseRequisitionModal}
-                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                      <ArrowLeft className="w-5 h-5 text-[#4B5563]" />
-                    </button>
-                    <div className="flex items-center gap-[10px]">
-                      <div
-                        className="w-[86px] h-[86px] rounded-full bg-[#0F47F2] text-white flex items-center justify-center shrink-0"
-                        style={{ fontSize: "36px", fontWeight: 500 }}
+                {/* ── Sticky Header Bar ── */}
+                <div className="bg-white border-b border-[#E2E8F0] px-8 pt-6 pb-0 shrink-0">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex items-start gap-3">
+                      <button
+                        onClick={handleCloseRequisitionModal}
+                        className="mt-1 p-1.5 hover:bg-[#F1F5F9] rounded-lg transition-colors text-[#64748B] hover:text-[#0F172A]"
+                        title="Close"
                       >
-                        {jobDataForModal.title?.charAt(0) || "?"}
-                      </div>
-                      <div className="flex flex-col gap-[10px] px-[10px]">
-                        <h2
-                          style={{
-                            fontSize: "32px",
-                            lineHeight: "40px",
-                            fontWeight: 500,
-                          }}
-                          className="text-[#4B5563]"
-                        >
-                          {jobDataForModal.title || "--"}
-                        </h2>
-                        <div className="flex flex-wrap items-start gap-[15px]">
-                          <span className="flex items-center gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
-                            <Briefcase className="w-4 h-4 text-[#8E8E93]" />{" "}
-                            {jobDataForModal.experience_min_years ?? "--"}+
-                            years
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
+                      <div>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h2 className="text-2xl font-bold text-[#0F172A]">
+                            {jobDataForModal.title || "--"}
+                          </h2>
+                          <span className="bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold px-2.5 py-1 rounded-md border border-[#0F47F2]/20">
+                            JD-{jobId}
                           </span>
-                          <span className="flex items-center gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
-                            <LocateIcon className="w-4 h-4 text-[#8E8E93]" />{" "}
-                            {workApproachLabel[jobDataForModal.work_approach] ||
-                              jobDataForModal.work_approach ||
-                              "--"}
+                        </div>
+                        <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-[#475569] text-xs font-medium px-2.5 py-1 rounded-lg">
+                            <Briefcase className="w-3.5 h-3.5 text-[#64748B]" />
+                            {jobDataForModal.experience_min_years ?? "--"}+ years exp
                           </span>
-                          <span className="flex items-center gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
-                            <FileSearch className="w-4 h-4 text-[#8E8E93]" />{" "}
+                          <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-[#475569] text-xs font-medium px-2.5 py-1 rounded-lg">
+                            <LocateIcon className="w-3.5 h-3.5 text-[#64748B]" />
+                            {workApproachLabel[jobDataForModal.work_approach] || jobDataForModal.work_approach || "--"}
+                          </span>
+                          <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-[#475569] text-xs font-medium px-2.5 py-1 rounded-lg">
+                            <FileSearch className="w-3.5 h-3.5 text-[#64748B]" />
                             {jobDataForModal.location?.join(", ") || "--"}
                           </span>
-                          <span className="flex items-center gap-[5px] text-[12px] leading-[14px] text-[#8E8E93]">
-                            <Clock className="w-4 h-4 text-[#8E8E93]" />{" "}
+                          <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-[#475569] text-xs font-medium px-2.5 py-1 rounded-lg">
+                            <Clock className="w-3.5 h-3.5 text-[#64748B]" />
                             Immediate
                           </span>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  {/* Tabs in header area */}
-                  <div className="flex items-center gap-[10px]">
-                    <div
-                      className="flex items-center gap-[10px] px-[10px] h-[37px] rounded-[5px]"
-                      style={{
-                        background: "#E7EDFF",
-                        border: "1px solid #0F47F2",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          lineHeight: "17px",
-                          fontWeight: 500,
-                        }}
-                        className="text-[#0F47F2]"
-                      >
-                        JD-{jobId}
-                      </span>
-                    </div>
-                  </div>
-                </div>
 
-                {/* ── Tab Switcher ── */}
-                <div
-                  className="px-[30px] pt-[20px]"
-                  style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                >
-                  <div className="flex gap-[20px]">
                     <button
-                      className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === "info"
-                        ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
-                        : "text-[#8E8E93] hover:text-[#4B5563]"
+                      onClick={handleCloseRequisitionModal}
+                      className="p-2 text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors"
+                      title="Close"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* ── Navigation Tabs ── */}
+                  <div className="flex gap-6 border-t border-[#F1F5F9] pt-1">
+                    <button
+                      className={`pb-3 text-sm font-semibold transition-colors border-b-2 ${requisitionModalTab === "info"
+                        ? "text-[#0F47F2] border-[#0F47F2]"
+                        : "text-[#64748B] border-transparent hover:text-[#0F172A]"
                         }`}
                       onClick={() => setRequisitionModalTab("info")}
                     >
                       Requisition Info
                     </button>
                     <button
-                      className={`pb-[12px] text-[14px] font-medium transition-colors ${requisitionModalTab === "company"
-                        ? "text-[#0F47F2] border-b-2 border-[#0F47F2]"
-                        : "text-[#8E8E93] hover:text-[#4B5563]"
+                      className={`pb-3 text-sm font-semibold transition-colors border-b-2 ${requisitionModalTab === "company"
+                        ? "text-[#0F47F2] border-[#0F47F2]"
+                        : "text-[#64748B] border-transparent hover:text-[#0F172A]"
                         }`}
                       onClick={async () => {
                         setRequisitionModalTab("company");
@@ -4921,413 +4955,224 @@ export default function JobPipelineDashboard({
                   </div>
                 </div>
 
-                {/* ── Tab Content ── */}
-                {requisitionModalTab === "info" && competenciesData && (
-                  <div className="px-[30px] pt-[20px] pb-[50px]">
-                    {/* ── Stats Cards ── */}
-                    <div className="pl-[25px] flex flex-wrap gap-[30px] mb-[20px]">
-                      {[
-                        {
-                          label: "Experience",
-                          value: `${jobDataForModal.experience_min_years ?? "--"} - ${jobDataForModal.experience_max_years ?? "--"} yrs`,
-                        },
-                        {
-                          label: "Positions",
-                          value: jobDataForModal.count || "--",
-                        },
-                        {
-                          label: "Salary Range",
-                          value: formatSalary(
-                            jobDataForModal.salary_min,
-                            jobDataForModal.salary_max,
-                          ),
-                        },
-                        {
-                          label: "Work Approach",
-                          value:
-                            workApproachLabel[jobDataForModal.work_approach] ||
-                            "--",
-                        },
-                      ].map((stat, idx) => (
-                        <div
-                          key={idx}
-                          className="flex flex-col gap-[8px] bg-white rounded-[10px] p-[20px]"
-                          style={{ border: "0.5px solid #D1D1D6" }}
-                        >
-                          <span
-                            style={{
-                              fontSize: "12px",
-                              lineHeight: "14px",
-                              fontWeight: 400,
-                            }}
-                            className="text-[#4B5563]"
-                          >
-                            {stat.label}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: "24px",
-                              lineHeight: "29px",
-                              fontWeight: 500,
-                            }}
-                            className="text-black"
-                          >
-                            {stat.value}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Divider */}
-                    <div
-                      style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                      className="mb-[20px]"
-                    ></div>
-
-                    {/* ── Role Overview ── */}
-                    <div className="pl-[25px] mb-[20px]">
-                      <h3 className="flex items-center gap-[5px] mb-[20px]">
-                        <BookOpen className="w-5 h-5 text-[#4B5563]" />
-                        <span
-                          style={{
-                            fontSize: "18px",
-                            lineHeight: "22px",
-                            fontWeight: 500,
-                          }}
-                          className="text-[#4B5563]"
-                        >
-                          Role Overview
-                        </span>
-                      </h3>
-                      <p
-                        style={{
-                          fontSize: "14px",
-                          lineHeight: "24px",
-                          fontWeight: 400,
-                          maxWidth: "738px",
-                        }}
-                        className="text-[#727272]"
-                      >
-                        {competenciesData.role_overview || "--"}
-                      </p>
-                    </div>
-
-                    {/* Divider */}
-                    <div
-                      style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                      className="mb-[20px]"
-                    ></div>
-
-                    {/* ── The Core Expectation ── */}
-                    <div className="pl-[25px] mb-[20px]">
-                      <h3 className="flex items-center gap-[5px] mb-[20px]">
-                        <Target className="w-5 h-5 text-[#4B5563]" />
-                        <span
-                          style={{
-                            fontSize: "18px",
-                            lineHeight: "22px",
-                            fontWeight: 500,
-                          }}
-                          className="text-[#4B5563]"
-                        >
-                          The Core Expectation
-                        </span>
-                      </h3>
-                      <div className="rounded-[10px] bg-[#EBFFEE] p-[20px]">
-                        <ul className="flex flex-col gap-0">
-                          {competenciesData.the_core_expectation.map(
-                            (item: string, i: number) => (
-                              <li
-                                key={i}
-                                style={{
-                                  fontSize: "14px",
-                                  lineHeight: "24px",
-                                  fontWeight: 400,
-                                  listStyle: "disc",
-                                  marginLeft: "16px",
-                                }}
-                                className="text-[#727272]"
-                              >
-                                {item}
-                              </li>
+                {/* ── Main Scrollable Body ── */}
+                <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                  {requisitionModalTab === "info" && competenciesData && (
+                    <>
+                      {/* ── Key Metrics Cards Grid ── */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {[
+                          {
+                            label: "Experience Required",
+                            value: `${jobDataForModal.experience_min_years ?? "--"} - ${jobDataForModal.experience_max_years ?? "--"} yrs`,
+                          },
+                          {
+                            label: "Positions Open",
+                            value: jobDataForModal.count || "--",
+                          },
+                          {
+                            label: "Salary Range",
+                            value: formatSalary(
+                              jobDataForModal.salary_min,
+                              jobDataForModal.salary_max,
                             ),
-                          )}
-                        </ul>
+                          },
+                          {
+                            label: "Work Mode",
+                            value: workApproachLabel[jobDataForModal.work_approach] || "--",
+                          },
+                        ].map((stat, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs hover:border-[#CBD5E1] transition-colors"
+                          >
+                            <span className="text-xs font-medium text-[#64748B] block mb-1">
+                              {stat.label}
+                            </span>
+                            <span className="text-lg font-bold text-[#0F172A]">
+                              {stat.value}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    </div>
 
-                    {/* Divider */}
-                    <div
-                      style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                      className="mb-[20px]"
-                    ></div>
+                      {/* ── Role Overview Card ── */}
+                      {competenciesData.role_overview && (
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs">
+                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#0F172A] mb-3">
+                            <BookOpen className="w-5 h-5 text-[#0F47F2]" />
+                            Role Overview
+                          </h3>
+                          <p className="text-sm text-[#475569] leading-relaxed">
+                            {competenciesData.role_overview}
+                          </p>
+                        </div>
+                      )}
 
-                    {/* ── Key Responsibilities ── */}
-                    <div className="pl-[25px] mb-[20px]">
-                      <h3 className="flex items-center gap-[5px] mb-[20px]">
-                        <ListChecks className="w-5 h-5 text-[#4B5563]" />
-                        <span
-                          style={{
-                            fontSize: "18px",
-                            lineHeight: "22px",
-                            fontWeight: 500,
-                          }}
-                          className="text-[#4B5563]"
-                        >
-                          Key Responsibilities
-                        </span>
-                      </h3>
-                      <div className="flex flex-col gap-[10px]">
-                        {competenciesData.key_responsibilities_explained.functional.map(
-                          (item: any, i: number) => (
-                            <div
-                              key={i}
-                              className="flex items-start gap-[10px] p-[20px] bg-[#E7EDFF] rounded-[10px]"
-                            >
-                              <div className="flex flex-col gap-[4px]">
-                                <span
-                                  style={{
-                                    fontSize: "14px",
-                                    lineHeight: "17px",
-                                    fontWeight: 500,
-                                  }}
-                                  className="text-black"
+                      {/* ── The Core Expectation Card ── */}
+                      {competenciesData.the_core_expectation?.length > 0 && (
+                        <div className="bg-[#ECFDF5] border border-[#A7F3D0] rounded-xl p-6 shadow-2xs">
+                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#065F46] mb-3">
+                            <Target className="w-5 h-5 text-[#059669]" />
+                            The Core Expectation
+                          </h3>
+                          <ul className="space-y-2">
+                            {competenciesData.the_core_expectation.map(
+                              (item: string, i: number) => (
+                                <li
+                                  key={i}
+                                  className="flex items-start gap-2.5 text-sm text-[#047857]"
                                 >
-                                  {item.competency}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: "12px",
-                                    lineHeight: "20px",
-                                    fontWeight: 400,
-                                  }}
-                                  className="text-[#727272]"
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#059669] shrink-0 mt-2" />
+                                  <span>{item}</span>
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* ── Key Responsibilities Card ── */}
+                      {competenciesData.key_responsibilities_explained?.functional?.length > 0 && (
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs space-y-4">
+                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#0F172A]">
+                            <ListChecks className="w-5 h-5 text-[#0F47F2]" />
+                            Key Responsibilities
+                          </h3>
+                          <div className="space-y-3">
+                            {competenciesData.key_responsibilities_explained.functional.map(
+                              (item: any, i: number) => (
+                                <div
+                                  key={i}
+                                  className="bg-[#F0F9FF] border border-[#BAE6FD] rounded-xl p-4 space-y-1.5"
                                 >
-                                  {item.context}
-                                </span>
-                                {item.priority && (
-                                  <span
-                                    className="flex items-center justify-center py-[4px] px-[10px] rounded-full bg-[#FFF7D6] text-[#F59E0B] self-start mt-[4px]"
-                                    style={{
-                                      fontSize: "10px",
-                                      lineHeight: "12px",
-                                      fontWeight: 500,
-                                    }}
-                                  >
-                                    Priority: {item.priority}
-                                  </span>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="font-semibold text-sm text-[#0369A1]">
+                                      {item.competency}
+                                    </span>
+                                    {item.priority && (
+                                      <span className="bg-[#FEF3C7] text-[#D97706] text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                                        Priority: {item.priority}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-[#334155] leading-relaxed">
+                                    {item.context}
+                                  </p>
+                                </div>
+                              ),
+                            )}
+                          </div>
+
+                          {/* Leadership Responsibilities */}
+                          {competenciesData.key_responsibilities_explained.leadership?.length > 0 && (
+                            <div className="pt-4 border-t border-[#F1F5F9] space-y-3">
+                              <h4 className="flex items-center gap-2 text-sm font-semibold text-[#0F172A]">
+                                <Zap className="w-4 h-4 text-[#059669]" />
+                                Leadership Responsibilities
+                              </h4>
+                              <div className="space-y-3">
+                                {competenciesData.key_responsibilities_explained.leadership.map(
+                                  (item: any, i: number) => (
+                                    <div
+                                      key={i}
+                                      className="bg-[#ECFDF5] border border-[#A7F3D0] rounded-xl p-4 space-y-1.5"
+                                    >
+                                      <span className="font-semibold text-sm text-[#047857] block">
+                                        {item.responsibility}
+                                      </span>
+                                      <p className="text-xs text-[#064E3B] leading-relaxed">
+                                        {item.context}
+                                      </p>
+                                    </div>
+                                  ),
                                 )}
                               </div>
                             </div>
-                          ),
-                        )}
-                      </div>
+                          )}
+                        </div>
+                      )}
 
-                      {/* Leadership responsibilities */}
-                      {competenciesData.key_responsibilities_explained
-                        .leadership?.length > 0 && (
-                          <>
-                            <div
-                              style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                              className="my-[20px]"
-                            ></div>
-                            <h4 className="flex items-center gap-[5px] mb-[14px]">
-                              <Zap className="w-4 h-4 text-[#4B5563]" />
-                              <span
-                                style={{
-                                  fontSize: "16px",
-                                  lineHeight: "20px",
-                                  fontWeight: 500,
-                                }}
-                                className="text-[#4B5563]"
-                              >
-                                Leadership
-                              </span>
-                            </h4>
-                            <div className="flex flex-col gap-[10px]">
-                              {competenciesData.key_responsibilities_explained.leadership.map(
-                                (item: any, i: number) => (
-                                  <div
-                                    key={i}
-                                    className="flex items-start gap-[10px] p-[20px] bg-[#EBFFEE] rounded-[10px]"
-                                  >
-                                    <div className="flex flex-col gap-[4px]">
-                                      <span
-                                        style={{
-                                          fontSize: "14px",
-                                          lineHeight: "17px",
-                                          fontWeight: 500,
-                                        }}
-                                        className="text-black"
-                                      >
-                                        {item.responsibility}
-                                      </span>
-                                      <span
-                                        style={{
-                                          fontSize: "12px",
-                                          lineHeight: "20px",
-                                          fontWeight: 400,
-                                        }}
-                                        className="text-[#727272]"
-                                      >
-                                        {item.context}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ),
-                              )}
-                            </div>
-                          </>
-                        )}
-                    </div>
-
-                    {/* Divider */}
-                    <div
-                      style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                      className="mb-[20px]"
-                    ></div>
-
-                    {/* ── Technical Skills ── */}
-                    <div className="pl-[25px] mb-[20px]">
-                      <h3 className="flex items-center gap-[5px] mb-[20px]">
-                        <Layers className="w-5 h-5 text-[#4B5563]" />
-                        <span
-                          style={{
-                            fontSize: "18px",
-                            lineHeight: "22px",
-                            fontWeight: 500,
-                          }}
-                          className="text-[#4B5563]"
-                        >
-                          Technical Skills
-                        </span>
-                      </h3>
-                      <div className="flex flex-col gap-[10px]">
-                        {competenciesData.required_technical_skills_purpose.map(
-                          (item: any, i: number) => {
-                            const SKILL_COLORS = [
-                              "bg-[#E7EDFF]",
-                              "bg-[#E7E5FF]",
-                              "bg-[#F3F5F7]",
-                            ];
-                            return (
-                              <div
-                                key={i}
-                                className={`flex items-start gap-[10px] p-[20px] ${SKILL_COLORS[i % SKILL_COLORS.length]} rounded-[10px]`}
-                              >
-                                <div className="flex flex-col gap-[4px]">
-                                  <span
-                                    style={{
-                                      fontSize: "14px",
-                                      lineHeight: "17px",
-                                      fontWeight: 500,
-                                    }}
-                                    className="text-black"
-                                  >
+                      {/* ── Technical Skills Card ── */}
+                      {competenciesData.required_technical_skills_purpose?.length > 0 && (
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs space-y-4">
+                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#0F172A]">
+                            <Layers className="w-5 h-5 text-[#0F47F2]" />
+                            Technical Skills & Context
+                          </h3>
+                          <div className="space-y-3">
+                            {competenciesData.required_technical_skills_purpose.map(
+                              (item: any, i: number) => (
+                                <div
+                                  key={i}
+                                  className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 space-y-1"
+                                >
+                                  <span className="font-semibold text-sm text-[#0F172A] block">
                                     {item.skill}
                                   </span>
-                                  <span
-                                    style={{
-                                      fontSize: "12px",
-                                      lineHeight: "20px",
-                                      fontWeight: 400,
-                                    }}
-                                    className="text-[#727272]"
-                                  >
+                                  <p className="text-xs text-[#64748B] leading-relaxed">
                                     {item.context}
-                                  </span>
+                                  </p>
                                 </div>
-                              </div>
-                            );
-                          },
-                        )}
-                      </div>
-                    </div>
-
-                    {/* ── Skills Pills ── */}
-                    {jobDataForModal.skills &&
-                      jobDataForModal.skills.length > 0 && (
-                        <>
-                          <div
-                            style={{ borderBottom: "0.5px solid #C7C7CC" }}
-                            className="mb-[20px]"
-                          ></div>
-                          <div className="pl-[25px] mb-[50px]">
-                            <h3 className="flex items-center gap-[5px] mb-[20px]">
-                              <Target className="w-5 h-5 text-[#4B5563]" />
-                              <span
-                                style={{
-                                  fontSize: "18px",
-                                  lineHeight: "22px",
-                                  fontWeight: 500,
-                                }}
-                                className="text-[#4B5563]"
-                              >
-                                Required Skills
-                              </span>
-                            </h3>
-                            <div className="flex flex-wrap gap-[10px]">
-                              {jobDataForModal.skills.map(
-                                (skill: string, i: number) => {
-                                  const PILL_COLORS = [
-                                    "bg-[#E7EDFF] text-[#0F47F2]",
-                                    "bg-[#E7E5FF] text-[#6155F5]",
-                                    "bg-[#EBFFEE] text-[#009951]",
-                                    "bg-[#FFF7D6] text-[#F59E0B]",
-                                    "bg-[#F3F5F7] text-[#4B5563]",
-                                  ];
-                                  return (
-                                    <span
-                                      key={i}
-                                      className={`flex items-center justify-center py-[8px] px-[14px] rounded-full ${PILL_COLORS[i % PILL_COLORS.length]}`}
-                                      style={{
-                                        fontSize: "12px",
-                                        lineHeight: "14px",
-                                        fontWeight: 400,
-                                      }}
-                                    >
-                                      {skill}
-                                    </span>
-                                  );
-                                },
-                              )}
-                            </div>
+                              ),
+                            )}
                           </div>
-                        </>
+                        </div>
                       )}
-                  </div>
-                )}
 
-                {/* ── About Company Tab ── */}
-                {requisitionModalTab === "company" && (
-                  <div className="px-[30px] pt-[20px] pb-[50px]">
-                    {loadingCompanyResearch ? (
-                      <div className="flex flex-col items-center justify-center py-24 gap-3">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>
-                        <span className="text-sm text-[#8E8E93]">
-                          Loading company info...
-                        </span>
-                      </div>
-                    ) : companyResearchData ? (
-                      <CompanyInfoTab data={companyResearchData} />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-24 gap-2">
-                        <span className="text-sm text-[#8E8E93]">
-                          No company details available.
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      {/* ── Required Skills Pills Card ── */}
+                      {jobDataForModal.skills && jobDataForModal.skills.length > 0 && (
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs space-y-3">
+                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#0F172A]">
+                            <Target className="w-5 h-5 text-[#0F47F2]" />
+                            Required Skills
+                          </h3>
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {jobDataForModal.skills.map((skill: string, i: number) => (
+                              <span
+                                key={i}
+                                className="bg-[#EEF2FF] text-[#4F46E5] border border-[#C7D2FE] text-xs font-medium px-3 py-1 rounded-full"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* ── About Company Tab Content ── */}
+                  {requisitionModalTab === "company" && (
+                    <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs">
+                      {loadingCompanyResearch ? (
+                        <div className="flex flex-col items-center justify-center py-16 gap-3">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>
+                          <span className="text-sm text-[#64748B]">
+                            Loading company info...
+                          </span>
+                        </div>
+                      ) : companyResearchData ? (
+                        <CompanyInfoTab data={companyResearchData} />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-16 gap-2 text-center">
+                          <span className="text-sm text-[#64748B]">
+                            No company details available.
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center py-24 gap-2">
-                <span className="text-sm text-[#8E8E93]">
+              <div className="flex flex-col items-center justify-center h-full gap-3 text-center p-8">
+                <span className="text-sm text-[#64748B]">
                   Failed to load requisition data.
                 </span>
                 <button
                   onClick={handleCloseRequisitionModal}
-                  className="text-sm text-[#0F47F2] hover:underline"
+                  className="px-4 py-2 bg-[#0F47F2] text-white text-xs font-semibold rounded-lg hover:bg-[#0D3ECF] transition-colors"
                 >
                   Close
                 </button>

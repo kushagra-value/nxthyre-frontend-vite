@@ -862,7 +862,13 @@ class JobPostService {
     }
   }
 
-  async getUniquePocs(workspaceId?: number): Promise<{ poc_email: string; name: string }[]> {
+  async getUniquePocs(workspaceId?: number): Promise<{
+    poc_email: string;
+    name: string;
+    total_jobs?: number;
+    active_jobs?: number;
+    inactive_jobs?: number;
+  }[]> {
     try {
       const response = await apiClient.get("/jobs/roles/pocs/", {
         params: {

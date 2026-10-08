@@ -32,7 +32,8 @@ import {
   XCircle,
   FastForward,
   Copy,
-  Loader2
+  Loader2,
+  Edit3
 } from "lucide-react";
 import candidateService, { Note } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
@@ -159,6 +160,100 @@ export default function JobCandidateProfile({
     setLocalDob(c.dob || "");
     setLocalPhone(pd.phone || c.phone || "");
   }, [candidate]);
+
+  // ── Candidate Details Editing State (curr_ctc, expec_ctc, notice_period) ──
+  const [localCurrCtc, setLocalCurrCtc] = useState<string | number>("");
+  const [localExpecCtc, setLocalExpecCtc] = useState<string | number>("");
+  const [localNoticePeriod, setLocalNoticePeriod] = useState<string>("");
+  const [isEditDetailsModalOpen, setIsEditDetailsModalOpen] = useState(false);
+  const [isSavingDetails, setIsSavingDetails] = useState(false);
+  const [detailsFormError, setDetailsFormError] = useState<string | null>(null);
+  const [editDetailsData, setEditDetailsData] = useState({
+    curr_ctc: "" as string | number,
+    expec_ctc: "" as string | number,
+    notice_period: "",
+  });
+
+  useEffect(() => {
+    const c = candidate?.candidate || {};
+    const currVal = c.curr_ctc ?? c.current_ctc ?? c.current_salary_lpa ?? c.current_salary ?? "";
+    const expecVal = c.expec_ctc ?? c.expected_ctc ?? c.expected_ctc_lpa ?? "";
+    const noticeVal = c.notice_period_summary || (c.notice_period_days != null ? `${c.notice_period_days} Days` : (c.notice_period || ""));
+    
+    setLocalCurrCtc(currVal);
+    setLocalExpecCtc(expecVal);
+    setLocalNoticePeriod(noticeVal);
+  }, [candidate]);
+
+  const openEditDetailsModal = () => {
+    setEditDetailsData({
+      curr_ctc: localCurrCtc,
+      expec_ctc: localExpecCtc,
+      notice_period: localNoticePeriod,
+    });
+    setDetailsFormError(null);
+    setIsEditDetailsModalOpen(true);
+  };
+
+  const handleSaveCandidateDetails = async () => {
+    const { curr_ctc, expec_ctc, notice_period } = editDetailsData;
+    setDetailsFormError(null);
+
+    // Validation
+    if (curr_ctc !== "" && curr_ctc !== null && curr_ctc !== undefined) {
+      const numVal = Number(curr_ctc);
+      if (isNaN(numVal) && typeof curr_ctc === "number") {
+        setDetailsFormError("Current CTC must be a valid number or string.");
+        return;
+      }
+      if (!isNaN(numVal) && numVal < 0) {
+        setDetailsFormError("Current CTC cannot be negative.");
+        return;
+      }
+    }
+
+    if (expec_ctc !== "" && expec_ctc !== null && expec_ctc !== undefined) {
+      const numVal = Number(expec_ctc);
+      if (isNaN(numVal) && typeof expec_ctc === "number") {
+        setDetailsFormError("Expected CTC must be a valid number or string.");
+        return;
+      }
+      if (!isNaN(numVal) && numVal < 0) {
+        setDetailsFormError("Expected CTC cannot be negative.");
+        return;
+      }
+    }
+
+    if (!notice_period || !String(notice_period).trim()) {
+      setDetailsFormError("Notice Period is required.");
+      return;
+    }
+
+    setIsSavingDetails(true);
+    const targetCandId = cand.id || candidate?.candidate_id || candidate?.id;
+    try {
+      // Connect to candidateService.updateCandidateDetails endpoint
+      await candidateService.updateCandidateDetails(targetCandId, {
+        curr_ctc,
+        expec_ctc,
+        notice_period: String(notice_period).trim(),
+      });
+
+      // Update local state automatically after API success
+      setLocalCurrCtc(curr_ctc);
+      setLocalExpecCtc(expec_ctc);
+      setLocalNoticePeriod(String(notice_period).trim());
+      showToast.success("Candidate details updated successfully!");
+      setIsEditDetailsModalOpen(false);
+    } catch (err: any) {
+      console.error("Failed to update candidate details:", err);
+      const msg = err.message || "Failed to update candidate details.";
+      setDetailsFormError(msg);
+      showToast.error(msg);
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
 
   const startEditingContact = () => {
     setEditContactData({
@@ -851,7 +946,7 @@ export default function JobCandidateProfile({
                           stroke-linejoin="round"
                         />
                       </svg>
-                      {currentSalary} LPA
+                      {localCurrCtc ? (String(localCurrCtc).includes("LPA") ? localCurrCtc : `${localCurrCtc} LPA`) : "--"}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <svg
@@ -899,7 +994,7 @@ export default function JobCandidateProfile({
                           stroke="#4B5563"
                         />
                       </svg>
-                      {cand.expected_ctc || "--"} LPA
+                      {localExpecCtc ? (String(localExpecCtc).includes("LPA") ? localExpecCtc : `${localExpecCtc} LPA`) : "--"}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <svg
@@ -939,37 +1034,17 @@ export default function JobCandidateProfile({
                           stroke-linecap="round"
                         />
                       </svg>{" "}
-                      {noticePeriod}
+                      {localNoticePeriod || "--"}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {premiumData.email && (
-                      <button
-                        onClick={() =>
-                          window.open(`mailto:${premiumData.email}`)
-                        }
-                        className="flex items-center gap-2 bg-[#0F47F2] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M1.33398 7.99984C1.33398 5.48568 1.33398 4.2286 2.11503 3.44755C2.89608 2.6665 4.15316 2.6665 6.66732 2.6665H9.33398C11.8481 2.6665 13.1053 2.6665 13.8863 3.44755C14.6673 4.2286 14.6673 5.48568 14.6673 7.99984C14.6673 10.514 14.6673 11.7711 13.8863 12.5521C13.1053 13.3332 11.8481 13.3332 9.33398 13.3332H6.66732C4.15316 13.3332 2.89608 13.3332 2.11503 12.5521C1.33398 11.7711 1.33398 10.514 1.33398 7.99984Z"
-                            stroke="white"
-                          />
-                          <path
-                            d="M4 5.3335L5.43927 6.53288C6.66369 7.55323 7.27593 8.06343 8 8.06343C8.72407 8.06343 9.33633 7.55323 10.5607 6.53288L12 5.3335"
-                            stroke="white"
-                            stroke-linecap="round"
-                          />
-                        </svg>
-                        Send Mail
-                      </button>
-                    )}
+                    <button
+                      onClick={openEditDetailsModal}
+                      className="flex items-center gap-2 bg-[#0F47F2] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-xs"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      Edit
+                    </button>
                     <button
                       onClick={() => {
                         const callData = {
@@ -2955,6 +3030,102 @@ export default function JobCandidateProfile({
               }
             }}
           />
+        )}
+
+        {/* ── Edit Candidate Details Modal (curr_ctc, expec_ctc, notice_period) ── */}
+        {isEditDetailsModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100 flex flex-col">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900">Edit Candidate Details</h3>
+                <button
+                  onClick={() => setIsEditDetailsModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                {detailsFormError && (
+                  <div className="bg-red-50 text-red-700 p-3 rounded-lg text-xs font-medium border border-red-100">
+                    {detailsFormError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Current CTC (LPA) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 12"
+                    value={editDetailsData.curr_ctc}
+                    onChange={(e) =>
+                      setEditDetailsData((prev) => ({ ...prev, curr_ctc: e.target.value }))
+                    }
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20 focus:border-[#0F47F2]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Expected CTC (LPA) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 16"
+                    value={editDetailsData.expec_ctc}
+                    onChange={(e) =>
+                      setEditDetailsData((prev) => ({ ...prev, expec_ctc: e.target.value }))
+                    }
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20 focus:border-[#0F47F2]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Notice Period <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 30 Days or Immediate"
+                    value={editDetailsData.notice_period}
+                    onChange={(e) =>
+                      setEditDetailsData((prev) => ({ ...prev, notice_period: e.target.value }))
+                    }
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20 focus:border-[#0F47F2]"
+                  />
+                </div>
+              </div>
+
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditDetailsModalOpen(false)}
+                  disabled={isSavingDetails}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveCandidateDetails}
+                  disabled={isSavingDetails}
+                  className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-[#0F47F2] hover:bg-blue-700 rounded-lg transition-colors shadow-xs disabled:opacity-50"
+                >
+                  {isSavingDetails ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

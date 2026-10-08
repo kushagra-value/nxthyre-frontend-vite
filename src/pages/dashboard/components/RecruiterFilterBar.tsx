@@ -79,7 +79,7 @@ export function filterCallsByRecruiter(
   // Find API recruiter entry if any (matching by recruiter_id or recruiter_name)
   const apiEntry = recruiterCallsFromApi?.find(
     r => (r.recruiter_id && String(r.recruiter_id) === target) ||
-         (r.recruiter_name && r.recruiter_name.toLowerCase().trim() === targetLower)
+      (r.recruiter_name && r.recruiter_name.toLowerCase().trim() === targetLower)
   );
 
   const targetId = apiEntry?.recruiter_id ? String(apiEntry.recruiter_id) : target;

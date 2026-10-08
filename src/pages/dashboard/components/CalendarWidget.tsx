@@ -30,11 +30,11 @@ const MONTHS = [
 const DAYS_OF_WEEK = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
 
 const CATEGORY_COLORS = {
-  calls: { dot: 'bg-[#06B6D4]', label: 'Calls', text: 'text-[#06B6D4]' },
-  follow_ups: { dot: 'bg-[#3B82F6]', label: 'Follow-ups', text: 'text-[#3B82F6]' },
-  shortlisted: { dot: 'bg-[#6366F1]', label: 'Shortlisted', text: 'text-[#6366F1]' },
-  hired: { dot: 'bg-[#0284C7]', label: 'Hired', text: 'text-[#0284C7]' },
-  interviews: { dot: 'bg-[#8B5CF6]', label: 'Interviews', text: 'text-[#8B5CF6]' },
+  calls: { dot: 'bg-[#0F47F2]', label: 'Calls', text: 'text-[#0F47F2]' },
+  follow_ups: { dot: 'bg-[#2563EB]', label: 'Follow-ups', text: 'text-[#2563EB]' },
+  shortlisted: { dot: 'bg-[#3B82F6]', label: 'Shortlisted', text: 'text-[#3B82F6]' },
+  hired: { dot: 'bg-[#1D4ED8]', label: 'Hired', text: 'text-[#1D4ED8]' },
+  interviews: { dot: 'bg-[#60A5FA]', label: 'Interviews', text: 'text-[#60A5FA]' },
 };
 
 /**
@@ -54,22 +54,22 @@ const BUBBLE_SIZES: Record<number, string> = {
 const getBubbleStyle = (level: number, _breakdown?: CalendarDayActivity['breakdown'], isPast?: boolean) => {
   if (isPast) {
     switch (level) {
-      case 1: return 'bg-[#06B6D4]/15 border border-[#06B6D4]/25';
-      case 2: return 'bg-[#06B6D4]/25 border border-[#06B6D4]/35';
-      case 3: return 'bg-[#06B6D4]/35 border border-[#06B6D4]/45';
-      case 4: return 'bg-[#06B6D4]/45 border border-[#06B6D4]/55 shadow-xs';
-      case 5: return 'bg-gradient-to-br from-[#06B6D4]/45 via-[#3B82F6]/55 to-[#6366F1]/55 border border-[#3B82F6]/60 shadow-sm';
+      case 1: return 'bg-[#0F47F2]/15 border border-[#0F47F2]/25';
+      case 2: return 'bg-[#0F47F2]/25 border border-[#0F47F2]/35';
+      case 3: return 'bg-[#0F47F2]/35 border border-[#0F47F2]/45';
+      case 4: return 'bg-[#0F47F2]/45 border border-[#0F47F2]/55 shadow-xs';
+      case 5: return 'bg-gradient-to-br from-[#0F47F2]/45 via-[#2563EB]/55 to-[#3B82F6]/55 border border-[#0F47F2]/60 shadow-sm';
       default: return '';
     }
   }
 
-  // Cyan Theme for Calls Made
+  // Nxthyre Blue Theme for Activity Bubbles
   switch (level) {
-    case 1: return 'bg-[#06B6D4]/20 border border-[#06B6D4]/30';
-    case 2: return 'bg-[#06B6D4]/30 border border-[#06B6D4]/40';
-    case 3: return 'bg-[#06B6D4]/40 border border-[#06B6D4]/50';
-    case 4: return 'bg-[#06B6D4]/50 border border-[#06B6D4]/60 shadow-xs';
-    case 5: return 'bg-[#06B6D4]/65 border border-[#06B6D4]/75 shadow-sm';
+    case 1: return 'bg-[#0F47F2]/20 border border-[#0F47F2]/30';
+    case 2: return 'bg-[#0F47F2]/35 border border-[#0F47F2]/45';
+    case 3: return 'bg-[#0F47F2]/50 border border-[#0F47F2]/60';
+    case 4: return 'bg-[#0F47F2]/65 border border-[#0F47F2]/75 shadow-xs';
+    case 5: return 'bg-[#0F47F2]/85 border border-[#0F47F2] shadow-sm';
     default: return '';
   }
 };
@@ -210,10 +210,14 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
   };
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
   const firstDayOfWeek = (() => {
     const d = new Date(currentYear, currentMonth, 1).getDay();
     return d === 0 ? 6 : d - 1; // Monday = 0
   })();
+
+  const totalGridCells = (firstDayOfWeek + daysInMonth) > 35 ? 42 : 35;
+  const leadingDaysCount = totalGridCells - (firstDayOfWeek + daysInMonth);
 
   const prevMonth = () => {
     let newMonth = currentMonth === 0 ? 11 : currentMonth - 1;
@@ -246,7 +250,7 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
   const years = Array.from({ length: yearEnd - yearStart + 1 }, (_, i) => yearStart + i);
 
   return (
-    <div className={`bg-white rounded-[16px] p-5 relative border border-[#E2E8F0] shadow-xs ${isLoading ? 'pointer-events-none' : ''}`}>
+    <div className={`bg-white rounded-[16px] p-4 relative border border-[#E2E8F0] shadow-2xs flex-1 flex flex-col justify-between h-full min-h-0 overflow-hidden ${isLoading ? 'pointer-events-none' : ''}`}>
       {/* Loading Overlay */}
       {isLoading && (
         <div className="absolute inset-0 bg-white/60 z-30 flex items-center justify-center rounded-[16px] backdrop-blur-[1px]">
@@ -323,10 +327,22 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
           </div>
         ))}
 
-        {/* Empty cells for offset */}
-        {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-          <div key={`empty-${i}`} className="h-11" />
-        ))}
+        {/* Previous month's trailing dates */}
+        {Array.from({ length: firstDayOfWeek }).map((_, i) => {
+          const day = prevMonthDays - firstDayOfWeek + i + 1;
+          return (
+            <div
+              key={`prev-${day}`}
+              className="relative flex items-center justify-center h-11 w-full cursor-pointer group select-none opacity-40 hover:opacity-75 transition-opacity"
+              onClick={prevMonth}
+              title="Previous Month"
+            >
+              <span className="text-[13px] font-medium text-[#94A3B8]">
+                {day}
+              </span>
+            </div>
+          );
+        })}
 
         {/* Date cells with Organic Translucent Overlapping Activity Bubbles */}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
@@ -495,20 +511,23 @@ export default function CalendarWidget({ onDateClick, activities = [], onMonthCh
             </div>
           );
         })}
-      </div>
 
-      {/* Footer Activity Density Legend */}
-      <div className="mt-5 pt-3 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#64748B]">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider">Activity Mix</span>
-        </div>
-
-        <div className="flex items-center gap-2 text-[10px] font-medium">
-          <span className="flex items-center gap-1 text-[#475569]"><span className="w-1.5 h-1.5 rounded-full bg-[#06B6D4]" />Calls</span>
-          <span className="flex items-center gap-1 text-[#475569]"><span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />Follow-ups</span>
-          <span className="flex items-center gap-1 text-[#475569]"><span className="w-1.5 h-1.5 rounded-full bg-[#6366F1]" />Shortlisted</span>
-          <span className="flex items-center gap-1 text-[#475569]"><span className="w-1.5 h-1.5 rounded-full bg-[#0284C7]" />Hired</span>
-        </div>
+        {/* Next month's leading dates */}
+        {Array.from({ length: leadingDaysCount }).map((_, i) => {
+          const day = i + 1;
+          return (
+            <div
+              key={`next-${day}`}
+              className="relative flex items-center justify-center h-11 w-full cursor-pointer group select-none opacity-40 hover:opacity-75 transition-opacity"
+              onClick={nextMonth}
+              title="Next Month"
+            >
+              <span className="text-[13px] font-medium text-[#94A3B8]">
+                {day}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

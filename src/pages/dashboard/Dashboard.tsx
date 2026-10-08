@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
 import StatCard from './components/StatCard';
 import PriorityCard from './components/PriorityCard';
@@ -123,6 +123,27 @@ export default function Dashboard() {
   const [companyOptions, setCompanyOptions] = useState<CompanyOption[]>([]);
   const companyDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Recruiter Filter State
+  const [selectedRecruiterName, setSelectedRecruiterName] = useState<string | null>(null);
+  const [pendingRecruiterName, setPendingRecruiterName] = useState<string | null>(null);
+  const [showRecruiterDropdown, setShowRecruiterDropdown] = useState(false);
+  const [recruiterSearchQuery, setRecruiterSearchQuery] = useState('');
+  const recruiterDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Derive unique recruiters list across priority action tabs
+  const recruiterOptions = useMemo(() => {
+    const recruitersSet = new Set<string>();
+    (['sourcing', 'screening', 'interview'] as PriorityTab[]).forEach((tabKey) => {
+      const results = priorityData[tabKey]?.results || [];
+      results.forEach((item) => {
+        if (item.recruiter_name && typeof item.recruiter_name === 'string' && item.recruiter_name.trim() !== '') {
+          recruitersSet.add(item.recruiter_name.trim());
+        }
+      });
+    });
+    return Array.from(recruitersSet).sort();
+  }, [priorityData]);
+
   // Company logos (same pattern as Companies page)
   const [companyLogos, setCompanyLogos] = useState<Record<string, string | null>>({});
   const logoRequestedRef = useRef<Set<string>>(new Set());
@@ -167,11 +188,14 @@ export default function Dashboard() {
   const [dailyActivitiesData, setDailyActivitiesData] = useState<DailyActivitiesResponse | null>(null);
   const [dailyActivitiesLoading, setDailyActivitiesLoading] = useState(false);
 
-  // Close company dropdown on outside click
+  // Close company & recruiter dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (companyDropdownRef.current && !companyDropdownRef.current.contains(event.target as Node)) {
         setShowCompanyDropdown(false);
+      }
+      if (recruiterDropdownRef.current && !recruiterDropdownRef.current.contains(event.target as Node)) {
+        setShowRecruiterDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -285,6 +309,7 @@ export default function Dashboard() {
         start_date: dateRangePreset === 'custom' ? customStartDate : undefined,
         end_date: dateRangePreset === 'custom' ? customEndDate : undefined,
         workspace_id: selectedCompanyId ?? undefined,
+        recruiter_name: selectedRecruiterName ?? undefined,
         history: viewMode === 'history' ? true : undefined,
         page_size: 50,
       };
@@ -301,7 +326,7 @@ export default function Dashboard() {
     } finally {
       setPriorityLoading(false);
     }
-  }, [isAuthenticated, dateRangePreset, customStartDate, customEndDate, selectedCompanyId, viewMode]);
+  }, [isAuthenticated, dateRangePreset, customStartDate, customEndDate, selectedCompanyId, selectedRecruiterName, viewMode]);
 
   useEffect(() => {
     fetchPriorityActions();
@@ -368,11 +393,30 @@ export default function Dashboard() {
   const dynamicPriorityColumns: PriorityColumnData[] = PRIORITY_TABS.map((tabInfo) => {
     const colors = columnColors[tabInfo.key] || { dotColor: '#6155F5', accentColor: '#6155F5' };
     const response = priorityData[tabInfo.key];
-    const items: PriorityActionItem[] = response?.results || [];
+    let items: PriorityActionItem[] = response?.results || [];
+
+    if (selectedRecruiterName) {
+      
+      items = items.filter(item => item.recruiter_name === selectedRecruiterName);
+    }
 
     const cards = items.map((item) => {
       const tagInfo = item.tags.length > 0 ? mapTagToStatus(item.tags[0]) : { status: item.current_stage_name, statusColor: 'grey' as const };
       const isDone = viewMode === 'history' || item.action_taken !== null;
+
+      // Detect if screening_round or screening_score is a numeric score
+      let extractedScreeningScore: number | null = null;
+      if ((item as any).screening_score != null) {
+        extractedScreeningScore = Number((item as any).screening_score);
+      } else if ((item as any).screening_score_value != null) {
+        extractedScreeningScore = Number((item as any).screening_score_value);
+      } else if (item.screening_round != null && !isNaN(Number(item.screening_round))) {
+        extractedScreeningScore = Number(item.screening_round);
+      }
+
+      const cleanScreeningRound = (item.screening_round != null && isNaN(Number(item.screening_round)))
+        ? item.screening_round
+        : null;
 
       return {
         id: `pa-${item.application_id}`,
@@ -389,6 +433,10 @@ export default function Dashboard() {
         jobRoleId: item.job_role_id,
         latestCallNote: item.latest_call_note,
         latestCallTags: item.latest_call_tags,
+        recruiterName: item.recruiter_name,
+        resumeScore: item.resume_score,
+        screeningScore: extractedScreeningScore,
+        screeningRound: cleanScreeningRound,
       };
     });
 
@@ -552,15 +600,35 @@ export default function Dashboard() {
     setShowCompanyDropdown(!showCompanyDropdown);
   };
 
+  // Handle recruiter selection (stage it for Apply)
+  const handleRecruiterSelect = (name: string | null) => {
+    setPendingRecruiterName(name);
+  };
+
+  // Apply staged recruiter filter
+  const handleRecruiterApply = () => {
+    setSelectedRecruiterName(pendingRecruiterName);
+    setShowRecruiterDropdown(false);
+    setRecruiterSearchQuery('');
+  };
+
+  // Sync pending state when dropdown opens
+  const handleToggleRecruiterDropdown = () => {
+    if (!showRecruiterDropdown) {
+      setPendingRecruiterName(selectedRecruiterName);
+      setRecruiterSearchQuery('');
+    }
+    setShowRecruiterDropdown(!showRecruiterDropdown);
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="flex-1 flex flex-col gap-4">
-          {/* Stat Cards from API or fallback */}
+    <div className="flex-1 flex flex-col p-4 overflow-hidden h-full min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0 overflow-hidden h-full">
+        <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden h-full">
+          {/* Stat Cards (commented out for viewport optimization; preserved for future use)
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {loading
-              ? // Skeleton stat cards
-              [...Array(4)].map((_, i) => (
+              ? [...Array(4)].map((_, i) => (
                 <div
                   key={`stat-skel-${i}`}
                   className="bg-white rounded-xl animate-pulse"
@@ -598,9 +666,10 @@ export default function Dashboard() {
                 );
               })}
           </div>
+          */}
 
           {/* Priority Actions from new API */}
-          <section className="bg-white rounded-xl p-3 flex flex-col gap-5 max-h-[104vh] overflow-y-auto custom-scrollbar">
+          <section className="bg-white rounded-xl p-4 flex flex-col gap-4 flex-1 min-h-0 overflow-hidden h-full">
             <div className="flex items-center justify-between">
               <h2 className="text-[22px] font-medium leading-6 text-black">Priority Actions</h2>
               <div className="flex items-center gap-2.5">
@@ -693,6 +762,77 @@ export default function Dashboard() {
                   )}
                 </div>
 
+                {/* Recruiter Filter Dropdown */}
+                <div className="relative" ref={recruiterDropdownRef}>
+                  <button
+                    onClick={handleToggleRecruiterDropdown}
+                    className="flex items-center gap-2 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[150px] justify-between"
+                  >
+                    <span className="truncate max-w-[120px]">
+                      {selectedRecruiterName || 'All Recruiters'}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 opacity-60 transition-transform flex-shrink-0 ${showRecruiterDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showRecruiterDropdown && (
+                    <div className="absolute top-full mt-1 right-0 min-w-[220px] bg-white border border-[#D1D1D6] rounded-[12px] shadow-lg z-10 flex flex-col">
+                      {/* Search */}
+                      <div className="px-3 pt-3 pb-2">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#AEAEB2]" />
+                          <input
+                            type="text"
+                            placeholder="Search recruiter"
+                            value={recruiterSearchQuery}
+                            onChange={(e) => setRecruiterSearchQuery(e.target.value)}
+                            className="w-full h-8 pl-8 pr-3 rounded-lg text-xs text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 border border-[#E5E7EB]"
+                          />
+                        </div>
+                      </div>
+                      {/* Options list */}
+                      <div className="min-w-[220px] max-h-[220px] overflow-y-auto px-1.5">
+                        <button
+                          className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${pendingRecruiterName === null
+                            ? 'bg-[#E7EDFF] text-[#0F47F2]'
+                            : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                            }`}
+                          onClick={() => handleRecruiterSelect(null)}
+                        >
+                          <span className="truncate font-medium">All Recruiters</span>
+                        </button>
+                        {recruiterOptions
+                          .filter(recruiter =>
+                            recruiterSearchQuery.trim() === '' ||
+                            recruiter.toLowerCase().includes(recruiterSearchQuery.toLowerCase())
+                          )
+                          .map(recruiter => {
+                            const isSelected = pendingRecruiterName === recruiter;
+                            return (
+                              <button
+                                key={recruiter}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${isSelected
+                                  ? 'bg-[#E7EDFF] text-[#0F47F2]'
+                                  : 'text-[#4B5563] hover:bg-[#F3F5F7]'
+                                  }`}
+                                onClick={() => handleRecruiterSelect(recruiter)}
+                              >
+                                <span className="truncate">{recruiter}</span>
+                              </button>
+                            );
+                          })}
+                      </div>
+                      {/* Apply button */}
+                      <div className="px-3 py-2.5 border-t border-[#E5E7EB]">
+                        <button
+                          onClick={handleRecruiterApply}
+                          className="w-full py-2 rounded-lg bg-[#0F47F2] text-white text-sm font-medium hover:bg-[#0D3ED4] transition-colors"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Date Filter Dropdown */}
                 <div className="relative">
                   <button
@@ -745,7 +885,7 @@ export default function Dashboard() {
                     column.cards.sort((a, b) => b.daysAgo - a.daysAgo);
                   }
                   return (
-                    <div key={column.id} className="bg-[#F8FAFC] rounded-2xl p-3 flex flex-col gap-3 flex-1 h-full min-h-[320px] border border-[#E2E8F0]/60">
+                    <div key={column.id} className="bg-[#F8FAFC] rounded-2xl p-3 flex flex-col gap-3 flex-1 h-full min-h-0 overflow-hidden border border-[#E2E8F0]/60">
                       {/* Column Header */}
                       <div className="flex items-center justify-between px-1 py-0.5 shrink-0">
                         <div className="flex items-center gap-2">
@@ -776,6 +916,10 @@ export default function Dashboard() {
                               isDone={card.isDone}
                               latestCallNote={card.latestCallNote}
                               latestCallTags={card.latestCallTags}
+                              recruiterName={card?.recruiterName}
+                              resumeScore={card?.resumeScore}
+                              screeningScore={card?.screeningScore}
+                              tabKey={tabKey}
                               onClick={() => handlePriorityCardClick(card, tabKey)}
                             />
                           ))
@@ -788,28 +932,63 @@ export default function Dashboard() {
           </section>
         </div>
 
-        {/* Right Sidebar */}
-        <aside className="w-96 flex flex-col gap-4 shrink-0">
-          <CalendarWidget
-            onDateClick={handleDateClick}
-            activities={calendarActivities.map(day => ({
-              date: day.date,
-              activityLevel: day.activity_level as any,
-              totalEvents: day.total_events,
-              breakdown: day.breakdown
-            }))}
-            onMonthChange={fetchCalendarActivity}
-            isLoading={calendarLoading}
-          />
-          <ScheduleWidget
-            events={scheduleEvents}
-            isLoading={scheduleLoading}
-            activeFilter={activeScheduleFilter}
-            onFilterChange={(f) => { setActiveScheduleFilter(f); fetchScheduleEvents(f); }}
-            onEventClick={handleScheduleEventClick}
-          />
-          <RecentActivities />
+        <aside className="w-96 flex flex-col gap-4 shrink-0 h-full min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <CalendarWidget
+              onDateClick={handleDateClick}
+              activities={calendarActivities.map(day => ({
+                date: day.date,
+                activityLevel: day.activity_level as any,
+                totalEvents: day.total_events,
+                breakdown: day.breakdown
+              }))}
+              onMonthChange={fetchCalendarActivity}
+              isLoading={calendarLoading}
+            />
+          </div>
+
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <ScheduleWidget
+              events={scheduleEvents}
+              isLoading={scheduleLoading}
+              activeFilter={activeScheduleFilter}
+              onFilterChange={(f) => {
+                setActiveScheduleFilter(f);
+                fetchScheduleEvents(f);
+              }}
+              onEventClick={handleScheduleEventClick}
+            />
+          </div>
         </aside>
+
+        {/* Right Sidebar */}
+        {/* <aside className="w-96 flex flex-col gap-4 shrink-0">
+          <div className="flex-1 min-h-0">
+
+            <CalendarWidget
+              onDateClick={handleDateClick}
+              activities={calendarActivities.map(day => ({
+                date: day.date,
+                activityLevel: day.activity_level as any,
+                totalEvents: day.total_events,
+                breakdown: day.breakdown
+              }))}
+              onMonthChange={fetchCalendarActivity}
+              isLoading={calendarLoading}
+            />
+          </div>
+          <div className="flex-1 min-h-0">
+
+            <ScheduleWidget
+              events={scheduleEvents}
+              isLoading={scheduleLoading}
+              activeFilter={activeScheduleFilter}
+              onFilterChange={(f) => { setActiveScheduleFilter(f); fetchScheduleEvents(f); }}
+              onEventClick={handleScheduleEventClick}
+            />
+          </div>
+          <RecentActivities />
+        </aside> */}
       </div>
 
       {/* Action Review Modal — now driven by real API data */}

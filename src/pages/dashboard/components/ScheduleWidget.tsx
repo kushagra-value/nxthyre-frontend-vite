@@ -75,11 +75,22 @@ const formatDateLabel = (dateStr?: string) => {
   };
 };
 
+const formatJobCompany = (job?: string, company?: string, fallbackDetails?: string) => {
+  let cleanCompany = (company || '').replace(/\.com$/i, '').trim();
+  let cleanJob = (job || '').trim();
+
+  if (cleanJob && cleanCompany) {
+    return `${cleanJob} (${cleanCompany})`;
+  }
+  if (cleanJob) return cleanJob;
+  if (cleanCompany) return cleanCompany;
+  if (fallbackDetails) return fallbackDetails;
+  return '-';
+};
+
 export default function ScheduleWidget({ events, isLoading, onEventClick, activeFilter, onFilterChange }: ScheduleWidgetProps) {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  console.log("check what events am i getting at here ", events)
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -92,9 +103,9 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
   }, []);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+    <div className="bg-white rounded-xl shadow-2xs border border-gray-100 flex flex-col flex-1 h-full min-h-0 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+      <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
         <span className="text-base font-semibold text-gray-900 leading-5">Schedule</span>
         <div className="relative" ref={dropdownRef}>
           <button
@@ -127,7 +138,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
       </div>
 
       {/* Events List */}
-      <div className="overflow-y-auto max-h-[314px] hide-scrollbar px-5 pb-5">
+      <div className="overflow-y-auto flex-1 min-h-0 custom-scrollbar px-4 pb-4">
         <div className="flex flex-col gap-3">
           {isLoading ? (
             [...Array(3)].map((_, i) => (
@@ -174,7 +185,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                 >
                   {/* Event Card */}
                   <div
-                    className="w-full rounded-xl p-4 relative shadow-sm border border-solid transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                    className="w-full rounded-xl p-3.5 relative shadow-2xs border border-solid transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                     style={{
                       backgroundColor: config.bg,
                       borderWidth: '1px',
@@ -184,74 +195,75 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                       borderLeftColor: config.dot
                     }}
                   >
-                    {/* Top Row: Time + Status Badge */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-gray-600 flex-wrap">
+                    {/* Non-SCHEDULED Status Badge (if Overdue/Cancelled) */}
+                    {status !== 'SCHEDULED' && (
+                      <div className="flex justify-end mb-1">
+                        <span
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider uppercase shrink-0"
+                          style={{
+                            backgroundColor: statusConfig.bg,
+                            color: statusConfig.text
+                          }}
+                        >
+                          {statusConfig.label}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Candidate Name */}
+                    <h4 className="text-sm font-bold text-gray-900 mb-0.5 tracking-tight leading-tight">
+                      {event.candidate_name}
+                    </h4>
+
+                    {/* Job Name (Company Name) */}
+                    <p className="text-xs text-gray-500 font-medium mb-2.5 leading-normal">
+                      {formatJobCompany(event.candidate_position, event.candidate_company, ws.details)}
+                    </p>
+
+                    {/* Supporting Info: Screening Score + Stage / Interview Type */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 bg-white border border-gray-200 text-gray-700 rounded-md shadow-2xs flex items-center gap-1">
+                        <span className="text-gray-500 font-medium">Screening Score:</span>
+                        <span className="font-bold text-[#0F47F2]">
+                          {event.screening_score !== undefined && event.screening_score !== null
+                            ? `${event.screening_score}`
+                            : event.resume_score !== undefined && event.resume_score !== null
+                            ? `${event.resume_score}`
+                            : 'N/A'}
+                        </span>
+                      </span>
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-white border border-gray-200 rounded-md shadow-2xs"
+                        style={{ color: config.text }}
+                      >
+                        {ws.interview_type || event.stage?.name || '-'}
+                      </p>
+                    </div>
+
+                    {/* Bottom Row: Date / Time + Action Buttons */}
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-200/60">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
                         <Clock className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="tabular-nums">{ws.time}</span>
+                        <span className="tabular-nums font-semibold text-gray-700">{ws.time}</span>
                         {activeFilter === 'Tomorrow' && (
                           <>
                             <span className="text-gray-300">•</span>
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                              Tomorrow
-                            </span>
+                            <span className="text-[10px] font-semibold text-amber-600">Tomorrow</span>
                           </>
                         )}
-                        {(activeFilter === 'Upcoming') && event.modal_details?.date && (
+                        {activeFilter === 'Upcoming' && event.modal_details?.date && (
                           <>
                             <span className="text-gray-300">•</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${formatDateLabel(event.modal_details?.date).color}`}>
+                            <span className="text-[10px] font-semibold text-[#0F47F2]">
                               {formatDateLabel(event.modal_details?.date).label}
                             </span>
                           </>
                         )}
                       </div>
-                      <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider uppercase shrink-0"
-                        style={{
-                          backgroundColor: statusConfig.bg,
-                          color: statusConfig.text
-                        }}
-                      >
-                        {statusConfig.label}
-                      </span>
-                    </div>
 
-                    {/* Candidate Name */}
-                    <h4 className="text-base font-bold text-gray-900 mb-0.5 tracking-tight leading-tight">
-                      {event.candidate_name}
-                    </h4>
-
-                    {/* Subtitle */}
-                    <p className="text-xs text-gray-500 font-medium mb-3.5 leading-normal">
-                      {[event.candidate_company, event.candidate_position].filter(Boolean).join(' | ') || ws.details || '-'}
-                    </p>
-
-                    {/* Bottom Row: Mode + Action Buttons */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 bg-white border border-gray-200 text-gray-700 rounded-md shadow-sm flex items-center gap-1">
-                          <span className="text-gray-500 font-medium">Screening Score:</span>
-                          <span className="font-bold text-[#0F47F2]">
-                            {event.screening_score !== undefined && event.screening_score !== null
-                              ? `${event.screening_score}`
-                              : event.resume_score !== undefined && event.resume_score !== null
-                              ? `${event.resume_score}`
-                              : 'N/A'}
-                          </span>
-                        </span>
-                        <p
-                          className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-white border border-gray-200 rounded-md shadow-sm"
-                          style={{ color: config.text }}
-                        >
-                          {ws.interview_type || event.stage?.name || '-'}
-                        </p>
-                      </div>
-
-
-                      {/* Action Buttons - Blue Check & Red Cross */}
+                      {/* Action Buttons - Accept & Reject */}
                       {isActionable && (
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-1.5 shrink-0">
                           <button
                             onClick={async (e) => {
                               e.stopPropagation();
@@ -263,7 +275,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                                 toast.error("Failed");
                               }
                             }}
-                            className="w-7 h-7 flex items-center justify-center bg-[#0F47F2] hover:bg-[#0D3ED4] text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-[0_4px_12px_rgba(15,71,242,0.35)]"
+                            className="w-7 h-7 flex items-center justify-center bg-[#0F47F2] hover:bg-[#0D3ED4] text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
                             title="Complete"
                           >
                             <Check className="w-3.5 h-3.5" />
@@ -280,7 +292,7 @@ export default function ScheduleWidget({ events, isLoading, onEventClick, active
                                 toast.error("Failed");
                               }
                             }}
-                            className="w-7 h-7 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-[0_4px_12px_rgba(244,63,94,0.35)]"
+                            className="w-7 h-7 flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
                             title="Cancel"
                           >
                             <X className="w-3.5 h-3.5" />

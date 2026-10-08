@@ -1,11 +1,17 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Zap, ArrowLeft, ArrowRight, Copy, Trash2, MoreHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, X, ArrowUp, ArrowDown, Zap, ArrowLeft, ArrowRight, Copy, Trash2, MoreVertical } from "lucide-react";
 import { linkedinBotService, LinkedinBotCandidate, LinkedinBotCandidateSummary } from "../../../services/linkedinBotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
 import LinkedinBotFilterPanel, { LinkedinBotFiltersState, EMPTY_LINKEDIN_BOT_FILTERS } from "./LinkedinBotFilterPanel";
 import SkillsMatchTooltip from "./SkillsMatchTooltip";
 import { getAttentionPill } from "../../../utils/candidateAttention";
+
+const formatLocationDisplay = (loc?: string | null): string => {
+  if (!loc || !loc.trim()) return "--";
+  const city = loc.split(",")[0].trim();
+  return city || loc;
+};
 
 interface LinkedinBotTabProps {
   jobId: number | null;
@@ -69,9 +75,9 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
       clearTimeout(leaveTimeoutRef.current);
       leaveTimeoutRef.current = null;
     }
-    setHoveredSkills({ 
-      candidateId: item.id, 
-      matched: item.skills_match?.matched_skills || [], 
+    setHoveredSkills({
+      candidateId: item.id,
+      matched: item.skills_match?.matched_skills || [],
       missing: item.skills_match?.missing_skills || [],
       ref: { current: e.currentTarget }
     });
@@ -123,9 +129,9 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
       if (res.summary) {
         setSummary(res.summary);
       }
-      
+
       // Determine if there are active filters (excluding search, page, etc)
-      const hasFilters = Object.keys(params).some(k => 
+      const hasFilters = Object.keys(params).some(k =>
         !['job_id', 'page', 'page_size', 'sort_by', 'search'].includes(k)
       );
 
@@ -229,7 +235,7 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
     const isSorted = sortBy.startsWith(column);
     const isAsc = sortBy === `${column}_asc`;
     return (
-      <th 
+      <th
         key={column}
         className={`group px-6 py-4 text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap cursor-pointer hover:bg-black/5 transition-colors select-none ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`}
         onClick={() => handleSort(column)}
@@ -293,7 +299,7 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
               <span className="text-xs text-[#E0E7FF] font-medium mt-0.5">New</span>
             </div>
             <div className="flex flex-col items-end border-l border-[#8193FE] pl-8">
-              <button 
+              <button
                 onClick={handleTriggerSourcing}
                 disabled={toggleLoading}
                 className={`flex items-center gap-2 bg-white text-[#4F68FC] rounded-lg px-4 py-2 mb-1 cursor-pointer font-bold text-sm shadow-sm hover:bg-gray-50 transition-colors ${toggleLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -313,8 +319,8 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                 {summary.new} new candidates <span className="font-normal text-[#1A8D49]">sourced</span>
               </span>
             </div>
-            <button 
-              onClick={() => setShowDismiss(false)} 
+            <button
+              onClick={() => setShowDismiss(false)}
               className="flex items-center gap-1.5 text-[13px] font-medium text-[#009951] hover:text-[#004d21]"
             >
               Dismiss <X className="w-4 h-4" />
@@ -326,38 +332,38 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
         <div className="bg-white border-x border-t border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
           <div className="relative w-[340px]">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-            <input 
-              type="text" 
-              placeholder="Search for Candidates" 
+            <input
+              type="text"
+              placeholder="Search for Candidates"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-10 pl-10 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none border border-[#E5E7EB] focus:border-[#0F47F2] transition-colors"
             />
           </div>
           <div className="flex items-center gap-3">
-           <div className="relative">
-             <button
-               ref={filterButtonRef}
-               onClick={() => setShowFilterPanel(!showFilterPanel)}
-               className={`flex items-center gap-2 px-4 py-2 ${showFilterPanel || activeFilterCount > 0 ? "bg-[#F3F5F7] border border-[#d2d6db] text-[#4B5563]" : "bg-white border border-[#E5E7EB] text-[#8E8E93]"} rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors`}
-             >
-              <SlidersHorizontal className="w-4 h-4" /> Filters
-              {activeFilterCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-            <LinkedinBotFilterPanel
-              isOpen={showFilterPanel}
-              onClose={() => setShowFilterPanel(false)}
-              onApply={(f) => { setBotFilters(f); setShowFilterPanel(false); }}
-              initialFilters={botFilters}
-              anchorRef={filterButtonRef}
-              jobId={jobId!}
-            />
-          </div>
-            <select 
+            <div className="relative">
+              <button
+                ref={filterButtonRef}
+                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                className={`flex items-center gap-2 px-4 py-2 ${showFilterPanel || activeFilterCount > 0 ? "bg-[#F3F5F7] border border-[#d2d6db] text-[#4B5563]" : "bg-white border border-[#E5E7EB] text-[#8E8E93]"} rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors`}
+              >
+                <SlidersHorizontal className="w-4 h-4" /> Filters
+                {activeFilterCount > 0 && (
+                  <span className="w-5 h-5 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+              <LinkedinBotFilterPanel
+                isOpen={showFilterPanel}
+                onClose={() => setShowFilterPanel(false)}
+                onApply={(f) => { setBotFilters(f); setShowFilterPanel(false); }}
+                initialFilters={botFilters}
+                anchorRef={filterButtonRef}
+                jobId={jobId!}
+              />
+            </div>
+            <select
               className="flex items-center gap-2 px-4 py-2 bg-white text-[#8E8E93] border border-[#E5E7EB] rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition-colors focus:outline-none focus:border-[#0F47F2]"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -419,8 +425,8 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                 <X className="w-3.5 h-3.5 cursor-pointer hover:bg-black/10 rounded-full" onClick={() => removeFilter('noticePeriod')} />
               </span>
             )}
-            <button 
-              onClick={() => { setBotFilters(EMPTY_LINKEDIN_BOT_FILTERS); setPage(1); }} 
+            <button
+              onClick={() => { setBotFilters(EMPTY_LINKEDIN_BOT_FILTERS); setPage(1); }}
               className="text-xs font-semibold text-[#8E8E93] hover:text-[#4B5563] ml-2 underline decoration-dashed underline-offset-2"
             >
               Clear all
@@ -434,12 +440,12 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
             <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
               <tr>
                 <th className="w-12 px-6 py-4">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={candidates.length > 0 && selectedCandidates.size === candidates.length}
                     onChange={toggleSelectAll}
                     disabled={candidates.length === 0}
-                    className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
+                    className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]"
                   />
                 </th>
                 {renderSortableHeader('Candidate', 'name')}
@@ -455,21 +461,21 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3F5F7]">
-               {loading ? (
-                 <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">Loading...</td></tr>
-               ) : candidates.length === 0 ? (
-                 <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">No candidates found</td></tr>
-               ) : candidates.map((item) => {
-                  const scoreColor = item.ai_score >= 80 ? "#00C8B3" : item.ai_score >= 60 ? "#F59E0B" : "#EA580C";
-                  const skillsColor = item.skills_match?.matched >= ((item.skills_match?.total || 1) * 0.8) ? "#009951" : "#EA580C";
-                  return (
+              {loading ? (
+                <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">Loading...</td></tr>
+              ) : candidates.length === 0 ? (
+                <tr><td colSpan={11} className="py-12 text-center text-[#8E8E93]">No candidates found</td></tr>
+              ) : candidates.map((item) => {
+                const scoreColor = item.ai_score >= 80 ? "#00C8B3" : item.ai_score >= 60 ? "#F59E0B" : "#EA580C";
+                const skillsColor = item.skills_match?.matched >= ((item.skills_match?.total || 1) * 0.8) ? "#009951" : "#EA580C";
+                return (
                   <tr key={item.id} className="hover:bg-[#F9FAFB] transition-colors">
                     <td className="px-6 py-6 border-transparent">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={selectedCandidates.has(item.id)}
                         onChange={() => toggleSelection(item.id)}
-                        className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]" 
+                        className="w-4 h-4 rounded border-[#D1D1D6] accent-[#0F47F2]"
                       />
                     </td>
                     <td className="px-6 py-6 border-transparent">
@@ -481,30 +487,30 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                       <div className="text-[13px] text-[#8E8E93] mt-0.5 truncate max-w-[180px]" title={`${item.current_title || "--"} • ${item.current_company || "--"}`}>{item.current_title || "--"} • {item.current_company || "--"}</div>
                     </td>
                     <td className="px-6 py-6 border-transparent">
-                       <div className="relative w-10 h-10 mx-auto">
-                          <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F3F5F7" strokeWidth="4" />
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={scoreColor} strokeWidth="4" strokeDasharray={`${item.ai_score || 0}, 100`} />
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{item.ai_score || 0}</div>
-                        </div>
+                      <div className="relative w-10 h-10 mx-auto">
+                        <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+                          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F3F5F7" strokeWidth="4" />
+                          <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={scoreColor} strokeWidth="4" strokeDasharray={`${item.ai_score || 0}, 100`} />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{item.ai_score || 0}</div>
+                      </div>
                     </td>
-                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "--"}</td>
+                    <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{formatLocationDisplay(item.location)}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years ? `${Number(item.experience_years).toFixed(1)} Years` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
                     <td className="px-6 py-6 text-[13px] text-[#0F47F2] font-medium border-transparent whitespace-nowrap">{item.notice_period || "--"}</td>
-                    <td 
-                      className="px-6 py-6 text-[13px] font-medium border-transparent text-center cursor-help relative" 
+                    <td
+                      className="px-6 py-6 text-[13px] font-medium border-transparent text-center cursor-help relative"
                       style={{ color: skillsColor }}
                       onMouseEnter={(e) => handleSkillsMouseEnter(e, item)}
                       onMouseLeave={handleSkillsMouseLeave}
                     >
                       {item.skills_match?.matched || 0}/{item.skills_match?.total || 0} skills
                       {hoveredSkills?.candidateId === item.id && (
-                        <SkillsMatchTooltip 
-                          matchedSkills={hoveredSkills.matched} 
-                          missingSkills={hoveredSkills.missing} 
+                        <SkillsMatchTooltip
+                          matchedSkills={hoveredSkills.matched}
+                          missingSkills={hoveredSkills.missing}
                           anchorRef={hoveredSkills.ref}
                           onClose={() => setHoveredSkills(null)}
                         />
@@ -533,19 +539,19 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                     <td className={`sticky right-0 ${menuOpenId === item.id ? "z-40" : "z-[2]"} bg-white px-6 py-6 border-transparent shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.18)]`}>
                       <div className="flex justify-end items-center gap-3 z-10 flex-row">
                         {item.linkedin_url && (
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigator.clipboard.writeText(item.linkedin_url); 
-                              toast.success("URL Copied!"); 
+                              navigator.clipboard.writeText(item.linkedin_url);
+                              toast.success("URL Copied!");
                             }}
                             className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E7EDFF] text-[#0F47F2] hover:bg-[#D5E1FF] transition-colors"
                             title="Copy LinkedIn URL"
                           >
-                             <Copy className="w-4 h-4" />
+                            <Copy className="w-4 h-4" />
                           </button>
                         )}
-                        
+
                         <div className={`relative ${menuOpenId === item.id ? "z-50" : ""}`} ref={menuOpenId === item.id ? menuRef : null}>
                           <button
                             onClick={(e) => {
@@ -560,11 +566,11 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                             }}
                             className="p-2 hover:bg-[#F3F5F7] rounded-lg transition-colors text-[#8E8E93] hover:text-[#4B5563]"
                           >
-                            <MoreHorizontal className="w-5 h-5" />
+                            <MoreVertical className="w-5 h-5" />
                           </button>
 
                           {menuOpenId === item.id && (
-                            <div 
+                            <div
                               className="absolute right-0 mt-2 w-48 bg-white border border-[#E5E7EB] rounded-xl shadow-lg py-1 z-[1001]"
                               style={{ top: '100%' }}
                               onClick={(e) => e.stopPropagation()}
@@ -585,34 +591,35 @@ export default function LinkedinBotTab({ jobId, onFilterCountChange }: LinkedinB
                       </div>
                     </td>
                   </tr>
-               )})}
+                )
+              })}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
         <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-b-xl px-6 py-5 flex items-center justify-between mb-10">
-            <div className="text-[13px] text-[#8E8E93]">
-                Showing {totalCount > 0 ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, totalCount)} of {totalCount} candidates
+          <div className="text-[13px] text-[#8E8E93]">
+            Showing {totalCount > 0 ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, totalCount)} of {totalCount} candidates
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1.5">
+              <button onClick={() => setPage(Math.max(page - 1, 1))} disabled={page === 1} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowLeft className="w-4 h-4" /></button>
+              {getPageNumbers().map((p, i) => (
+                p === "..." ? (
+                  <span key={`dots-${i}`} className="w-6 h-8 flex items-center justify-center text-[#8E8E93] text-sm font-medium">...</span>
+                ) : (
+                  <button
+                    key={`page-${p}`}
+                    onClick={() => setPage(p as number)}
+                    className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-medium ${page === p ? 'border-[#0F47F2] text-white bg-[#0F47F2]' : 'border-[#E5E7EB] text-[#4B5563] bg-white hover:bg-gray-50'}`}>
+                    {p}
+                  </button>
+                )
+              ))}
+              <button onClick={() => setPage(Math.min(page + 1, totalPages))} disabled={page === totalPages} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowRight className="w-4 h-4" /></button>
             </div>
-            {totalPages > 1 && (
-                <div className="flex items-center gap-1.5">
-                   <button onClick={() => setPage(Math.max(page - 1, 1))} disabled={page === 1} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowLeft className="w-4 h-4"/></button>
-                   {getPageNumbers().map((p, i) => (
-                      p === "..." ? (
-                        <span key={`dots-${i}`} className="w-6 h-8 flex items-center justify-center text-[#8E8E93] text-sm font-medium">...</span>
-                      ) : (
-                        <button 
-                          key={`page-${p}`} 
-                          onClick={() => setPage(p as number)}
-                          className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-medium ${page === p ? 'border-[#0F47F2] text-white bg-[#0F47F2]' : 'border-[#E5E7EB] text-[#4B5563] bg-white hover:bg-gray-50'}`}>
-                            {p}
-                        </button>
-                      )
-                   ))}
-                   <button onClick={() => setPage(Math.min(page + 1, totalPages))} disabled={page === totalPages} className="w-8 h-8 flex items-center justify-center border border-[#E5E7EB] rounded-lg text-[#8E8E93] bg-white hover:bg-gray-50 text-sm font-medium disabled:opacity-50"><ArrowRight className="w-4 h-4"/></button>
-                </div>
-            )}
+          )}
         </div>
       </div>
     </div>
