@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   Mail,
   Download,
@@ -21,6 +21,7 @@ import {
   Sparkles,
   PhoneOff,
   ChevronDown,
+  Trash2 ,
   MessageSquare,
   X,
   Archive,
@@ -74,6 +75,14 @@ interface JobCandidateProfileProps {
   candidateList?: any[];
 }
 
+
+let callStats=45
+
+
+
+
+
+
 // ─── Component ─────────────────────────────────────────────
 
 export default function JobCandidateProfile({
@@ -95,6 +104,38 @@ export default function JobCandidateProfile({
   const jobScoreObj = candidate?.job_score_obj || candidate?.job_score || contextualDetails?.job_score_obj || cand?.job_score_obj || cand?.job_score || {};
   const matchScore = jobScoreObj?.candidate_match_score || {};
   const quickFitSummary = jobScoreObj?.quick_fit_summary || [];
+
+  // Extract screening score
+  const rawScreeningScore =
+    candidate?.screening_score ??
+    cand?.screening_score ??
+    candidate?.screening_round_score ??
+    cand?.screening_round_score ??
+    candidate?.screening_score_value ??
+    cand?.screening_score_value ??
+    candidate?.screening_round ??
+    cand?.screening_round ??
+    contextualDetails?.screening_score ??
+    jobScoreObj?.screening_score ??
+    cand?.job_score?.screening_score ??
+    candidate?.job_score?.screening_score ??
+    null;
+
+  const screeningScoreVal = useMemo(() => {
+    if (
+      rawScreeningScore !== null &&
+      rawScreeningScore !== undefined &&
+      rawScreeningScore !== "" &&
+      rawScreeningScore !== "--"
+    ) {
+      const parsed = Number(String(rawScreeningScore).replace("%", ""));
+      if (!isNaN(parsed)) {
+        return Math.round(parsed);
+      }
+    }
+    return null;
+  }, [rawScreeningScore]);
+
   const statusTags = candidate?.status_tags || [];
   const applicationId = candidate?.id;
 
@@ -110,6 +151,7 @@ export default function JobCandidateProfile({
   // Candidate data
   const fullName = cand.full_name || "--";
   const headline = cand.headline || "";
+  const jobTitle = cand.job_title || cand.designation || cand.current_role || candidate?.job?.title || candidate?.job_details?.title || "";
   const location = cand.location || "";
   const profileSummary = cand.profile_summary || "";
   const experience = cand.experience || [];
@@ -349,8 +391,9 @@ export default function JobCandidateProfile({
 
   // States
   const [activeTab, setActiveTab] = useState<
-    "info" | "activity" | "call" | "notes"
-  >("info");
+    "profile" | "call" | "notes" | "pipeline"
+  >("profile");
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
 
@@ -360,6 +403,7 @@ export default function JobCandidateProfile({
   const [loadingCalls, setLoadingCalls] = useState(false);
   const [expandedCallId, setExpandedCallId] = useState<number | null>(null);
   const [showTranscript, setShowTranscript] = useState<number | null>(null);
+  
 
   // ── Feedback Modal State ──
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -373,6 +417,31 @@ export default function JobCandidateProfile({
     candidateNames?: string[];
   } | null>(null);
   const [showStageMenu, setShowStageMenu] = useState(false);
+  // ── Menu Refs & Click Outside Listeners ──
+  const stageMenuRef = useRef<HTMLDivElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        stageMenuRef.current &&
+        !stageMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowStageMenu(false);
+      }
+      if (
+        moreMenuRef.current &&
+        !moreMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsMoreMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
   const [pendingEventAction, setPendingEventAction] = useState<any>(null);
   const [isSubmittingFeedback,setIsSubmittingFeedback] = useState(false);
@@ -541,7 +610,7 @@ export default function JobCandidateProfile({
 
   // ── Fetch Call History & Recording Events ─────────────────
   useEffect(() => {
-    if (!cand.id || activeTab !== "call") return;
+    if (!cand.id) return;
     setLoadingCalls(true);
     const rawPhone = premiumData?.phone || (cand as any)?.phone || "";
     const candidatePhone = rawPhone ? (rawPhone.startsWith("91") ? rawPhone : `91${rawPhone.replace(/\D/g, "")}`) : undefined;
@@ -698,12 +767,49 @@ export default function JobCandidateProfile({
   };
 
   const formatTime = (dateStr: string): string => {
+    if (!dateStr) return "";
     const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
     return d.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
     });
+  };
+
+  const getCallTimingDetails = (call: CallHistoryEntry) => {
+    const evt = call.call_uuid ? recordingEvents[call.call_uuid] : null;
+
+    // Start Time
+    const startIso = evt?.started_at;
+    const startTime = startIso ? formatTime(startIso) : "";
+
+    // End Time
+    const endIso = evt?.ended_at;
+    const endTime = endIso ? formatTime(endIso) : "";
+
+    // Duration
+    let durSec = call.duration_seconds || evt?.duration_seconds;
+    if (!durSec && evt?.call_duration) {
+      durSec = typeof evt.call_duration === "number" ? evt.call_duration : parseInt(String(evt.call_duration), 10);
+    }
+    if (!durSec && startIso && endIso) {
+      const s = new Date(startIso).getTime();
+      const e = new Date(endIso).getTime();
+      if (!isNaN(s) && !isNaN(e) && e > s) {
+        durSec = Math.round((e - s) / 1000);
+      }
+    }
+
+    const duration = durSec && durSec > 0 ? formatDuration(durSec) : "";
+
+    return {
+      startTime,
+      endTime,
+      duration,
+      startIso,
+      endIso,
+    };
   };
 
   const parseSummaryBullets = (
@@ -733,10 +839,11 @@ export default function JobCandidateProfile({
 
   // ── Score bar color helper ───────────────────────────────
 
-  const getScoreColor = (score: number): string => {
-    if (score >= 80 || score >= 8) return "#10B981";
-    if (score >= 40 || score >= 4) return "#F59E0B";
-    return "#EF4444";
+  const getScoreColor = (scoreVal: number): string => {
+    const score = scoreVal <= 10 && scoreVal > 0 ? scoreVal * 10 : scoreVal;
+    if (score >= 70) return "#10B981"; // Green (70 to 100)
+    if (score >= 50) return "#F59E0B"; // Yellow (50 to 70)
+    return "#EF4444"; // Red (below 50)
   };
 
   const getScoreWidth = (score: number): string => {
@@ -821,6 +928,36 @@ export default function JobCandidateProfile({
   }
 
 
+  const matchedSkills = useMemo(() => {
+    return (quickFitSummary || []).filter(
+      (item: any) => item.color === "green" || item.status === "matched"
+    );
+  }, [quickFitSummary]);
+
+  const partialSkills = useMemo(() => {
+    return (quickFitSummary || []).filter(
+      (item: any) =>
+        item.color === "yellow" ||
+        item.color === "amber" ||
+        item.status === "partial"
+    );
+  }, [quickFitSummary]);
+
+  const missingSkills = useMemo(() => {
+    return (quickFitSummary || []).filter(
+      (item: any) => item.color === "red" || item.status === "missing"
+    );
+  }, [quickFitSummary]);
+
+  const matchedCount = matchedSkills.length;
+  const partialCount = partialSkills.length;
+  const missingCount = missingSkills.length;
+
+  // ── Dynamic Tab Counts (API-driven) ──────────────────────
+  const callsCount = candidate?.calls_count ?? candidate?.call_history_count ?? callHistory.length;
+  const notesCount = candidate?.notes_count ?? candidate?.notes?.length ?? displayedNotes.length;
+  const pipelineCount = candidate?.pipeline_history_count ?? candidate?.stage_movements_count ?? candidate?.activities_count ?? activities.length;
+
   if (loading) {
     return (
       <div className="flex-1 overflow-y-auto bg-[#F3F5F7] flex items-center justify-center min-h-screen">
@@ -832,10 +969,6 @@ export default function JobCandidateProfile({
     );
   }
 
-  // ── Job title  display  ────────────────────────────────
-
-  const jobTitle = candidate?.job?.title || contextualDetails?.job_title || "";
-
   return (
     <div className="flex-1 overflow-y-auto bg-[#F3F5F7] flex flex-col xl:flex-row p-6 gap-6">
       <div className="flex-1 flex flex-col gap-6">
@@ -844,9 +977,10 @@ export default function JobCandidateProfile({
           <div className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
                   <button
                     onClick={goBack}
+                    aria-label="Go back"
                     className="text-[#8E8E93] hover:text-black transition-colors rounded-full p-1 hover:bg-[#F3F5F7]"
                   >
                     <ArrowLeft className="w-5 h-5" />
@@ -854,197 +988,47 @@ export default function JobCandidateProfile({
                   <h1 className="text-2xl font-semibold text-black">
                     {fullName}
                   </h1>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#0F47F2] border border-blue-100">
+                    Stage: {currentStageName}
+                  </span>
                 </div>
                 <div className="ml-10">
-                  <p className="text-sm text-[#0F47F2] mb-4">
+                  <p className="text-sm text-[#0F47F2] mb-3">
                     {headline || jobTitle}{" "}
                     {headline && jobTitle ? ` • ${jobTitle}` : ""}
                   </p>
 
-                  <div className="flex items-center gap-4 text-sm text-[#4B5563] mb-6 font-medium">
-                    <span className="flex items-center gap-1.5">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M8 10L8 11"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                        <path
-                          d="M2 7.33301L2.10192 9.24185C2.21142 11.651 2.26618 12.8556 3.03923 13.5943C3.81229 14.333 5.01811 14.333 7.42975 14.333H8.57025C10.9819 14.333 12.1877 14.333 12.9608 13.5943C13.7338 12.8556 13.7886 11.651 13.8981 9.24185L14 7.33301"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                        <path
-                          d="M1.89845 6.96204C3.03131 9.11629 5.58646 10 8.00033 10C10.4142 10 12.9693 9.11629 14.1022 6.96204C14.643 5.93371 14.2335 4 12.9017 4H3.09899C1.76715 4 1.35768 5.93371 1.89845 6.96204Z"
-                          stroke="#4B5563"
-                        />
-                        <path
-                          d="M10.6663 3.99984L10.6075 3.7938C10.3141 2.7671 10.1675 2.25375 9.81828 1.96013C9.46909 1.6665 9.00528 1.6665 8.07765 1.6665H7.9217C6.99407 1.6665 6.53026 1.6665 6.18107 1.96013C5.83189 2.25375 5.68522 2.7671 5.39188 3.7938L5.33301 3.99984"
-                          stroke="#4B5563"
-                        />
-                      </svg>{" "}
-                      {totalExp}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M2.66797 6.76236C2.66797 3.76408 5.05578 1.3335 8.0013 1.3335C10.9468 1.3335 13.3346 3.76408 13.3346 6.76236C13.3346 9.73716 11.6324 13.2084 8.97657 14.4498C8.3575 14.7392 7.6451 14.7392 7.02604 14.4498C4.37018 13.2084 2.66797 9.73716 2.66797 6.76236Z"
-                          stroke="#4B5563"
-                        />
-                        <path
-                          d="M8 8.6665C9.10457 8.6665 10 7.77107 10 6.6665C10 5.56193 9.10457 4.6665 8 4.6665C6.89543 4.6665 6 5.56193 6 6.6665C6 7.77107 6.89543 8.6665 8 8.6665Z"
-                          stroke="#4B5563"
-                        />
-                      </svg>{" "}
-                      {location || "--"}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M4 6.6665H6.66667"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                        <path
-                          d="M13.8889 7.3335H12.1539C10.9643 7.3335 10 8.2289 10 9.3335C10 10.4381 10.9643 11.3335 12.1539 11.3335H13.8889C13.9445 11.3335 13.9722 11.3335 13.9957 11.3321C14.3552 11.3102 14.6415 11.0443 14.6651 10.7104C14.6667 10.6886 14.6667 10.6628 14.6667 10.6113V8.0557C14.6667 8.00416 14.6667 7.97836 14.6651 7.95656C14.6415 7.6227 14.3552 7.35683 13.9957 7.3349C13.9722 7.3335 13.9445 7.3335 13.8889 7.3335Z"
-                          stroke="#4B5563"
-                        />
-                        <path
-                          d="M13.9773 7.33333C13.9255 6.08513 13.7584 5.31983 13.2196 4.78105C12.4386 4 11.1815 4 8.66732 4H6.66732C4.15316 4 2.89608 4 2.11503 4.78105C1.33398 5.5621 1.33398 6.8192 1.33398 9.33333C1.33398 11.8475 1.33398 13.1046 2.11503 13.8856C2.89608 14.6667 4.15316 14.6667 6.66732 14.6667H8.66732C11.1815 14.6667 12.4386 14.6667 13.2196 13.8856C13.7584 13.3469 13.9255 12.5815 13.9773 11.3333"
-                          stroke="#4B5563"
-                        />
-                        <path
-                          d="M4 4L6.49033 2.34875C7.1916 1.88375 8.14173 1.88375 8.843 2.34875L11.3333 4"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M11.9941 9.3335H12.0001"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                      {localCurrCtc ? (String(localCurrCtc).includes("LPA") ? localCurrCtc : `${localCurrCtc} LPA`) : "--"}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M11.6095 6.9428C12 6.55229 12 5.92375 12 4.66667C12 3.40959 12 2.78105 11.6095 2.39053M11.6095 6.9428C11.2189 7.33333 10.5904 7.33333 9.33333 7.33333H6.66667C5.40959 7.33333 4.78105 7.33333 4.39053 6.9428M11.6095 2.39053C11.2189 2 10.5904 2 9.33333 2H6.66667C5.40959 2 4.78105 2 4.39053 2.39053M4.39053 2.39053C4 2.78105 4 3.40959 4 4.66667C4 5.92375 4 6.55229 4.39053 6.9428"
-                          stroke="#4B5563"
-                        />
-                        <path
-                          d="M8.66732 4.66667C8.66732 5.03485 8.36885 5.33333 8.00065 5.33333C7.63245 5.33333 7.33398 5.03485 7.33398 4.66667C7.33398 4.29848 7.63245 4 8.00065 4C8.36885 4 8.66732 4.29848 8.66732 4.66667Z"
-                          stroke="#4B5563"
-                        />
-                        <path
-                          d="M12 4C10.8954 4 10 3.10457 10 2"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M12 5.3335C10.8954 5.3335 10 6.22893 10 7.3335"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M4 4C5.10457 4 6 3.10457 6 2"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M4 5.3335C5.10457 5.3335 6 6.22893 6 7.3335"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M3.33398 13.5924H4.8406C5.51451 13.5924 6.19567 13.6626 6.85152 13.7978C8.01172 14.0368 9.23318 14.0657 10.4053 13.876C10.9832 13.7824 11.5513 13.6394 12.0657 13.3912C12.5299 13.1671 13.0986 12.8512 13.4806 12.4974C13.8621 12.1442 14.2593 11.566 14.5413 11.114C14.7831 10.7264 14.6661 10.251 14.2837 9.96218C13.8589 9.64144 13.2285 9.64151 12.8037 9.96238L11.5989 10.8724C11.132 11.2252 10.622 11.5498 10.0144 11.6468C9.94132 11.6584 9.86478 11.669 9.78492 11.6783M9.78492 11.6783C9.76085 11.6811 9.73652 11.6838 9.71185 11.6863M9.78492 11.6783C9.88212 11.6575 9.97858 11.5975 10.0692 11.5185C10.498 11.1442 10.5251 10.5135 10.153 10.0956C10.0667 9.99864 9.96565 9.91778 9.85338 9.85078C7.98845 8.73844 5.08693 9.58564 3.33398 10.8288M9.78492 11.6783C9.76058 11.6835 9.73618 11.6863 9.71185 11.6863M9.71185 11.6863C9.36292 11.7221 8.95478 11.7314 8.50185 11.6886"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M3.33398 10.3335C3.33398 9.78121 2.88627 9.3335 2.33398 9.3335C1.7817 9.3335 1.33398 9.78121 1.33398 10.3335V13.6668C1.33398 14.2191 1.7817 14.6668 2.33398 14.6668C2.88627 14.6668 3.33398 14.2191 3.33398 13.6668V10.3335Z"
-                          stroke="#4B5563"
-                        />
-                      </svg>
-                      {localExpecCtc ? (String(localExpecCtc).includes("LPA") ? localExpecCtc : `${localExpecCtc} LPA`) : "--"}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M14.6673 9.33317V7.99984C14.6673 5.48568 14.6673 4.2286 13.8863 3.44755C13.1053 2.6665 11.8481 2.6665 9.33398 2.6665H6.66732C4.15316 2.6665 2.89608 2.6665 2.11503 3.44755C1.33398 4.2286 1.33398 5.48568 1.33398 7.99984V9.33317C1.33398 11.8473 1.33398 13.1044 2.11503 13.8854C2.89608 14.6665 4.15316 14.6665 6.66732 14.6665H9.33398"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M4.66602 2.6665V1.6665"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M11.334 2.6665V1.6665"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M12 14C13.1046 14 14 13.1046 14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14Z"
-                          stroke="#4B5563"
-                        />
-                        <path
-                          d="M13.666 13.6665L14.666 14.6665"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                        <path
-                          d="M1.66602 6H14.3327"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                      </svg>{" "}
-                      {localNoticePeriod || "--"}
-                    </span>
+                  {/* CHANGE 2: Labeled facts row */}
+                  <div className="flex flex-wrap items-center gap-x-8 gap-y-3 py-3 mb-5 border-y border-gray-100">
+                    <div>
+                      <div className="text-xs text-[#8E8E93] font-medium mb-0.5">Experience</div>
+                      <div className="text-sm font-bold text-black">{totalExp || "--"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-[#8E8E93] font-medium mb-0.5">Location</div>
+                      <div className="text-sm font-bold text-black">{location || "--"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-[#8E8E93] font-medium mb-0.5">Current CTC</div>
+                      <div className="text-sm font-bold text-black">
+                        {localCurrCtc ? (String(localCurrCtc).includes("LPA") ? localCurrCtc : `${localCurrCtc} LPA`) : "--"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-[#8E8E93] font-medium mb-0.5">Expected CTC</div>
+                      <div className="text-sm font-bold text-black">
+                        {localExpecCtc ? (String(localExpecCtc).includes("LPA") ? localExpecCtc : `${localExpecCtc} LPA`) : "--"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-[#8E8E93] font-medium mb-0.5">Notice period</div>
+                      <div className="text-sm font-bold text-black">{localNoticePeriod || "--"}</div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={openEditDetailsModal}
-                      className="flex items-center gap-2 bg-[#0F47F2] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-xs"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                      Edit
-                    </button>
+
+                  {/* CHANGE 1: Header card actions */}
+                  <div className="flex flex-wrap items-center gap-3 relative mt-6">
+                    {/* Call (filled blue primary button, 44px high, slightly wider) */}
                     <button
                       onClick={() => {
                         const callData = {
@@ -1073,37 +1057,52 @@ export default function JobCandidateProfile({
                         }));
                         window.location.href = `/call/${cand.id}/${jobId || 0}?mode=manual`;
                       }}
-                      className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#F3F5F7] transition"
+                      className="min-h-[44px] px-6 bg-[#0F47F2] text-white rounded-lg flex items-center justify-center gap-2 font-medium hover:bg-blue-700 transition shadow-xs text-sm"
                     >
                       <svg
-                        width="16"
-                        height="16"
+                        width="18"
+                        height="18"
                         viewBox="0 0 16 16"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
                           d="M9.33398 1.3335C9.33398 1.3335 10.8007 1.46683 12.6673 3.3335C14.534 5.20016 14.6673 6.66683 14.6673 6.66683"
-                          stroke="#0F47F2"
-                          stroke-linecap="round"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
                         />
                         <path
                           d="M9.4707 3.69043C9.4707 3.69043 10.1307 3.879 11.1206 4.86894C12.1106 5.8589 12.2992 6.51886 12.2992 6.51886"
-                          stroke="#0F47F2"
-                          stroke-linecap="round"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
                         />
                         <path
                           d="M6.69108 3.54395L7.12375 4.31924C7.51422 5.01889 7.35748 5.93672 6.74248 6.5517C6.74248 6.5517 5.9966 7.2977 7.34902 8.65017C8.70102 10.0022 9.44748 9.2567 9.44748 9.2567C10.0625 8.6417 10.9803 8.48497 11.68 8.87544L12.4552 9.3081C13.5117 9.8977 13.6365 11.3793 12.7079 12.308C12.1499 12.866 11.4663 13.3002 10.7106 13.3288C9.43855 13.377 7.27822 13.0551 5.11115 10.888C2.9441 8.72097 2.62216 6.56065 2.67038 5.28856C2.69903 4.5329 3.13322 3.84932 3.69122 3.29132C4.61986 2.36269 6.10146 2.48746 6.69108 3.54395Z"
-                          stroke="#0F47F2"
-                          stroke-linecap="round"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
                         />
                       </svg>
                       Call
                     </button>
+
+                    {/* Edit (outlined blue secondary button, next to Call) */}
+                    <button
+                      onClick={openEditDetailsModal}
+                      className="min-h-[44px] px-5 border border-[#0F47F2] text-[#0F47F2] bg-white rounded-lg flex items-center justify-center gap-2 font-medium hover:bg-[#F3F5F7] transition text-sm"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      Edit
+                    </button>
+
                     {cand.resume_url && (
                       <button
                         onClick={() => window.open(cand.resume_url, "_blank")}
-                        className="flex items-center gap-2 bg-[#E7EDFF] text-[#0F47F2] w-10 h-10 justify-center rounded-lg text-sm font-medium hover:bg-[#D4E0FF] transition"
+                        title="Download Resume"
+                        aria-label="Download Resume"
+                        className="min-h-[44px] w-11 h-11 border border-gray-300 text-gray-700 bg-white rounded-lg flex items-center justify-center hover:bg-gray-50 transition"
                       >
                         <svg
                           width="16"
@@ -1114,25 +1113,104 @@ export default function JobCandidateProfile({
                         >
                           <path
                             d="M2 10C2 11.8856 2 12.8284 2.58579 13.4142C3.17157 14 4.11438 14 6 14H10C11.8856 14 12.8284 14 13.4142 13.4142C14 12.8284 14 11.8856 14 10"
-                            stroke="#0F47F2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                           />
                           <path
                             d="M8.00065 2V10.6667M8.00065 10.6667L10.6673 7.75M8.00065 10.6667L5.33398 7.75"
-                            stroke="#0F47F2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                           />
                         </svg>
                       </button>
                     )}
+
+                    {/* Thin Divider */}
+                    <div className="h-6 w-px bg-gray-300 mx-1 hidden sm:block"></div>
+
+                    {/* Move to Stage (neutral outlined button with stage selection dropdown) */}
+                    <div className="relative" ref={stageMenuRef}>
+                      <button
+                        onClick={() => setShowStageMenu(!showStageMenu)}
+                        className="min-h-[44px] px-4 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition flex items-center gap-1.5"
+                      >
+                        Move to Stage
+                        <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+                      </button>
+
+                      {showStageMenu && (
+                        <div className="absolute left-0 mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-30 py-1">
+                          {stages
+                            .filter(
+                              (s) =>
+                                s.slug !== "archives" &&
+                                s.slug !== currentStageSlug
+                            )
+                            .map((stage) => (
+                              <button
+                                key={stage.id}
+                                onClick={() => {
+                                  setShowStageMenu(false);
+                                  openFeedbackModal({
+                                    type: "move",
+                                    applicationIds: [applicationId],
+                                    targetStageId: stage.id,
+                                    targetStageName: stage.name,
+                                  });
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-blue-50 hover:text-[#0F47F2] transition font-medium"
+                              >
+                                {stage.name}
+                              </button>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Schedule Interview (neutral outlined button) */}
+                    <button
+                      onClick={() => setIsEventFormOpen(true)}
+                      className="min-h-[44px] px-4 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg text-sm font-medium transition flex items-center gap-1.5"
+                    >
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      Schedule Interview
+                    </button>
+
+                    {/* "⋯" icon menu (aria-label "More actions") */}
+                    <div className="relative" ref={moreMenuRef}>
+                      <button
+                        onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+                        aria-label="More actions"
+                        className="min-h-[44px] w-11 h-11 border border-gray-300 text-gray-700 bg-white rounded-lg flex items-center justify-center hover:bg-gray-50 transition text-lg font-bold"
+                      >
+                        ⋯
+                      </button>
+                      {isMoreMenuOpen && (
+                        <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-20 py-1">
+                          <button
+                            onClick={() => {
+                              setIsMoreMenuOpen(false);
+                              openFeedbackModal({
+                                type: "archive",
+                                applicationIds: [applicationId],
+                              });
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium flex items-center gap-2"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                            Move to Archive
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center justify-start min-w-[160px]">
-                <div className="flex items-center gap-2 mb-6 self-end w-full justify-end">
+              <div className="flex flex-col items-center justify-start shrink-0">
+                <div className="flex items-center gap-2 mb-4 self-end w-full justify-end">
                   {currentIndex !== undefined &&
                     totalCandidates !== undefined && (
                       <span className="text-xs text-[#AEAEB2] font-bold mr-1">
@@ -1154,47 +1232,93 @@ export default function JobCandidateProfile({
                     Next &raquo;
                   </button>
                 </div>
-                <div className="relative w-20 h-20 mb-2">
-                  <svg viewBox="0 0 36 36" className="w-20 h-20">
-                    <path
-                      className="text-gray-200"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3.5"
-                    />
-                    <path
-                      transform="rotate(-90 18 18)"
-                      style={{
-                        color: getScoreColor(
-                          typeof matchScore.score === "string"
-                            ? Number(matchScore.score.replace("%", ""))
-                            : Number(matchScore.score) || 0,
-                        ),
-                      }}
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3.5"
-                      strokeDasharray={`${typeof matchScore.score === "string" ? Number(matchScore.score.replace("%", "")) : Number(matchScore.score) || 0}, 100`}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-normal -mt-1">
-                      {matchScore.score || "0%"}
+
+                <div className="flex items-start gap-6 sm:gap-8">
+                  {/* Match Score Circle */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-20 h-20 mb-2">
+                      <svg viewBox="0 0 36 36" className="w-20 h-20">
+                        <path
+                          className="text-gray-200"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                        />
+                        <path
+                          transform="rotate(-90 18 18)"
+                          style={{
+                            color: getScoreColor(
+                              typeof matchScore.score === "string"
+                                ? Number(matchScore.score.replace("%", ""))
+                                : Number(matchScore.score) || 0,
+                            ),
+                          }}
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                          strokeDasharray={`${typeof matchScore.score === "string" ? Number(matchScore.score.replace("%", "")) : Number(matchScore.score) || 0}, 100`}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-xl font-normal -mt-1">
+                          {matchScore.score || "0%"}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-[#8E8E93] text-center uppercase tracking-wider font-normal mb-1">
+                      Match Score
+                    </span>
+                    <span className="text-xs text-gray-500 text-center font-medium mt-0.5">
+                      {matchedCount} match · {partialCount} partial · {missingCount} missing
+                    </span>
+                  </div>
+
+                  {/* Screening Score Circle */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative w-20 h-20 mb-2">
+                      <svg viewBox="0 0 36 36" className="w-20 h-20">
+                        <path
+                          className="text-gray-200"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                        />
+                        <path
+                          transform="rotate(-90 18 18)"
+                          style={{
+                            color: getScoreColor(screeningScoreVal ?? 0),
+                          }}
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                          strokeDasharray={`${screeningScoreVal ?? 0}, 100`}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-xl font-normal -mt-1">
+                          {screeningScoreVal !== null ? `${screeningScoreVal}%` : "--%"}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-[#8E8E93] text-center uppercase tracking-wider font-normal mb-1">
+                      Screening Score
+                    </span>
+                    <span className="text-xs text-gray-500 text-center font-medium mt-0.5">
+                      {screeningScoreVal !== null ? "Screening Round" : "Not Screened"}
                     </span>
                   </div>
                 </div>
-                <span className="text-[11px] text-[#8E8E93] text-center uppercase tracking-wider font-normal">
-                  Match Score
-                </span>
               </div>
             </div>
           </div>
 
           {/* Status tags row */}
           {statusTags.length > 0 && (
-            <div className="bg-[#F8FAFC] px-6 py-3 text-xs font-normal border-t border-[#E5E7EB] flex gap-2 flex-wrap">
+            <div className="bg-[#F8FAFC] px-6 py-3 text-xs font-normal border-t border-[#E5E7EB] flex gap-2 flex-wrap rounded-b-xl">
               {statusTags.map((tag: any, i: number) => (
                 <span
                   key={i}
@@ -1242,459 +1366,183 @@ export default function JobCandidateProfile({
             )}
         </div>
 
-        {/* ── Current Stage Pipeline Section (FIXED) ── */}
-        {/* 
-                    - Main card width stays exactly the same as other cards 
-                    - Pipeline becomes horizontally scrollable when there are many stages
-                    - Uses current_stage_details from API as requested
-                    - Each stage is fixed width (no shrinking) + clean connectors
-                */}
-        {cand.application_type === "inbound" && !applicationId ? (
-          <div className="bg-white rounded-xl p-8 shadow-sm flex items-center justify-between">
-            <div>
-              <h3 className="text-xs font-bold text-[#4B5563] mb-2 uppercase tracking-wider">
-                Candidate Status
-              </h3>
-              <p className="text-sm font-medium text-[#8E8E93]">
-                This candidate was found via Inbound Search and is not yet added to the pipeline.
-              </p>
-            </div>
-            <button
-              onClick={async () => {
-                if (!jobId || !cand.id) return;
-                try {
-                  const shortlistStage = stages?.find((s) => s.name.toLowerCase().includes("shortlist"));
-                  await candidateService.saveToPipeline(jobId, cand.id, shortlistStage?.id);
-                  showToast.success("Candidate shortlisted and added to pipeline");
-                  goBack();
-                } catch (err) {
-                  showToast.error("Failed to add candidate to pipeline");
-                }
-              }}
-              className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-md whitespace-nowrap"
-            >
-              Shortlist (Add to Pipeline)
-            </button>
+        {/* 2. PROFILE SUMMARY & MATCH REASONING CARD (CHANGE 4) */}
+        <div className="bg-white rounded-xl p-8 shadow-sm">
+          <h3 className="text-sm uppercase font-bold text-black tracking-wider mb-4">
+            PROFILE SUMMARY
+          </h3>
+          <p className="text-sm leading-relaxed text-[#4B5563] mb-6">
+            {profileSummary || "No summary available."}
+          </p>
+
+          <div className="h-[1px] bg-[#E5E7EB] w-full my-6" />
+
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-sm uppercase font-bold text-black tracking-wider">
+              MATCH REASONING
+            </h3>
+            {!isEditingMatchDesc && (
+              <button
+                onClick={() => setIsEditingMatchDesc(true)}
+                className="text-[#0F47F2] text-xs font-bold hover:underline min-h-[44px] flex items-center"
+              >
+                Edit
+              </button>
+            )}
           </div>
-        ) : (
-          <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-sm font-regular text-black mb-8">
-              CURRENT STAGE{" "}
-              <span className="text-[#0F47F2] ml-4 font-bold uppercase">
-                {currentStageName}
+
+          {!isEditingMatchDesc ? (
+            <p className="text-sm leading-relaxed text-[#4B5563]">
+              {matchScore.description || "No match reasoning available."}
+            </p>
+          ) : (
+            <div className="space-y-4">
+              <textarea
+                value={editedMatchDesc}
+                onChange={(e) => setEditedMatchDesc(e.target.value)}
+                rows={6}
+                className="w-full p-4 border border-[#E5E7EB] rounded-xl text-sm leading-relaxed text-[#4B5563] focus:outline-none focus:border-[#0F47F2] transition-colors resize-none"
+                placeholder="Enter match reasoning..."
+              />
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setEditedMatchDesc(matchScore.description || "");
+                    setIsEditingMatchDesc(false);
+                  }}
+                  className="px-4 py-2 text-xs font-bold text-[#8E8E93] hover:text-[#4B5563] transition-colors min-h-[44px]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveMatchDescription}
+                  disabled={isSavingMatchDesc}
+                  className="px-6 py-2 bg-[#0F47F2] text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 shadow-sm min-h-[44px]"
+                >
+                  {isSavingMatchDesc ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 3. SIDE-BY-SIDE MATCHING & NOT MATCHING CARDS (CHANGE 4) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Matching Card */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h3 className="text-sm uppercase font-bold text-black tracking-wider mb-4 flex items-center justify-between">
+              <span>Matching</span>
+              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                {matchedCount} skills
               </span>
             </h3>
-
-            <div className="w-full overflow-x-auto pb-8 scrollbar-hide">
-              <div className="w-full flex items-start gap-0">
-                {stages
-                  .filter((s) => s.slug !== "archives")
-                  .map((stage, i, filteredStages) => {
-                    const currentStageIndex = stages.findIndex(
-                      (s) => s.slug === currentStageSlug,
-                    );
-                    const isCompleted = i < currentStageIndex;
-                    const isActive = i === currentStageIndex;
-
-                    return (
-                      <div
-                        key={stage.id}
-                        className="flex-1 flex items-start gap-0 min-w-0"
-                      >
-                        {/* Connector line before stage */}
-                        {i > 0 && (
-                          <div className="flex-1 flex items-center pt-6 pr-0">
-                            <div
-                              className={`w-full h-[2px] transition-colors ${isCompleted ? "bg-[#009951]" : "bg-[#E5E7EB]"
-                                }`}
-                            />
-                          </div>
-                        )}
-
-                        {/* Stage circle and label */}
-                        <div className="flex flex-col items-center shrink-0 pt-0">
-                          {isCompleted ? (
-                            <div className="relative flex flex-col items-center">
-                              <div className="w-[52px] h-[52px] rounded-full bg-[#E8F7EE] flex items-center justify-center flex-shrink-0">
-                                <svg
-                                  width="40"
-                                  height="40"
-                                  viewBox="0 0 58 58"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="w-11 h-11"
-                                >
-                                  <path
-                                    d="M23.6391 9.40147C25.0017 8.24019 25.683 7.65957 26.3954 7.31908C28.0431 6.53154 29.9586 6.53154 31.6063 7.31908C32.3187 7.65957 32.9999 8.24019 34.3627 9.40147C34.905 9.86366 35.1762 10.0948 35.4659 10.2889C36.1298 10.7339 36.8753 11.0427 37.6593 11.1975C38.0015 11.265 38.3565 11.2934 39.067 11.35C40.8517 11.4924 41.7439 11.5637 42.4885 11.8266C44.2104 12.4348 45.5649 13.7893 46.1732 15.5112C46.4361 16.2557 46.5072 17.1481 46.6498 18.9328C46.7063 19.6431 46.7346 19.9983 46.8022 20.3403C46.9569 21.1244 47.2658 21.87 47.7109 22.5339C47.905 22.8235 48.136 23.0947 48.5983 23.637C49.7595 24.9997 50.3402 25.6812 50.6808 26.3934C51.4681 28.0411 51.4681 29.9565 50.6808 31.6042C50.3402 32.3166 49.7595 32.9979 48.5983 34.3606C48.136 34.9029 47.905 35.1741 47.7109 35.4638C47.2658 36.1277 46.9569 36.8732 46.8022 37.6574C46.7346 37.9994 46.7063 38.3547 46.6498 39.0649C46.5072 40.8496 46.4361 41.7419 46.1732 42.4864C45.5649 44.2083 44.2104 45.5628 42.4885 46.1711C41.7439 46.4341 40.8517 46.5051 39.067 46.6477C38.3565 46.7042 38.0015 46.7328 37.6593 46.8002C36.8753 46.9551 36.1298 47.2637 35.4659 47.7088C35.1762 47.9029 34.905 48.1339 34.3627 48.5962C32.9999 49.7575 32.3187 50.3382 31.6063 50.6787C29.9586 51.466 28.0431 51.466 26.3954 50.6787C25.683 50.3382 25.0017 49.7575 23.6391 48.5962C23.0967 48.1339 22.8255 47.9029 22.5359 47.7088C21.872 47.2637 21.1265 46.9551 20.3424 46.8002C20.0003 46.7328 19.6452 46.7042 18.9348 46.6477C17.1501 46.5051 16.2577 46.4341 15.5133 46.1711C13.7913 45.5628 12.4369 44.2083 11.8287 42.4864C11.5657 41.7419 11.4945 40.8496 11.3521 39.0649C11.2954 38.3547 11.2671 37.9994 11.1995 37.6574C11.0447 36.8732 10.7359 36.1277 10.2909 35.4638C10.0968 35.1741 9.86571 34.9029 9.40352 34.3606C8.24224 32.9979 7.66162 32.3166 7.32111 31.6042C6.53359 29.9565 6.53359 28.0411 7.32111 26.3934C7.66162 25.6809 8.24224 24.9997 9.40352 23.637C9.86571 23.0947 10.0968 22.8235 10.2909 22.5339C10.7359 21.87 11.0447 21.1244 11.1995 20.3403C11.2671 19.9983 11.2954 19.6431 11.3521 18.9328C11.4945 17.1481 11.5657 16.2557 11.8287 15.5112C12.4369 13.7893 13.7913 12.4348 15.5133 11.8266C16.2577 11.5637 17.1501 11.4924 18.9348 11.35C19.6452 11.2934 20.0003 11.265 20.3424 11.1975C21.1265 11.0427 21.872 10.7339 22.5359 10.2889C22.8255 10.0948 23.0967 9.86366 23.6391 9.40147Z"
-                                    fill="#14AE5C"
-                                  />
-                                  <path
-                                    d="M20.541 30.2083L25.3743 35.0416L37.4577 22.9583"
-                                    stroke="white"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                  />
-                                </svg>
-                              </div>
-                              <span
-                                className={`mt-3 text-sm font-normal text-center max-w-[80px] leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#009951]"
-                                  }`}
-                              >
-                                {stage.name}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="relative flex flex-col items-center">
-                              <div
-                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors flex-shrink-0 ${isActive
-                                  ? "bg-[#0F47F2] text-white"
-                                  : "bg-[#E5E7EB] text-[#8E8E93]"
-                                  }`}
-                              >
-                                {i + 1}
-                              </div>
-                              <span
-                                className={`mt-3 text-sm font-normal text-center max-w-[80px] leading-tight ${isActive ? "text-[#0F47F2]" : "text-[#8E8E93]"
-                                  }`}
-                              >
-                                {stage.name}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Connector line after stage */}
-                        {i < filteredStages.length - 1 && (
-                          <div className="flex-1 flex items-center pt-6 pl-0">
-                            <div
-                              className={`w-full h-[2px] transition-colors ${isCompleted ? "bg-[#009951]" : "bg-[#E5E7EB]"
-                                }`}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+            {matchedSkills.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {matchedSkills.map((item: any, i: number) => (
+                  <span
+                    key={i}
+                    title={item.evidence}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#EBFFEE] text-[#009951] border border-[#DEF7EC]"
+                  >
+                    <span>✓</span>
+                    <span>{item.badge}</span>
+                  </span>
+                ))}
               </div>
-            </div>
-
-            <div className="flex items-center gap-3 relative">
-              <button
-                onClick={() => setShowStageMenu(!showStageMenu)}
-                className="flex items-center gap-2 bg-[#0F47F2] text-white px-8 py-3 rounded-xl text-sm font-normal hover:bg-blue-700 transition shadow-md"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M2.66602 8H13.3327M13.3327 8L9.33268 4M13.3327 8L9.33268 12"
-                    stroke="white"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                Move to Stage
-              </button>
-
-              {showStageMenu && (
-                <div className="absolute top-14 left-0 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-2">
-                  {stages
-                    .filter((s) => s.slug !== "archives")
-                    .map((s) => (
-                      <button
-                        key={s.id}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm font-medium text-gray-700 block"
-                        onClick={() => {
-                          setShowStageMenu(false);
-                          openFeedbackModal({
-                            type: "move",
-                            applicationIds: [applicationId],
-                            targetStageId: s.id,
-                            targetStageName: s.name,
-                          });
-                        }}
-                      >
-                        {s.name}
-                      </button>
-                    ))}
-                </div>
-              )}
-
-              <button
-                onClick={() => setIsEventFormOpen(true)}
-                className="flex items-center gap-2 bg-white border border-[#0F47F2] text-[#0F47F2] px-5 py-2.5 rounded-lg text-sm font-normal hover:bg-[#F3F5F7] transition"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M6.66667 11.3332L6.66666 8.89798C6.66666 8.77014 6.5755 8.6665 6.46305 8.6665H6M9.08644 11.3332L9.98945 8.89928C10.0317 8.78547 9.94189 8.6665 9.81379 8.6665H8.66667" stroke="#0F47F2" stroke-linecap="round" />
-                  <path d="M1.66699 8.16216C1.66699 5.25729 1.66699 3.80486 2.50174 2.90243C3.33648 2 4.67999 2 7.36699 2H8.63366C11.3207 2 12.6642 2 13.4989 2.90243C14.3337 3.80486 14.3337 5.25729 14.3337 8.16216V8.5045C14.3337 11.4094 14.3337 12.8618 13.4989 13.7642C12.6642 14.6667 11.3207 14.6667 8.63366 14.6667H7.36699C4.67999 14.6667 3.33648 14.6667 2.50174 13.7642C1.66699 12.8618 1.66699 11.4094 1.66699 8.5045V8.16216Z" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M4 5.3335H12" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-
-                Schedule Interview
-              </button>
-              <button
-                onClick={() =>
-                  openFeedbackModal({
-                    type: "archive",
-                    applicationIds: [applicationId],
-                  })
-                }
-                className="flex items-center gap-2 bg-white border border-[#DC2626] text-[#DC2626] px-8 py-3 rounded-xl text-sm font-normal hover:bg-[#FEE9E7] transition"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M6.11328 2.66683C6.38783 1.89004 7.12868 1.3335 7.99948 1.3335C8.87028 1.3335 9.61115 1.89004 9.88568 2.66683"
-                    stroke="#FF383C"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M13.6674 4H2.33398"
-                    stroke="#FF383C"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M12.5545 5.6665L12.2478 10.2659C12.1298 12.0358 12.0708 12.9208 11.4942 13.4603C10.9175 13.9998 10.0306 13.9998 8.25669 13.9998H7.74116C5.96726 13.9998 5.08033 13.9998 4.50365 13.4603C3.92699 12.9208 3.86799 12.0358 3.74999 10.2659L3.44336 5.6665"
-                    stroke="#FF383C"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M6.33398 7.3335L6.66732 10.6668"
-                    stroke="#FF383C"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M9.66732 7.3335L9.33398 10.6668"
-                    stroke="#FF383C"
-                    stroke-linecap="round"
-                  />
-                </svg>
-                Move to Archive
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── Quick Fit Summary (Signals) ── */}
-        {(quickFitSummary.length > 0 || skillAssessmentItems.length > 0) && (
-          <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-sm uppercase font-normal text-black tracking-wider mb-6">
-              QUICK FIT SUMMARY
-            </h3>
-
-            {/* Badges Section */}
-            {quickFitSummary.length > 0 && (
-              <div className={skillAssessmentItems.length > 0 ? "mb-8 pb-8 border-b border-[#E5E7EB]" : ""}>
-                <div className="flex flex-wrap gap-3">
-                  {quickFitSummary.map((item: any, i: number) => {
-                    const colorMap: Record<
-                      string,
-                      { bg: string; border: string; text: string }
-                    > = {
-                      green: { bg: "#EBFFEE", border: "#DEF7EC", text: "#009951" },
-                      yellow: { bg: "#FFF7D6", border: "#FDE047", text: "#92400E" },
-                      red: { bg: "#FEE9E7", border: "#FECACA", text: "#DC2626" },
-                    };
-                    const c = colorMap[item.color] || colorMap.green;
-                    return (
-                      <div
-                        key={i}
-                        className="text-sm font-regular bg-[#F5F9FB] px-3 py-1.5 rounded-lg flex items-center gap-1.5 "
-                        style={{
-                          color: c.text,
-                        }}
-                        title={item.evidence}
-                      >
-                        {item.badge}
-
-                        {item.color === "green" && (
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 12 12"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M6 11.5C9.03756 11.5 11.5 9.03756 11.5 6C11.5 2.96243 9.03756 0.5 6 0.5C2.96243 0.5 0.5 2.96243 0.5 6C0.5 9.03756 2.96243 11.5 6 11.5Z"
-                              stroke="#009951"
-                            />
-                            <path
-                              d="M4.07324 6.275L5.17324 7.375L7.92324 4.625"
-                              stroke="#009951"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                          </svg>
-                        )}
-                        {item.color === "red" && (
-                          <svg
-                            width="11"
-                            height="11"
-                            viewBox="0 0 11 11"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g clip-path="url(#clip0_465_8838)">
-                              <path
-                                fill-rule="evenodd"
-                                clip-rule="evenodd"
-                                d="M5.5 10.3125C2.84212 10.3125 0.6875 8.15719 0.6875 5.5C0.6875 2.84281 2.84212 0.6875 5.5 0.6875C8.15788 0.6875 10.3125 2.84281 10.3125 5.5C10.3125 8.15719 8.15788 10.3125 5.5 10.3125ZM5.5 0C2.46228 0 0 2.46125 0 5.5C0 8.53875 2.46228 11 5.5 11C8.53772 11 11 8.53875 11 5.5C11 2.46125 8.53772 0 5.5 0ZM7.46521 3.53376C7.32977 3.3997 7.11081 3.3997 6.97537 3.53376L5.49794 5.01186L4.04181 3.55436C3.9074 3.4203 3.68947 3.4203 3.55575 3.55436C3.42134 3.68843 3.42134 3.90844 3.55575 4.0425L5.01188 5.49656L3.54545 6.96438C3.41035 7.09844 3.41035 7.31842 3.54545 7.45592C3.68088 7.58998 3.90018 7.58998 4.03562 7.45592L5.50206 5.98814L6.95819 7.44564C7.0926 7.5797 7.31053 7.5797 7.44459 7.44564C7.57899 7.31157 7.57899 7.09156 7.44459 6.9575L5.98812 5.50344L7.46521 4.0253C7.60031 3.8878 7.60031 3.67126 7.46521 3.53376Z"
-                                fill="#CF272D"
-                              />
-                            </g>
-                            <defs>
-                              <clipPath id="clip0_465_8838">
-                                <rect width="11" height="11" fill="white" />
-                              </clipPath>
-                            </defs>
-                          </svg>
-                        )}
-                        {item.color === "yellow" && (
-                          <svg
-                            width="11"
-                            height="11"
-                            viewBox="0 0 11 11"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              clip-rule="evenodd"
-                              d="M5.5 0.846153C2.92975 0.846153 0.846153 2.92975 0.846153 5.5C0.846153 8.07026 2.92975 10.1538 5.5 10.1538C8.07026 10.1538 10.1538 8.07026 10.1538 5.5C10.1538 2.92975 8.07026 0.846153 5.5 0.846153ZM0 5.5C0 2.46243 2.46243 0 5.5 0C8.53754 0 11 2.46243 11 5.5C11 8.53754 8.53754 11 5.5 11C2.46243 11 0 8.53754 0 5.5Z"
-                              fill="#CD9B05"
-                            />
-                            <path
-                              fill-rule="evenodd"
-                              clip-rule="evenodd"
-                              d="M5.5 3C5.77613 3 6 3.18315 6 3.40909V5.59088C6 5.81684 5.77613 6 5.5 6C5.22387 6 5 5.81684 5 5.59088V3.40909C5 3.18315 5.22387 3 5.5 3Z"
-                              fill="#CD9B05"
-                            />
-                            <path
-                              d="M6 7.49998C6 7.77614 5.77613 8 5.5 8C5.22387 8 5 7.77614 5 7.49998C5 7.22386 5.22387 7 5.5 7C5.77613 7 6 7.22386 6 7.49998Z"
-                              fill="#CD9B05"
-                            />
-                          </svg>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Progress Bars Section */}
-            {skillAssessmentItems.length > 0 && (
-              <div>
-                <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] tracking-wider mb-6">
-                  Skill Assessment
-                </h4>
-                <QuickFitSummaryProgress
-                  items={skillAssessmentItems}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Call Screening · Role Questions ── */}
-        {(isLoadingQuestionsAnalysis || (questionsAnalysisData?.questions && questionsAnalysisData.questions.length > 0)) && (
-          <CallScreeningRoleQuestions
-            isLoading={isLoadingQuestionsAnalysis}
-            stats={{
-              convinced: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "convinced").length || 0,
-              notConvinced: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "not_convinced").length || 0,
-              skipped: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "skipped").length || 0,
-              totalAnswered: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "convinced" || q.analysis?.status === "not_convinced").length || 0,
-              totalQuestions: questionsAnalysisData?.questions?.length || 0,
-            }}
-            questions={questionsAnalysisData?.questions?.map((q: any, i: number) => ({
-              id: i,
-              question: q.question_text,
-              lookFor: q.analysis?.ideal_answer_concept,
-              status: q.analysis?.status,
-              aiScore: q.analysis?.ai_score_percentage,
-              aiAnswerSummary: q.analysis?.ai_evaluation_summary,
-            })) || []}
-            followUpSuggestions={[]}
-          />
-        )}
-
-        {/* ── Additional AI Sections ── */}
-        {matchScore.description && (
-          <div className="bg-white rounded-xl p-8 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-sm  uppercase font-regular text-black tracking-wider">
-                MATCH REASONING
-              </h3>
-              {!isEditingMatchDesc && (
-                <button
-                  onClick={() => setIsEditingMatchDesc(true)}
-                  className="text-[#0F47F2] text-xs font-bold hover:underline"
-                >
-                  Edit
-                </button>
-              )}
-            </div>
-
-            {!isEditingMatchDesc ? (
-              <p className="text-sm leading-relaxed text-[#4B5563]">
-                {matchScore.description}
-              </p>
             ) : (
-              <div className="space-y-4">
-                <textarea
-                  value={editedMatchDesc}
-                  onChange={(e) => setEditedMatchDesc(e.target.value)}
-                  rows={6}
-                  className="w-full p-4 border border-[#E5E7EB] rounded-xl text-sm leading-relaxed text-[#4B5563] focus:outline-none focus:border-[#0F47F2] transition-colors resize-none"
-                  placeholder="Enter match reasoning..."
-                />
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={() => {
-                      setEditedMatchDesc(matchScore.description || "");
-                      setIsEditingMatchDesc(false);
-                    }}
-                    className="px-4 py-2 text-xs font-bold text-[#8E8E93] hover:text-[#4B5563] transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveMatchDescription}
-                    disabled={isSavingMatchDesc}
-                    className="px-6 py-2 bg-[#0F47F2] text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 shadow-sm"
-                  >
-                    {isSavingMatchDesc ? "Saving..." : "Save Changes"}
-                  </button>
-                </div>
-              </div>
+              <p className="text-xs text-gray-500">No matching skills identified.</p>
             )}
           </div>
-        )}
 
-        {/* ── Gaps & Risks ── */}
-        <div className="bg-white rounded-xl p-8 shadow-sm">
-          <h3 className="text-sm uppercase font-regular text-black tracking-wider mb-6">
-            GAPS / RISK
-          </h3>
-          <div className="flex flex-col gap-3">
+          {/* Not Matching Card */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <div className="mb-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm uppercase font-bold text-black tracking-wider">
+                  Not matching
+                </h3>
+                <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+                  {partialCount + missingCount} skills
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-400 font-medium mt-1">
+                ✕ missing · ◐ partial
+              </p>
+            </div>
+            {partialSkills.length > 0 || missingSkills.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {partialSkills.map((item: any, i: number) => (
+                  <span
+                    key={`partial-${i}`}
+                    title={item.evidence}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#FFF7D6] text-[#92400E] border border-[#FDE047]"
+                  >
+                    <span>◐</span>
+                    <span>{item.badge}</span>
+                  </span>
+                ))}
+                {missingSkills.map((item: any, i: number) => (
+                  <span
+                    key={`missing-${i}`}
+                    title={item.evidence}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#FEE9E7] text-[#DC2626] border border-[#FECACA]"
+                  >
+                    <span>✕</span>
+                    <span>{item.badge}</span>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500">No gap or missing skills identified.</p>
+            )}
+          </div>
+        </div>
+
+        {/* 4. CALL SCREENING QUESTIONS & ANALYSIS */}
+        <CallScreeningRoleQuestions
+          isLoading={isLoadingQuestionsAnalysis}
+          stats={{
+            convinced: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "convinced").length || 0,
+            notConvinced: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "not_convinced").length || 0,
+            skipped: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "skipped").length || 0,
+            totalAnswered: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "convinced" || q.analysis?.status === "not_convinced").length || 0,
+            totalQuestions: questionsAnalysisData?.questions?.length || 0,
+          }}
+          questions={questionsAnalysisData?.questions?.map((q: any, i: number) => ({
+            id: i,
+            question: q.question_text,
+            lookFor: q.analysis?.ideal_answer_concept,
+            status: q.analysis?.status,
+            aiScore: q.analysis?.ai_score_percentage,
+            aiAnswerSummary: q.analysis?.ai_evaluation_summary,
+          })) || []}
+          followUpSuggestions={[]}
+        />
+
+        {/* 5. GAPS / RISK ACCORDION (CHANGE 4) */}
+        <details className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group">
+          <summary className="flex items-center justify-between p-6 cursor-pointer select-none font-semibold text-sm text-black uppercase tracking-wider list-none min-h-[44px]">
+            <div className="flex items-center gap-2">
+              <span>GAPS / RISK</span>
+              <span className="text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full lowercase">
+                {(jobScoreObj.gaps_risks || []).length} flagged
+              </span>
+            </div>
+            <svg
+              className="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div className="px-6 pb-6 pt-2 border-t border-gray-100 flex flex-col gap-3">
             {(jobScoreObj.gaps_risks || []).length > 0 ? (
               jobScoreObj.gaps_risks.map((gap: string, i: number) => (
                 <div
                   key={i}
-                  className="bg-[#F3F5F7] p-4 rounded-lg text-sm text-[#4B5563]"
+                  className="bg-[#F3F5F7] p-4 rounded-lg text-sm text-[#4B5563] leading-relaxed"
                 >
                   {gap}
                 </div>
@@ -1705,17 +1553,7 @@ export default function JobCandidateProfile({
               </p>
             )}
           </div>
-        </div>
-
-        {/* ── Profile Summary ── */}
-        <div className="bg-white rounded-xl p-8 shadow-sm">
-          <h3 className="text-sm uppercase font-regular text-black tracking-wider mb-6">
-            PROFILE SUMMARY
-          </h3>
-          <p className="text-sm leading-relaxed text-[#4B5563]">
-            {profileSummary || "No summary available."}
-          </p>
-        </div>
+        </details>
 
         {aiSummary && (
           <div className="bg-white rounded-xl p-8 shadow-sm">
@@ -1763,149 +1601,49 @@ export default function JobCandidateProfile({
         )}
       </div>
 
-      <div className="w-full xl:w-[360px] flex flex-col gap-6 shrink-0">
+      <div className="w-full xl:w-[380px] flex flex-col gap-6 shrink-0">
         <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB]">
-          {/* Sidebar tabs */}
-          <div className="flex border-b border-[#E5E7EB]">
-            {(["info", "activity", "call", "notes"] as const).map((id) => {
-              const icons: Record<string, React.ReactNode> = {
-                info: (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M7.50065 9.16683C8.42113 9.16683 9.16732 8.42064 9.16732 7.50016C9.16732 6.57969 8.42113 5.8335 7.50065 5.8335C6.58018 5.8335 5.83398 6.57969 5.83398 7.50016C5.83398 8.42064 6.58018 9.16683 7.50065 9.16683Z"
-                      stroke="#0F47F2"
-                    />
-                    <path
-                      d="M10.8327 12.5002C10.8327 13.4207 10.8327 14.1668 7.49935 14.1668C4.16602 14.1668 4.16602 13.4207 4.16602 12.5002C4.16602 11.5797 5.6584 10.8335 7.49935 10.8335C9.34027 10.8335 10.8327 11.5797 10.8327 12.5002Z"
-                      stroke="#0F47F2"
-                    />
-                    <path
-                      d="M1.66602 10.0002C1.66602 6.85746 1.66602 5.28612 2.64232 4.3098C3.61864 3.3335 5.18998 3.3335 8.33268 3.3335H11.666C14.8087 3.3335 16.3801 3.3335 17.3563 4.3098C18.3327 5.28612 18.3327 6.85746 18.3327 10.0002C18.3327 13.1428 18.3327 14.7142 17.3563 15.6905C16.3801 16.6668 14.8087 16.6668 11.666 16.6668H8.33268C5.18998 16.6668 3.61864 16.6668 2.64232 15.6905C1.66602 14.7142 1.66602 13.1428 1.66602 10.0002Z"
-                      stroke="#0F47F2"
-                    />
-                    <path
-                      d="M15.8333 10H12.5"
-                      stroke="#0F47F2"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="M15.8327 7.5H11.666"
-                      stroke="#0F47F2"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="M15.834 12.5H13.334"
-                      stroke="#0F47F2"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                ),
-                activity: (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M18.3327 8.74984V9.99984C18.3327 13.9282 18.3327 15.8924 17.1123 17.1128C15.8919 18.3332 13.9277 18.3332 9.99935 18.3332C6.07097 18.3332 4.10679 18.3332 2.88641 17.1128C1.66602 15.8924 1.66602 13.9282 1.66602 9.99984C1.66602 6.07146 1.66602 4.10728 2.88641 2.8869C4.10679 1.6665 6.07097 1.6665 9.99935 1.6665H11.2493"
-                      stroke="#4B5563"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="M15.834 6.6665C17.2147 6.6665 18.334 5.54722 18.334 4.1665C18.334 2.78579 17.2147 1.6665 15.834 1.6665C14.4533 1.6665 13.334 2.78579 13.334 4.1665C13.334 5.54722 14.4533 6.6665 15.834 6.6665Z"
-                      stroke="#4B5563"
-                    />
-                    <path
-                      d="M5.83398 11.6668L7.74473 9.75608C8.07017 9.43066 8.59782 9.43066 8.92323 9.75608L10.2447 11.0776C10.5702 11.403 11.0978 11.403 11.4232 11.0776L14.1673 8.3335M14.1673 8.3335V10.4168M14.1673 8.3335H12.084"
-                      stroke="#4B5563"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                ),
-                call: (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M11.666 1.6665C11.666 1.6665 13.4993 1.83317 15.8327 4.1665C18.166 6.49984 18.3327 8.33317 18.3327 8.33317"
-                      stroke="#4B5563"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="M11.8398 4.61328C11.8398 4.61328 12.6648 4.84899 13.9023 6.08642C15.1397 7.32386 15.3754 8.14882 15.3754 8.14882"
-                      stroke="#4B5563"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="M8.36532 4.4303L8.90615 5.39941C9.39424 6.27398 9.19832 7.42126 8.42957 8.19C8.42957 8.19 7.49722 9.1225 9.18774 10.8131C10.8777 12.5031 11.8108 11.5712 11.8108 11.5712C12.5796 10.8025 13.7268 10.6066 14.6014 11.0947L15.5705 11.6355C16.8912 12.3725 17.0471 14.2245 15.8863 15.3853C15.1888 16.0828 14.3343 16.6256 13.3897 16.6613C11.7997 16.7217 9.09924 16.3192 6.3904 13.6104C3.68159 10.9016 3.27916 8.20118 3.33944 6.61107C3.37525 5.6665 3.91799 4.81202 4.61549 4.11452C5.77629 2.95373 7.62829 3.1097 8.36532 4.4303Z"
-                      stroke="#4B5563"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                ),
-                notes: (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M15.9078 10.5806L16.2833 9.2051C16.7214 7.59957 16.9405 6.79679 16.7755 6.10207C16.6453 5.55353 16.3522 5.05523 15.9335 4.67019C15.4031 4.18255 14.5854 3.96745 12.95 3.53724C11.3145 3.10703 10.4968 2.89193 9.78916 3.05392C9.23037 3.18182 8.72279 3.46951 8.33059 3.88061C7.90531 4.32639 7.68353 4.97897 7.3535 6.16514C7.29808 6.36434 7.2396 6.5786 7.17659 6.80944L6.80115 8.18501C6.36293 9.79056 6.14382 10.5933 6.30883 11.288C6.43911 11.8366 6.73216 12.3349 7.15091 12.72C7.68126 13.2076 8.49898 13.4227 10.1344 13.8529C11.6085 14.2407 12.4182 14.4537 13.0819 14.3733C13.1546 14.3645 13.2254 14.3522 13.2953 14.3362C13.854 14.2083 14.3616 13.9206 14.7538 13.5095C15.2505 12.9889 15.4696 12.1861 15.9078 10.5806Z"
-                      stroke="#4B5563"
-                    />
-                    <path
-                      d="M13.5765 14.7085C13.4236 15.1761 13.1546 15.5991 12.7929 15.9373C12.2564 16.4389 11.429 16.6601 9.77449 17.1027C8.11987 17.5452 7.29257 17.7664 6.57663 17.5998C6.01133 17.4683 5.49781 17.1723 5.10101 16.7495C4.59847 16.2139 4.3768 15.3881 3.93345 13.7366L3.55365 12.3217C3.1103 10.6701 2.88863 9.84437 3.05556 9.12972C3.18737 8.56548 3.48385 8.0529 3.90751 7.65683C4.44407 7.15522 5.27136 6.93395 6.92596 6.49142C7.23899 6.40769 7.5224 6.33189 7.78106 6.26514"
-                      stroke="#4B5563"
-                    />
-                    <path
-                      d="M10.3223 9.50586L13.5766 10.3194"
-                      stroke="#4B5563"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="M9.50391 11.1372H11.1311"
-                      stroke="#4B5563"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                ),
-              };
-              return (
-                <button
-                  key={id}
-                  onClick={() => setActiveTab(id)}
-                  className={`flex-1 py-4 text-sm font-medium capitalize transition-colors flex items-center justify-center gap-2 ${activeTab === id
-                    ? "text-[#0F47F2] border-b-2 border-[#0F47F2] bg-[#F3F5F7]/30"
-                    : "text-[#8E8E93] hover:text-[#4B5563]"
+          {/* Right Panel Tabs Header */}
+          <div className="grid grid-cols-4 border-b border-[#E5E7EB] bg-white rounded-t-xl">
+            {(
+              [
+                { id: "profile", label: "Profile", count: null },
+                { id: "call", label: "Call", count: callsCount },
+                { id: "notes", label: "Notes", count: notesCount },
+                { id: "pipeline", label: "Pipeline", count: pipelineCount },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-3.5 text-xs sm:text-sm font-medium transition-colors border-b-[3px] text-center min-h-[44px] flex items-center justify-center gap-1 ${
+                  activeTab === tab.id
+                    ? "border-[#0F47F2] text-[#0F47F2] font-semibold"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <span>{tab.label}</span>
+                {tab.count !== null && tab.count !== undefined && (
+                  <span
+                    className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                      activeTab === tab.id
+                        ? "bg-blue-100 text-[#0F47F2]"
+                        : "bg-gray-100 text-gray-600"
                     }`}
-                >
-                  {icons[id]}
-                  <span className="sr-only">{id}</span>
-                </button>
-              );
-            })}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
 
-          <div className="p-6 flex flex-col gap-8 text-sm">
-            {activeTab === "info" && (
-              <>
-                {/* ── Contact Info ── */}
-                <div className=" overflow-y-auto max-h-[500px] hide-scrollbar">
+          <div className="p-6 flex flex-col gap-6 text-sm">
+            {/* ── TAB 1: PROFILE ── */}
+            {activeTab === "profile" && (
+              <div className="space-y-6">
+                {/* Contact Info (Omit duplicate Name and Location from Contact Info) */}
+                <div>
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] tracking-wider">
                       CONTACT INFO
@@ -1913,34 +1651,13 @@ export default function JobCandidateProfile({
                     {!isEditingContact && (
                       <button
                         onClick={startEditingContact}
-                        className="text-[10px] uppercase font-bold text-[#0F47F2] hover:underline"
+                        className="text-[10px] uppercase font-bold text-[#0F47F2] hover:underline min-h-[44px] flex items-center"
                       >
                         Edit
                       </button>
                     )}
                   </div>
                   <div className="flex flex-col gap-4">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-[#AEAEB2] font-medium">Name</span>
-                      {isEditingContact ? (
-                        <input
-                          type="text"
-                          value={editContactData.name}
-                          onChange={(e) => setEditContactData(prev => ({ ...prev, name: e.target.value }))}
-                          className="px-2 py-1 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-[#0F47F2] focus:border-[#0F47F2] outline-none text-black font-semibold text-right w-2/3 bg-white"
-                        />
-                      ) : (
-                        <span className="font-bold text-black">{localFullName || "--"}</span>
-                      )}
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-[#AEAEB2] font-medium">
-                        Location
-                      </span>
-                      <span className="font-medium text-black">
-                        {location || "--"}
-                      </span>
-                    </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-[#AEAEB2] font-medium">D.O.B</span>
                       {isEditingContact ? (
@@ -2069,19 +1786,14 @@ export default function JobCandidateProfile({
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                             >
-                              <g clip-path="url(#clip0_465_8585)">
+                              <g clipPath="url(#clip0_465_8585)">
                                 <path
-                                  fill-rule="evenodd"
-                                  clip-rule="evenodd"
+                                  fillRule="evenodd"
+                                  clipRule="evenodd"
                                   d="M10 0C15.523 0 20 4.58993 20 10.2529C20 14.7819 17.138 18.624 13.167 19.981C12.66 20.082 12.48 19.7618 12.48 19.4888C12.48 19.1508 12.492 18.0468 12.492 16.6748C12.492 15.7188 12.172 15.0949 11.813 14.7769C14.04 14.5229 16.38 13.6558 16.38 9.71777C16.38 8.59777 15.992 7.68382 15.35 6.96582C15.454 6.70682 15.797 5.66395 15.252 4.25195C15.252 4.25195 14.414 3.97722 12.505 5.30322C11.706 5.07622 10.85 4.96201 10 4.95801C9.15 4.96201 8.295 5.07622 7.497 5.30322C5.586 3.97722 4.746 4.25195 4.746 4.25195C4.203 5.66395 4.546 6.70682 4.649 6.96582C4.01 7.68382 3.619 8.59777 3.619 9.71777C3.619 13.6458 5.954 14.5262 8.175 14.7852C7.889 15.0412 7.63 15.4928 7.54 16.1558C6.97 16.4178 5.522 16.8712 4.63 15.3042C4.63 15.3042 4.101 14.3191 3.097 14.2471C3.097 14.2471 2.122 14.2341 3.029 14.8701C3.029 14.8701 3.684 15.1851 4.139 16.3701C4.139 16.3701 4.726 18.2001 7.508 17.5801C7.513 18.4371 7.522 19.2448 7.522 19.4888C7.522 19.7598 7.338 20.0769 6.839 19.9819C2.865 18.6269 0 14.7829 0 10.2529C0 4.58993 4.478 0 10 0Z"
                                   fill="#FF8D28"
                                 />
                               </g>
-                              <defs>
-                                <clipPath id="clip0_465_8585">
-                                  <rect width="20" height="20" fill="white" />
-                                </clipPath>
-                              </defs>
                             </svg>
                           </a>
                         )}
@@ -2099,17 +1811,12 @@ export default function JobCandidateProfile({
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                             >
-                              <g clip-path="url(#clip0_465_8596)">
+                              <g clipPath="url(#clip0_465_8596)">
                                 <path
                                   d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM6.65 12.77C6.54 13.07 6.25 13.26 5.95 13.26C5.86 13.26 5.78 13.25 5.69 13.21C4.88 12.91 4.2 12.32 3.77 11.55C2.77 9.75 3.39 7.4 5.14 6.31L7.48 4.86C8.34 4.33 9.35 4.17 10.31 4.42C11.27 4.67 12.08 5.3 12.57 6.18C13.57 7.98 12.95 10.33 11.2 11.42L10.94 11.61C10.6 11.85 10.13 11.77 9.89 11.44C9.65 11.1 9.73 10.63 10.06 10.39L10.37 10.17C11.49 9.47 11.87 8.02 11.26 6.91C10.97 6.39 10.5 6.02 9.94 5.87C9.38 5.72 8.79 5.81 8.28 6.13L5.92 7.59C4.84 8.26 4.46 9.71 5.07 10.83C5.32 11.28 5.72 11.63 6.2 11.81C6.59 11.95 6.79 12.38 6.65 12.77ZM14.92 13.65L12.58 15.1C11.99 15.47 11.33 15.65 10.66 15.65C10.36 15.65 10.05 15.61 9.75 15.53C8.79 15.28 7.98 14.65 7.5 13.77C6.5 11.97 7.12 9.62 8.87 8.53L9.13 8.34C9.47 8.1 9.94 8.18 10.18 8.51C10.42 8.85 10.34 9.32 10.01 9.56L9.7 9.78C8.58 10.48 8.2 11.93 8.81 13.04C9.1 13.56 9.57 13.93 10.13 14.08C10.69 14.23 11.28 14.14 11.79 13.82L14.13 12.37C15.21 11.7 15.59 10.25 14.98 9.13C14.73 8.68 14.33 8.33 13.85 8.15C13.46 8.01 13.26 7.58 13.41 7.19C13.55 6.8 13.99 6.6 14.37 6.75C15.18 7.05 15.86 7.64 16.29 8.41C17.28 10.21 16.67 12.56 14.92 13.65Z"
                                   fill="#4B5563"
                                 />
                               </g>
-                              <defs>
-                                <clipPath id="clip0_465_8596">
-                                  <rect width="20" height="20" fill="white" />
-                                </clipPath>
-                              </defs>
                             </svg>
                           </a>
                         )}
@@ -2122,10 +1829,8 @@ export default function JobCandidateProfile({
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              x="0px"
-                              y="0px"
-                              width="100"
-                              height="100"
+                              width="20"
+                              height="20"
                               viewBox="0 0 50 50"
                             >
                               <path d="M 11 4 C 7.134 4 4 7.134 4 11 L 4 39 C 4 42.866 7.134 46 11 46 L 39 46 C 42.866 46 46 42.866 46 39 L 46 11 C 46 7.134 42.866 4 39 4 L 11 4 z M 13.085938 13 L 21.023438 13 L 26.660156 21.009766 L 33.5 13 L 36 13 L 27.789062 22.613281 L 37.914062 37 L 29.978516 37 L 23.4375 27.707031 L 15.5 37 L 13 37 L 22.308594 26.103516 L 13.085938 13 z M 16.914062 15 L 31.021484 35 L 34.085938 35 L 19.978516 15 L 16.914062 15 z"></path>
@@ -2146,13 +1851,6 @@ export default function JobCandidateProfile({
                         >
                           <Share2 className="w-4 h-4 text-[#0F47F2] cursor-pointer" />
                         </button>
-                        {!premiumData.linkedin_url &&
-                          !cand.linkedin_url &&
-                          !premiumData.github_url &&
-                          !premiumData.portfolio_url &&
-                          !premiumData.twitter_url && (
-                            <span className="text-[#AEAEB2] text-xs">--</span>
-                          )}
                       </div>
                     </div>
                     {isEditingContact && (
@@ -2160,7 +1858,7 @@ export default function JobCandidateProfile({
                         <button
                           onClick={handleSaveContact}
                           disabled={isSavingContact}
-                          className="px-3 py-1.5 text-xs font-semibold bg-[#0F47F2] hover:bg-[#0F47F2]/90 text-white rounded-md transition-colors flex items-center gap-1 shadow-sm disabled:opacity-50"
+                          className="px-3 py-1.5 text-xs font-semibold bg-[#0F47F2] hover:bg-[#0F47F2]/90 text-white rounded-md transition-colors flex items-center gap-1 shadow-sm disabled:opacity-50 min-h-[36px]"
                         >
                           {isSavingContact && (
                             <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></span>
@@ -2170,7 +1868,7 @@ export default function JobCandidateProfile({
                         <button
                           onClick={() => setIsEditingContact(false)}
                           disabled={isSavingContact}
-                          className="px-3 py-1.5 text-xs font-semibold border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors"
+                          className="px-3 py-1.5 text-xs font-semibold border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors min-h-[36px]"
                         >
                           Cancel
                         </button>
@@ -2181,45 +1879,21 @@ export default function JobCandidateProfile({
 
                 <div className="h-[1px] bg-[#E5E7EB] w-full" />
 
-                {/* ── Résumé ── */}
+                {/* Resume Section */}
                 {(cand.resume_url || premiumData.resume_url) && (
                   <div>
-                    <div className="flex justify-between items-center">
-                      <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
-                        RESUME
-                      </h4>
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M8.66602 7.3335L14.666 1.3335M14.666 1.3335H11.1035M14.666 1.3335V4.896"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                        <path
-                          d="M14.6673 8.00016C14.6673 11.1428 14.6673 12.7142 13.691 13.6905C12.7147 14.6668 11.1433 14.6668 8.00065 14.6668C4.85795 14.6668 3.2866 14.6668 2.3103 13.6905C1.33398 12.7142 1.33398 11.1428 1.33398 8.00016C1.33398 4.85746 1.33398 3.28612 2.3103 2.30981C3.2866 1.3335 4.85795 1.3335 8.00065 1.3335"
-                          stroke="#4B5563"
-                          stroke-linecap="round"
-                        />
-                      </svg>
-                    </div>
-
+                    <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
+                      RESUME
+                    </h4>
                     <a
                       href={cand.resume_url || premiumData.resume_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="border border-[#E5E7EB] rounded-lg p-3 bg-white flex items-center justify-between group cursor-pointer hover:border-[#0F47F2] transition"
+                      className="border border-[#E5E7EB] rounded-lg p-3 bg-white flex items-center justify-between group cursor-pointer hover:border-[#0F47F2] transition min-h-[44px]"
                     >
                       <div className="flex items-center gap-3">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          x="0px"
-                          y="0px"
                           width="16"
                           height="16"
                           viewBox="0 0 48 48"
@@ -2249,14 +1923,14 @@ export default function JobCandidateProfile({
                         <path
                           d="M2 10C2 11.8856 2 12.8284 2.58579 13.4142C3.17157 14 4.11438 14 6 14H10C11.8856 14 12.8284 14 13.4142 13.4142C14 12.8284 14 11.8856 14 10"
                           stroke="#0F47F2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         />
                         <path
                           d="M8.00065 2V10.6667M8.00065 10.6667L10.6673 7.75M8.00065 10.6667L5.33398 7.75"
                           stroke="#0F47F2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         />
                       </svg>
                     </a>
@@ -2265,79 +1939,81 @@ export default function JobCandidateProfile({
 
                 <div className="h-[1px] bg-[#E5E7EB] w-full" />
 
-                {/* ── Experience ── */}
+                {/* Experience Section */}
                 <div>
-                  <h4 className="text-sm uppercase font-normal text-[#AEAEB2] mb-4 tracking-wider">
+                  <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
                     EXPERIENCE
                   </h4>
-                  <div className="flex flex-col gap-6">
-                    {experience.map((exp: any, i: number) => {
-                      const startYear = exp.start_date
-                        ? new Date(exp.start_date).getFullYear()
-                        : "";
-                      const endYear = exp.is_current
-                        ? "Present"
-                        : exp.end_date
-                          ? new Date(exp.end_date).getFullYear()
+                  <div className="flex flex-col gap-4">
+                    {experience.length > 0 ? (
+                      experience.map((exp: any, i: number) => {
+                        const startYear = exp.start_date
+                          ? new Date(exp.start_date).getFullYear()
                           : "";
-                      const duration =
-                        exp.start_date && (exp.end_date || exp.is_current)
-                          ? Math.max(
-                            1,
-                            Math.round(
-                              ((exp.is_current
-                                ? new Date()
-                                : new Date(exp.end_date)
-                              ).getTime() -
-                                new Date(exp.start_date).getTime()) /
-                              (1000 * 60 * 60 * 24 * 365),
-                            ),
-                          )
-                          : null;
+                        const endYear = exp.is_current
+                          ? "Present"
+                          : exp.end_date
+                            ? new Date(exp.end_date).getFullYear()
+                            : "";
+                        const duration =
+                          exp.start_date && (exp.end_date || exp.is_current)
+                            ? Math.max(
+                              1,
+                              Math.round(
+                                ((exp.is_current
+                                  ? new Date()
+                                  : new Date(exp.end_date)
+                                ).getTime() -
+                                  new Date(exp.start_date).getTime()) /
+                                (1000 * 60 * 60 * 24 * 365),
+                              ),
+                            )
+                            : null;
 
-                      return (
-                        <div key={i} className="mb-6 last:mb-0">
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="font-normal text-sm text-black">
-                              {exp.job_title}
-                            </span>
-                            <span className="text-sm text-[#AEAEB2] font-medium">
-                              {startYear} — {endYear}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <div className="text-sm text-[#0F47F2] font-regular">
-                              {exp.company}
+                        return (
+                          <div key={i} className="mb-2 last:mb-0">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="font-semibold text-sm text-black">
+                                {exp.job_title}
+                              </span>
+                              <span className="text-xs text-[#AEAEB2] font-medium">
+                                {startYear} — {endYear}
+                              </span>
                             </div>
-                            {duration && (
-                              <div className="text-[11px] text-[#AEAEB2] font-medium">
-                                {duration} Year{duration > 1 ? "s" : ""}
+                            <div className="flex justify-between items-center text-xs">
+                              <div className="text-[#0F47F2] font-medium">
+                                {exp.company}
                               </div>
-                            )}
+                              {duration && (
+                                <div className="text-[11px] text-[#AEAEB2] font-medium">
+                                  {duration} Year{duration > 1 ? "s" : ""}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    ) : (
+                      <p className="text-xs text-[#AEAEB2]">No experience details provided.</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="h-[1px] bg-[#E5E7EB] w-full" />
 
-                {/* ── Education ── */}
+                {/* Education Section */}
                 <div>
                   <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
                     EDUCATION
                   </h4>
-                  <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-4">
                     {education.length > 0 ? (
                       education.map((edu: any, i: number) => (
-                        <div key={i} className="mb-6 last:mb-0">
-                          <div className="font-normal text-sm text-black mb-1">
-                            {edu.degree ||
-                              edu.degree_name ||
-                              edu.field_of_study}
+                        <div key={i} className="mb-2 last:mb-0">
+                          <div className="font-semibold text-sm text-black mb-1">
+                            {edu.degree || edu.degree_name || edu.field_of_study}
                           </div>
-                          <div className="text-sm font-normal text-[#0F47F2]">
+                          <div className="text-xs font-medium text-[#0F47F2]">
                             {edu.school_name || edu.institution}{" "}
                             {edu.end_date
                               ? `| ${new Date(edu.end_date).getFullYear()}`
@@ -2352,63 +2028,232 @@ export default function JobCandidateProfile({
                     )}
                   </div>
                 </div>
-              </>
-            )}
 
-            {activeTab === "activity" && (
-              <div className=" overflow-y-auto max-h-[500px] hide-scrollbar">
-                <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-6 tracking-wider">
-                  PIPELINE HISTORY
-                </h4>
-                {loadingActivities ? (
-                  <div className="space-y-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="animate-pulse flex gap-3">
-                        <div className="w-2 h-2 bg-gray-200 rounded-full mt-1.5 flex-shrink-0" />
-                        <div className="space-y-1 flex-1">
-                          <div className="h-3 bg-gray-200 rounded w-3/4" />
-                          <div className="h-2.5 bg-gray-200 rounded w-1/2" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : activities.length === 0 ? (
-                  <p className="text-sm text-[#AEAEB2] text-center py-8">
-                    No activity found
-                  </p>
-                ) : (
-                  <div className="flex flex-col gap-8 relative before:absolute before:left-[3px] before:top-2 before:bottom-2 before:w-[2px] before:bg-[#E5E7EB]">
-                    {activities.map((act, i) => (
-                      <div key={i} className="relative pl-6">
-                        <div
-                          className={`w-2 h-2 rounded-full absolute left-0 top-1.5 z-10 
-                                                    ${act.type === "stage_move" ? "bg-[#009951]" : "bg-[#0F47F2]"}`}
-                        />
-                        <p className="font-bold text-black text-[13px] mb-1">
-                          {act.description}
-                        </p>
-                        <div className="flex justify-between items-center text-[10px] text-[#8E8E93]">
-                          <span>{act.actor}</span>
-                          <span>
-                            {act.date} · {act.time}
+                {/* Skills Section */}
+                {skills.length > 0 && (
+                  <>
+                    <div className="h-[1px] bg-[#E5E7EB] w-full" />
+                    <div>
+                      <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
+                        SKILLS
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {skills.map((skill: string, i: number) => (
+                          <span
+                            key={i}
+                            className="bg-[#F3F5F7] text-[#4B5563] text-xs px-2.5 py-1 rounded-md font-medium"
+                          >
+                            {skill}
                           </span>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  </>
                 )}
               </div>
             )}
 
+            {/* ── TAB 2: CALL ── */}
+            {activeTab === "call" && (
+              <div className="flex flex-col gap-6">
+                {/* 1. CALL SUMMARY */}
+                <div>
+                  <h4 className="text-xs font-bold text-[#8E8E93] uppercase tracking-wider mb-2">
+                    CALL SUMMARY
+                  </h4>
+                  {callHistory.some((c) => c.recording?.summary) ? (
+                    <div className="space-y-3">
+                      {callHistory
+                        .filter((c) => c.recording?.summary)
+                        .map((call) => {
+                          const { main: summaryBullets } = parseSummaryBullets(
+                            call.recording?.summary || null
+                          );
+                          return (
+                            <div
+                              key={call.id}
+                              className="bg-white border border-[#E5E7EB] rounded-xl p-4 shadow-xs"
+                            >
+                              <p className="text-[11px] text-[#8E8E93] mb-2 font-medium">
+                                {formatDate(call.created_at)} · {formatTime(call.created_at)}
+                              </p>
+                              <ul className="space-y-1.5">
+                                {summaryBullets.map((bullet, i) => (
+                                  <li
+                                    key={i}
+                                    className="text-xs text-[#4B5563] flex items-start gap-2"
+                                  >
+                                    <span className="text-[#0F47F2] font-bold">•</span>
+                                    <span>{bullet}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  ) : (
+                    <div className="border border-dashed border-[#E5E7EB] rounded-xl p-4 bg-white text-xs text-[#8E8E93]">
+                      No call yet. The summary appears here after the first call.
+                    </div>
+                  )}
+                </div>
+
+                <div className="h-[1px] bg-[#E5E7EB] w-full" />
+
+                {/* 2. RECORDINGS */}
+                <div>
+                  <h4 className="text-xs font-bold text-[#8E8E93] uppercase tracking-wider mb-2">
+                    RECORDINGS
+                  </h4>
+                  {callHistory.some((c) => c.recording?.recording_url || (c as any).recording_url) ? (
+                    <div className="space-y-3">
+                      {callHistory
+                        .filter((c) => c.recording?.recording_url || (c as any).recording_url)
+                        .map((call) => {
+                          const recUrl = call.recording?.recording_url || (call as any).recording_url;
+                          const timing = getCallTimingDetails(call);
+                          return (
+                            <div
+                              key={call.id}
+                              className="bg-white border border-[#E5E7EB] rounded-xl p-3 shadow-xs"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-[#4B5563]">
+                                    Call Recording ({formatDate(call.created_at)})
+                                  </span>
+                                  {timing.startTime && (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#4B5563] bg-[#F3F4F6] px-2 py-0.5 rounded-md border border-[#E5E7EB]">
+                                      <svg className="w-3 h-3 text-[#6B7280]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 11 0 0118 0z" />
+                                      </svg>
+                                      {timing.endTime ? `${timing.startTime} – ${timing.endTime}` : timing.startTime}
+                                    </span>
+                                  )}
+                                </div>
+                                {timing.duration && (
+                                  <span className="text-[11px] font-semibold text-[#0F47F2] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                                    Duration: {timing.duration}
+                                  </span>
+                                )}
+                              </div>
+                              <audio
+                                controls
+                                src={recUrl}
+                                className="w-full h-8"
+                              />
+                            </div>
+                          );
+                        })}
+                    </div>
+                  ) : (
+                    <div className="border border-dashed border-[#E5E7EB] rounded-xl p-4 bg-white text-xs text-[#8E8E93]">
+                      No calls made
+                    </div>
+                  )}
+                </div>
+
+                <div className="h-[1px] bg-[#E5E7EB] w-full" />
+
+                {/* 3. TRANSCRIPTION */}
+                <div>
+                  <h4 className="text-xs font-bold text-[#8E8E93] uppercase tracking-wider mb-2">
+                    TRANSCRIPTION
+                  </h4>
+                  {callHistory.some((c) => c.recording?.transcript || (c as any).transcript || c.recording?.transcript_time_log || c.recording?.timestamps) ? (
+                    <div className="space-y-3">
+                      {callHistory
+                        .filter((c) => c.recording?.transcript || (c as any).transcript || c.recording?.transcript_time_log || c.recording?.timestamps)
+                        .map((call) => {
+                          const rec = call.recording || (call as any);
+                          const timeLog = rec?.transcript_time_log || rec?.timestamps || (call as any).transcript_time_log || (call as any).timestamps;
+                          const transcriptText = rec?.transcript || (call as any).transcript;
+                          const timing = getCallTimingDetails(call);
+
+                          return (
+                            <div
+                              key={call.id}
+                              className="bg-white border border-[#E5E7EB] rounded-xl p-4 shadow-xs"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs font-semibold text-[#4B5563]">
+                                    Transcript ({formatDate(call.created_at)})
+                                  </p>
+                                  {timing.startTime && (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#4B5563] bg-[#F3F4F6] px-2 py-0.5 rounded-md border border-[#E5E7EB]">
+                                      <svg className="w-3 h-3 text-[#6B7280]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 11 0 0118 0z" />
+                                      </svg>
+                                      {timing.endTime ? `${timing.startTime} – ${timing.endTime}` : timing.startTime}
+                                    </span>
+                                  )}
+                                </div>
+                                {timing.duration && (
+                                  <span className="text-[11px] font-semibold text-[#0F47F2] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                                    Duration: {timing.duration}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="bg-[#F8FAFC] rounded-lg p-3 text-xs text-[#4B5563] leading-relaxed max-h-48 overflow-y-auto">
+                                {Array.isArray(timeLog) && timeLog.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {timeLog.map((item: any, idx: number) => {
+                                      let timeStr = item.timestamp || item.time || item.time_log || (typeof item === "string" ? null : "");
+                                      if (timeStr && typeof timeStr === "string" && timeStr.includes("T")) {
+                                        timeStr = formatTime(timeStr);
+                                      }
+                                      const textStr = typeof item === "string" ? item : item.text || item.content || item.statement || "";
+                                      const speaker = item.speaker || item.role;
+                                      return (
+                                        <div key={idx} className="flex items-start gap-2">
+                                          {timeStr && (
+                                            <span className="shrink-0 px-1.5 py-0.5 rounded bg-blue-50 text-[#0F47F2] font-mono text-[10px] font-bold border border-blue-100 mt-0.5">
+                                              {timeStr}
+                                            </span>
+                                          )}
+                                          <span className="flex-1 text-xs text-[#4B5563] leading-relaxed">
+                                            {speaker && <strong className="text-gray-700 font-semibold mr-1">{speaker}:</strong>}
+                                            {textStr}
+                                          </span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                ) : typeof timeLog === "string" && timeLog.trim() ? (
+                                  <div className="whitespace-pre-wrap font-sans text-xs text-[#4B5563] leading-relaxed">
+                                    {timeLog}
+                                  </div>
+                                ) : (
+                                  <div className="whitespace-pre-wrap font-sans text-xs text-[#4B5563] leading-relaxed">
+                                    {transcriptText || "No transcript available."}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  ) : (
+                    <div className="border border-dashed border-[#E5E7EB] rounded-xl p-4 bg-white text-xs text-[#8E8E93]">
+                      No transcript yet.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── TAB 3: NOTES ── */}
             {activeTab === "notes" && (
               <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] tracking-wider">
-                    NOTES
+                    CANDIDATE NOTES
                   </h4>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-[#AEAEB2] font-normal uppercase">Community</span>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label className="relative inline-flex items-center cursor-pointer min-h-[36px]">
                       <input
                         type="checkbox"
                         checked={notesView === "community"}
@@ -2423,7 +2268,7 @@ export default function JobCandidateProfile({
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-4 max-h-[400px] mb-4 pr-2 hide-scrollbar">
+                <div className="flex-1 overflow-y-auto space-y-4 max-h-[400px] mb-4 pr-1 hide-scrollbar">
                   {isLoadingNotes ? (
                     <div className="flex justify-center items-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0F47F2]"></div>
@@ -2434,10 +2279,10 @@ export default function JobCandidateProfile({
                         key={note.noteId}
                         className="bg-[#F8FAFC] rounded-xl p-4 border border-[#E5E7EB]"
                       >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-[#EEF1FF] rounded-full flex items-center justify-center text-[#0F47F2]">
-                              <User className="w-4 h-4" />
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 bg-[#EEF1FF] rounded-full flex items-center justify-center text-[#0F47F2]">
+                              <User className="w-3.5 h-3.5" />
                             </div>
                             <div>
                               <p className="text-xs font-bold text-black">
@@ -2462,14 +2307,18 @@ export default function JobCandidateProfile({
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-[#AEAEB2] text-center py-8">
-                      No {notesView === "my" ? "team" : "community"} notes found.
-                    </p>
+                    <div className="text-center py-10 bg-gray-50 rounded-xl border border-gray-200">
+                      <p className="text-sm font-medium text-gray-500">
+                        No notes yet.
+                      </p>
+                    </div>
                   )}
                 </div>
 
-                <div className="relative">
+                {/* Note input form */}
+                <div className="space-y-3">
                   <textarea
+                    aria-label="Candidate note"
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     onKeyPress={(e) => {
@@ -2478,376 +2327,139 @@ export default function JobCandidateProfile({
                         handleAddNote();
                       }
                     }}
-                    className="w-full h-24 border border-[#E5E7EB] rounded-xl p-4 pr-12 text-sm focus:outline-none focus:border-[#0F47F2] placeholder-[#AEAEB2] resize-none"
-                    placeholder={`Type your ${notesView === "my" ? "team" : "community"} note...`}
+                    className="w-full h-24 border border-[#E5E7EB] rounded-xl p-3.5 text-sm focus:outline-none focus:border-[#0F47F2] placeholder-[#AEAEB2] resize-none"
+                    placeholder={`Write a ${notesView === "my" ? "team" : "community"} note...`}
                   />
-                  <button
-                    onClick={handleAddNote}
-                    disabled={!newComment.trim() || isLoadingNotes}
-                    className="absolute bottom-3 right-3 p-2 bg-[#0F47F2] text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-                  >
-                    <Send className="w-4 h-4" />
-                  </button>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleAddNote}
+                      disabled={!newComment.trim() || isLoadingNotes}
+                      className="px-5 py-2.5 bg-[#0F47F2] text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 min-h-[44px] flex items-center gap-2"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      Save note
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {activeTab === "call" && (
-              <div className="flex flex-col gap-6 overflow-y-auto max-h-[500px] hide-scrollbar pr-2 -mr-2">
-                {loadingCalls ? (
-                  <div className="space-y-4 mt-4">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="animate-pulse">
-                        <div className="h-3 bg-gray-200 rounded w-1/3 mb-3" />
-                        <div className="border border-gray-100 rounded-xl p-5 space-y-3">
-                          <div className="flex gap-3">
-                            <div className="w-10 h-10 bg-gray-200 rounded-full" />
-                            <div className="space-y-2 flex-1">
-                              <div className="h-3 bg-gray-200 rounded w-2/3" />
-                              <div className="h-2.5 bg-gray-200 rounded w-1/3" />
+            {/* ── TAB 4: PIPELINE ── */}
+            {activeTab === "pipeline" && (
+              <div className="space-y-6">
+                {/* Pipeline Stages Stepper */}
+                <div>
+                  <h4 className="text-xs font-bold text-black uppercase tracking-wider mb-4">
+                    PIPELINE STAGES
+                  </h4>
+                  <div className="flex flex-col gap-0 relative">
+                    {stages
+                      .filter((s) => s.slug !== "archives")
+                      .map((stage, i, filteredStages) => {
+                        const currentStageIndex = stages.findIndex(
+                          (s) => s.slug === currentStageSlug,
+                        );
+                        const isCompleted = i < currentStageIndex;
+                        const isActive = i === currentStageIndex;
+
+                        return (
+                          <div key={stage.id} className="flex items-start gap-3.5 relative pb-6 last:pb-0">
+                            {/* Vertical Connector Line behind step icons */}
+                            {i < filteredStages.length - 1 && (
+                              <div
+                                className={`absolute left-[13px] top-7 bottom-0 w-[2px] ${
+                                  isCompleted ? "bg-[#10B981]" : "bg-gray-200"
+                                }`}
+                              />
+                            )}
+
+                            {/* Circle icon */}
+                            {isCompleted ? (
+                              <div className="w-7 h-7 rounded-full bg-[#10B981] text-white flex items-center justify-center font-bold text-xs shrink-0 z-10 shadow-xs">
+                                ✓
+                              </div>
+                            ) : isActive ? (
+                              <div className="w-7 h-7 rounded-full border-2 border-[#0F47F2] bg-white flex items-center justify-center text-xs font-bold text-[#0F47F2] shrink-0 z-10 shadow-xs">
+                                {i + 1}
+                              </div>
+                            ) : (
+                              <div className="w-7 h-7 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-xs font-medium shrink-0 z-10">
+                                {i + 1}
+                              </div>
+                            )}
+
+                            {/* Stage Label */}
+                            <div className="pt-0.5">
+                              <p
+                                className={`text-sm ${
+                                  isActive
+                                    ? "font-bold text-[#0F47F2]"
+                                    : isCompleted
+                                      ? "font-semibold text-[#10B981]"
+                                      : "font-normal text-gray-500"
+                                }`}
+                              >
+                                {stage.name}
+                              </p>
+                              {isActive && (
+                                <span className="inline-block mt-1 text-[10px] font-semibold bg-blue-50 text-[#0F47F2] px-2.5 py-0.5 rounded-full border border-blue-100">
+                                  Current stage
+                                </span>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
+                        );
+                      })}
                   </div>
-                ) : callHistory.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Phone className="w-8 h-8 text-[#AEAEB2] mx-auto mb-3" />
-                    <p className="text-sm text-[#AEAEB2]">
-                      No call history found
+                </div>
+
+                <div className="h-[1px] bg-[#E5E7EB] w-full" />
+
+                {/* Pipeline History */}
+                <div>
+                  <h4 className="text-xs font-bold text-black uppercase tracking-wider mb-4">
+                    PIPELINE HISTORY
+                  </h4>
+                  {loadingActivities ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="animate-pulse flex gap-2">
+                          <div className="w-2 h-2 bg-gray-200 rounded-full mt-1 flex-shrink-0" />
+                          <div className="h-3 bg-gray-200 rounded w-3/4" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : activities.length === 0 ? (
+                    <p className="text-xs text-[#AEAEB2] text-center py-4">
+                      No pipeline activity found.
                     </p>
-                  </div>
-                ) : (
-                  callHistory.map((call) => {
-                    const hasInteraction =
-                      !!call.note ||
-                      (call.tags && call.tags.length > 0) ||
-                      (call.skills_data && Object.keys(call.skills_data).length > 0) ||
-                      (call.checklist_data && Object.values(call.checklist_data).some(v => v === true));
-
-                    const isAnswered =
-                      call.call_status === "answered" ||
-                      call.call_status === "completed" ||
-                      (call.call_mode === "manual" && (call.duration_seconds > 0 || call.recording?.transcript)) ||
-                      hasInteraction;
-
-                    const isExpanded = expandedCallId === call.id;
-                    const { main: summaryBullets, nextSteps } =
-                      parseSummaryBullets(call.recording?.summary || null);
-
-                    return (
-                      <div key={call.id} className="flex flex-col gap-4 mt-2">
-                        {/* Date Header */}
-                        <div className="flex justify-between items-center text-[#8E8E93] text-xs font-bold tracking-wider">
-                          <span>{getRelativeDay(call.created_at)}</span>
-                          <span className="font-normal">
-                            {formatDate(call.created_at)}
-                          </span>
-                        </div>
-
-                        {isAnswered ? (
-                          /* ── Answered / Interaction Call Card ── */
-                          <div className="border border-[#E5E7EB] rounded-xl p-5">
-                            <div className="flex justify-between items-start mb-5">
-                              <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-[#F3F5F7] flex items-center justify-center shrink-0">
-                                  <Phone className="w-4 h-4 text-[#8E8E93]" />
-                                </div>
-                                <div>
-                                  <p className="text-[13px] font-bold text-[#4B5563]">
-                                    {call.call_status === "answered" || call.call_status === "completed" || call.duration_seconds > 0
-                                      ? (call.call_type === "outgoing" ? "Outgoing Call" : "Incoming Call")
-                                      : "Recruiter Interaction"}{" "}
-                                    on {formatTime(call.created_at)}
-                                  </p>
-                                  <p className="text-[11px] text-[#AEAEB2] mt-0.5">
-                                    {call.duration_seconds > 0
-                                      ? formatDuration(call.duration_seconds)
-                                      : (call.call_mode === "manual" ? "Manual Mode" : "Platform Mode")}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Call Score Badge */}
-                              {call.role_questions_data && (
-                                <div className="flex flex-col items-end">
-                                  {(() => {
-                                    const questions = Array.isArray(call.role_questions_data)
-                                      ? call.role_questions_data
-                                      : Object.values(call.role_questions_data);
-                                    const scored = questions.filter((q: any) => q.status === 'convinced' || q.status === 'not_convinced');
-                                    if (scored.length === 0) return null;
-                                    const convinced = scored.filter((q: any) => q.status === 'convinced').length;
-                                    const percentage = Math.round((convinced / scored.length) * 100);
-                                    return (
-                                      <div className="flex items-center gap-2 bg-slate-50 px-2 py-1.5 rounded-lg border border-slate-100">
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Score</span>
-                                        <div className={`text-sm font-black ${percentage >= 70 ? 'text-green-600' : percentage >= 40 ? 'text-orange-600' : 'text-red-600'}`}>
-                                          {percentage}%
-                                        </div>
-                                      </div>
-                                    );
-                                  })()}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* ── Interaction Data (Notes, Tags, Skills) ── */}
-                            {hasInteraction && (
-                              <div className="mb-6 space-y-4">
-                                {call.note && (
-                                  <div>
-                                    <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-2 tracking-widest">Note</h5>
-                                    <p className="text-xs text-[#4B5563] bg-slate-50/50 p-3 rounded-lg border border-slate-100 leading-relaxed italic">
-                                      "{call.note}"
-                                    </p>
-                                  </div>
-                                )}
-
-                                {call.tags && call.tags.length > 0 && (
-                                  <div>
-                                    <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-2 tracking-widest">Tags</h5>
-                                    <div className="flex flex-wrap gap-2">
-                                      {call.tags.map(tag => (
-                                        <span key={tag} className="px-2 py-1 bg-blue-50 text-[#0F47F2] text-[10px] font-bold rounded-md border border-blue-100">
-                                          {tag}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-
-                                {((call.skills_data && Object.keys(call.skills_data).length > 0) || (call.checklist_data && Object.values(call.checklist_data).some(v => v === true))) && (
-                                  <div>
-                                    <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-2 tracking-widest">Skills & Checklist</h5>
-                                    <div className="flex flex-wrap gap-2">
-                                      {call.skills_data && Object.entries(call.skills_data).map(([skill, val]) => val && (
-                                        <span key={skill} className="px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded-md border border-green-100 flex items-center gap-1">
-                                          <Check className="w-3 h-3" /> {skill}
-                                        </span>
-                                      ))}
-                                      {call.checklist_data && Object.entries(call.checklist_data).map(([key, val]) => val && (
-                                        <span key={key} className="px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-md border border-indigo-100 flex items-center gap-1">
-                                          <Check className="w-3 h-3" /> {key.replace(/([A-Z])/g, ' $1').trim()}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Role Questions Evaluation Summary */}
-                            {call.role_questions_data && (
-                              <div className="mb-6 bg-slate-50/50 border border-slate-100 rounded-xl p-4">
-                                <h5 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-3 tracking-widest">
-                                  Role Questions Evaluation
-                                </h5>
-                                <div className="flex flex-wrap items-center gap-2">
-                                  {(() => {
-                                    const questions = Array.isArray(call.role_questions_data)
-                                      ? call.role_questions_data
-                                      : Object.values(call.role_questions_data);
-                                    const counts = { convinced: 0, not_convinced: 0, skipped: 0 };
-                                    questions.forEach((q: any) => {
-                                      if (q.status === "convinced") counts.convinced++;
-                                      else if (q.status === "not_convinced") counts.not_convinced++;
-                                      else if (q.status === "skipped") counts.skipped++;
-                                    });
-                                    const total = counts.convinced + counts.not_convinced + counts.skipped;
-                                    if (total === 0) return <span className="text-xs text-slate-400 italic">No evaluations recorded</span>;
-
-                                    return (
-                                      <>
-                                        {counts.convinced > 0 && (
-                                          <div className="flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-[11px] font-bold border border-green-100">
-                                            <CheckCircle2 className="w-3.5 h-3.5" />
-                                            {counts.convinced} Convinced
-                                          </div>
-                                        )}
-                                        {counts.not_convinced > 0 && (
-                                          <div className="flex items-center gap-1.5 bg-red-50 text-red-700 px-3 py-1 rounded-full text-[11px] font-bold border border-red-100">
-                                            <XCircle className="w-3.5 h-3.5" />
-                                            {counts.not_convinced} Not Convinced
-                                          </div>
-                                        )}
-                                        {counts.skipped > 0 && (
-                                          <div className="flex items-center gap-1.5 bg-gray-50 text-gray-600 px-3 py-1 rounded-full text-[11px] font-bold border border-gray-100">
-                                            <FastForward className="w-3.5 h-3.5" />
-                                            {counts.skipped} Skipped
-                                          </div>
-                                        )}
-                                      </>
-                                    );
-                                  })()}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Audio Player */}
-                            {call.recording?.recording_url && (
-                              <div className="bg-[#EEF1FF] rounded-lg p-3 flex items-center gap-3 mb-6">
-                                <Play className="w-4 h-4 text-[#0F47F2] fill-[#0F47F2] cursor-pointer" />
-                                <audio
-                                  controls
-                                  src={call.recording.recording_url}
-                                  className="flex-1 h-8"
-                                  style={{ maxWidth: "100%" }}
-                                />
-                              </div>
-                            )}
-
-                            {/* Call Summary */}
-                            {call.recording?.summary &&
-                              call.recording.status === "completed" && (
-                                <div className="mb-6">
-                                  <h4 className="flex items-center gap-2 text-[13px] font-bold text-[#4B5563] mb-3">
-                                    Call Summary
-                                    <div className="bg-[#0F47F2] rounded-full p-[3px]">
-                                      <Sparkles className="w-2.5 h-2.5 text-white" />
-                                    </div>
-                                  </h4>
-                                  <ul className="flex flex-col gap-3">
-                                    {summaryBullets.map((bullet, i) => (
-                                      <li
-                                        key={i}
-                                        className="flex items-start gap-2.5"
-                                      >
-                                        <div className="w-1.5 h-1.5 rounded-full bg-[#0F47F2] mt-1.5 shrink-0" />
-                                        <span className="text-[13px] text-[#8E8E93] leading-relaxed">
-                                          {bullet}
-                                        </span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-
-                            {/* Next Steps */}
-                            {nextSteps.length > 0 && (
-                              <div className="mb-4">
-                                <h4 className="text-[13px] font-bold text-[#4B5563] mb-3">
-                                  Next Steps
-                                </h4>
-                                <ul className="flex flex-col gap-3">
-                                  {nextSteps.map((step, i) => (
-                                    <li
-                                      key={i}
-                                      className="flex items-start gap-2.5"
-                                    >
-                                      <div className="w-1.5 h-1.5 rounded-full bg-[#0F47F2] mt-1.5 shrink-0" />
-                                      <span className="text-[13px] text-[#8E8E93] leading-relaxed">
-                                        {step}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-
-                            {/* Recording Event Observability Badge (Start/Stop Timestamps) */}
-                            {call.call_uuid && recordingEvents[call.call_uuid] && (() => {
-                              const recEvt = recordingEvents[call.call_uuid];
-                              const startTimeStr = recEvt.started_at
-                                ? new Date(recEvt.started_at).toLocaleString([], { dateStyle: "short", timeStyle: "medium" })
-                                : null;
-                              const endTimeStr = recEvt.ended_at
-                                ? new Date(recEvt.ended_at).toLocaleString([], { dateStyle: "short", timeStyle: "medium" })
-                                : null;
-                              return (
-                                <div className="mt-4 p-3 bg-red-50/80 border border-red-200/80 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
-                                  <div className="flex items-center gap-2 font-bold text-red-700">
-                                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                                    <span>Recording Event Logged</span>
-                                  </div>
-                                  <div className="flex items-center gap-4 text-[11px] font-medium text-slate-700">
-                                    {startTimeStr && (
-                                      <span>
-                                        <strong className="text-slate-900">Start Time:</strong> {startTimeStr}
-                                      </span>
-                                    )}
-                                    {endTimeStr ? (
-                                      <span>
-                                        <strong className="text-slate-900">End Time:</strong> {endTimeStr}
-                                      </span>
-                                    ) : (
-                                      <span className="text-amber-700 font-bold">Ended: In Progress</span>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })()}
-
-                            {/* Transcript Toggle */}
-                            {call.recording?.transcript && (
-                              <div className="mt-4 border-t border-[#E5E7EB] pt-4">
-                                <button
-                                  onClick={() =>
-                                    setShowTranscript(
-                                      showTranscript === call.id
-                                        ? null
-                                        : call.id,
-                                    )
-                                  }
-                                  className="flex items-center gap-2 text-xs font-bold text-[#0F47F2] hover:underline"
-                                >
-                                  <FileText className="w-3.5 h-3.5" />
-                                  {showTranscript === call.id
-                                    ? "Hide Transcript"
-                                    : "View Transcript"}
-                                  <ChevronDown
-                                    className={`w-3.5 h-3.5 transition-transform ${showTranscript === call.id
-                                      ? "rotate-180"
-                                      : ""
-                                      }`}
-                                  />
-                                </button>
-                                {showTranscript === call.id && (
-                                  <div className="mt-3 bg-[#F8FAFC] rounded-lg p-4 text-[12px] text-[#4B5563] leading-relaxed max-h-60 overflow-y-auto whitespace-pre-wrap">
-                                    {call.recording.transcript}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Processing indicator */}
-                            {call.recording &&
-                              call.recording.status === "processing" && (
-                                <div className="flex items-center gap-2 text-xs text-[#F59E0B] mt-4">
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#F59E0B]" />
-                                  Processing transcript...
-                                </div>
-                              )}
+                  ) : (
+                    <div className="flex flex-col gap-4 relative before:absolute before:left-[3px] before:top-2 before:bottom-2 before:w-[2px] before:bg-[#E5E7EB]">
+                      {activities.map((act, i) => (
+                        <div key={i} className="relative pl-5">
+                          <div
+                            className={`w-2 h-2 rounded-full absolute left-0 top-1.5 z-10 ${
+                              act.type === "stage_move" ? "bg-[#10B981]" : "bg-[#0F47F2]"
+                            }`}
+                          />
+                          <p className="font-bold text-black text-xs mb-0.5">
+                            {act.description}
+                          </p>
+                          <div className="flex justify-between items-center text-[11px] text-[#8E8E93]">
+                            <span>{act.actor}</span>
+                            <span>
+                              {act.date} · {act.time}
+                            </span>
                           </div>
-                        ) : null}
-                      </div>
-                    );
-                  })
-                )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </div>
-
-        {/* Skills Card */}
-        {skills.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] p-6">
-            <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] mb-4 tracking-wider">
-              SKILLS
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {skills.map((skill: string, i: number) => (
-                <span
-                  key={i}
-                  className="bg-[#F3F5F7] text-[#4B5563] text-[11px] px-2.5 py-1 rounded-md font-normal hover:bg-gray-200 transition cursor-default"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
         {/* FEEDBACK MODAL (Archive / Move) */}
         {showFeedbackModal && pendingAction && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">

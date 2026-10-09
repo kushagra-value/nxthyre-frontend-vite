@@ -70,6 +70,8 @@ export interface CallRecording {
   recording_duration: number;
   transcript_source: "plivo" | "gemini" | null;
   transcript: string | null;
+  transcript_time_log?: string | any[] | null;
+  timestamps?: string | any[] | null;
   summary: string | null;
   status: "pending" | "processing" | "completed" | "failed";
 }
@@ -187,11 +189,15 @@ export interface LiveTranscript {
 export interface RecordingEvent {
   id: number;
   call_uuid: string;
-  recruiter_uid: string;
-  candidate_id: string;
-  job_id: string;
-  started_at: string;
-  ended_at: string | null;
+  recruiter_uid?: string;
+  candidate_id?: string;
+  job_id?: string;
+  started_at?: string;
+  ended_at?: string | null;
+  start_time?: string;
+  end_time?: string | null;
+  duration_seconds?: number;
+  call_duration?: number | string;
 }
 
 export interface LogRecordingStartArgs {
