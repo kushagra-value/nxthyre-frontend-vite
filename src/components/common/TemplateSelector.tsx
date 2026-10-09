@@ -390,18 +390,18 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   const hasPhone = candidate.premium_data_availability.phone_number;
   const displayEmail =
     detailedCandidate?.candidate?.premium_data_unlocked &&
-    detailedCandidate?.candidate?.premium_data_availability?.email &&
-    detailedCandidate?.candidate?.premium_data?.email
+      detailedCandidate?.candidate?.premium_data_availability?.email &&
+      detailedCandidate?.candidate?.premium_data?.email
       ? detailedCandidate.candidate.premium_data.email
       : `${(detailedCandidate?.candidate?.full_name || "")
-          .slice(0, 3)
-          .toLowerCase()}***********@gmail.com`;
+        .slice(0, 3)
+        .toLowerCase()}***********@gmail.com`;
 
   // Updated display logic for phone
   const displayPhone =
     detailedCandidate?.candidate?.premium_data_unlocked &&
-    detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
-    detailedCandidate?.candidate?.premium_data?.phone
+      detailedCandidate?.candidate?.premium_data_availability?.phone_number &&
+      detailedCandidate?.candidate?.premium_data?.phone
       ? detailedCandidate.candidate.premium_data.phone
       : `95********89`;
 
@@ -464,11 +464,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               <span className="text-sm text-gray-400">{displayEmail}</span>
             </div>
             <button
-              className={`flex space-x-2 ml-auto p-1 ${
-                hasEmail
+              className={`flex space-x-2 ml-auto p-1 ${hasEmail
                   ? "text-gray-400 hover:text-gray-600"
                   : "text-gray-300 cursor-not-allowed"
-              }`}
+                }`}
               onClick={() => hasEmail && handleCopy(displayEmail)}
               disabled={!hasEmail}
             >
@@ -486,11 +485,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             </div>
             <div>
               <button
-                className={`p-1 ${
-                  hasPhone
+                className={`p-1 ${hasPhone
                     ? "text-gray-400 hover:text-gray-600"
                     : "text-gray-300 cursor-not-allowed"
-                }`}
+                  }`}
                 onClick={() => hasPhone && handleWhatsApp(displayPhone)}
                 disabled={!hasPhone}
               >
@@ -499,11 +497,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </div>
               </button>
               <button
-                className={`p-1 ${
-                  hasPhone
+                className={`p-1 ${hasPhone
                     ? "text-gray-400 hover:text-gray-600"
                     : "text-gray-300 cursor-not-allowed"
-                }`}
+                  }`}
                 onClick={() => hasPhone && handleCopy(displayPhone)}
                 disabled={!hasPhone}
               >
@@ -525,9 +522,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               key={selectedTemplate}
               value={selectedTemplate}
               onChange={(e) => handleTemplateSelect(e.target.value)}
-              className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white ${
-                selectedTemplate === "" ? "text-gray-400" : "text-gray-800"
-              }`}
+              className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white ${selectedTemplate === "" ? "text-gray-400" : "text-gray-800"
+                }`}
               disabled={loading}
             >
               <option value="" className="text-gray-400">
@@ -612,11 +608,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           <div className="flex space-x-3">
             <button
               onClick={() => setSendViaEmail(!sendViaEmail)}
-              className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                sendViaEmail
+              className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaEmail
                   ? "bg-blue-100 text-blue-800"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+                }`}
               disabled={loading}
             >
               Email{" "}
@@ -632,11 +627,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             </button>
             <button
               onClick={() => setSendViaWhatsApp(!sendViaWhatsApp)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                sendViaWhatsApp
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaWhatsApp
                   ? "bg-blue-100 text-blue-800"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+                }`}
               disabled={loading}
             >
               WhatsApp{" "}
@@ -652,11 +646,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             </button>
             <button
               onClick={() => setSendViaPhone(!sendViaPhone)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                sendViaPhone
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaPhone
                   ? "bg-blue-100 text-blue-800"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+                }`}
               disabled={loading}
             >
               Phone{" "}
@@ -1076,9 +1069,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       {showCreateTemplate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
           <div
-            className={`bg-white w-[40%] h-full transform transition-transform overflow-y-auto duration-300 ease-out p-10 space-y-4 ${
-              showCreateTemplate ? "translate-x-0" : "translate-x-full"
-            }`}
+            className={`bg-white w-[40%] h-full transform transition-transform overflow-y-auto duration-300 ease-out p-10 space-y-4 ${showCreateTemplate ? "translate-x-0" : "translate-x-full"
+              }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -1167,11 +1159,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               <div className="flex space-x-3">
                 <button
                   onClick={() => setSendViaEmail(!sendViaEmail)}
-                  className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    sendViaEmail
+                  className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaEmail
                       ? "bg-blue-100 text-blue-800"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                    }`}
                   disabled={loading}
                 >
                   Email{" "}
@@ -1187,11 +1178,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </button>
                 <button
                   onClick={() => setSendViaWhatsApp(!sendViaWhatsApp)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    sendViaWhatsApp
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaWhatsApp
                       ? "bg-blue-100 text-blue-800"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                    }`}
                   disabled={loading}
                 >
                   WhatsApp{" "}
@@ -1207,11 +1197,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </button>
                 <button
                   onClick={() => setSendViaPhone(!sendViaPhone)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    sendViaPhone
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendViaPhone
                       ? "bg-blue-100 text-blue-800"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                    }`}
                   disabled={loading}
                 >
                   Phone{" "}
@@ -1628,9 +1617,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       {showTestEmail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
           <div
-            className={`bg-white w-[40%] h-full transform transition-transform duration-300 ease-out p-10 space-y-4 ${
-              showTestEmail ? "translate-x-0" : "translate-x-full"
-            }`}
+            className={`bg-white w-[40%] h-full transform transition-transform duration-300 ease-out p-10 space-y-4 ${showTestEmail ? "translate-x-0" : "translate-x-full"
+              }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -1680,11 +1668,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               <div className="flex space-x-3">
                 <button
                   onClick={() => setSendTestViaEmail(!sendTestViaEmail)}
-                  className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    sendTestViaEmail
+                  className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendTestViaEmail
                       ? "bg-blue-100 text-blue-800"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                    }`}
                   disabled={loading}
                 >
                   Email{" "}
@@ -1700,11 +1687,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </button>
                 <button
                   onClick={() => setSendTestViaWhatsApp(!sendTestViaWhatsApp)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    sendTestViaWhatsApp
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendTestViaWhatsApp
                       ? "bg-blue-100 text-blue-800"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                    }`}
                   disabled={loading}
                 >
                   WhatsApp{" "}
@@ -1720,11 +1706,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 </button>
                 <button
                   onClick={() => setSendTestViaPhone(!sendTestViaPhone)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    sendTestViaPhone
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${sendTestViaPhone
                       ? "bg-blue-100 text-blue-800"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                    }`}
                   disabled={loading}
                 >
                   Phone{" "}

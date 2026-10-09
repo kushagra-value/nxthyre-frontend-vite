@@ -8,10 +8,38 @@ interface JobPocFilterProps {
   onPocSelect: (pocEmail: string | undefined) => void;
 }
 
-interface PocOption {
+export interface PocOption {
   poc_email: string;
   name: string;
+  total_jobs?: number;
+  active_jobs?: number;
+  inactive_jobs?: number;
 }
+
+/**
+ * Normalizes raw email handles (e.g. "anushtha.shrivastava" or "anushtha.shrivastava@ascendion.com")
+ * into properly capitalized, human-readable names (e.g. "Anushtha Shrivastava").
+ */
+export const normalizePocName = (name?: string, email?: string): string => {
+  let raw = (name && name.trim()) || (email && email.trim()) || "";
+  if (!raw) return "Unknown";
+
+  // If raw contains an email address, extract handle before '@'
+  if (raw.includes("@")) {
+    raw = raw.split("@")[0];
+  }
+
+  // Replace dots, underscores, and hyphens with spaces
+  const cleaned = raw.replace(/[._-]+/g, " ").trim();
+
+  if (!cleaned) return "Unknown";
+
+  // Capitalize each word
+  return cleaned
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
 
 const JobPocFilter: React.FC<JobPocFilterProps> = ({
   workspaceId,
@@ -55,12 +83,17 @@ const JobPocFilter: React.FC<JobPocFilterProps> = ({
   }, [open, workspaceId]);
 
   const filteredPocs = pocs.filter((poc) => {
-    const nameMatch = poc.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const normalized = normalizePocName(poc.name, poc.poc_email).toLowerCase();
+    const rawNameMatch = poc.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const normalizedMatch = normalized.includes(searchQuery.toLowerCase());
     const emailMatch = poc.poc_email?.toLowerCase().includes(searchQuery.toLowerCase());
-    return nameMatch || emailMatch;
+    return rawNameMatch || normalizedMatch || emailMatch;
   });
 
   const selectedPoc = pocs.find((p) => p.poc_email === selectedPocEmail);
+  const selectedPocDisplayName = selectedPoc
+    ? normalizePocName(selectedPoc.name, selectedPoc.poc_email)
+    : "";
 
   return (
     <div className="relative" ref={containerRef}>
@@ -70,14 +103,14 @@ const JobPocFilter: React.FC<JobPocFilterProps> = ({
           ${selectedPocEmail 
             ? "border-[#0F47F2] bg-[#E7EDFF] text-[#0F47F2] font-medium" 
             : "border-[#AEAEB2] text-[#AEAEB2] hover:bg-[#F3F5F7] bg-white"}`}
-        title={selectedPoc ? `POC: ${selectedPoc.name}` : "Filter by Point of Contact"}
+        title={selectedPoc ? `POC: ${selectedPocDisplayName}` : "Filter by Point of Contact"}
       >
         <User className="w-4 h-4" />
-        {selectedPoc && <span className="max-w-[100px] truncate">{selectedPoc.name}</span>}
+        {selectedPoc && <span className="max-w-[120px] truncate">{selectedPocDisplayName}</span>}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-[10px] shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-[#E5E7EB] overflow-hidden z-[10020] flex flex-col">
+        <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-[10px] shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-[#E5E7EB] overflow-hidden z-[10020] flex flex-col">
           <div className="p-3 border-b border-[#F3F5F7] flex items-center justify-between">
             <span className="text-xs font-semibold text-[#4B5563]">Point of Contact</span>
             {selectedPocEmail && (
@@ -106,7 +139,7 @@ const JobPocFilter: React.FC<JobPocFilterProps> = ({
             />
           </div>
 
-          <div className="max-h-48 overflow-y-auto py-1 custom-scrollbar">
+          <div className="max-h-60 overflow-y-auto py-1 custom-scrollbar">
             {loading ? (
               <div className="flex items-center justify-center py-6 text-xs text-[#AEAEB2] gap-1.5">
                 <Loader2 className="w-4 h-4 animate-spin text-[#0F47F2]" /> Loading POCs...
@@ -129,9 +162,15 @@ const JobPocFilter: React.FC<JobPocFilterProps> = ({
                   <span>All POCs</span>
                   {!selectedPocEmail && <Check className="w-3.5 h-3.5 text-[#0F47F2]" />}
                 </button>
-                
+
                 {filteredPocs.map((poc) => {
                   const isSelected = selectedPocEmail === poc.poc_email;
+                  const formattedName = normalizePocName(poc.name, poc.poc_email);
+                  const hasCounts =
+                    poc.total_jobs !== undefined ||
+                    poc.active_jobs !== undefined ||
+                    poc.inactive_jobs !== undefined;
+
                   return (
                     <button
                       key={poc.poc_email}
@@ -142,11 +181,36 @@ const JobPocFilter: React.FC<JobPocFilterProps> = ({
                       className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center justify-between hover:bg-[#F3F5F7]
                         ${isSelected ? "text-[#0F47F2] font-semibold bg-[#E7EDFF]/30" : "text-[#4B5563]"}`}
                     >
-                      <div className="flex flex-col min-w-0">
-                        <span className="truncate text-gray-800">{poc.name}</span>
-                        <span className="text-[10px] text-[#AEAEB2] truncate">{poc.poc_email}</span>
+                      <div className="flex flex-col min-w-0 flex-1 pr-2">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="truncate text-gray-800 font-medium">{formattedName}</span>
+                        </div>
+                        {poc.poc_email && (
+                          <span className="text-[10px] text-[#AEAEB2] truncate">{poc.poc_email}</span>
+                        )}
+
+                        {/* Job Breakdown Badges */}
+                        {hasCounts && (
+                          <div className="flex items-center gap-1.5 mt-1">
+                            {poc.active_jobs !== undefined && (
+                              <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60">
+                                {poc.active_jobs} Active
+                              </span>
+                            )}
+                            {poc.inactive_jobs !== undefined && (
+                              <span className="text-[9px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/60">
+                                {poc.inactive_jobs} Inactive
+                              </span>
+                            )}
+                            {poc.total_jobs !== undefined && (
+                              <span className="text-[9px] font-semibold text-[#0F47F2] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60">
+                                {poc.total_jobs} Total
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-[#0F47F2] shrink-0" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 text-[#0F47F2] shrink-0 ml-1" />}
                     </button>
                   );
                 })}

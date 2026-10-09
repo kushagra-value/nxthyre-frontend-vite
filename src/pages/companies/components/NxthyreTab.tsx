@@ -6,6 +6,12 @@ import { showToast } from "../../../utils/toast";
 import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } from "./PipelineFilterPanel";
 import DateRangeFilter from "./DateRangeFilter";
 
+const formatLocationDisplay = (loc?: string | null): string => {
+  if (!loc || !loc.trim()) return "-";
+  const city = loc.split(",")[0].trim();
+  return city || loc;
+};
+
 interface NxthyreTabProps {
   jobId: number | null;
   onSelectCandidate?: (
@@ -118,11 +124,10 @@ export default function NxthyreTab({ jobId, onSelectCandidate }: NxthyreTabProps
               <button
                 ref={filterButtonRef}
                 onClick={() => setShowFilterPanel(!showFilterPanel)}
-                className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 ${
-                  showFilterPanel
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 ${showFilterPanel
                     ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]"
                     : "bg-white text-[#8E8E93] border-[#E5E7EB] hover:bg-[#F3F5F7]"
-                }`}
+                  }`}
               >
                 <SlidersHorizontal className="w-4 h-4" /> Filters
               </button>
@@ -231,7 +236,7 @@ export default function NxthyreTab({ jobId, onSelectCandidate }: NxthyreTabProps
                           <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#4B5563]">{score}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.location || "-"}</td>
+                      <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{formatLocationDisplay(item.location)}</td>
                       <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.experience_years ? `${item.experience_years} Years` : "-"}</td>
                       <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.current_salary_lpa ? `${item.current_salary_lpa} LPA` : "-"}</td>
                       <td className="px-6 py-6 text-[13px] text-[#8E8E93] border-transparent">{item.expected_ctc || "-"}</td>
@@ -294,11 +299,10 @@ export default function NxthyreTab({ jobId, onSelectCandidate }: NxthyreTabProps
                 <button
                   key={`page-${p}`}
                   onClick={() => setCurrentPage(p as number)}
-                  className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-medium ${
-                    p === currentPage
+                  className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-medium ${p === currentPage
                       ? "border-[#0F47F2] text-white bg-[#0F47F2]"
                       : "border-[#E5E7EB] text-[#4B5563] bg-white hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   {p}
                 </button>

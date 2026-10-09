@@ -50,10 +50,10 @@ const NaukbotIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="14" height="10" rx="2" /><path d="M7 9h6M7 12h4" /></svg>
 );
 const DownloadIcon = (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3.33v9.17M6.67 10l3.33 3.33L13.33 10M5 15h10" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3.33v9.17M6.67 10l3.33 3.33L13.33 10M5 15h10" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
 );
 const ChevronDownIcon = ({ className = '' }: { className?: string }) => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={className}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={className}><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
 );
 const UserIcon = (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -169,9 +169,8 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
         <div className="px-6 py-3 border-b border-[#E5E7EB] flex items-center gap-2 overflow-x-auto shrink-0 hide-scrollbar">
           <button
             onClick={() => setActiveTab('all')}
-            className={`flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
-              activeTab === 'all' ? 'border-[#0F47F2] text-[#0F47F2] bg-[#E7EDFF]' : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
-            }`}
+            className={`flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${activeTab === 'all' ? 'border-[#0F47F2] text-[#0F47F2] bg-[#E7EDFF]' : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
+              }`}
           >
             All <span className="font-semibold">{tabCounts.all}</span>
           </button>
@@ -182,9 +181,8 @@ const DailyActivitiesModal: React.FC<DailyActivitiesModalProps> = ({ isOpen, onC
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
-                  isActive ? 'bg-white shadow-sm' : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${isActive ? 'bg-white shadow-sm' : 'border-[#D1D1D6] text-[#4B5563] hover:bg-gray-50'
+                  }`}
                 style={isActive ? { borderColor: tab.color, color: tab.color } : {}}
               >
                 <span style={{ color: isActive ? tab.color : '#8E8E93', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -226,7 +224,7 @@ function ModalHeader({ title, subtitle, onClose }: { title: string; subtitle: st
           {DownloadIcon}
         </button>
         <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-[#8E8E93]" onClick={onClose}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
         </button>
       </div>
     </div>
@@ -273,12 +271,11 @@ function DetailCard({ item, idx, selectedRecruiter }: { item: DailyActivityDetai
             </span>
           </div>
 
-          {/* Subtitle Row: Role, Company, Experience & Candidate Phone */}
+          {/* Subtitle Row: Role(Company) & Experience */}
           {(companyName || jobName || item.candidate_number || item.experience) && (
             <p className="m-0 text-xs text-[#6B7280] leading-[16px] mt-0.5 truncate">
               {[
-                companyName ? `Company: ${companyName}` : null,
-                jobName ? `Role: ${jobName}` : null,
+                jobName && companyName ? `${jobName} (${companyName})` : (jobName || companyName || null),
                 item.experience ? `${item.experience}` : null,
               ].filter(Boolean).join(' • ')}
             </p>
@@ -324,100 +321,329 @@ function DetailCard({ item, idx, selectedRecruiter }: { item: DailyActivityDetai
   );
 }
 
-/** "All" tab — grouped summaries that expand inline to show detail cards */
-function AllTabContent({ groupedItems, data }: { groupedItems: DailyActivityGroupedItem[]; data: DailyActivitiesResponse; loggedInRecruiterId?: string }) {
-  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
-  const [selectedRecruiter, setSelectedRecruiter] = useState<string>('all');
-
-  if (groupedItems.length === 0) {
-    return <div className="flex items-center justify-center py-12 text-sm text-[#8E8E93]">No activities recorded.</div>;
+const parseTimeToMinutes = (timeStr?: string): number => {
+  if (!timeStr) return 0;
+  if (timeStr.includes('T') || timeStr.includes('-')) {
+    const d = new Date(timeStr);
+    if (!isNaN(d.getTime())) {
+      return d.getHours() * 60 + d.getMinutes();
+    }
   }
+  const match = timeStr.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+  if (match) {
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const ampm = match[3]?.toUpperCase();
+    if (ampm === 'PM' && hours < 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+  return 0;
+};
+
+interface TimelineItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  time: string;
+  type: string;
+  candidateName?: string;
+  jobName?: string;
+  companyName?: string;
+  recruiterName?: string;
+  callNote?: string;
+  callDuration?: string;
+  detailText?: string;
+  rawTime?: string;
+}
+
+/** "All" tab — Chronological timeline view with recruiter filter bar and vertical connecting line */
+function AllTabContent({ data }: { groupedItems?: DailyActivityGroupedItem[]; data: DailyActivitiesResponse; loggedInRecruiterId?: string }) {
+  const [selectedRecruiter, setSelectedRecruiter] = useState<string>('all');
 
   const apiRecruiterCalls = data.recruiter_wise_calls || data.recruiter_calls;
 
+  // Gather all detail items for recruiter stats calculation
+  const allDetailItems = useMemo(() => {
+    const list: DailyActivityDetailItem[] = [];
+    if (data.calls) list.push(...data.calls);
+    if (data.follow_ups) list.push(...data.follow_ups);
+    if (data.shortlisted) list.push(...data.shortlisted);
+    if (data.hired) list.push(...data.hired);
+    return list;
+  }, [data]);
+
+  const items = useMemo(() => {
+    const list: TimelineItem[] = [];
+    const seenIds = new Set<string>();
+
+    const addDetailItems = (detailList?: DailyActivityDetailItem[], defaultType: string = 'activity') => {
+      if (!detailList) return;
+
+      const filteredList = selectedRecruiter && selectedRecruiter !== 'all'
+        ? filterCallsByRecruiter(detailList, selectedRecruiter, apiRecruiterCalls)
+        : detailList;
+
+      filteredList.forEach((item, idx) => {
+        const id = item.id || `${defaultType}-${idx}-${item.time}`;
+        if (seenIds.has(id)) return;
+        seenIds.add(id);
+
+        const type = item.type || defaultType;
+        let title = item.title;
+        if (!title) {
+          const cName = item.candidate_name;
+          const tLower = type.toLowerCase();
+          if (tLower.includes('call')) {
+            title = cName ? `Called ${cName}` : 'Phone Call';
+          } else if (tLower.includes('shortlist')) {
+            title = cName ? `${cName} moved to Shortlist` : 'Moved to Shortlist';
+          } else if (tLower.includes('hired') || tLower.includes('hire')) {
+            title = cName ? `${cName} moved to Hired` : 'Moved to Hired';
+          } else if (tLower.includes('follow')) {
+            title = cName ? `Follow-up with ${cName}` : 'Follow-up';
+          } else {
+            title = cName || item.job_role || item.job_name || 'Activity';
+          }
+        }
+
+        const formattedTime = formatActivityTime(item);
+
+        list.push({
+          id,
+          title,
+          subtitle: item.detail_text || item.call_status || undefined,
+          time: formattedTime,
+          type,
+          candidateName: item.candidate_name,
+          jobName: item.job_role || item.job_name || item.job || item.title,
+          companyName: item.company_name || item.company || item.workspace_name,
+          recruiterName: getRecruiterFromItem(item).name,
+          callNote: item.call_note,
+          callDuration: item.call_duration,
+          detailText: item.detail_text,
+          rawTime: item.time,
+        });
+      });
+    };
+
+    addDetailItems(data.calls, 'call');
+    addDetailItems(data.follow_ups, 'follow-up');
+    addDetailItems(data.shortlisted, 'shortlist');
+    addDetailItems(data.hired, 'hired');
+
+    if (data.activities && data.activities.length > 0) {
+      data.activities.forEach((act, idx) => {
+        const id = act.id || `act-${idx}-${act.time}`;
+        if (seenIds.has(id)) return;
+
+        if (selectedRecruiter && selectedRecruiter !== 'all') {
+          const recName = (act as any).recruiter_name || (act as any).user_name;
+          if (recName && !recName.toLowerCase().includes(selectedRecruiter.toLowerCase())) {
+            return;
+          }
+        }
+
+        seenIds.add(id);
+
+        list.push({
+          id,
+          title: act.title || 'Activity',
+          subtitle: act.pill_text || undefined,
+          time: act.time || '',
+          type: act.type || 'activity',
+          recruiterName: (act as any).recruiter_name || (act as any).user_name || undefined,
+          detailText: act.pill_text || undefined,
+          rawTime: act.time,
+        });
+      });
+    }
+
+    return list.sort((a, b) => parseTimeToMinutes(b.rawTime || b.time) - parseTimeToMinutes(a.rawTime || a.time));
+  }, [data, selectedRecruiter, apiRecruiterCalls]);
+
   return (
-    <>
-      <h3 className="uppercase text-[11px] font-semibold text-[#8E8E93] tracking-wider m-0 mb-5">Actions on this day</h3>
-      <div className="flex flex-col">
-        {groupedItems.map((item, idx) => {
-          const { icon, color, bg } = getIconForType(item.type);
-          const isExpanded = expandedGroup === item.id;
-          const isCallGroup = (item.type || '').toLowerCase().includes('call') || item.type === 'phone';
-          const isShortlistGroup = (item.type || '').toLowerCase().includes('shortlist');
-          const isFilterableGroup = isCallGroup || isShortlistGroup;
-          const detailItems = isExpanded ? getDetailsForGroupType(data, item.type) : [];
+    <div>
+      <h3 className="uppercase text-[11px] font-semibold text-[#8E8E93] tracking-wider m-0 mb-3">Timeline of actions</h3>
 
-          const filteredDetails = isExpanded && isFilterableGroup
-            ? filterCallsByRecruiter(detailItems, selectedRecruiter, isCallGroup ? apiRecruiterCalls : undefined)
-            : detailItems;
+      {/* Recruiter Filter Bar */}
+      <RecruiterFilterBar
+        calls={allDetailItems}
+        selectedRecruiter={selectedRecruiter}
+        onSelectRecruiter={setSelectedRecruiter}
+        recruiterCallsFromApi={apiRecruiterCalls}
+        totalCalls={data.total_daily_calls || data.total_activities}
+      />
 
-          return (
-            <div key={item.id} className={idx > 0 ? 'border-t border-[#F3F5F7]' : ''}>
-              {/* Grouped summary row */}
-              <div className="flex items-start gap-3 py-4">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: bg, color }}>
-                  <span style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="m-0 text-sm text-[#1C1C1E] leading-[20px]">{item.title}</p>
-                  {item.action_label && (
-                    <button
-                      onClick={() => {
-                        if (isExpanded) {
-                          setExpandedGroup(null);
-                        } else {
-                          setExpandedGroup(item.id);
-                          setSelectedRecruiter('all');
-                        }
-                      }}
-                      className="mt-1 text-xs font-medium bg-transparent border-none p-0 cursor-pointer hover:underline flex items-center gap-1"
-                      style={{ color }}
-                    >
-                      {isExpanded ? 'Hide' : item.action_label}
-                      <ChevronDownIcon className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                    </button>
-                  )}
-                </div>
-                {/* Count badge */}
-                <span
-                  className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full self-center"
-                  style={{ color, background: bg }}
+      {items.length === 0 ? (
+        <div className="py-10 text-center text-xs text-[#8E8E93]">
+          No timeline activities found for selected recruiter.
+        </div>
+      ) : (
+        <div className="relative pl-6 flex flex-col gap-6 py-2 mt-2">
+          {/* Vertical Connecting Line */}
+          <div className="absolute left-[13px] top-3 bottom-3 w-[2px] bg-[#E2E8F0]" />
+
+          {items.map((item) => {
+            const { icon, color, bg } = getIconForType(item.type);
+
+            return (
+              <div key={item.id} className="relative flex items-start gap-3.5 group">
+                {/* Node Icon on vertical track */}
+                <div
+                  className="absolute -left-[24px] top-0.5 w-7 h-7 rounded-full flex items-center justify-center z-10 border-2 border-white shadow-2xs transition-transform group-hover:scale-105"
+                  style={{ background: bg, color }}
                 >
-                  {item.count}
-                </span>
-              </div>
+                  <span style={{ width: 14, height: 14, display: 'flex', items: 'center', justifyContent: 'center' }}>
+                    {icon}
+                  </span>
+                </div>
 
-              {/* Expanded detail cards */}
-              {isExpanded && (
-                <div className="ml-6 pl-6 mb-3 border-l-2 rounded-bl-lg" style={{ borderColor: bg }}>
-                  {isFilterableGroup && (
-                    <RecruiterFilterBar
-                      calls={detailItems}
-                      selectedRecruiter={selectedRecruiter}
-                      onSelectRecruiter={setSelectedRecruiter}
-                      recruiterCallsFromApi={isCallGroup ? apiRecruiterCalls : undefined}
-                      totalCalls={isCallGroup ? (data.total_daily_calls || data.summary?.calls_made) : data.summary?.shortlisted}
-                    />
+                {/* Activity Info Block */}
+                <div className="flex-1 bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-shadow flex flex-col gap-1.5">
+                  {/* Row 1: Header Row - Title & Time */}
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-sm font-semibold text-[#0F172A] leading-snug m-0">
+                      {item.title}
+                    </h4>
+                    <span className="text-[11px] font-medium text-[#64748B] whitespace-nowrap shrink-0">
+                      {item.time}
+                    </span>
+                  </div>
+
+                  {/* Row 2: Status Pill */}
+                  {item.subtitle && (
+                    <div className="flex items-center">
+                      <span
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-md font-medium text-[11px]"
+                        style={{ background: bg, color }}
+                      >
+                        {item.subtitle} {item.callDuration && !item.subtitle.includes(item.callDuration) ? `(${item.callDuration})` : ''}
+                      </span>
+                    </div>
                   )}
 
-                  {filteredDetails.length > 0 ? (
-                    filteredDetails.map((detail, dIdx) => (
-                      <DetailCard key={detail.id || dIdx} item={detail} idx={dIdx} selectedRecruiter={selectedRecruiter} />
-                    ))
-                  ) : (
-                    <div className="py-4 text-center text-xs text-[#8E8E93]">
-                      No activities found for selected recruiter.
+                  {/* Row 3: Bottom Details Row - Company & Job Role on LEFT, Recruiter Badge on RIGHT */}
+                  {(item.jobName || item.companyName || item.recruiterName) && (
+                    <div className="flex items-center justify-between gap-2 text-xs pt-0.5">
+                      <div className="text-[12px] font-normal text-[#475569] truncate flex-1 min-w-0">
+                        {item.jobName && item.companyName ? `${item.jobName} (${item.companyName})` : (item.jobName || item.companyName || '')}
+                      </div>
+
+                      {item.recruiterName && (
+                        <span className="inline-flex items-center gap-1 bg-[#F1F5F9] text-[#374151] border border-[#E2E8F0] px-2 py-0.5 rounded-md text-[11px] font-medium shrink-0 ml-auto">
+                          {UserIcon} {item.recruiterName}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Call Note */}
+                  {item.callNote && (
+                    <div className="mt-1 p-2.5 rounded-lg bg-slate-50 border border-slate-200/70 text-xs text-[#475569] leading-relaxed">
+                      <p className="m-0 text-[10px] font-semibold text-[#94A3B8] uppercase mb-1">Call Note</p>
+                      <p className="m-0 whitespace-pre-wrap">{item.callNote}</p>
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </>
-  );
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  )
 }
+
+
+// function OldGroupedContent({ groupedItems = [], data }: any) {
+//   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+//   const [selectedRecruiter, setSelectedRecruiter] = useState<string>('all');
+//   const apiRecruiterCalls = data?.recruiter_wise_calls || data?.recruiter_calls;
+
+//   return (
+//     <>
+//       <h3 className="uppercase text-[11px] font-semibold text-[#8E8E93] tracking-wider m-0 mb-5">Actions on this day</h3>
+//       <div className="flex flex-col">
+//         {groupedItems.map((item: any, idx: number) => {
+//           const { icon, color, bg } = getIconForType(item.type);
+//           const isExpanded = expandedGroup === item.id;
+//           const isCallGroup = (item.type || '').toLowerCase().includes('call') || item.type === 'phone';
+//           const isShortlistGroup = (item.type || '').toLowerCase().includes('shortlist');
+//           const isFilterableGroup = isCallGroup || isShortlistGroup;
+//           const detailItems = isExpanded ? getDetailsForGroupType(data, item.type) : [];
+
+//           const filteredDetails = isExpanded && isFilterableGroup
+//             ? filterCallsByRecruiter(detailItems, selectedRecruiter, isCallGroup ? apiRecruiterCalls : undefined)
+//             : detailItems;
+
+//           return (
+//             <div key={item.id} className={idx > 0 ? 'border-t border-[#F3F5F7]' : ''}>
+//               {/* Grouped summary row */}
+//               <div className="flex items-start gap-3 py-4">
+//                 <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: bg, color }}>
+//                   <span style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
+//                 </div>
+//                 <div className="flex-1 min-w-0">
+//                   <p className="m-0 text-sm text-[#1C1C1E] leading-[20px]">{item.title}</p>
+//                   {item.action_label && (
+//                     <button
+//                       onClick={() => {
+//                         if (isExpanded) {
+//                           setExpandedGroup(null);
+//                         } else {
+//                           setExpandedGroup(item.id);
+//                           setSelectedRecruiter('all');
+//                         }
+//                       }}
+//                       className="mt-1 text-xs font-medium bg-transparent border-none p-0 cursor-pointer hover:underline flex items-center gap-1"
+//                       style={{ color }}
+//                     >
+//                       {isExpanded ? 'Hide' : item.action_label}
+//                       <ChevronDownIcon className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+//                     </button>
+//                   )}
+//                 </div>
+//                 {/* Count badge */}
+//                 <span
+//                   className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full self-center"
+//                   style={{ color, background: bg }}
+//                 >
+//                   {item.count}
+//                 </span>
+//               </div>
+
+//               {/* Expanded detail cards */}
+//               {isExpanded && (
+//                 <div className="ml-6 pl-6 mb-3 border-l-2 rounded-bl-lg" style={{ borderColor: bg }}>
+//                   {isFilterableGroup && (
+//                     <RecruiterFilterBar
+//                       calls={detailItems}
+//                       selectedRecruiter={selectedRecruiter}
+//                       onSelectRecruiter={setSelectedRecruiter}
+//                       recruiterCallsFromApi={isCallGroup ? apiRecruiterCalls : undefined}
+//                       totalCalls={isCallGroup ? (data.total_daily_calls || data.summary?.calls_made) : data.summary?.shortlisted}
+//                     />
+//                   )}
+
+//                   {filteredDetails.length > 0 ? (
+//                     filteredDetails.map((detail, dIdx) => (
+//                       <DetailCard key={detail.id || dIdx} item={detail} idx={dIdx} selectedRecruiter={selectedRecruiter} />
+//                     ))
+//                   ) : (
+//                     <div className="py-4 text-center text-xs text-[#8E8E93]">
+//                       No activities found for selected recruiter.
+//                     </div>
+//                   )}
+//                 </div>
+//               )}
+//             </div>
+//           );
+//         })}
+//       </div>
+//     </>
+//   );
+// }
 
 /** Per-category tab — shows detailed activity cards */
 function DetailTabContent({ items, tabKey, data }: { items: DailyActivityDetailItem[]; tabKey: TabKey; data?: DailyActivitiesResponse; loggedInRecruiterId?: string }) {

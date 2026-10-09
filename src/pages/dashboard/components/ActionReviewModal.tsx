@@ -501,6 +501,25 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
                       {jobRole}
                       {workspaceName ? ` · ${workspaceName}` : ""}
                     </p>
+                    {(currentItem?.recruiter_name || currentItem?.resume_score != null || currentItem?.screening_round) && (
+                      <div className="flex items-center flex-wrap gap-2 text-xs text-gray-600 mt-1">
+                        {currentItem.recruiter_name && (
+                          <span className="inline-flex items-center gap-1 font-medium text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+                            👤 Recruiter: {currentItem.recruiter_name}
+                          </span>
+                        )}
+                        {currentItem.resume_score != null && (
+                          <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            Resume Score: {currentItem.resume_score}
+                          </span>
+                        )}
+                        {currentItem.screening_round && (
+                          <span className="inline-flex items-center gap-1 font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                            {tab === 'screening' ? `AI Screening: ${currentItem.screening_round}` : `Round: ${currentItem.screening_round}`}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Circular Match Percentage — 48×48 */}

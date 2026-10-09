@@ -224,7 +224,7 @@ const JobListing: React.FC<JobListingProps> = ({
     const statusMenuRef = useRef<HTMLDivElement>(null);
     const [statusMenuPos, setStatusMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
     const [timelineJobId, setTimelineJobId] = useState<number | null>(null);
-    const [isStatsExpanded, setIsStatsExpanded] = useState(true);
+    const [isStatsExpanded, setIsStatsExpanded] = useState(false);
 
     // ── Reframe Questions Modal State ──
     const [reframeJobId, setReframeJobId] = useState<number | null>(null);
@@ -390,6 +390,36 @@ const JobListing: React.FC<JobListingProps> = ({
         }
     };
 
+    const formatEvaluationRelativeTime = (dateStr?: string): string => {
+        if (!dateStr) return "Today";
+        const evalDate = new Date(dateStr);
+        if (isNaN(evalDate.getTime())) return "Today";
+
+        const now = new Date();
+
+        const evalMidnight = new Date(evalDate.getFullYear(), evalDate.getMonth(), evalDate.getDate());
+        const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        const diffMs = nowMidnight.getTime() - evalMidnight.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays <= 0) {
+            return "Today";
+        }
+
+        if (diffDays < 25) {
+            return `${diffDays} ${diffDays === 1 ? "day" : "days"} ago`;
+        }
+
+        const diffMonths = Math.max(1, Math.round(diffDays / 30));
+        if (diffMonths < 12) {
+            return `${diffMonths} ${diffMonths === 1 ? "month" : "months"} ago`;
+        }
+
+        const diffYears = Math.max(1, Math.round(diffMonths / 12));
+        return `${diffYears} ${diffYears === 1 ? "year" : "years"} ago`;
+    };
+
     const renderHealthIndicator = (job: Job) => {
         if (!job.performance_status) return null;
 
@@ -402,6 +432,8 @@ const JobListing: React.FC<JobListingProps> = ({
             color = "#DC2626";
             label = "At Risk";
         }
+
+        const tagText = formatEvaluationRelativeTime(job.performance_summary_updated_at || job.updated_at);
 
         return (
             <div
@@ -423,8 +455,8 @@ const JobListing: React.FC<JobListingProps> = ({
                     className="w-2 h-2 rounded-full animate-pulse"
                     style={{ backgroundColor: color }}
                 />
-                <span className="text-[10px] font-medium text-[#4B5563] uppercase tracking-tight">
-                    {label}
+                <span className="text-[10px] font-medium text-[#4B5563] tracking-tight">
+                    {tagText}
                 </span>
             </div>
         );
@@ -848,28 +880,49 @@ const JobListing: React.FC<JobListingProps> = ({
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 {/* Filters & Actions - first row */}
                 <div className="p-4 border-b border-[#C7C7CC] flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        {(["All", "Active", "Paused", "Inactive", "Draft"] as const).map((filter) => {
-                            let count = 0;
-                            if (filter === "All") count = jobStatusCounts?.all ?? workspaceJobs.length;
-                            else if (filter === "Active") count = jobStatusCounts?.active ?? 0;
-                            else if (filter === "Paused") count = jobStatusCounts?.paused ?? 0;
-                            else if (filter === "Inactive") count = jobStatusCounts?.inactive ?? 0;
-                            else if (filter === "Draft") count = getLocalDrafts().length ?? 0;
+                    <div className="flex items-center gap-2 min-w-0 flex-1 mr-4">
+                        <div className="flex items-center gap-2 overflow-x-auto min-w-0 custom-scrollbar-thin py-0.5">
+                            {(["All", "Active", "Paused", "Inactive", "Draft"] as const).map((filter) => {
+                                let count = 0;
+                                if (filter === "All") count = jobStatusCounts?.all ?? workspaceJobs.length;
+                                else if (filter === "Active") count = jobStatusCounts?.active ?? 0;
+                                else if (filter === "Paused") count = jobStatusCounts?.paused ?? 0;
+                                else if (filter === "Inactive") count = jobStatusCounts?.inactive ?? 0;
+                                else if (filter === "Draft") count = getLocalDrafts().length ?? 0;
 
-                            return (
-                                <button
-                                    key={filter}
-                                    onClick={() => { setActiveJobFilter(filter); }}
-                                    className={`h-[30px] px-4 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center justify-center
-                        ${activeJobFilter === filter
-                                            ? 'bg-[#0F47F2] text-white'
-                                            : 'border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`}
-                                >
-                                    {filter} ({count})
-                                </button>
-                            );
-                        })}
+                                return (
+                                    <button
+                                        key={filter}
+                                        onClick={() => { setActiveJobFilter(filter); }}
+                                        className={`h-[30px] px-4 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center justify-center shrink-0
+                            ${activeJobFilter === filter
+                                                ? 'bg-[#0F47F2] text-white'
+                                                : 'border border-[#C7C7CC] text-[#AEAEB2] hover:bg-gray-50'}`}
+                                    >
+                                        {filter} ({count})
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {/* Share Pipeline - placed immediately after Draft */}
+                        <button
+                            onClick={handleSharePipeline}
+                            className="flex items-center justify-center gap-1.5 h-[30px] px-3.5 bg-[#0F47F2] rounded-full text-xs font-medium text-white hover:opacity-90 transition-opacity shrink-0 shadow-sm"
+                            title="Share Pipeline"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g clipPath="url(#clip0_1077_15875_white)">
+                                    <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="white" strokeLinecap="round" />
+                                    <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
+                                </g>
+                                <defs>
+                                    <clipPath id="clip0_1077_15875_white">
+                                        <rect width="16" height="16" fill="white" />
+                                    </clipPath>
+                                </defs>
+                            </svg>
+                            <span>Share Pipeline</span>
+                        </button>
                     </div>
                     {/* <button
                         disabled
@@ -891,7 +944,7 @@ const JobListing: React.FC<JobListingProps> = ({
                         </svg>
                         
                     </button> */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 shrink-0">
                         {/* Column Visibility Filter */}
                         <div className="relative w-full max-w-[248px]">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
@@ -910,12 +963,7 @@ const JobListing: React.FC<JobListingProps> = ({
                                     ${showColumnFilter ? 'bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]' : 'text-[#AEAEB2] hover:bg-gray-50'}`}
                                 title="Column Filter"
                             >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M3.3335 2V11.3333M8.00016 4.66667V14M12.6668 9.33333V14M12.6668 6.66667V2" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M3.33333 11.3333C3.06963 11.3333 2.81184 11.4115 2.59257 11.558C2.37331 11.7045 2.20241 11.9128 2.10149 12.1564C2.00058 12.4001 1.97417 12.6681 2.02562 12.9268C2.07707 13.1854 2.20405 13.423 2.39052 13.6095C2.57699 13.7959 2.81457 13.9229 3.07321 13.9744C3.33185 14.0258 3.59994 13.9994 3.84358 13.8985C4.08721 13.7976 4.29545 13.6267 4.44196 13.4074C4.58847 13.1882 4.66667 12.9304 4.66667 12.6667C4.66667 12.313 4.52619 11.9739 4.27614 11.7239C4.02609 11.4738 3.68696 11.3333 3.33333 11.3333ZM8 2C7.73629 2 7.47851 2.0782 7.25924 2.22471C7.03998 2.37122 6.86908 2.57945 6.76816 2.82309C6.66724 3.06672 6.64084 3.33481 6.69229 3.59345C6.74373 3.8521 6.87072 4.08967 7.05719 4.27614C7.24366 4.46261 7.48124 4.5896 7.73988 4.64105C7.99852 4.69249 8.26661 4.66609 8.51025 4.56517C8.75388 4.46426 8.96212 4.29336 9.10863 4.07409C9.25514 3.85483 9.33333 3.59704 9.33333 3.33333C9.33333 2.97971 9.19286 2.64057 8.94281 2.39052C8.69276 2.14048 8.35362 2 8 2ZM12.6667 6.66667C12.403 6.66667 12.1452 6.74487 11.9259 6.89137C11.7066 7.03788 11.5357 7.24612 11.4348 7.48976C11.3339 7.73339 11.3075 8.00148 11.359 8.26012C11.4104 8.51876 11.5374 8.75634 11.7239 8.94281C11.9103 9.12928 12.1479 9.25627 12.4065 9.30771C12.6652 9.35916 12.9333 9.33276 13.1769 9.23184C13.4205 9.13092 13.6288 8.96003 13.7753 8.74076C13.9218 8.52149 14 8.26371 14 8C14 7.64638 13.8595 7.30724 13.6095 7.05719C13.3594 6.80714 13.0203 6.66667 12.6667 6.66667Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-
-
+                                <Settings className="w-4 h-4" />
                             </button>
                             {showColumnFilter && (
                                 <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[10001] py-2 max-h-[400px] overflow-y-auto">
@@ -934,25 +982,6 @@ const JobListing: React.FC<JobListingProps> = ({
                                 </div>
                             )}
                         </div>
-                        {/* Share Pipeline - opens public applications page */}
-                        <button
-                            onClick={handleSharePipeline}
-                            className="flex items-center gap-2 px-[12px] py-[10px] border border-[#AEAEB2] rounded-[6px] text-xs text-[#AEAEB2] hover:bg-[#E7EDFF] hover:text-[#0F47F2] hover:border-[#0F47F2] transition-colors"
-                            title="Share Pipeline"
-                        >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <g clip-path="url(#clip0_1077_15875)">
-                                    <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="#374151" stroke-linecap="round" />
-                                    <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                </g>
-                                <defs>
-                                    <clipPath id="clip0_1077_15875">
-                                        <rect width="16" height="16" fill="white" />
-                                    </clipPath>
-                                </defs>
-                            </svg>
-
-                        </button>
 
                         <button
                             disabled
@@ -966,12 +995,12 @@ const JobListing: React.FC<JobListingProps> = ({
                             Export CSV
                         </button>
 
-                        <JobDateRangeFilter
+                        {/* <JobDateRangeFilter
                             valueLabel={jobDateFilterLabel}
                             isFilterApplied={isJobDateFilterApplied}
                             onApply={onJobDateFilterApply}
                             onClear={onClearJobDateFilter}
-                        />
+                        /> */}
 
                         {onPocFilterApply && (
                             <JobPocFilter

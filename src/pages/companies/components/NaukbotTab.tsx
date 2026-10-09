@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check, ArrowUpRight, Zap, ArrowUp, ArrowDown, MoreHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, X, Send, Trash2, ArrowRight, ArrowLeft, Check, ArrowUpRight, Zap, ArrowUp, ArrowDown, MoreVertical } from "lucide-react";
 import { naukbotService, NaukbotCandidate, NaukbotCandidateSummary } from "../../../services/naukbotService";
 import { showToast } from "../../../utils/toast";
 import toast from "react-hot-toast";
@@ -8,6 +8,12 @@ import NaukbotUrlModal from "./NaukbotUrlModal";
 import NaukbotFilterPanel, { NaukbotFiltersState, EMPTY_NAUKBOT_FILTERS } from "./NaukbotFilterPanel";
 import SkillsMatchTooltip from "./SkillsMatchTooltip";
 import { getAttentionPill } from "../../../utils/candidateAttention";
+
+const formatLocationDisplay = (loc?: string | null): string => {
+  if (!loc || !loc.trim()) return "--";
+  const city = loc.split(",")[0].trim();
+  return city || loc;
+};
 
 interface NaukbotTabProps {
   jobId: number | null;
@@ -53,7 +59,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
     try {
       await naukbotService.sourceByUrl(jobId, url, tag);
       toast.success(`URL sourcing triggered successfully with tag "${tag}"`);
-      
+
       // Keep local mapping as fallback for visual presentation
       if (candidates.length > 0) {
         setCandidateSourceTags((prev) => {
@@ -65,7 +71,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
           return next;
         });
       }
-      
+
       fetchCandidates();
     } catch (error: any) {
       console.error(error);
@@ -359,7 +365,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
     return (
       <th
         key={column}
-        className={`group px-6 py-4 text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap cursor-pointer hover:bg-black/5 transition-colors select-none ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`}
+        className={`sticky top-0 z-20 bg-[#F9FAFB] group px-6 py-4 text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap cursor-pointer hover:bg-black/5 transition-colors select-none ${align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : 'text-left'}`}
         onClick={() => handleSort(column)}
       >
         <div className={`flex items-center gap-1 ${align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : ''}`}>
@@ -476,7 +482,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                 */}
                 <div className="flex gap-4 items-center">
                   <button
-                    onClick={()=>setOpenUrlModal(true)}
+                    onClick={() => setOpenUrlModal(true)}
                     className="px-8 py-2 bg-[#0f47f2] text-white rounded-md cursor-pointer hover:bg-blue-600"
                   >
                     Seach by url
@@ -603,11 +609,11 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
           )}
 
           {/* Table View */}
-          <div className="bg-white border-x border-t border-[#E5E7EB] overflow-x-auto">
+          <div className="bg-white border-x border-t border-[#E5E7EB] overflow-x-auto overflow-y-auto max-h-[calc(100vh-250px)]">
             <table className="w-full min-w-[1200px] text-left border-collapse">
-              <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+              <thead className="sticky top-0 z-20 bg-[#F9FAFB] border-b border-[#E5E7EB]">
                 <tr>
-                  <th className="w-12 px-6 py-4">
+                  <th className="w-12 px-6 py-4 sticky top-0 z-20 bg-[#F9FAFB]">
                     <input
                       type="checkbox"
                       checked={candidates.length > 0 && selectedCandidates.size === candidates.length}
@@ -626,7 +632,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                   {renderSortableHeader('Notice Period', 'notice_period')}
                   {renderSortableHeader('Skills Match', 'skills_match', 'center')}
                   {/* <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Attention</th> */}
-                  <th className="sticky right-0 z-20 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Actions</th>
+                  <th className="sticky top-0 right-0 z-30 bg-[#F9FAFB] shadow-[-8px_0_12px_-10px_rgba(0,0,0,0.22)] px-6 py-4 text-right text-[11px] font-semibold uppercase text-[#374151] tracking-wider whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F3F5F7]">
@@ -683,7 +689,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                           );
                         })()}
                       </td>
-                      <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{item.location || "--"}</td>
+                      <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent truncate max-w-[120px]" title={item.location || ""}>{formatLocationDisplay(item.location)}</td>
                       <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.experience_years ? `${item.experience_years} Years` : "--"}</td>
                       <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.current_ctc_lacs ? `${item.current_ctc_lacs} LPA` : "--"}</td>
                       <td className="px-6 py-6 text-[13px] font-medium text-[#8E8E93] border-transparent whitespace-nowrap">{item.expected_ctc_lacs ? `${item.expected_ctc_lacs} LPA` : "--"}</td>
@@ -793,7 +799,7 @@ export default function NaukbotTab({ jobId, onFilterCountChange }: NaukbotTabPro
                               }}
                               className="p-2 hover:bg-[#F3F5F7] rounded-lg transition-colors text-[#8E8E93] hover:text-[#4B5563]"
                             >
-                              <MoreHorizontal className="w-5 h-5" />
+                              <MoreVertical className="w-5 h-5" />
                             </button>
 
                             {menuOpenId === item.id && (

@@ -192,56 +192,16 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         style={{
           height: 86,
           padding: isCollapsed ? '24px 16px' : '24px 24px',
-          justifyContent: 'space-between',
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
         }}
       >
-        {/* Logo — clickable to toggle when collapsed */}
+        {/* Logo */}
         <button
           onClick={() => setIsCollapsed(prev => !prev)}
           className="flex items-center justify-center bg-transparent border-none outline-none cursor-pointer"
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <LogoCollapsed /> : <LogoExpanded />}
-        </button>
-
-        {/* ── Open/Close Toggle Control (visible in both states) ── */}
-        <button
-          onClick={() => setIsCollapsed(prev => !prev)}
-          className="cursor-pointer p-1.5 rounded-lg flex items-center justify-center text-[#4B5563] hover:text-[#0F47F2] hover:bg-[#E7EDFF] border border-transparent hover:border-[#0F47F2]/20 transition-all duration-200"
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M21.9707 15V9C21.9707 4 19.9707 2 14.9707 2H8.9707C3.9707 2 1.9707 4 1.9707 9V15C1.9707 20 3.9707 22 8.9707 22H14.9707C19.9707 22 21.9707 20 21.9707 15Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              opacity="0.4"
-              d="M7.9707 2V22"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              opacity="0.8"
-              d={isCollapsed ? "M11.9702 9.43994L14.5302 11.9999L11.9702 14.5599" : "M14.9702 9.43994L12.4102 11.9999L14.9702 14.5599"}
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
         </button>
       </div>
 
@@ -416,6 +376,71 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
           );
         })}
       </nav>
+
+      {/* ── Bottom Collapse Control ── */}
+      <div className="p-4 border-t border-gray-100 flex items-center justify-center shrink-0">
+        <button
+          onClick={() => setIsCollapsed(prev => !prev)}
+          className="flex items-center shrink-0 transition-all duration-150 cursor-pointer rounded-xl hover:bg-[#E7EDFF] text-[#4B5563] hover:text-[#0F47F2] border border-transparent hover:border-[#0F47F2]/20"
+          style={{
+            width: isCollapsed ? 52 : 200,
+            height: 44,
+            padding: 12,
+            gap: 12,
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
+          }}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <span className="shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M21.9707 15V9C21.9707 4 19.9707 2 14.9707 2H8.9707C3.9707 2 1.9707 4 1.9707 9V15C1.9707 20 3.9707 22 8.9707 22H14.9707C19.9707 22 21.9707 20 21.9707 15Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                opacity="0.4"
+                d="M7.9707 2V22"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                opacity="0.8"
+                d={isCollapsed ? "M11.9702 9.43994L14.5302 11.9999L11.9702 14.5599" : "M14.9702 9.43994L12.4102 11.9999L14.9702 14.5599"}
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          {!isCollapsed && (
+            <span
+              style={{
+                fontFamily: "'Gellix', sans-serif",
+                fontWeight: 400,
+                fontSize: 14,
+                lineHeight: '20px',
+                flex: 1,
+                textAlign: 'left',
+              }}
+            >
+              Collapse
+            </span>
+          )}
+        </button>
+      </div>
     </aside>
   );
 }

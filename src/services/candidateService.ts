@@ -973,6 +973,32 @@ class CandidateService {
     }
   }
 
+  // =========================================================================
+  // BACKEND INTEGRATION POINT FOR CANDIDATE DETAILS UPDATE
+  // =========================================================================
+  // Expected payload: { curr_ctc: string | number, expec_ctc: string | number, notice_period: string }
+  // Endpoint to connect when available on backend: e.g. PATCH `/candidates/${candidateId}/details/` or `/jobs/applications/${candidateId}/`
+  async updateCandidateDetails(
+    candidateId: string | number,
+    payload: {
+      curr_ctc: string | number;
+      expec_ctc: string | number;
+      notice_period: string;
+    }
+  ): Promise<any> {
+    try {
+      // Endpoint is currently not implemented on backend yet.
+      // Uncomment and connect below when backend endpoint is available:
+      const response = await apiClient.patch(`/candidates/${candidateId}/details/`, payload);
+      return response.data;
+      // throw new Error("Candidate update API endpoint is not implemented on the backend yet.");
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || error.response?.data?.error || error.message || "Failed to update candidate details"
+      );
+    }
+  }
+
   async bulkAddToPipeline(
     jobId: number,
     candidateIds: string[],
@@ -1131,7 +1157,7 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.detail || error.response?.data?.error ||
-          "Failed to fetch background verifications",
+        "Failed to fetch background verifications",
       );
     }
   }
@@ -1285,10 +1311,10 @@ class CandidateService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.detail || error.response?.data?.error || "Failed to fetch candidate questions analysis"
-        );
+      );
     }
-    }
-  
+  }
+
   async NaukriEmails(days: number = 1): Promise<any> {
     try {
       const response = await apiClient.post(`/candidates/sync-naukri-emails-manual/?days=${days}`);
