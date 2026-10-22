@@ -225,22 +225,50 @@ interface CandidateListItem {
   activities?: any[];
 }
 
-const DuplicateProfileIcon = ({ className = "shrink-0" }: { className?: string }) => (
-  <span
-    className={`inline-flex items-center gap-1 text-[10px] font-semibold text-[#DC2626] bg-[#FEE2E2] border border-[#FCA5A5] px-1.5 py-0.5 rounded-md ${className}`}
-    title="Duplicate profile found in portal"
+const DuplicateProfileIcon = ({
+  className = "w-4 h-4 shrink-0 text-red-500",
+}: {
+  className?: string;
+}) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
   >
-    <Copy className="w-3 h-3 text-[#DC2626]" /> Duplicate
-  </span>
+    <path d="M8 8H6a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h7a3 3 0 0 0 3-3v-2" />
+    <path d="M8 11V6a3 3 0 0 1 3-3h5l4 4v10a3 3 0 0 1-3 3h-2" />
+    <path d="M16 3v4h4" />
+    <path d="M8.5 15.5L14.5 9.5" />
+    <path d="M11 9.5h3.5v3.5" />
+  </svg>
 );
 
-const VerifiedProfileIcon = ({ className = "shrink-0" }: { className?: string }) => (
-  <span
-    className={`inline-flex items-center gap-1 text-[10px] font-semibold text-[#059669] bg-[#ECFDF5] border border-[#A7F3D0] px-1.5 py-0.5 rounded-md ${className}`}
-    title="Verified / Unique profile in portal"
+const VerifiedProfileIcon = ({
+  className = "w-4 h-4 shrink-0",
+}: {
+  className?: string;
+}) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
   >
-    <Check className="w-3 h-3 text-[#059669] stroke-[2.5]" /> Verified
-  </span>
+    <path
+      d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"
+      fill="#16A34A"
+    />
+    <path
+      d="m8.5 12.3 2.5 2.5 5.2-5.2"
+      fill="none"
+      stroke="#FFFFFF"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
 );
 
 const isAscendionWorkspaceName = (name?: string | null) =>
@@ -627,10 +655,16 @@ export default function JobPipelineDashboard({
   const [pipelineFilters, setPipelineFilters] = useState<PipelineFiltersState>(EMPTY_PIPELINE_FILTERS);
   const [showPipelineFilterPanel, setShowPipelineFilterPanel] = useState(false);
   const pipelineFilterButtonRef = useRef<HTMLButtonElement>(null);
+  const kanbanFilterButtonRef = useRef<HTMLButtonElement>(null);
+  const [activeFilterAnchor, setActiveFilterAnchor] = useState<"table" | "kanban">("table");
+
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const activeFilterCount = useMemo(() => {
     if (!pipelineFilters) return 0;
     let count = 0;
+    if (pipelineFilters.recruiter) count += 1;
     if (pipelineFilters.location && pipelineFilters.location.length > 0) count += pipelineFilters.location.length;
     if (pipelineFilters.salaryRange?.min || pipelineFilters.salaryRange?.max) count += 1;
     if (pipelineFilters.experience?.min || pipelineFilters.experience?.max) count += 1;
@@ -642,6 +676,12 @@ export default function JobPipelineDashboard({
   const abortControllerRef = useRef<AbortController | null>(null);
   const skipAutosuggestRef = useRef(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleApplyPipelineFilters = (filters: PipelineFiltersState) => {
+    setPipelineFilters(filters);
+    setSelectedRecruiter(filters.recruiter || null);
+    setCurrentPage(1);
+  };
 
   const [dateRangeFilterLabel, setDateRangeFilterLabel] = useState<string>("Date Filter");
   const [isDateRangeFilterApplied, setIsDateRangeFilterApplied] = useState<boolean>(false);
@@ -995,6 +1035,9 @@ export default function JobPipelineDashboard({
       }
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setSuggestions([]);
+        if (!searchInputRef.current?.value) {
+          setIsSearchOpen(false);
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -2473,7 +2516,14 @@ export default function JobPipelineDashboard({
         (item.score != null ? `${item.score}%` : null) ||
         "--%";
       const aiScoreNum = parseInt(aiScoreRaw.replace("%", ""), 10) || 0;
-      const aiScoreColor = aiScoreNum >= 70 ? "#00C8B3" : aiScoreNum >= 40 ? "#FFCC00" : aiScoreNum > 0 ? "#FF383C" : "#E5E7EB";
+      const aiScoreColor =
+        aiScoreNum >= 70
+          ? "#10B981"
+          : aiScoreNum >= 50
+          ? "#F59E0B"
+          : aiScoreNum > 0
+          ? "#EF4444"
+          : "#E2E8F0";
 
       const isDisabled =
         selectionType === (isArchived ? "ACTIVE" : "ARCHIVED") ||
@@ -2503,14 +2553,22 @@ export default function JobPipelineDashboard({
           key={item.id}
           draggable={!isArchived}
           onDragStart={(e) => !isArchived && handleDragStart(e, item)}
-          className={`${isArchived ? "bg-[#F9FAFB] grayscale opacity-60 border-[#D1D5DB]" : "bg-white cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/30"} border text-left border-[#E5E7EB] p-4 rounded-xl shadow-sm transition-all flex flex-col gap-3 relative ${isDisabled && !isArchived ? "opacity-60" : ""} ${isDisabled && isArchived ? "opacity-40" : ""}`}
+          className={`${
+            isArchived
+              ? "bg-[#F9FAFB] grayscale opacity-60 border-[#D1D5DB]"
+              : "bg-white cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#0F47F2]/40 border-[#E2E8F0]"
+          } border text-left p-3.5 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all flex flex-col gap-2.5 relative ${
+            isDisabled && !isArchived ? "opacity-60" : ""
+          } ${isDisabled && isArchived ? "opacity-40" : ""}`}
         >
-          <div className="flex justify-between items-start">
-            <div className="flex gap-3 min-w-0 flex-1">
-              <div className="mt-1">
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex gap-2.5 min-w-0 flex-1">
+              <div className="mt-0.5">
                 <input
                   type="checkbox"
-                  className={`w-5 h-5 rounded-md border-[#D1D1D6] cursor-pointer ${isArchived ? "accent-[#8E8E93]" : "accent-[#0F47F2]"}`}
+                  className={`w-4 h-4 rounded border-gray-300 cursor-pointer ${
+                    isArchived ? "accent-[#8E8E93]" : "accent-[#0F47F2]"
+                  }`}
                   checked={selectedIds.has(item.id)}
                   onChange={() => handleToggleCandidate(item)}
                   disabled={!!isDisabled}
@@ -2520,14 +2578,16 @@ export default function JobPipelineDashboard({
               <div className="flex flex-col min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <h4
-                    className={`font-semibold text-[15px] line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2 ${isArchived ? "text-[#8E8E93]" : "text-[#1C1C1E]"}`}
+                    className={`font-semibold text-sm line-clamp-1 cursor-pointer hover:underline decoration-1 underline-offset-2 ${
+                      isArchived ? "text-[#8E8E93]" : "text-gray-900"
+                    }`}
                     onClick={() => onSelectCandidate?.(item, list, idx)}
                   >
                     {cand.full_name || "--"}
                   </h4>
                   {isProfileIncomplete(item) && (
                     <div title="Incomplete Profile" className="shrink-0 flex items-center">
-                      <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                     </div>
                   )}
                   {isAscendionWorkspace &&
@@ -2539,7 +2599,7 @@ export default function JobPipelineDashboard({
                   {isAscendionWorkspace &&
                     ascendionCheckingIds.has(cand.id) && (
                       <div title="Checking for duplicates...">
-                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
+                        <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin shrink-0" />
                       </div>
                     )}
                   {isAscendionWorkspace &&
@@ -2615,20 +2675,30 @@ export default function JobPipelineDashboard({
                     )}
                   </div>
                 </div>
-                <p className="text-[13px] text-[#6B7280] line-clamp-1 mt-0.5" title={getCandidateSubtext(cand, item)}>
+                <p className="text-xs text-gray-500 line-clamp-1 mt-0.5" title={getCandidateSubtext(cand, item)}>
                   {getCandidateSubtext(cand, item)}
                 </p>
                 {(() => {
                   const attentionTag = item.status_tags?.find((t: any) => t.text);
                   const pill = getAttentionPill(item, attentionTag);
                   if (!pill) return null;
-                  const bgColor = pill.color === "red" ? "#FEE9E7" : pill.color === "blue" ? "#EDE9FE" : "#D1FAE5";
-                  const textColor = pill.color === "red" ? "#FF383C" : pill.color === "blue" ? "#6366F1" : "#059669";
+                  const isRoutine = pill.text.toLowerCase().includes("moved") || pill.text.toLowerCase().includes("initiated");
+                  if (isRoutine) {
+                    return (
+                      <span className="text-[11px] text-gray-400 mt-0.5 block truncate" title={pill.text}>
+                        {pill.text}
+                      </span>
+                    );
+                  }
+                  const isRed = pill.color === "red";
                   return (
                     <div className="mt-1">
                       <span
-                        className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full truncate max-w-full"
-                        style={{ backgroundColor: bgColor, color: textColor }}
+                        className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-md truncate max-w-full ${
+                          isRed
+                            ? "bg-rose-50 text-rose-600 border border-rose-200/60"
+                            : "bg-blue-50 text-blue-700 border border-blue-200/60"
+                        }`}
                         title={pill.text}
                       >
                         {pill.text}
@@ -2647,20 +2717,20 @@ export default function JobPipelineDashboard({
               </div>
             </div>
 
-            <div className="relative w-12 h-12 shrink-0">
-              <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F2F2F7" strokeWidth="3" />
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="3" strokeDasharray={`${aiScoreNum}, 100`} strokeLinecap="round" />
+            <div className="relative w-11 h-11 shrink-0" title={`Match Score: ${aiScoreRaw}`}>
+              <svg className="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F1F5F9" strokeWidth="2.8" />
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={aiScoreColor} strokeWidth="2.8" strokeDasharray={`${aiScoreNum}, 100`} strokeLinecap="round" />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#4B5563]">
+              <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-gray-700">
                 {aiScoreRaw === "--%" ? "0%" : aiScoreRaw}
               </div>
             </div>
           </div>
 
-          <div className="flex justify-between items-center mt-auto pt-1 border-t border-gray-100">
+          <div className="flex justify-between items-center mt-auto pt-2 border-t border-gray-100">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-gray-50 text-gray-700 border border-gray-200/70">
                 {cand.total_experience != null
                   ? `${cand.total_experience} yrs`
                   : cand.experience_years
@@ -2668,52 +2738,51 @@ export default function JobPipelineDashboard({
                     : "--"}
               </span>
               {noticeText && (
-                <span
-                  className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F3E8FF] text-[#7C3AED]"
-                  title={cand.last_working_day ? `Last Working Day: ${formatLwdDate(cand.last_working_day)}` : ""}
-                >
-                  {noticeText}
+                <span className="relative group/lwd text-[11px] font-medium px-2 py-0.5 rounded-md bg-gray-50 text-gray-700 border border-gray-200/70 inline-flex items-center gap-1">
+                  <span>{noticeText}</span>
                   {cand.last_working_day && (
-                    <span className="ml-1 opacity-90 text-[10px] font-normal">
-                      LWD: {formatLwdDate(cand.last_working_day)}
+                    <span className="inline-flex items-center cursor-help">
+                      <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
+                      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/lwd:flex flex-col items-center z-50">
+                        <span className="px-2 py-0.5 bg-[#1E293B] text-white text-[10px] font-medium rounded whitespace-nowrap shadow-md">
+                          LWD: {formatLwdDate(cand.last_working_day)}
+                        </span>
+                        <span className="w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-[#1E293B]" />
+                      </span>
                     </span>
                   )}
                 </span>
               )}
               {currentCtcDisplay && (
-                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FFE4E6] text-[#E11D48]">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-gray-50 text-gray-700 border border-gray-200/70">
                   {currentCtcDisplay}
                   {cand.current_take_home && (
-                    <span className="ml-1 opacity-80 text-[10px] font-normal italic">
+                    <span className="ml-1 opacity-75 text-[10px] font-normal italic">
                       (fixed: {cand.current_take_home})
                     </span>
                   )}
                 </span>
               )}
               {expectedCtcDisplay && (
-                <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#FCE7F3] text-[#BE185D]">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-gray-50 text-gray-700 border border-gray-200/70">
                   {expectedCtcDisplay}
                 </span>
               )}
               {(() => {
                 const qaScore = getQuestionAnalysisScore(item);
                 if (qaScore === null) return null;
-                let bg = "bg-[#EBFFEE] text-[#069855]";
-                if (qaScore < 60) {
-                  bg = "bg-[#FFF2F2] text-[#FF383C]";
-                } else if (qaScore < 80) {
-                  bg = "bg-[#FFF7D6] text-[#D97706]";
-                }
+                const dotColor = qaScore >= 80 ? "bg-emerald-500" : qaScore >= 60 ? "bg-amber-500" : "bg-rose-500";
                 return (
-                  <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${bg}`}>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-gray-50 text-gray-700 border border-gray-200/70">
+                    <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
                     QA: {qaScore}%
                   </span>
                 );
               })()}
             </div>
-            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-              <Clock className="w-3.5 h-3.5 text-[#AEAEB2]" />
-              <span className="text-[11px] font-bold text-[#8E8E93]">
+            <div className="flex items-center gap-1 shrink-0 ml-auto text-gray-400" title={`Time in stage: ${formatMovedDate(item.status_tags)}`}>
+              <Clock className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-medium text-gray-500">
                 {formatMovedDate(item.status_tags)}
               </span>
             </div>
@@ -2828,19 +2897,19 @@ export default function JobPipelineDashboard({
             {/* Collapse / Expand toggle */}
             <button
               onClick={() => setIsMetadataExpanded(!isMetadataExpanded)}
-              className="flex items-center gap-1.5 px-3 py-2 border border-[#D1D1D6] rounded-lg text-sm text-[#757575] hover:bg-[#F9FAFB] transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2  bg-white border border-[#0F47F2] rounded-md text-sm font-medium text-[#0F47F2] hover:bg-blue-50/60 transition-colors"
               title={isMetadataExpanded ? "Collapse details" : "Expand details"}
             >
               {isMetadataExpanded ? (
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1.33301 14.6667L5.99967 10M5.99967 10H2.09491M5.99967 10V13.9047" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M14.6667 1.3335L10 6.00016M10 6.00016H13.9047M10 6.00016V2.0954" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M1.33301 14.6667L5.99967 10M5.99967 10H2.09491M5.99967 10V13.9047" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M14.6667 1.3335L10 6.00016M10 6.00016H13.9047M10 6.00016V2.0954" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
 
               ) : (
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M6 9.99984L1.33333 14.6665M1.33333 14.6665H5.23809M1.33333 14.6665L1.33333 10.7618" stroke="#6B7280" stroke-linecap="round" stroke-linejoin="round" />
-                  <path d="M10.0013 6L14.668 1.33333M14.668 1.33333L10.7632 1.33333M14.668 1.33333V5.23809" stroke="#6B7280" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M6 9.99984L1.33333 14.6665M1.33333 14.6665H5.23809M1.33333 14.6665L1.33333 10.7618" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M10.0013 6L14.668 1.33333M14.668 1.33333L10.7632 1.33333M14.668 1.33333V5.23809" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
 
               )}
@@ -2849,7 +2918,7 @@ export default function JobPipelineDashboard({
             {/* View JD */}
             <button
               onClick={() => jobId && handleRequisitionInfo(jobId)}
-              className="flex items-center gap-2 px-4 py-2 border border-[#D1D1D6] rounded-lg text-sm text-[#757575] hover:bg-[#F9FAFB] transition-colors"
+              className="flex items-center gap-2 px-4 py-2  bg-white border border-[#0F47F2] rounded-md text-sm font-medium text-[#0F47F2] hover:bg-blue-50/60 transition-colors"
             >
               View JD <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.91068 8.92265C1.41489 8.27854 1.16699 7.95648 1.16699 7.00016C1.16699 6.04385 1.41489 5.7218 1.91068 5.07769C2.90064 3.79157 4.56089 2.3335 7.00033 2.3335C9.43977 2.3335 11.1 3.79157 12.09 5.07769C12.5857 5.7218 12.8337 6.04385 12.8337 7.00016C12.8337 7.95648 12.5857 8.27854 12.09 8.92265C11.1 10.2087 9.43977 11.6668 7.00033 11.6668C4.56089 11.6668 2.90064 10.2087 1.91068 8.92265Z" stroke="#0F47F2" />
@@ -2861,12 +2930,12 @@ export default function JobPipelineDashboard({
             {/* Edit */}
             <button
               onClick={() => setShowEditModal(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-[#0F47F2] bg-[#E7EDFF] text-[#0F47F2] rounded-lg text-sm font-medium hover:bg-[#DDE6FF] transition-colors"
+              className="flex items-center gap-2 px-4 py-2 border border-[#0F47F2] bg-white text-[#0F47F2] rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8.8396 2.39982L3.36624 8.19317C3.15958 8.41317 2.95958 8.84651 2.91958 9.14651L2.67291 11.3065C2.58624 12.0865 3.14624 12.6198 3.91958 12.4865L6.06624 12.1198C6.36624 12.0665 6.78626 11.8465 6.99293 11.6198L12.4663 5.82649C13.4129 4.82649 13.8396 3.68649 12.3663 2.29315C10.8996 0.913152 9.78626 1.39982 8.8396 2.39982Z" stroke="#0F47F2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M7.92676 3.3667C8.21342 5.2067 9.70676 6.61337 11.5601 6.8" stroke="#0F47F2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M2 14.6665H14" stroke="#0F47F2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M8.8396 2.39982L3.36624 8.19317C3.15958 8.41317 2.95958 8.84651 2.91958 9.14651L2.67291 11.3065C2.58624 12.0865 3.14624 12.6198 3.91958 12.4865L6.06624 12.1198C6.36624 12.0665 6.78626 11.8465 6.99293 11.6198L12.4663 5.82649C13.4129 4.82649 13.8396 3.68649 12.3663 2.29315C10.8996 0.913152 9.78626 1.39982 8.8396 2.39982Z" stroke="#0F47F2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M7.92676 3.3667C8.21342 5.2067 9.70676 6.61337 11.5601 6.8" stroke="#0F47F2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 14.6665H14" stroke="#0F47F2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               Edit
             </button>
@@ -2874,7 +2943,7 @@ export default function JobPipelineDashboard({
             {/* + Candidate (Upload) */}
             <button
               onClick={() => setShowUploadModal(true)}
-              className="flex items-center gap-2 px-5 py-2 bg-[#0F47F2] text-white rounded-lg text-sm font-medium hover:bg-[#0A3BCC] transition-colors"
+              className="flex items-center gap-2 px-5 py-2 bg-white text-[#0F47F2] border border-[#0F47F2] hover:bg-[#F0F4FF] rounded-lg text-sm font-medium transition-colors"
             >
               + Candidate
             </button>
@@ -2888,139 +2957,145 @@ export default function JobPipelineDashboard({
           <div className="mt-4 border border-[#E5E7EB] rounded-2xl p-4 transition-all">
             {loadingJob ? (
               <div className="animate-pulse space-y-4">
-                <div className="h-4 bg-gray-200 rounded w-1/3" />
-                <div className="grid grid-cols-7 gap-4">
-                  {Array.from({ length: 13 }).map((_, i) => (
-                    <div key={i} className={`h-4 bg-gray-200 rounded ${i === 12 ? 'col-span-2' : ''}`} />
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                  {Array.from({ length: 11 }).map((_, i) => (
+                    <div key={i} className="h-10 bg-gray-200 rounded" />
                   ))}
+                </div>
+                <div className="border-t border-[#E5E7EB] pt-3 flex gap-2">
+                  <div className="h-4 bg-gray-200 rounded w-12" />
+                  <div className="h-4 bg-gray-200 rounded w-24" />
+                  <div className="h-4 bg-gray-200 rounded w-20" />
                 </div>
               </div>
             ) : jobDetails ? (
-              <div className="grid grid-cols-7 gap-x-8 gap-y-6 text-sm">
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Year of Experience
+              <div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-x-8 gap-y-5 text-sm">
+                  {/* Row 1 */}
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Year of Experience
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {jobDetails.experience_min_years || "--"} -{" "}
+                      {jobDetails.experience_max_years || "--"} years
+                    </div>
                   </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {jobDetails.experience_min_years || "--"} -{" "}
-                    {jobDetails.experience_max_years || "--"} years
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Location
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {jobDetails.location?.join(", ") || "--"}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Location
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Salary - CTC
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {formatSalary(jobDetails.salary_min, jobDetails.salary_max)}
+                    </div>
                   </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {jobDetails.location?.join(", ") || "--"}
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Work Approach
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {workApproachLabel[jobDetails.work_approach] || "--"}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Salary - CTC
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      No of Position
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {jobDetails.num_positions || "--"}
+                    </div>
                   </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {formatSalary(jobDetails.salary_min, jobDetails.salary_max)}
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Education Qualifications
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {jobDetails.seniority || "--"}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Work Approach
-                  </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {workApproachLabel[jobDetails.work_approach] || "--"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    No of Position
-                  </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {jobDetails.num_positions || "--"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Education Qualifications
-                  </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {jobDetails.seniority || "--"}
-                  </div>
-                </div>
-                <div /> {/* Empty slot to fill 7th column of first row */}
 
-                {/* Second row */}
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Open Date
+                  {/* Row 2 */}
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Open Date
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {formatDate(jobDetails.created_at)}
+                    </div>
                   </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {formatDate(jobDetails.created_at)}
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Last Active Date
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {formatDate(jobDetails.updated_at)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Shortlisted
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {jobDetails.shortlisted_candidate_count ?? "--"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Hired
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">--</div>
+                  </div>
+                  <div>
+                    <div className="text-[#8E8E93] text-xs font-medium">
+                      Notice Period
+                    </div>
+                    <div className="font-medium text-[#4B5563] mt-1">
+                      {jobDetails.notice_period || "--"}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Last Active Date
-                  </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {formatDate(jobDetails.updated_at)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Shortlisted
-                  </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {jobDetails.shortlisted_candidate_count ?? "--"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Hired
-                  </div>
-                  <div className="font-medium text-[#4B5563] mt-1">--</div>
-                </div>
-                <div>
-                  <div className="text-[#8E8E93] text-xs font-medium">
-                    Notice Period
-                  </div>
-                  <div className="font-medium text-[#4B5563] mt-1">
-                    {jobDetails.notice_period || "--"}
-                  </div>
-                </div>
-                <div className="col-span-2">
-                  <div className="text-[#8E8E93] text-xs font-medium mb-1.5">
-                    Skills
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {jobDetails.skills && jobDetails.skills.length > 0 ? (
-                      <>
-                        {(showAllSkills
-                          ? jobDetails.skills
-                          : jobDetails.skills.slice(0, 4)
-                        ).map((s) => (
-                          <span
-                            key={s}
-                            className="bg-[#F2F2F7] text-[#4B5563] text-[10px] px-2.5 py-0.5 rounded-full"
-                          >
-                            {s}
-                          </span>
-                        ))}
 
-                        {jobDetails.skills.length > 4 && (
-                          <button
-                            onClick={() => setShowAllSkills(!showAllSkills)}
-                            className="text-[10px] text-blue-500 ml-1"
-                          >
-                            {showAllSkills
-                              ? "Show less"
-                              : `+${jobDetails.skills.length - 4} more`}
-                          </button>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-[#8E8E93] text-xs">--</span>
-                    )}
-                  </div>
+                {/* Horizontal divider line separating top details and down details as skills: first, second, third */}
+                <div className="border-t border-[#E5E7EB] mt-4 pt-3 flex flex-wrap items-center gap-2">
+                  <span className="text-[#8E8E93] text-xs font-medium mr-1 shrink-0">
+                    skills:
+                  </span>
+                  {jobDetails.skills && jobDetails.skills.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-1.5 flex-1">
+                      {(showAllSkills
+                        ? jobDetails.skills
+                        : jobDetails.skills.slice(0, 8)
+                      ).map((s) => (
+                        <span
+                          key={s}
+                          className="bg-[#F2F2F7] text-[#4B5563] text-[11px] px-2.5 py-0.5 rounded-full font-medium"
+                        >
+                          {s}
+                        </span>
+                      ))}
+
+                      {jobDetails.skills.length > 8 && (
+                        <button
+                          onClick={() => setShowAllSkills(!showAllSkills)}
+                          className="text-xs text-blue-600 hover:text-blue-700 font-medium ml-1"
+                        >
+                          {showAllSkills
+                            ? "Show less"
+                            : `+${jobDetails.skills.length - 8} more`}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-[#8E8E93] text-xs">--</span>
+                  )}
                 </div>
               </div>
             ) : (
@@ -3093,31 +3168,89 @@ export default function JobPipelineDashboard({
           isKanbanView ? (
             /* ═══════════ KANBAN VIEW TOOLBAR ═══════════ */
             <div className="mx-8 mt-4 flex items-center justify-between bg-white p-4 rounded-t-2xl border border-b-0 border-[#E5E7EB]">
-              <div className="flex items-center gap-3">
-                <div className="relative w-[240px] shrink-0">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-                  <input
-                    type="text"
-                    placeholder="Search for Candidates"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
-                  />
-                  {/* {suggestions.length > 0 && (
-                    <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
-                      {suggestions.map((sug) => (
-                        <div
-                          key={sug.id}
-                          className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
-                          onClick={() => handleSuggestionSelect(sug)}
-                        >
-                          {sug.name}
-                        </div>
-                      ))}
-                    </div>
-                  )} */}
+              <div className="flex items-center gap-2">
+                {!isSearchOpen && !searchQuery ? (
+                  <button
+                    onClick={() => {
+                      setIsSearchOpen(true);
+                      setTimeout(() => searchInputRef.current?.focus(), 50);
+                    }}
+                    className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#374151] hover:bg-[#F3F5F7] hover:border-[#D1D5DB] transition-all shrink-0"
+                    title="Search Candidates"
+                  >
+                    <Search className="w-4 h-4 text-[#4B5563]" />
+                  </button>
+                ) : (
+                  <div ref={searchContainerRef} className="relative w-[230px] sm:w-[260px] flex items-center shrink-0 transition-all duration-200 animate-in fade-in">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Search for Candidates"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape" && !searchQuery) {
+                          setIsSearchOpen(false);
+                        }
+                      }}
+                      className="w-full h-9 pl-9 pr-8 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB] bg-white"
+                    />
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setIsSearchOpen(false);
+                      }}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#AEAEB2] hover:text-[#4B5563] p-0.5 rounded transition-colors"
+                      title="Close search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                    {suggestions.length > 0 && (
+                      <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                        {suggestions.map((sug) => (
+                          <div
+                            key={sug.id}
+                            className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
+                            onClick={() => handleSuggestionSelect(sug)}
+                          >
+                            {sug.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Filter Candidates (with Recruiter Filter inside) */}
+                <div className="relative">
+                  <button
+                    ref={kanbanFilterButtonRef}
+                    title="Filter Candidates"
+                    onClick={() => {
+                      setActiveFilterAnchor("kanban");
+                      setShowPipelineFilterPanel(!showPipelineFilterPanel);
+                    }}
+                    className={`flex items-center gap-1.5 px-3 h-9 bg-white border rounded-lg text-xs font-medium transition-all ${
+                      showPipelineFilterPanel || activeFilterCount > 0
+                        ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]"
+                        : "text-[#374151] border-[#E5E7EB] hover:bg-[#F9FAFB] hover:border-[#D1D5DB]"
+                    }`}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                      <path d="M2 2H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M5.33301 6H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M2 10H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M5.33301 14H10.6663" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span>Filter</span>
+                    {activeFilterCount > 0 && (
+                      <span className="w-4 h-4 rounded-full bg-[#0F47F2] text-white text-[10px] font-bold flex items-center justify-center ml-0.5">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </button>
                 </div>
-                {renderRecruiterSelect()}
               </div>
               <div className="flex items-center gap-2">
                 {/* Share Pipeline */}
@@ -3126,10 +3259,10 @@ export default function JobPipelineDashboard({
                     const url = `${window.location.origin}/public/workspaces/${workspaceId}/applications`;
                     window.open(url, "_blank");
                   }}
-                  className="flex items-center gap-1.5 px-3.5 h-9 bg-[#0F47F2] text-white rounded-lg text-xs font-semibold hover:bg-[#0D3ECF] transition-colors shrink-0 shadow-xs"
+                  className="flex items-center gap-1.5 px-3.5 h-9 bg-white text-[#0F47F2] border border-[#0F47F2] hover:bg-[#F0F4FF] rounded-lg text-xs font-semibold transition-colors shrink-0"
                   title="Share Pipeline"
                 >
-                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 text-[#0F47F2]">
                     <g clipPath="url(#clip0_360_5904)">
                       <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="currentColor" strokeLinecap="round" />
                       <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
@@ -3151,13 +3284,10 @@ export default function JobPipelineDashboard({
                     }
                     setShowExportDialog(true);
                   }}
-                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors"
+                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#374151] hover:bg-[#F3F5F7] hover:border-[#D1D5DB] transition-all shrink-0"
                   title="Export CSV"
                 >
-                  <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Download className="w-4 h-4 text-[#4B5563]" />
                 </button>
 
                 {/* Table View toggle */}
@@ -3166,7 +3296,7 @@ export default function JobPipelineDashboard({
                     setActiveStageSlug(null);
                     setIsKanbanView(false);
                   }}
-                  className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:text-[#414141] transition-colors"
+                  className="flex items-center justify-center w-9 h-9  bg-white border border-[#0F47F2] rounded-md text-sm font-medium text-[#0F47F2] hover:bg-blue-50/60 transition-colors"
                   title="Table View"
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -3176,9 +3306,9 @@ export default function JobPipelineDashboard({
                 {/* + Add Stage */}
                 <button
                   onClick={() => setShowAddStageForm(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-[#0F47F2] text-white rounded-lg hover:bg-[#0D3ECF] transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-white text-[#0F47F2] border border-[#0F47F2] hover:bg-[#F0F4FF] rounded-lg transition-colors"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Add Stage
+                  <Plus className="w-3.5 h-3.5 text-[#0F47F2]" /> Add Stage
                 </button>
               </div>
             </div>
@@ -3231,47 +3361,78 @@ export default function JobPipelineDashboard({
                   {/* Add Stage button positioned immediately after visible stage pills area */}
                   <button
                     onClick={() => setShowAddStageForm(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#0F47F2] rounded-lg   text-white transition-colors border border-transparent shrink-0 whitespace-nowrap"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white text-[#0F47F2] border border-[#0F47F2] hover:bg-[#F0F4FF] rounded-lg transition-colors shrink-0 whitespace-nowrap"
                     title="Add Stage"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <Plus className="w-3.5 h-3.5 text-[#0F47F2]" />
                     <span>Add Stage</span>
                   </button>
                 </div>
 
-                {/* Right Side: Search, Recruiter Filter, Filter Panel, Share Pipeline, Export, View Toggle */}
+                {/* Right Side: Search, Filter Panel, Export, View Toggle */}
                 <div className="flex-shrink-0 flex items-center gap-2">
-                  <div ref={searchContainerRef} className="relative w-[220px] shrink-0">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
-                    <input
-                      type="text"
-                      placeholder="Search for Candidates"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full h-9 pl-9 pr-3 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB]"
-                    />
-                    {suggestions.length > 0 && (
-                      <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
-                        {suggestions.map((sug) => (
-                          <div
-                            key={sug.id}
-                            className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
-                            onClick={() => handleSuggestionSelect(sug)}
-                          >
-                            {sug.name}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {renderRecruiterSelect()}
+                  {!isSearchOpen && !searchQuery ? (
+                    <button
+                      onClick={() => {
+                        setIsSearchOpen(true);
+                        setTimeout(() => searchInputRef.current?.focus(), 50);
+                      }}
+                      className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#374151] hover:bg-[#F3F5F7] hover:border-[#D1D5DB] transition-all shrink-0"
+                      title="Search Candidates"
+                    >
+                      <Search className="w-4 h-4 text-[#4B5563]" />
+                    </button>
+                  ) : (
+                    <div ref={searchContainerRef} className="relative w-[220px] sm:w-[250px] flex items-center shrink-0 transition-all duration-200 animate-in fade-in">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AEAEB2]" />
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        placeholder="Search for Candidates"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape" && !searchQuery) {
+                            setIsSearchOpen(false);
+                          }
+                        }}
+                        className="w-full h-9 pl-9 pr-8 rounded-lg text-sm text-[#4B5563] placeholder:text-[#AEAEB2] focus:outline-none focus:ring-1 focus:ring-[#0F47F2]/30 transition-shadow border border-[#E5E7EB] bg-white"
+                      />
+                      <button
+                        onClick={() => {
+                          setSearchQuery("");
+                          setIsSearchOpen(false);
+                        }}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#AEAEB2] hover:text-[#4B5563] p-0.5 rounded transition-colors"
+                        title="Close search"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                      {suggestions.length > 0 && (
+                        <div className="absolute top-10 z-[100] w-full bg-white shadow-lg rounded-lg max-h-60 overflow-y-auto border border-gray-200">
+                          {suggestions.map((sug) => (
+                            <div
+                              key={sug.id}
+                              className="p-2 hover:bg-gray-100 cursor-pointer text-sm text-[#4B5563]"
+                              onClick={() => handleSuggestionSelect(sug)}
+                            >
+                              {sug.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Recruiter / Candidate Filter Control */}
                   <div className="relative">
                     <button
                       ref={pipelineFilterButtonRef}
                       title="Filter Candidates"
-                      onClick={() => setShowPipelineFilterPanel(!showPipelineFilterPanel)}
+                      onClick={() => {
+                        setActiveFilterAnchor("table");
+                        setShowPipelineFilterPanel(!showPipelineFilterPanel);
+                      }}
                       className={`flex items-center gap-1.5 px-3 h-9 bg-white border rounded-lg text-xs font-medium transition-all ${showPipelineFilterPanel || activeFilterCount > 0
                         ? "bg-[#E7EDFF] text-[#0F47F2] border-[#0F47F2]"
                         : "text-[#374151] border-[#E5E7EB] hover:bg-[#F9FAFB] hover:border-[#D1D5DB]"
@@ -3293,34 +3454,16 @@ export default function JobPipelineDashboard({
                     <PipelineFilterPanel
                       isOpen={showPipelineFilterPanel}
                       onClose={() => setShowPipelineFilterPanel(false)}
-                      onApply={(filters) => setPipelineFilters(filters)}
-                      initialFilters={pipelineFilters}
-                      anchorRef={pipelineFilterButtonRef}
+                      onApply={handleApplyPipelineFilters}
+                      initialFilters={{
+                        ...pipelineFilters,
+                        recruiter: selectedRecruiter,
+                      }}
+                      anchorRef={activeFilterAnchor === "kanban" ? kanbanFilterButtonRef : pipelineFilterButtonRef}
                       jobId={jobId}
+                      recruiterOptions={recruiterOptions}
                     />
-                  </div>
-
-                  {/* Share Pipeline Action Button */}
-
-
-                  {/* Export CSV */}
-                  <button
-                    onClick={() => {
-                      if (selectedIds.size === 0) {
-                        showToast.error("Please select at least one candidate to export");
-                        return;
-                      }
-                      setShowExportDialog(true);
-                    }}
-                    title="Export CSV"
-                    className="flex items-center justify-center w-9 h-9 bg-white border border-[#E5E7EB] rounded-lg text-[#AEAEB2] hover:bg-[#F3F5F7] transition-colors shrink-0"
-                  >
-                    <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M10.8184 4.50737C10.8234 4.50735 10.8283 4.50734 10.8333 4.50734C12.4902 4.50734 13.8333 5.85295 13.8333 7.51284C13.8333 9.05986 12.6666 10.3339 11.1667 10.5M10.8184 4.50737C10.8283 4.39737 10.8333 4.28597 10.8333 4.17339C10.8333 2.14463 9.19171 0.5 7.16667 0.5C5.24883 0.5 3.67488 1.97511 3.51362 3.85461M10.8184 4.50737C10.7502 5.26506 10.4524 5.9564 9.99522 6.51101M3.51362 3.85461C1.82265 4.01582 0.5 5.44261 0.5 7.1789C0.5 8.79449 1.64517 10.1421 3.16667 10.4515M3.51362 3.85461C3.61884 3.84458 3.72549 3.83945 3.83333 3.83945C4.58388 3.83945 5.2765 4.08796 5.83366 4.50734" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M7.16667 7.1665L7.16667 12.4998M7.16667 7.1665C6.69985 7.1665 5.82769 8.49604 5.5 8.83317M7.16667 7.1665C7.63348 7.1665 8.50565 8.49604 8.83333 8.83317" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-
+                  </div> 
                   {/* Kanban View Toggle */}
                   <button
                     onClick={() => {
@@ -3349,9 +3492,9 @@ export default function JobPipelineDashboard({
                       window.open(url, "_blank");
                     }}
                     title="Share Pipeline"
-                    className="flex items-center gap-1.5 px-3.5 h-9 bg-[#0F47F2] text-white rounded-lg text-xs font-semibold hover:bg-[#0D3ECF] transition-colors shrink-0 shadow-xs"
+                    className="flex items-center gap-1.5 px-3.5 h-9 bg-white text-[#0F47F2] border border-[#0F47F2] hover:bg-[#F0F4FF] rounded-lg text-xs font-semibold transition-colors shrink-0"
                   >
-                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 text-[#0F47F2]">
                       <g clipPath="url(#clip0_360_5904_tbl)">
                         <path d="M14.6663 9.3321C14.6471 11.6081 14.5207 12.8628 13.6933 13.6903C12.7167 14.6668 11.1449 14.6668 8.00141 14.6668C4.85789 14.6668 3.28614 14.6668 2.30957 13.6903C1.33301 12.7137 1.33301 11.142 1.33301 7.99843C1.33301 4.85491 1.33301 3.28315 2.30957 2.30658C3.137 1.47915 4.39172 1.3528 6.66774 1.3335" stroke="currentColor" strokeLinecap="round" />
                         <path d="M14.6667 4.66683H9.33333C8.1216 4.66683 7.39113 5.26151 7.12027 5.53369C7.0364 5.61798 6.99447 5.66014 6.99387 5.66071C6.99333 5.66128 6.95113 5.70322 6.86687 5.78711C6.59468 6.05797 6 6.78843 6 8.00016V10.0002M14.6667 4.66683L11.3333 1.3335M14.6667 4.66683L11.3333 8.00016" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
@@ -3798,14 +3941,20 @@ export default function JobPipelineDashboard({
 
                         // Notice period display for table/UI
                         const noticePeriodDisplay = (
-                          <span className="flex flex-col items-start leading-tight">
+                          <div className="inline-flex items-center gap-1.5 whitespace-nowrap">
                             <span>{noticePeriodText}</span>
                             {cand.last_working_day && (
-                              <span className="text-[#8E8E93] text-[10px] font-normal mt-0.5 whitespace-nowrap">
-                                LWD: {formatLwdDate(cand.last_working_day)}
-                              </span>
+                              <div className="relative group/lwd inline-flex items-center cursor-help">
+                                <AlertTriangle className="w-3.5 h-3.5 text-amber-500 hover:text-amber-600 transition-colors shrink-0" />
+                                <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/lwd:flex flex-col items-center z-50">
+                                  <div className="px-2.5 py-1 bg-[#1E293B] text-white text-xs font-medium rounded-md whitespace-nowrap shadow-lg">
+                                    LWD: {formatLwdDate(cand.last_working_day)}
+                                  </div>
+                                  <div className="w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-[#1E293B]" />
+                                </div>
+                              </div>
                             )}
-                          </span>
+                          </div>
                         );
 
                         // Attention tag from status_tags
@@ -4285,14 +4434,20 @@ export default function JobPipelineDashboard({
                                   : "--");
 
                             const noticePeriodDisplay = (
-                              <span className="flex flex-col items-start leading-tight">
+                              <div className="inline-flex items-center gap-1.5 whitespace-nowrap">
                                 <span>{noticePeriodText}</span>
                                 {cand.last_working_day && (
-                                  <span className="text-[#8E8E93] text-[10px] font-normal mt-0.5 whitespace-nowrap">
-                                    LWD: {formatLwdDate(cand.last_working_day)}
-                                  </span>
+                                  <div className="relative group/lwd inline-flex items-center cursor-help">
+                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 hover:text-amber-600 transition-colors shrink-0" />
+                                    <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/lwd:flex flex-col items-center z-50">
+                                      <div className="px-2.5 py-1 bg-[#1E293B] text-white text-xs font-medium rounded-md whitespace-nowrap shadow-lg">
+                                        LWD: {formatLwdDate(cand.last_working_day)}
+                                      </div>
+                                      <div className="w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-[#1E293B]" />
+                                    </div>
+                                  </div>
                                 )}
-                              </span>
+                              </div>
                             );
 
                             return (
@@ -4864,50 +5019,35 @@ export default function JobPipelineDashboard({
               </div>
             ) : jobDataForModal ? (
               <>
-                {/* ── Sticky Header Bar ── */}
-                <div className="bg-white border-b border-[#E2E8F0] px-8 pt-6 pb-0 shrink-0">
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex items-start gap-3">
+                {/* ── Fixed Header Bar ── */}
+                <div className="bg-white border-b border-[#E2E8F0] px-6 pt-5 pb-0 shrink-0">
+                  <div className="flex items-center justify-between gap-4 mb-3.5">
+                    <div className="flex items-center gap-3 min-w-0">
                       <button
                         onClick={handleCloseRequisitionModal}
-                        className="mt-1 p-1.5 hover:bg-[#F1F5F9] rounded-lg transition-colors text-[#64748B] hover:text-[#0F172A]"
+                        className="p-1.5 hover:bg-[#F1F5F9] rounded-lg transition-colors text-[#64748B] hover:text-[#0F172A]"
                         title="Close"
                       >
                         <ArrowLeft className="w-5 h-5" />
                       </button>
-                      <div>
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <h2 className="text-2xl font-bold text-[#0F172A]">
-                            {jobDataForModal.title || "--"}
-                          </h2>
-                          <span className="bg-[#E7EDFF] text-[#0F47F2] text-xs font-semibold px-2.5 py-1 rounded-md border border-[#0F47F2]/20">
-                            JD-{jobId}
+                      <div className="flex items-center gap-2.5 flex-wrap min-w-0">
+                        <h2 className="text-xl font-bold text-[#0F172A] truncate">
+                          {jobDataForModal.title || "--"}
+                        </h2>
+                        {/* {jobDataForModal.job_type && (
+                          <span className="bg-[#EFF6FF] text-[#0F47F2] text-xs font-semibold px-2.5 py-0.5 rounded-md border border-[#BFDBFE]">
+                            {jobDataForModal.job_type.replace(/_/g, " ")}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-[#475569] text-xs font-medium px-2.5 py-1 rounded-lg">
-                            <Briefcase className="w-3.5 h-3.5 text-[#64748B]" />
-                            {jobDataForModal.experience_min_years ?? "--"}+ years exp
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-[#475569] text-xs font-medium px-2.5 py-1 rounded-lg">
-                            <LocateIcon className="w-3.5 h-3.5 text-[#64748B]" />
-                            {workApproachLabel[jobDataForModal.work_approach] || jobDataForModal.work_approach || "--"}
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-[#475569] text-xs font-medium px-2.5 py-1 rounded-lg">
-                            <FileSearch className="w-3.5 h-3.5 text-[#64748B]" />
-                            {jobDataForModal.location?.join(", ") || "--"}
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-[#475569] text-xs font-medium px-2.5 py-1 rounded-lg">
-                            <Clock className="w-3.5 h-3.5 text-[#64748B]" />
-                            Immediate
-                          </span>
-                        </div>
+                        )} */}
+                        <span className="bg-[#F1F5F9] text-[#475569] text-xs font-medium px-2 py-0.5 rounded-md border border-[#E2E8F0]">
+                          JD-{jobId}
+                        </span>
                       </div>
                     </div>
 
                     <button
                       onClick={handleCloseRequisitionModal}
-                      className="p-2 text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors"
+                      className="p-1.5 text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors"
                       title="Close"
                     >
                       <X className="w-5 h-5" />
@@ -4917,19 +5057,21 @@ export default function JobPipelineDashboard({
                   {/* ── Navigation Tabs ── */}
                   <div className="flex gap-6 border-t border-[#F1F5F9] pt-1">
                     <button
-                      className={`pb-3 text-sm font-semibold transition-colors border-b-2 ${requisitionModalTab === "info"
-                        ? "text-[#0F47F2] border-[#0F47F2]"
-                        : "text-[#64748B] border-transparent hover:text-[#0F172A]"
-                        }`}
+                      className={`pb-2.5 text-sm font-semibold transition-colors border-b-2 ${
+                        requisitionModalTab === "info"
+                          ? "text-[#0F47F2] border-[#0F47F2]"
+                          : "text-[#64748B] border-transparent hover:text-[#0F172A]"
+                      }`}
                       onClick={() => setRequisitionModalTab("info")}
                     >
                       Requisition Info
                     </button>
                     <button
-                      className={`pb-3 text-sm font-semibold transition-colors border-b-2 ${requisitionModalTab === "company"
-                        ? "text-[#0F47F2] border-[#0F47F2]"
-                        : "text-[#64748B] border-transparent hover:text-[#0F172A]"
-                        }`}
+                      className={`pb-2.5 text-sm font-semibold transition-colors border-b-2 ${
+                        requisitionModalTab === "company"
+                          ? "text-[#0F47F2] border-[#0F47F2]"
+                          : "text-[#64748B] border-transparent hover:text-[#0F172A]"
+                      }`}
                       onClick={async () => {
                         setRequisitionModalTab("company");
                         if (
@@ -4956,51 +5098,63 @@ export default function JobPipelineDashboard({
                 </div>
 
                 {/* ── Main Scrollable Body ── */}
-                <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-[#F8FAFC]">
                   {requisitionModalTab === "info" && competenciesData && (
                     <>
-                      {/* ── Key Metrics Cards Grid ── */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {[
-                          {
-                            label: "Experience Required",
-                            value: `${jobDataForModal.experience_min_years ?? "--"} - ${jobDataForModal.experience_max_years ?? "--"} yrs`,
-                          },
-                          {
-                            label: "Positions Open",
-                            value: jobDataForModal.count || "--",
-                          },
-                          {
-                            label: "Salary Range",
-                            value: formatSalary(
-                              jobDataForModal.salary_min,
-                              jobDataForModal.salary_max,
-                            ),
-                          },
-                          {
-                            label: "Work Mode",
-                            value: workApproachLabel[jobDataForModal.work_approach] || "--",
-                          },
-                        ].map((stat, idx) => (
-                          <div
-                            key={idx}
-                            className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-2xs hover:border-[#CBD5E1] transition-colors"
-                          >
+                      {/* ── Job Metadata Overview & Top Skills ── */}
+                      <div className="">
+                        {/* 4 Metadata Columns */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          <div>
                             <span className="text-xs font-medium text-[#64748B] block mb-1">
-                              {stat.label}
+                              Experience
                             </span>
-                            <span className="text-lg font-bold text-[#0F172A]">
-                              {stat.value}
+                            <span className="text-sm sm:text-base font-bold text-[#0F172A]">
+                              {jobDataForModal.experience_min_years != null || jobDataForModal.experience_max_years != null
+                                ? `${jobDataForModal.experience_min_years ?? "0"}–${jobDataForModal.experience_max_years ?? "—"} Yrs`
+                                : "—"}
                             </span>
                           </div>
-                        ))}
+                          <div>
+                            <span className="text-xs font-medium text-[#64748B] block mb-1">
+                              Open Positions
+                            </span>
+                            <span className="text-sm sm:text-base font-bold text-[#0F172A]">
+                              {jobDataForModal.count ?? "—"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-[#64748B] block mb-1">
+                              Salary Range
+                            </span>
+                            <span className="text-sm sm:text-base font-bold text-[#0F172A]">
+                              {formatSalary(
+                                jobDataForModal.salary_min,
+                                jobDataForModal.salary_max,
+                              ) || "—"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-[#64748B] block mb-1">
+                              Work Mode
+                            </span>
+                            <span className="text-sm sm:text-base font-bold text-[#0F172A]">
+                              {workApproachLabel[jobDataForModal.work_approach] ||
+                                jobDataForModal.work_approach ||
+                                "—"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Divider Line & Skills on Top */}
+                       
                       </div>
 
                       {/* ── Role Overview Card ── */}
                       {competenciesData.role_overview && (
-                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs">
-                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#0F172A] mb-3">
-                            <BookOpen className="w-5 h-5 text-[#0F47F2]" />
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-2xs">
+                          <h3 className="flex items-center gap-2 text-sm font-semibold text-[#0F172A] mb-2.5">
+                            <BookOpen className="w-4 h-4 text-[#0F47F2]" />
                             Role Overview
                           </h3>
                           <p className="text-sm text-[#475569] leading-relaxed">
@@ -5011,9 +5165,9 @@ export default function JobPipelineDashboard({
 
                       {/* ── The Core Expectation Card ── */}
                       {competenciesData.the_core_expectation?.length > 0 && (
-                        <div className="bg-[#ECFDF5] border border-[#A7F3D0] rounded-xl p-6 shadow-2xs">
-                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#065F46] mb-3">
-                            <Target className="w-5 h-5 text-[#059669]" />
+                        <div className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl p-5 shadow-2xs">
+                          <h3 className="flex items-center gap-2 text-sm font-semibold text-[#166534] mb-2.5">
+                            <Target className="w-4 h-4 text-[#16A34A]" />
                             The Core Expectation
                           </h3>
                           <ul className="space-y-2">
@@ -5021,10 +5175,10 @@ export default function JobPipelineDashboard({
                               (item: string, i: number) => (
                                 <li
                                   key={i}
-                                  className="flex items-start gap-2.5 text-sm text-[#047857]"
+                                  className="flex items-start gap-2.5 text-xs sm:text-sm text-[#15803D]"
                                 >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-[#059669] shrink-0 mt-2" />
-                                  <span>{item}</span>
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] shrink-0 mt-2" />
+                                  <span className="leading-relaxed">{item}</span>
                                 </li>
                               ),
                             )}
@@ -5034,9 +5188,9 @@ export default function JobPipelineDashboard({
 
                       {/* ── Key Responsibilities Card ── */}
                       {competenciesData.key_responsibilities_explained?.functional?.length > 0 && (
-                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs space-y-4">
-                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#0F172A]">
-                            <ListChecks className="w-5 h-5 text-[#0F47F2]" />
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-2xs space-y-3.5">
+                          <h3 className="flex items-center gap-2 text-sm font-semibold text-[#0F172A]">
+                            <ListChecks className="w-4 h-4 text-[#0F47F2]" />
                             Key Responsibilities
                           </h3>
                           <div className="space-y-3">
@@ -5044,15 +5198,17 @@ export default function JobPipelineDashboard({
                               (item: any, i: number) => (
                                 <div
                                   key={i}
-                                  className="bg-[#F0F9FF] border border-[#BAE6FD] rounded-xl p-4 space-y-1.5"
+                                  className="bg-[#F0F9FF] border border-[#BAE6FD] rounded-lg p-3.5 space-y-1.5"
                                 >
-                                  <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-start sm:items-center justify-between gap-2 flex-wrap">
                                     <span className="font-semibold text-sm text-[#0369A1]">
                                       {item.competency}
                                     </span>
                                     {item.priority && (
-                                      <span className="bg-[#FEF3C7] text-[#D97706] text-[10px] font-semibold px-2 py-0.5 rounded-md">
-                                        Priority: {item.priority}
+                                      <span className="bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0">
+                                        {item.priority.toLowerCase().includes("critical")
+                                          ? "Highly Critical"
+                                          : item.priority}
                                       </span>
                                     )}
                                   </div>
@@ -5067,8 +5223,8 @@ export default function JobPipelineDashboard({
                           {/* Leadership Responsibilities */}
                           {competenciesData.key_responsibilities_explained.leadership?.length > 0 && (
                             <div className="pt-4 border-t border-[#F1F5F9] space-y-3">
-                              <h4 className="flex items-center gap-2 text-sm font-semibold text-[#0F172A]">
-                                <Zap className="w-4 h-4 text-[#059669]" />
+                              <h4 className="flex items-center gap-2 text-sm font-semibold text-[#166534]">
+                                <Zap className="w-4 h-4 text-[#16A34A]" />
                                 Leadership Responsibilities
                               </h4>
                               <div className="space-y-3">
@@ -5076,12 +5232,12 @@ export default function JobPipelineDashboard({
                                   (item: any, i: number) => (
                                     <div
                                       key={i}
-                                      className="bg-[#ECFDF5] border border-[#A7F3D0] rounded-xl p-4 space-y-1.5"
+                                      className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg p-3.5 space-y-1.5"
                                     >
-                                      <span className="font-semibold text-sm text-[#047857] block">
+                                      <span className="font-semibold text-sm text-[#166534] block">
                                         {item.responsibility}
                                       </span>
-                                      <p className="text-xs text-[#064E3B] leading-relaxed">
+                                      <p className="text-xs text-[#15803D] leading-relaxed">
                                         {item.context}
                                       </p>
                                     </div>
@@ -5093,21 +5249,21 @@ export default function JobPipelineDashboard({
                         </div>
                       )}
 
-                      {/* ── Technical Skills Card ── */}
+                      {/* ── Technical Skills & Context Card ── */}
                       {competenciesData.required_technical_skills_purpose?.length > 0 && (
-                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs space-y-4">
-                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#0F172A]">
-                            <Layers className="w-5 h-5 text-[#0F47F2]" />
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-2xs space-y-3.5">
+                          <h3 className="flex items-center gap-2 text-sm font-semibold text-[#0F172A]">
+                            <Layers className="w-4 h-4 text-[#0F47F2]" />
                             Technical Skills & Context
                           </h3>
-                          <div className="space-y-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {competenciesData.required_technical_skills_purpose.map(
                               (item: any, i: number) => (
                                 <div
                                   key={i}
-                                  className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 space-y-1"
+                                  className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3.5 flex flex-col justify-between"
                                 >
-                                  <span className="font-semibold text-sm text-[#0F172A] block">
+                                  <span className="font-semibold text-sm text-[#0F172A] block mb-1">
                                     {item.skill}
                                   </span>
                                   <p className="text-xs text-[#64748B] leading-relaxed">
@@ -5120,18 +5276,18 @@ export default function JobPipelineDashboard({
                         </div>
                       )}
 
-                      {/* ── Required Skills Pills Card ── */}
+                      {/* ── Required Skills Tags Card ── */}
                       {jobDataForModal.skills && jobDataForModal.skills.length > 0 && (
-                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs space-y-3">
-                          <h3 className="flex items-center gap-2 text-base font-semibold text-[#0F172A]">
-                            <Target className="w-5 h-5 text-[#0F47F2]" />
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-2xs space-y-3">
+                          <h3 className="flex items-center gap-2 text-sm font-semibold text-[#0F172A]">
+                            <Target className="w-4 h-4 text-[#0F47F2]" />
                             Required Skills
                           </h3>
-                          <div className="flex flex-wrap gap-2 pt-1">
+                          <div className="flex flex-wrap gap-2 pt-0.5">
                             {jobDataForModal.skills.map((skill: string, i: number) => (
                               <span
                                 key={i}
-                                className="bg-[#EEF2FF] text-[#4F46E5] border border-[#C7D2FE] text-xs font-medium px-3 py-1 rounded-full"
+                                className="bg-[#EFF6FF] text-[#0F47F2] border border-[#BFDBFE] text-xs font-medium px-3 py-1 rounded-full"
                               >
                                 {skill}
                               </span>
@@ -5144,7 +5300,7 @@ export default function JobPipelineDashboard({
 
                   {/* ── About Company Tab Content ── */}
                   {requisitionModalTab === "company" && (
-                    <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xs">
+                    <div className="">
                       {loadingCompanyResearch ? (
                         <div className="flex flex-col items-center justify-center py-16 gap-3">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F47F2]"></div>

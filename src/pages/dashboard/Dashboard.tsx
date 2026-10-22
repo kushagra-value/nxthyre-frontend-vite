@@ -336,7 +336,24 @@ export default function Dashboard() {
     setCalendarLoading(true);
     try {
       const response = await dashboardService.getCalendarActivity(month, year);
-      setCalendarActivities(response.days);
+      let allDays = [...(response?.days || [])];
+
+      // If viewing the current month, also fetch previous month's activities to display historical bubbles
+      const now = new Date();
+      if (year === now.getFullYear() && month === now.getMonth() + 1) {
+        const prevMonth = month === 1 ? 12 : month - 1;
+        const prevYear = month === 1 ? year - 1 : year;
+        try {
+          const prevResponse = await dashboardService.getCalendarActivity(prevMonth, prevYear);
+          if (prevResponse?.days) {
+            allDays = [...prevResponse.days, ...allDays];
+          }
+        } catch {
+          // Ignore if previous month fails
+        }
+      }
+
+      setCalendarActivities(allDays);
     } catch (err) {
       console.error('Failed to fetch calendar activity:', err);
     } finally {
@@ -840,10 +857,10 @@ export default function Dashboard() {
                     className="flex items-center gap-3 px-[18px] py-2.5 rounded-[10px] text-sm font-normal text-[#4B5563] bg-white border-[0.5px] border-[#D1D1D6] min-w-[140px]"
                   >
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M15 1.66675V3.33341M5 1.66675V3.33341" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                      <path d="M8.33333 14.1666L8.33332 11.1226C8.33332 10.9628 8.21938 10.8333 8.07882 10.8333H7.5M11.358 14.1666L12.4868 11.1242C12.5396 10.982 12.4274 10.8333 12.2672 10.8333H10.8333" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" />
-                      <path d="M2.08301 10.2027C2.08301 6.57161 2.08301 4.75607 3.12644 3.62803C4.16987 2.5 5.84925 2.5 9.20801 2.5H10.7913C14.1501 2.5 15.8295 2.5 16.8729 3.62803C17.9163 4.75607 17.9163 6.57161 17.9163 10.2027V10.6306C17.9163 14.2617 17.9163 16.0773 16.8729 17.2053C15.8295 18.3333 14.1501 18.3333 10.7913 18.3333H9.20801C5.84925 18.3333 4.16987 18.3333 3.12644 17.2053C2.08301 16.0773 2.08301 14.2617 2.08301 10.6306V10.2027Z" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                      <path d="M5 6.66675H15" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M15 1.66675V3.33341M5 1.66675V3.33341" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M8.33333 14.1666L8.33332 11.1226C8.33332 10.9628 8.21938 10.8333 8.07882 10.8333H7.5M11.358 14.1666L12.4868 11.1242C12.5396 10.982 12.4274 10.8333 12.2672 10.8333H10.8333" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M2.08301 10.2027C2.08301 6.57161 2.08301 4.75607 3.12644 3.62803C4.16987 2.5 5.84925 2.5 9.20801 2.5H10.7913C14.1501 2.5 15.8295 2.5 16.8729 3.62803C17.9163 4.75607 17.9163 6.57161 17.9163 10.2027V10.6306C17.9163 14.2617 17.9163 16.0773 16.8729 17.2053C15.8295 18.3333 14.1501 18.3333 10.7913 18.3333H9.20801C5.84925 18.3333 4.16987 18.3333 3.12644 17.2053C2.08301 16.0773 2.08301 14.2617 2.08301 10.6306V10.2027Z" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M5 6.66675H15" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
 
                     {dateRange}

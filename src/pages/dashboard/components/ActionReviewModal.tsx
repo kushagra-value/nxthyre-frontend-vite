@@ -29,7 +29,7 @@ interface QuickFitItem {
 
 const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
   isOpen = true,
-  onClose = () => {},
+  onClose = () => { },
   candidateData,
   isLoading = false,
   currentIndex,
@@ -111,7 +111,7 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
   // ── Source — application_type (e.g. "sourced") ──
   const source = candidate?.application_type
     ? candidate.application_type.charAt(0).toUpperCase() +
-      candidate.application_type.slice(1)
+    candidate.application_type.slice(1)
     : candidate?.source || "N/A";
 
   // ── Quick Fit Summary — from job_score_obj.quick_fit_summary ──
@@ -162,23 +162,23 @@ const ActionReviewModal: React.FC<ActionReviewModalProps> = ({
   // ── Build manual call data ──
   const callCandidateData = currentItem
     ? {
-        id: currentItem.candidate_id,
-        name: candidateName,
-        avatarInitials: candidateName
-          .split(" ")
-          .slice(0, 2)
-          .map((n: string) => n[0])
-          .join("")
-          .toUpperCase(),
-        headline: candidate?.headline || currentItem.role || "",
-        phone: candidate?.phone || candidate?.premium_data?.phone || "",
-        experience,
-        expectedCtc: expectedCTC,
-        location,
-        noticePeriod,
-        resumeUrl: candidate?.premium_data?.resume_url || candidate?.resume_url || undefined,
-        matchScore: candidateMatchScore?.score || (matchPercentage ? `${matchPercentage}%` : null),
-      }
+      id: currentItem.candidate_id,
+      name: candidateName,
+      avatarInitials: candidateName
+        .split(" ")
+        .slice(0, 2)
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase(),
+      headline: candidate?.headline || currentItem.role || "",
+      phone: candidate?.phone || candidate?.premium_data?.phone || "",
+      experience,
+      expectedCtc: expectedCTC,
+      location,
+      noticePeriod,
+      resumeUrl: candidate?.premium_data?.resume_url || candidate?.resume_url || undefined,
+      matchScore: candidateMatchScore?.score || (matchPercentage ? `${matchPercentage}%` : null),
+    }
     : null;
 
   const handleComplete = async (actionLabel: string) => {
