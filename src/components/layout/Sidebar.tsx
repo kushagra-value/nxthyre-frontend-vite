@@ -9,6 +9,7 @@ import {
   HelpCircle,
   Settings as SettingsReactIcon,
   LogOut,
+  PhoneCall,
 } from 'lucide-react';
 import { scheduleService } from '../../services/scheduleService';
 
@@ -29,6 +30,14 @@ const DashboardIcon = ({ active }: { active: boolean }) => (
 
 const CompaniesIcon = ({ active }: { active: boolean }) => (
   <Building2
+    size={20}
+    color={active ? '#0F47F2' : '#4B5563'}
+    strokeWidth={active ? 2.2 : 2}
+  />
+);
+
+const CallIcon = ({ active }: { active: boolean }) => (
+  <PhoneCall
     size={20}
     color={active ? '#0F47F2' : '#4B5563'}
     strokeWidth={active ? 2.2 : 2}
@@ -172,6 +181,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
     { id: 'companies', label: 'Companies', icon: CompaniesIcon },
+    { id: 'call', label: 'Call Log', icon: CallIcon },
     { id: 'candidateSearch', label: 'Candidates', icon: CandidatesIcon },
     { id: 'calendar', label: 'Schedule', icon: ScheduleIcon, badge: scheduleCount > 0 ? scheduleCount : undefined },
   ];

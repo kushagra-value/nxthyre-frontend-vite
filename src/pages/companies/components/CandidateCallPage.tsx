@@ -2,6 +2,7 @@ import { jobPostService, Job } from '../../../services/jobPostService';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { showToast } from "../../../utils/toast";
+import { callStateCache } from "../../call/components/callStateCache";
 import CallCandidateModal from "./CallCandidateModal";
 import {
   Mic,
@@ -185,8 +186,17 @@ const DUMMY_FALLBACK: CandidateCallParams = {
 };
 
 export default function CandidateCallPage() {
-  // const { candidateId } = useParams();
-  const { candidateId, jobId: routeJobId } = useParams();
+  const rawParams = useParams();
+  let candidateId = rawParams.candidateId;
+  let routeJobId = rawParams.jobId;
+
+  // Support both /call/:jobId/:candidateId and /call/:candidateId/:jobId
+  if (candidateId && /^\d+$/.test(candidateId) && routeJobId && !/^\d+$/.test(routeJobId)) {
+    const temp = candidateId;
+    candidateId = routeJobId;
+    routeJobId = temp;
+  }
+
   const persistedJobId = sessionStorage.getItem("nxthyre_companies_jobId");
   const jobId = routeJobId && routeJobId !== "0" ? routeJobId : (persistedJobId || "0");
   const effectiveJobId = (() => {
@@ -817,11 +827,51 @@ export default function CandidateCallPage() {
       }
       setCallState("completed");
       setIsPaused(true);
+      try {
+        const existing = sessionStorage.getItem("nxthyre_last_call_completed");
+        const parsed = existing ? JSON.parse(existing) : {};
+        const callTime = new Date().toISOString();
+        sessionStorage.setItem(
+          "nxthyre_last_call_completed",
+          JSON.stringify({
+            ...parsed,
+            candidateId: candidate?.id,
+            callStatus: "completed",
+            callTime,
+          })
+        );
+        if (candidate?.id) {
+          callStateCache.updateCandidate(candidate.id, {
+            latest_manual_call_status: "completed",
+            latest_manual_call_at: callTime,
+          });
+        }
+      } catch (e) { }
     } catch (err) {
       console.error("Failed to end call:", err);
       // Still mark as completed locally
       setCallState("completed");
       setIsPaused(true);
+      try {
+        const existing = sessionStorage.getItem("nxthyre_last_call_completed");
+        const parsed = existing ? JSON.parse(existing) : {};
+        const callTime = new Date().toISOString();
+        sessionStorage.setItem(
+          "nxthyre_last_call_completed",
+          JSON.stringify({
+            ...parsed,
+            candidateId: candidate?.id,
+            callStatus: "completed",
+            callTime,
+          })
+        );
+        if (candidate?.id) {
+          callStateCache.updateCandidate(candidate.id, {
+            latest_manual_call_status: "completed",
+            latest_manual_call_at: callTime,
+          });
+        }
+      } catch (e) { }
     } finally {
       setIsEndingCall(false);
     }
@@ -1058,6 +1108,33 @@ export default function CandidateCallPage() {
         lastSavedDataRef.current = currentData; // Update last saved state
       }
 
+      try {
+        const existing = sessionStorage.getItem("nxthyre_last_call_completed");
+        const parsed = existing ? JSON.parse(existing) : {};
+        const callStatus =
+          isManual && manualCallConnected
+            ? "completed"
+            : parsed.callStatus || "completed";
+        const callTime = parsed.callTime || new Date().toISOString();
+        sessionStorage.setItem(
+          "nxthyre_last_call_completed",
+          JSON.stringify({
+            ...parsed,
+            candidateId: candidate?.id,
+            noteText: notes,
+            callStatus,
+            callTime,
+          })
+        );
+        if (candidate?.id) {
+          callStateCache.updateCandidate(candidate.id, {
+            latest_manual_call_status: callStatus,
+            latest_manual_call_at: callTime,
+            latest_manual_call_note: notes || undefined,
+          });
+        }
+      } catch (e) { }
+
       if (!isSilent) showToast.success("Notes and checklist saved!");
     } catch (err) {
       console.error("Failed to save notes:", err);
@@ -1147,8 +1224,15 @@ export default function CandidateCallPage() {
           {/* LEFT GROUP: Back, Avatar, Candidate Name, Headline, Phone, LIVE, & Profile Info Pills */}
           <div className="flex items-center gap-3 min-w-0 flex-wrap">
             <button
-              onClick={() => navigate(-1)}
-              className="text-white/80 hover:text-white flex items-center gap-1 font-semibold text-xs transition-colors pr-2.5 border-r border-white/20 shrink-0"
+              onClick={() => {
+                sessionStorage.setItem("nxthyre_activeTab", "call");
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate("/");
+                }
+              }}
+              className="text-white/80 hover:text-white flex items-center gap-1 font-semibold text-xs transition-colors pr-2.5 border-r border-white/20 shrink-0 cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
@@ -1840,6 +1924,7 @@ export default function CandidateCallPage() {
           isOpen={!!followUpReason}
           onClose={async () => {
             await waitForPendingUploads();
+            sessionStorage.setItem("nxthyre_activeTab", "call");
             window.location.href = "/";
           }}
           candidate={candidate ? {

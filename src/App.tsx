@@ -5,6 +5,7 @@ import {
   Route,
   useNavigate,
   useSearchParams,
+  Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuthContext } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
@@ -40,6 +41,7 @@ import SchedulePage from "./pages/schedules/SchedulePage";
 import CandidateSearch from "./pages/candidates/CandidateSearch";
 import CandidatePortalLogin from "./pages/candidatePortal/CandidatePortalLogin";
 import CandidateTrackingPage from "./pages/candidatePortal/CandidateTrackingPage";
+import CallPage from "./pages/call";
 
 function MainApp() {
   const navigate = useNavigate();
@@ -175,6 +177,10 @@ function MainApp() {
     switch (currentPage) {
       case "dashboard":
         return "Dashboard";
+      case "call":
+      case "calls":
+        if (headerCandidateName) return headerJobName || "Candidate Profile";
+        return "Call Log";
       case "companies":
         if (headerJobName) return `${headerJobName}`;
         if (headerWorkspaceName) return "Company Jobs";
@@ -195,6 +201,15 @@ function MainApp() {
   };
 
   const getPageSubtitle = () => {
+    if (currentPage === "call" || currentPage === "calls") {
+      if (headerCandidateName) {
+        if (headerWorkspaceName && headerJobName) {
+          return `Companies • ${headerWorkspaceName} • ${headerJobName} • Profile`;
+        }
+        return "Profile";
+      }
+      return "Call Queue";
+    }
     if (currentPage === "companies") {
       if (headerJobName && headerWorkspaceName && headerCandidateName) {
         return `Companies • ${headerWorkspaceName} • ${headerJobName} • Profile`;
@@ -210,6 +225,15 @@ function MainApp() {
   };
 
   const handleBreadcrumbNavigate = (index: number) => {
+    if (currentPage === "call" || currentPage === "calls") {
+      delete (window as any).__selectedCandidateName;
+      setHeaderCandidateName(undefined);
+      window.dispatchEvent(
+        new CustomEvent("breadcrumb-navigate", { detail: { level: "job" } }),
+      );
+      window.dispatchEvent(new CustomEvent("header-update"));
+      return;
+    }
     if (currentPage !== "companies") return;
     // index 0 = "Companies" (go back to company list)
     // index 1 = workspace name (go back to job listing)
@@ -246,6 +270,9 @@ function MainApp() {
     switch (currentPage) {
       case "dashboard":
         return <Dashboard />;
+      case "call":
+      case "calls":
+        return <CallPage />;
       case "companies":
         return <Companies />;
       case "interviews":
@@ -262,6 +289,14 @@ function MainApp() {
         return <Dashboard />;
     }
   };
+
+  // Redirect to Call Log tab on root page
+  function CallRouteRedirect() {
+    useEffect(() => {
+      sessionStorage.setItem("nxthyre_activeTab", "call");
+    }, []);
+    return <Navigate to="/" replace />;
+  }
 
   // InvitePage (inline component)
   function InvitePage() {
@@ -512,6 +547,18 @@ function MainApp() {
         <Route
           path="/call/:candidateId/:jobId"
           element={<CandidateCallPage />}
+        />
+        <Route
+          path="/call/:jobId/:candidateId"
+          element={<CandidateCallPage />}
+        />
+        <Route
+          path="/call"
+          element={<CallRouteRedirect />}
+        />
+        <Route
+          path="/calls"
+          element={<CallRouteRedirect />}
         />
         <Route
           path="/linkedin-auth"
