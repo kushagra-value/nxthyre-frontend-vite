@@ -883,84 +883,111 @@ export default function CandidateCallPage() {
   //   });
   // };
 
-  const toggleManualRecording = async () => {
+  const startVoiceRecording = async (overrideCallUuid?: string) => {
     const targetJobId = getValidJobId();
-    if (isManualRecordingRef.current) {
-      // ── STOP VOICE RECORDING ──
-      // The recording service uploads first (with retry + IndexedDB backup), then logs
-      // the stop event. It owns the work, so unmounting this page can't lose the audio.
-      isManualRecordingRef.current = false;
-      setIsManualRecording(false);
-      isManualRecordingPausedRef.current = false;
-      setIsManualRecordingPaused(false);
+    if (!candidate?.id) return;
+    if (isManualRecordingRef.current) return;
 
-      // Refresh IDs in case the call_uuid / job loaded after recording started.
-      updateManualRecordingContext({
-        callUuid: callUuidRef.current || callUuid || undefined,
-        jobId: targetJobId || undefined,
+    const recordingUuid = overrideCallUuid || callUuidRef.current || callUuid || crypto.randomUUID();
+    if (!callUuidRef.current) {
+      callUuidRef.current = recordingUuid;
+      setCallUuid(recordingUuid);
+    }
+
+    try {
+      await startManualRecording({
+        callUuid: recordingUuid,
+        candidateId: candidate.id,
+        jobId: targetJobId,
       });
-
-      const result = await stopManualRecording();
-      if (result.status === "uploaded") {
-        showToast.success("Recording saved and processing...");
-        // Auto-save call log when recording stops
-        if (isMountedRef.current) handleSaveNotes(true);
-      } else if (result.status === "empty") {
-        showToast.error("No usable audio was captured. Check microphone access and record again.");
-      } else if (result.status === "failed") {
-        showToast.error(
-          result.permanent
-            ? `Recording could not be processed: ${result.error}`
-            : "Recording upload failed. It is saved on this device and will retry automatically.",
-        );
+    } catch (err: any) {
+      if (err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError") {
+        showToast.error("Microphone access failed. Please check permissions.");
+      } else {
+        console.error("Failed to start manual recording:", err);
+        showToast.error("Could not start recording. Please try again.");
       }
-    } else {
-      // ── START VOICE RECORDING ──
-      if (!candidate?.id) return;
-      const recordingUuid = callUuidRef.current || callUuid || crypto.randomUUID();
-      if (!callUuidRef.current) {
-        callUuidRef.current = recordingUuid;
-        setCallUuid(recordingUuid);
-      }
+      return;
+    }
 
+    isManualRecordingRef.current = true;
+    setIsManualRecording(true);
+    isManualRecordingPausedRef.current = false;
+    setIsManualRecordingPaused(false);
+
+    // Log start only after the recorder has actually started capturing audio.
+    if (targetJobId) {
       try {
-        await startManualRecording({
+        const eventRes = await logRecordingStartEvent({
           callUuid: recordingUuid,
           candidateId: candidate.id,
           jobId: targetJobId,
         });
-      } catch (err: any) {
-        if (err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError") {
-          showToast.error("Microphone access failed. Please check permissions.");
-        } else {
-          console.error("Failed to start manual recording:", err);
-          showToast.error("Could not start recording. Please try again.");
+        if (eventRes?.call_uuid && eventRes.call_uuid !== recordingUuid) {
+          setCallUuid(eventRes.call_uuid);
+          callUuidRef.current = eventRes.call_uuid;
+          updateManualRecordingContext({ callUuid: eventRes.call_uuid });
         }
-        return;
+      } catch (e) {
+        console.error("Failed to log manual recording start event:", e);
       }
+    }
+  };
 
-      isManualRecordingRef.current = true;
-      setIsManualRecording(true);
-      isManualRecordingPausedRef.current = false;
-      setIsManualRecordingPaused(false);
+  const stopVoiceRecording = async () => {
+    const targetJobId = getValidJobId();
+    if (!isManualRecordingRef.current) return;
 
-      // Log start only after the recorder has actually started capturing audio.
-      if (targetJobId) {
-        try {
-          const eventRes = await logRecordingStartEvent({
-            callUuid: recordingUuid,
-            candidateId: candidate.id,
-            jobId: targetJobId,
-          });
-          if (eventRes?.call_uuid && eventRes.call_uuid !== recordingUuid) {
-            setCallUuid(eventRes.call_uuid);
-            callUuidRef.current = eventRes.call_uuid;
-            updateManualRecordingContext({ callUuid: eventRes.call_uuid });
-          }
-        } catch (e) {
-          console.error("Failed to log manual recording start event:", e);
-        }
-      }
+    // ── STOP VOICE RECORDING ──
+    isManualRecordingRef.current = false;
+    setIsManualRecording(false);
+    isManualRecordingPausedRef.current = false;
+    setIsManualRecordingPaused(false);
+
+    // Refresh IDs in case the call_uuid / job loaded after recording started.
+    updateManualRecordingContext({
+      callUuid: callUuidRef.current || callUuid || undefined,
+      jobId: targetJobId || undefined,
+    });
+
+    const result = await stopManualRecording();
+    if (result.status === "uploaded") {
+      showToast.success("Recording saved and processing...");
+      // Auto-save call log when recording stops
+      if (isMountedRef.current) handleSaveNotes(true);
+    } else if (result.status === "empty") {
+      showToast.error("No usable audio was captured. Check microphone access and record again.");
+    } else if (result.status === "failed") {
+      showToast.error(
+        result.permanent
+          ? `Recording could not be processed: ${result.error}`
+          : "Recording upload failed. It is saved on this device and will retry automatically.",
+      );
+    }
+  };
+
+  const toggleManualRecording = async () => {
+    if (isManualRecordingRef.current) {
+      await stopVoiceRecording();
+    } else {
+      await startVoiceRecording();
+    }
+  };
+
+  const handleStartManualCall = async () => {
+    const newUuid = callUuid || crypto.randomUUID();
+    if (!callUuid) setCallUuid(newUuid);
+    callUuidRef.current = newUuid;
+    setManualCallConnected(true);
+    setIsPaused(false);
+    await startVoiceRecording(newUuid);
+  };
+
+  const handleEndManualCall = async () => {
+    setManualCallConnected(false);
+    setIsPaused(true);
+    if (isManualRecordingRef.current) {
+      await stopVoiceRecording();
     }
   };
 
@@ -1107,6 +1134,39 @@ export default function CandidateCallPage() {
     }
   };
 
+  const handleBack = useCallback(() => {
+    // If manual recording is running, stop it and let service upload in background
+    if (isManualRecordingRef.current) {
+      void stopManualRecording();
+    }
+    // Attempt silent save if there are unsaved changes
+    void handleSaveNotes(true);
+
+    // If active Plivo call is in progress, hang it up
+    if (!isManual && (callState === "answered" || callState === "dialing")) {
+      if (plivoRef.current) {
+        try {
+          plivoRef.current.client.hangup();
+        } catch { }
+      }
+      const activeUuid = callUuidRef.current || callUuid;
+      if (activeUuid) {
+        void hangupCall(activeUuid).catch(() => {});
+      }
+    }
+
+    // Safely navigate back
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else if (window.history.length > 1) {
+      navigate(-1);
+    } else if (effectiveJobId) {
+      navigate(`/pipelines/${effectiveJobId}`);
+    } else {
+      navigate("/companies");
+    }
+  }, [callState, callUuid, effectiveJobId, handleSaveNotes, isManual, navigate]);
+
   if (!candidate)
     return (
       <div className="p-10 flex min-h-screen items-center justify-center">
@@ -1147,7 +1207,7 @@ export default function CandidateCallPage() {
           {/* LEFT GROUP: Back, Avatar, Candidate Name, Headline, Phone, LIVE, & Profile Info Pills */}
           <div className="flex items-center gap-3 min-w-0 flex-wrap">
             <button
-              onClick={() => navigate(-1)}
+              onClick={handleBack}
               className="text-white/80 hover:text-white flex items-center gap-1 font-semibold text-xs transition-colors pr-2.5 border-r border-white/20 shrink-0"
             >
               <ChevronLeft className="w-4 h-4" /> Back
@@ -1283,26 +1343,24 @@ export default function CandidateCallPage() {
               {isManual ? (
                 !manualCallConnected ? (
                   <button
-                    onClick={() => {
-                      if (!callUuid) setCallUuid(crypto.randomUUID());
-                      setManualCallConnected(true);
-                    }}
+                    onClick={handleStartManualCall}
                     className="flex items-center gap-1 px-3 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-white text-[10px] font-bold uppercase transition"
                   >
                     <Phone className="w-3 h-3 fill-current" /> Start Call
                   </button>
                 ) : (
                   <div className="flex items-center gap-2">
-                    {/* RECORD */}
-                    <button
-                      onClick={toggleManualRecording}
-                      disabled={isSavingRecording && !isManualRecording}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition ${isManualRecording ? "bg-red-500 text-white animate-pulse" : "bg-white/20 hover:bg-white/30 text-white"
-                        }`}
-                    >
-                      <Mic className={`w-3 h-3 ${isManualRecording && !isManualRecordingPaused ? "animate-pulse" : ""}`} />
-                      <span>{isManualRecording ? "REC" : isSavingRecording ? "SAVING…" : "REC"}</span>
-                    </button>
+                    {/* Active Recording Status Indicator */}
+                    {isManualRecording ? (
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/25 border border-red-400/30 text-white text-[10px] font-semibold">
+                        <span className={`w-2 h-2 rounded-full bg-red-500 ${!isManualRecordingPaused ? "animate-pulse" : ""}`} />
+                        <span>{isSavingRecording ? "SAVING…" : isManualRecordingPaused ? "PAUSED" : "REC"}</span>
+                      </div>
+                    ) : isSavingRecording ? (
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/25 border border-amber-400/30 text-white text-[10px] font-semibold">
+                        <span>SAVING…</span>
+                      </div>
+                    ) : null}
 
                     {/* PAUSE */}
                     <button
@@ -1310,17 +1368,14 @@ export default function CandidateCallPage() {
                       disabled={!isManualRecording}
                       className={`p-1 rounded-full text-white transition disabled:opacity-40 ${isManualRecordingPaused ? "bg-amber-500" : "bg-white/20 hover:bg-white/30"
                         }`}
+                      title={isManualRecordingPaused ? "Resume Recording" : "Pause Recording"}
                     >
                       {isManualRecordingPaused ? <Play className="w-3 h-3 fill-current" /> : <Pause className="w-3 h-3 fill-current" />}
                     </button>
 
                     {/* END CALL */}
                     <button
-                      onClick={() => {
-                        setManualCallConnected(false);
-                        setIsPaused(true);
-                        if (isManualRecordingRef.current) toggleManualRecording();
-                      }}
+                      onClick={handleEndManualCall}
                       className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold uppercase transition"
                     >
                       <PhoneOff className="w-3 h-3" /> End

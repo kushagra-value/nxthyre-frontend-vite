@@ -21,6 +21,7 @@ import {
   Sparkles,
   PhoneOff,
   ChevronDown,
+  Clock,
   Trash2 ,
   MessageSquare,
   X,
@@ -401,8 +402,24 @@ export default function JobCandidateProfile({
   const [callHistory, setCallHistory] = useState<CallHistoryEntry[]>([]);
   const [recordingEvents, setRecordingEvents] = useState<Record<string, RecordingEvent>>({});
   const [loadingCalls, setLoadingCalls] = useState(false);
-  const [expandedCallId, setExpandedCallId] = useState<number | null>(null);
-  const [showTranscript, setShowTranscript] = useState<number | null>(null);
+  const [expandedCallIds, setExpandedCallIds] = useState<Record<string | number, boolean>>({});
+
+  const toggleCallAccordion = (callId: string | number, index: number) => {
+    setExpandedCallIds((prev) => {
+      const currentlyExpanded = prev[callId] !== undefined ? prev[callId] : index === 0;
+      return {
+        ...prev,
+        [callId]: !currentlyExpanded,
+      };
+    });
+  };
+
+  const isCallExpanded = (callId: string | number, index: number) => {
+    if (expandedCallIds[callId] !== undefined) {
+      return expandedCallIds[callId];
+    }
+    return index === 0;
+  };
   
 
   // ── Feedback Modal State ──
@@ -698,8 +715,8 @@ export default function JobCandidateProfile({
 
   const displayedNotes =
     notesView === "my"
-      ? notes.filter((note) => note.is_team_note && !note.is_community_note)
-      : notes.filter((note) => note.is_team_note && note.is_community_note);
+      ? notes.filter((note) => !note.is_community_note)
+      : notes.filter((note) => Boolean(note.is_community_note));
 
   // ── Call tab helpers ─────────────────────────────────────
 
@@ -970,7 +987,7 @@ export default function JobCandidateProfile({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#F3F5F7] flex flex-col xl:flex-row p-6 gap-6">
+    <div className="flex-1 overflow-y-auto bg-[#F3F5F7] flex flex-col xl:flex-row p-6 gap-6 xl:items-start">
       <div className="flex-1 flex flex-col gap-6">
         {/* ── Main Candidate Card ── */}
         <div className="bg-white rounded-xl shadow-sm">
@@ -1501,6 +1518,7 @@ export default function JobCandidateProfile({
         {/* 4. CALL SCREENING QUESTIONS & ANALYSIS */}
         <CallScreeningRoleQuestions
           isLoading={isLoadingQuestionsAnalysis}
+          screeningScore={screeningScoreVal}
           stats={{
             convinced: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "convinced").length || 0,
             notConvinced: questionsAnalysisData?.questions?.filter((q: any) => q.analysis?.status === "not_convinced").length || 0,
@@ -1601,10 +1619,10 @@ export default function JobCandidateProfile({
         )}
       </div>
 
-      <div className="w-full xl:w-[380px] flex flex-col gap-6 shrink-0">
-        <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB]">
+      <div className="w-full xl:w-[380px] shrink-0 xl:sticky xl:top-0">
+        <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] flex flex-col xl:max-h-[calc(100vh-112px)] overflow-hidden">
           {/* Right Panel Tabs Header */}
-          <div className="grid grid-cols-4 border-b border-[#E5E7EB] bg-white rounded-t-xl">
+          <div className="grid grid-cols-4 border-b border-[#E5E7EB] bg-white rounded-t-xl shrink-0 sticky top-0 z-10">
             {(
               [
                 { id: "profile", label: "Profile", count: null },
@@ -1638,7 +1656,7 @@ export default function JobCandidateProfile({
             ))}
           </div>
 
-          <div className="p-6 flex flex-col gap-6 text-sm">
+          <div className="p-6 flex flex-col gap-6 text-sm overflow-y-auto flex-1 custom-scrollbar">
             {/* ── TAB 1: PROFILE ── */}
             {activeTab === "profile" && (
               <div className="space-y-6">
@@ -2055,216 +2073,277 @@ export default function JobCandidateProfile({
 
             {/* ── TAB 2: CALL ── */}
             {activeTab === "call" && (
-              <div className="flex flex-col gap-6">
-                {/* 1. CALL SUMMARY */}
-                <div>
-                  <h4 className="text-xs font-bold text-[#8E8E93] uppercase tracking-wider mb-2">
-                    CALL SUMMARY
-                  </h4>
-                  {callHistory.some((c) => c.recording?.summary) ? (
-                    <div className="space-y-3">
-                      {callHistory
-                        .filter((c) => c.recording?.summary)
-                        .map((call) => {
-                          const { main: summaryBullets } = parseSummaryBullets(
-                            call.recording?.summary || null
-                          );
-                          return (
-                            <div
-                              key={call.id}
-                              className="bg-white border border-[#E5E7EB] rounded-xl p-4 shadow-xs"
-                            >
-                              <p className="text-[11px] text-[#8E8E93] mb-2 font-medium">
-                                {formatDate(call.created_at)} · {formatTime(call.created_at)}
-                              </p>
-                              <ul className="space-y-1.5">
-                                {summaryBullets.map((bullet, i) => (
-                                  <li
-                                    key={i}
-                                    className="text-xs text-[#4B5563] flex items-start gap-2"
-                                  >
-                                    <span className="text-[#0F47F2] font-bold">•</span>
-                                    <span>{bullet}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  ) : (
-                    <div className="border border-dashed border-[#E5E7EB] rounded-xl p-4 bg-white text-xs text-[#8E8E93]">
-                      No call yet. The summary appears here after the first call.
-                    </div>
-                  )}
-                </div>
+              <div className="flex flex-col gap-4">
+                {callHistory.length > 0 ? (
+                  <div className="space-y-3">
+                    {callHistory.map((call, idx) => {
+                      const callId = call.id || idx;
+                      const isOpen = isCallExpanded(callId, idx);
+                      const timing = getCallTimingDetails(call);
+                      const recUrl =
+                        call.recording?.recording_url || (call as any).recording_url;
+                      const rec = call.recording || (call as any);
+                      const summaryText = rec?.summary || (call as any).summary;
+                      const { main: summaryBullets } = parseSummaryBullets(summaryText);
+                      const timeLog =
+                        rec?.transcript_time_log ||
+                        rec?.timestamps ||
+                        (call as any).transcript_time_log ||
+                        (call as any).timestamps;
+                      const transcriptText =
+                        rec?.transcript || (call as any).transcript;
+                      const hasTranscript =
+                        (Array.isArray(timeLog) && timeLog.length > 0) ||
+                        (typeof timeLog === "string" && timeLog.trim().length > 0) ||
+                        Boolean(transcriptText && String(transcriptText).trim().length > 0);
+                      const duration =
+                        timing.duration ||
+                        (call.duration_seconds
+                          ? formatDuration(call.duration_seconds)
+                          : "");
 
-                <div className="h-[1px] bg-[#E5E7EB] w-full" />
-
-                {/* 2. RECORDINGS */}
-                <div>
-                  <h4 className="text-xs font-bold text-[#8E8E93] uppercase tracking-wider mb-2">
-                    RECORDINGS
-                  </h4>
-                  {callHistory.some((c) => c.recording?.recording_url || (c as any).recording_url) ? (
-                    <div className="space-y-3">
-                      {callHistory
-                        .filter((c) => c.recording?.recording_url || (c as any).recording_url)
-                        .map((call) => {
-                          const recUrl = call.recording?.recording_url || (call as any).recording_url;
-                          const timing = getCallTimingDetails(call);
-                          return (
-                            <div
-                              key={call.id}
-                              className="bg-white border border-[#E5E7EB] rounded-xl p-3 shadow-xs"
-                            >
-                              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-medium text-[#4B5563]">
-                                    Call Recording ({formatDate(call.created_at)})
-                                  </span>
-                                  {timing.startTime && (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#4B5563] bg-[#F3F4F6] px-2 py-0.5 rounded-md border border-[#E5E7EB]">
-                                      <svg className="w-3 h-3 text-[#6B7280]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 11 0 0118 0z" />
-                                      </svg>
-                                      {timing.endTime ? `${timing.startTime} – ${timing.endTime}` : timing.startTime}
-                                    </span>
-                                  )}
-                                </div>
-                                {timing.duration && (
-                                  <span className="text-[11px] font-semibold text-[#0F47F2] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                                    Duration: {timing.duration}
-                                  </span>
-                                )}
+                      return (
+                        <div
+                          key={callId}
+                          className="bg-white border border-[#E5E7EB] rounded-xl shadow-xs overflow-hidden transition-all duration-200"
+                        >
+                          {/* Call Accordion Header */}
+                          <button
+                            type="button"
+                            onClick={() => toggleCallAccordion(callId, idx)}
+                            aria-expanded={isOpen}
+                            className="w-full p-4 flex items-center justify-between gap-3 text-left hover:bg-gray-50/70 transition-colors select-none focus:outline-none"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-7 h-7 rounded-full bg-blue-50 text-[#0F47F2] flex items-center justify-center shrink-0">
+                                <Phone className="w-3.5 h-3.5" />
                               </div>
-                              <audio
-                                controls
-                                src={recUrl}
-                                className="w-full h-8"
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-gray-900 truncate">
+                                  Call {callHistory.length > 1 ? `#${callHistory.length - idx}` : ""}
+                                  {call.created_at ? ` · ${formatDate(call.created_at)}` : ""}
+                                </p>
+                                <p className="text-[11px] text-[#8E8E93] truncate">
+                                  {call.created_at ? formatTime(call.created_at) : ""}
+                                  {timing.startTime && timing.endTime ? ` (${timing.startTime} – ${timing.endTime})` : ""}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              {duration ? (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0F47F2] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                                  <Clock className="w-3 h-3" />
+                                  {duration}
+                                </span>
+                              ) : null}
+                              <ChevronDown
+                                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                                  isOpen ? "rotate-180" : ""
+                                }`}
                               />
                             </div>
-                          );
-                        })}
-                    </div>
-                  ) : (
-                    <div className="border border-dashed border-[#E5E7EB] rounded-xl p-4 bg-white text-xs text-[#8E8E93]">
-                      No calls made
-                    </div>
-                  )}
-                </div>
+                          </button>
 
-                <div className="h-[1px] bg-[#E5E7EB] w-full" />
-
-                {/* 3. TRANSCRIPTION */}
-                <div>
-                  <h4 className="text-xs font-bold text-[#8E8E93] uppercase tracking-wider mb-2">
-                    TRANSCRIPTION
-                  </h4>
-                  {callHistory.some((c) => c.recording?.transcript || (c as any).transcript || c.recording?.transcript_time_log || c.recording?.timestamps) ? (
-                    <div className="space-y-3">
-                      {callHistory
-                        .filter((c) => c.recording?.transcript || (c as any).transcript || c.recording?.transcript_time_log || c.recording?.timestamps)
-                        .map((call) => {
-                          const rec = call.recording || (call as any);
-                          const timeLog = rec?.transcript_time_log || rec?.timestamps || (call as any).transcript_time_log || (call as any).timestamps;
-                          const transcriptText = rec?.transcript || (call as any).transcript;
-                          const timing = getCallTimingDetails(call);
-
-                          return (
-                            <div
-                              key={call.id}
-                              className="bg-white border border-[#E5E7EB] rounded-xl p-4 shadow-xs"
-                            >
-                              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-xs font-semibold text-[#4B5563]">
-                                    Transcript ({formatDate(call.created_at)})
-                                  </p>
-                                  {timing.startTime && (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#4B5563] bg-[#F3F4F6] px-2 py-0.5 rounded-md border border-[#E5E7EB]">
-                                      <svg className="w-3 h-3 text-[#6B7280]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 11 0 0118 0z" />
-                                      </svg>
-                                      {timing.endTime ? `${timing.startTime} – ${timing.endTime}` : timing.startTime}
-                                    </span>
-                                  )}
-                                </div>
-                                {timing.duration && (
-                                  <span className="text-[11px] font-semibold text-[#0F47F2] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                                    Duration: {timing.duration}
+                          {/* Call Accordion Expanded Content */}
+                          {isOpen && (
+                            <div className="p-4 pt-2 border-t border-[#E5E7EB] bg-[#FDFDFE] flex flex-col gap-4 text-xs">
+                              {/* Timing & Duration row */}
+                              {(duration || timing.startTime) && (
+                                <div className="flex items-center justify-between bg-[#F8FAFC] px-3 py-2 rounded-lg border border-[#E5E7EB] text-[11px]">
+                                  <span className="text-[#6B7280] font-medium flex items-center gap-1">
+                                    <Clock className="w-3 h-3 text-[#0F47F2]" /> Call Duration
                                   </span>
-                                )}
-                              </div>
-                              <div className="bg-[#F8FAFC] rounded-lg p-3 text-xs text-[#4B5563] leading-relaxed max-h-48 overflow-y-auto">
-                                {Array.isArray(timeLog) && timeLog.length > 0 ? (
-                                  <div className="space-y-2">
-                                    {timeLog.map((item: any, idx: number) => {
-                                      let timeStr = item.timestamp || item.time || item.time_log || (typeof item === "string" ? null : "");
-                                      if (timeStr && typeof timeStr === "string" && timeStr.includes("T")) {
-                                        timeStr = formatTime(timeStr);
-                                      }
-                                      const textStr = typeof item === "string" ? item : item.text || item.content || item.statement || "";
-                                      const speaker = item.speaker || item.role;
-                                      return (
-                                        <div key={idx} className="flex items-start gap-2">
-                                          {timeStr && (
-                                            <span className="shrink-0 px-1.5 py-0.5 rounded bg-blue-50 text-[#0F47F2] font-mono text-[10px] font-bold border border-blue-100 mt-0.5">
-                                              {timeStr}
-                                            </span>
-                                          )}
-                                          <span className="flex-1 text-xs text-[#4B5563] leading-relaxed">
-                                            {speaker && <strong className="text-gray-700 font-semibold mr-1">{speaker}:</strong>}
-                                            {textStr}
-                                          </span>
-                                        </div>
-                                      );
-                                    })}
+                                  <div className="flex items-center gap-2">
+                                    {timing.startTime && (
+                                      <span className="text-[#6B7280]">
+                                        {timing.endTime ? `${timing.startTime} – ${timing.endTime}` : timing.startTime}
+                                      </span>
+                                    )}
+                                    {duration && (
+                                      <span className="font-semibold text-[#0F47F2] bg-white px-2 py-0.5 rounded border border-blue-100">
+                                        {duration}
+                                      </span>
+                                    )}
                                   </div>
-                                ) : typeof timeLog === "string" && timeLog.trim() ? (
-                                  <div className="whitespace-pre-wrap font-sans text-xs text-[#4B5563] leading-relaxed">
-                                    {timeLog}
+                                </div>
+                              )}
+
+                              {/* Audio Recording */}
+                              {recUrl ? (
+                                <div>
+                                  <h5 className="text-[11px] font-bold uppercase tracking-wider text-[#8E8E93] mb-1.5 flex items-center gap-1.5">
+                                    <Volume2 className="w-3.5 h-3.5 text-[#0F47F2]" />
+                                    Call Recording
+                                  </h5>
+                                  <audio controls src={recUrl} className="w-full h-8" />
+                                </div>
+                              ) : null}
+
+                              {/* Call Summary */}
+                              <div>
+                                <h5 className="text-[11px] font-bold uppercase tracking-wider text-[#8E8E93] mb-1.5 flex items-center gap-1.5">
+                                  <Sparkles className="w-3.5 h-3.5 text-[#0F47F2]" />
+                                  Call Summary
+                                </h5>
+                                {summaryBullets.length > 0 ? (
+                                  <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-2xs">
+                                    <ul className="space-y-1.5">
+                                      {summaryBullets.map((bullet, i) => (
+                                        <li
+                                          key={i}
+                                          className="text-xs text-[#4B5563] flex items-start gap-2 leading-relaxed"
+                                        >
+                                          <span className="text-[#0F47F2] font-bold mt-0.5">•</span>
+                                          <span className="break-words">{bullet}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
                                   </div>
                                 ) : (
-                                  <div className="whitespace-pre-wrap font-sans text-xs text-[#4B5563] leading-relaxed">
-                                    {transcriptText || "No transcript available."}
+                                  <div className="border border-dashed border-[#E5E7EB] rounded-lg p-3 text-xs text-[#8E8E93] bg-[#F9FAFB]">
+                                    No summary generated for this call.
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Transcription */}
+                              <div>
+                                <h5 className="text-[11px] font-bold uppercase tracking-wider text-[#8E8E93] mb-1.5 flex items-center gap-1.5">
+                                  <FileText className="w-3.5 h-3.5 text-[#0F47F2]" />
+                                  Transcript
+                                </h5>
+                                {hasTranscript ? (
+                                  <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-lg p-3 text-xs text-[#4B5563] max-h-56 overflow-y-auto space-y-2.5 custom-scrollbar">
+                                    {Array.isArray(timeLog) && timeLog.length > 0 ? (
+                                      timeLog.map((item: any, itemIdx: number) => {
+                                        let timeStr =
+                                          item.timestamp ||
+                                          item.time ||
+                                          item.time_log ||
+                                          (typeof item === "string" ? null : "");
+                                        if (
+                                          timeStr &&
+                                          typeof timeStr === "string" &&
+                                          timeStr.includes("T")
+                                        ) {
+                                          timeStr = formatTime(timeStr);
+                                        }
+                                        const textStr =
+                                          typeof item === "string"
+                                            ? item
+                                            : item.text ||
+                                              item.content ||
+                                              item.statement ||
+                                              "";
+                                        const speaker = item.speaker || item.role;
+                                        return (
+                                          <div
+                                            key={itemIdx}
+                                            className="flex flex-col gap-0.5 break-words"
+                                          >
+                                            <div className="flex items-center gap-1.5">
+                                              {timeStr && (
+                                                <span className="px-1.5 py-0.5 rounded bg-blue-50 text-[#0F47F2] font-mono text-[10px] font-bold border border-blue-100">
+                                                  {timeStr}
+                                                </span>
+                                              )}
+                                              {speaker && (
+                                                <span className="font-semibold text-gray-700 text-xs">
+                                                  {speaker}
+                                                </span>
+                                              )}
+                                            </div>
+                                            <p className="text-xs text-[#4B5563] leading-relaxed break-words pl-0.5 whitespace-pre-wrap">
+                                              {textStr}
+                                            </p>
+                                          </div>
+                                        );
+                                      })
+                                    ) : (
+                                      <p className="whitespace-pre-wrap break-words leading-relaxed">
+                                        {typeof timeLog === "string" && timeLog.trim()
+                                          ? timeLog
+                                          : transcriptText}
+                                      </p>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="border border-dashed border-[#E5E7EB] rounded-lg p-3 text-xs text-[#8E8E93] bg-[#F9FAFB]">
+                                    No transcript available for this call.
                                   </div>
                                 )}
                               </div>
                             </div>
-                          );
-                        })}
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="border border-dashed border-[#E5E7EB] rounded-xl p-8 bg-gray-50/50 text-center flex flex-col items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0F47F2] flex items-center justify-center mb-3">
+                      <Phone className="w-5 h-5" />
                     </div>
-                  ) : (
-                    <div className="border border-dashed border-[#E5E7EB] rounded-xl p-4 bg-white text-xs text-[#8E8E93]">
-                      No transcript yet.
-                    </div>
-                  )}
-                </div>
+                    <p className="text-sm font-semibold text-gray-800 mb-1">
+                      No Calls Recorded
+                    </p>
+                    <p className="text-xs text-[#8E8E93] max-w-[240px]">
+                      Call summaries, audio recordings, and transcripts will appear here after calls take place.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
             {/* ── TAB 3: NOTES ── */}
             {activeTab === "notes" && (
               <div className="flex flex-col h-full">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                   <h4 className="text-[10px] uppercase font-bold text-[#AEAEB2] tracking-wider">
                     CANDIDATE NOTES
                   </h4>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-[#AEAEB2] font-normal uppercase">Community</span>
-                    <label className="relative inline-flex items-center cursor-pointer min-h-[36px]">
-                      <input
-                        type="checkbox"
-                        checked={notesView === "community"}
-                        onChange={(e) =>
-                          setNotesView(e.target.checked ? "community" : "my")
-                        }
-                        className="sr-only peer"
+                    <button
+                      type="button"
+                      onClick={() => setNotesView("my")}
+                      className={`text-xs transition-colors cursor-pointer ${
+                        notesView === "my"
+                          ? "text-[#0F47F2] font-semibold"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      My Notes
+                    </button>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={notesView === "community"}
+                      aria-label="Toggle between My Notes and Community Notes"
+                      onClick={() =>
+                        setNotesView((prev) => (prev === "my" ? "community" : "my"))
+                      }
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
+                        notesView === "community" ? "bg-[#0F47F2]" : "bg-gray-300"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition duration-200 ease-in-out mt-0.5 ml-0.5 ${
+                          notesView === "community" ? "translate-x-4" : "translate-x-0"
+                        }`}
                       />
-                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-[#0F47F2]"></div>
-                      <div className="absolute left-[2px] top-[2px] w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
-                    </label>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNotesView("community")}
+                      className={`text-xs transition-colors cursor-pointer ${
+                        notesView === "community"
+                          ? "text-[#0F47F2] font-semibold"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      Community Notes
+                    </button>
                   </div>
                 </div>
 

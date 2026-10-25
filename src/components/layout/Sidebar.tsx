@@ -165,7 +165,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
       }
     };
     fetchTodayCount();
-    
+
     return () => { mounted = false; };
   }, [currentPage]); // Re-fetch subtly when navigation changes
 
