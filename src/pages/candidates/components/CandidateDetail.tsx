@@ -80,25 +80,25 @@ const BooleanSearchIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
       d="M5.66406 16.2969H9.20606"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
     <path
       d="M26.916 16.2969H28.687"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
     <path
       d="M18.0664 7.44287V5.67188"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
     <path
       d="M18.0664 26.896V25.125"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
   </svg>
 );
@@ -116,22 +116,22 @@ const ProfileIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
       d="M17.8314 17.174C17.7558 17.1635 17.6586 17.1635 17.5723 17.174C15.6719 17.1105 14.1602 15.5857 14.1602 13.7114C14.1602 11.7949 15.7367 10.2383 17.7018 10.2383C19.6562 10.2383 21.2435 11.7949 21.2435 13.7114C21.2327 15.5857 19.7318 17.1105 17.8314 17.174Z"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M24.9392 24.1326C23.0491 25.8547 20.543 26.9006 17.7821 26.9006C15.0212 26.9006 12.5152 25.8547 10.625 24.1326C10.7312 23.1396 11.3683 22.1676 12.5045 21.4069C15.4141 19.4841 20.1714 19.4841 23.0597 21.4069C24.1959 22.1676 24.8331 23.1396 24.9392 24.1326Z"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M17.7148 26.9297C23.5828 26.9297 28.3398 22.1727 28.3398 16.3047C28.3398 10.4367 23.5828 5.67969 17.7148 5.67969C11.8468 5.67969 7.08984 10.4367 7.08984 16.3047C7.08984 22.1727 11.8468 26.9297 17.7148 26.9297Z"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -153,13 +153,13 @@ const EducationIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
       d="M5.66016 12.75V18.8208"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
     <path
       d="M25.9017 15.793V21.7977C25.9017 22.9786 25.2831 24.0843 24.1997 24.6565C22.3956 25.6091 19.508 26.9227 17.3015 26.9227C15.0949 26.9227 12.2073 25.6091 10.4032 24.6565C9.31978 24.0843 8.70117 22.9786 8.70117 21.7977V15.793"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
   </svg>
 );
@@ -181,8 +181,8 @@ const SkillsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
       d="M17.6136 11.3203L15.5898 14.1536H18.4232L16.3993 16.987"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -214,7 +214,7 @@ const ReferencesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
       d="M8.74609 26.6705H11.1626C12.2435 26.6705 13.336 26.7822 14.3879 26.9972C16.2488 27.3775 18.2079 27.4235 20.0878 27.1217C21.0147 26.9728 21.926 26.7453 22.7509 26.3503C23.4956 25.9938 24.4077 25.4913 25.0204 24.9284C25.6322 24.3663 26.2694 23.4464 26.7216 22.7273C27.1094 22.1107 26.9219 21.3542 26.3084 20.8948C25.6271 20.3845 24.616 20.3846 23.9347 20.8951L22.0023 22.343C21.2534 22.9042 20.4354 23.4207 19.4609 23.575C19.3437 23.5935 19.2209 23.6104 19.0928 23.6251M19.0928 23.6251C19.0542 23.6296 19.0152 23.6338 18.9756 23.6379M19.0928 23.6251C19.2487 23.592 19.4035 23.4966 19.5488 23.3709C20.2365 22.7754 20.2799 21.7719 19.6832 21.107C19.5448 20.9528 19.3827 20.8241 19.2026 20.7175C16.2115 18.9478 11.5577 20.2957 8.74609 22.2735M19.0928 23.6251C19.0538 23.6334 19.0147 23.6379 18.9756 23.6379M18.9756 23.6379C18.416 23.6948 17.7614 23.7096 17.0349 23.6415"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
     <path
       d="M8.73244 21.4787C8.73244 20.6038 8.04469 19.8945 7.1963 19.8945C6.34791 19.8945 5.66016 20.6038 5.66016 21.4787V26.7592C5.66016 27.6341 6.34791 28.3433 7.1963 28.3433C8.04469 28.3433 8.73244 27.6341 8.73244 26.7592V21.4787Z"
@@ -246,13 +246,13 @@ const NotesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
       d="M17.7148 16.5117L22.4375 17.6924"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
     <path
       d="M16.5293 18.8789H18.8906"
       stroke="#4B5563"
       stroke-width="1.5"
-      stroke-linecap="round"
+      strokeLinecap="round"
     />
   </svg>
 );
@@ -850,8 +850,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             <path
               d="M6.57227 9.775L7.67227 10.875L10.4223 8.125"
               stroke="#009951"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         );
@@ -891,7 +891,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <g clip-path="url(#clip0_4090_2502)">
+            <g clipPath="url(#clip0_4090_2502)">
               <path
                 fill-rule="evenodd"
                 clip-rule="evenodd"

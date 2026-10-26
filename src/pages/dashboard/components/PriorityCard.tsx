@@ -36,8 +36,10 @@ const formatDuration = (days: number): string => {
 
 const ScoreCircle = ({
   score,
+  label,
 }: {
   score: number | null | undefined;
+  label?: string;
 }) => {
   if (score == null) return null;
   const val = Math.min(Math.max(score, 0), 100);
@@ -61,7 +63,11 @@ const ScoreCircle = ({
   }
 
   return (
-    <div className="relative flex items-center justify-center shrink-0 mt-0.5" style={{ width: size, height: size }} title={`Score: ${val}`}>
+    <div
+      className="relative flex items-center justify-center shrink-0"
+      style={{ width: size, height: size }}
+      title={label ? `${label}: ${val}` : `Score: ${val}`}
+    >
       <svg width={size} height={size} className="transform -rotate-90">
         <circle
           stroke="#E2E8F0"
@@ -122,6 +128,7 @@ export default function PriorityCard({
   // Combine status tag and dynamic duration
   const durationText = formatDuration(daysAgo);
   const pillText = `${cleanTag} · ${durationText}`;
+  const pillTooltip = latestCallNote ? `${pillText} • Note: ${latestCallNote}` : pillText;
 
   // Format job_name (company name) with .com removed cleanly
   const cleanCompany = (company || '').replace(/\.com$/i, '').trim();
@@ -138,109 +145,74 @@ export default function PriorityCard({
 
   return (
     <div
-      className={`bg-white rounded-xl p-3.5 flex flex-col gap-2 border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-[#0F47F2]/40 hover:-translate-y-[1px] transition-all duration-200 cursor-pointer group ${
+      className={`bg-white rounded-xl p-3.5 flex flex-col justify-between h-36 shrink-0 border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-[#0F47F2]/40 hover:-translate-y-[1px] transition-all duration-200 cursor-pointer group ${
         isDone ? 'border-emerald-200 bg-emerald-50/20' : ''
       }`}
       onClick={onClick}
     >
-      {/* 1. Candidate Name (Left) + Top Right Score Progress Rings (Screening Score then Resume Score, no text labels) */}
-      <div className="flex items-start justify-between gap-2">
+      {/* 1. Top Section: Candidate Name, Job Title, and Status Note */}
+      <div className="flex flex-col min-w-0">
         {/* Candidate Name */}
-        <h4 className="text-sm font-bold text-[#0F172A] group-hover:text-[#0F47F2] transition-colors leading-snug truncate pt-0.5">
-          {name}
-        </h4>
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <h4
+            className="text-sm font-bold text-[#0F172A] group-hover:text-[#0F47F2] transition-colors leading-tight truncate"
+            title={name}
+          >
+            {name}
+          </h4>
+          {effectiveScreeningRound && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#EEF2FF] text-[#4F46E5] border border-[#C7D2FE]/60 truncate shrink-0">
+              {effectiveScreeningRound}
+            </span>
+          )}
+        </div>
 
-        {/* Top Right Score Displays */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        {/* Job Title & Company */}
+        <p
+          className="text-xs font-medium text-[#475569] truncate leading-tight mt-1 min-h-[16px]"
+          title={jobCompanyDisplay}
+        >
+          {jobCompanyDisplay}
+        </p>
+
+        {/* Status Note Pill (Placed where recruiter name was previously) */}
+        <div className="flex items-center min-w-0 mt-2">
+          <span
+            className={`inline-flex items-center px-2.5 py-1 text-[11px] font-medium leading-none rounded-md border transition-colors truncate max-w-full ${colors.bg} ${colors.text} ${colors.border}`}
+            title={pillTooltip}
+          >
+            <span className="truncate">{pillText}</span>
+          </span>
+        </div>
+      </div>
+
+      {/* 2. Bottom Section: Recruiter Name (Left) & Scores (Right) below horizontal separator */}
+      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 h-8 shrink-0">
+        {/* Recruiter Name (Placed where status note was previously) */}
+        <div className="flex items-center gap-1.5 min-w-0 text-[11px] font-medium text-[#64748B]">
+          {recruiterName ? (
+            <>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="#64748B" strokeWidth="1.2" />
+                <path d="M3 14C3 11.2386 5.23858 9 8 9C10.7614 9 13 11.2386 13 14" stroke="#64748B" strokeWidth="1.2" strokeLinecap="round" />
+              </svg>
+              <span className="truncate" title={recruiterName}>{recruiterName}</span>
+            </>
+          ) : (
+            <div className="h-4" />
+          )}
+        </div>
+
+        {/* Screening Score & Resume Score */}
+        <div className="flex items-center gap-1.5 shrink-0 h-8">
           {effectiveScreeningScore != null && (
-            <ScoreCircle score={effectiveScreeningScore} />
+            <ScoreCircle score={effectiveScreeningScore} label="Screening Score" />
           )}
           {resumeScore != null && (
-            <ScoreCircle score={resumeScore} />
+            <ScoreCircle score={resumeScore} label="Resume Score" />
           )}
         </div>
       </div>
-
-      {/* 2. Job Title (Company Name) */}
-      <p className="text-xs font-medium text-[#475569] truncate leading-tight">
-        {jobCompanyDisplay}
-      </p>
-
-      {/* 3. Recruiter Name & Screening Round Badge (Only real round badge, no score text labels) */}
-      <div className="flex items-center justify-between gap-2 text-[11px] font-medium text-[#64748B]">
-        {recruiterName ? (
-          <div className="flex items-center gap-1.5 truncate">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="#64748B" strokeWidth="1.2" />
-              <path d="M3 14C3 11.2386 5.23858 9 8 9C10.7614 9 13 11.2386 13 14" stroke="#64748B" strokeWidth="1.2" strokeLinecap="round" />
-            </svg>
-            <span className="truncate">{recruiterName}</span>
-          </div>
-        ) : <div />}
-        {effectiveScreeningRound && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#EEF2FF] text-[#4F46E5] border border-[#C7D2FE]/60 truncate shrink-0">
-            {effectiveScreeningRound}
-          </span>
-        )}
-      </div>
-
-      {/* 4. Action / Status Pill + Navigation Affordance Arrow */}
-      <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
-        <span
-          className={`inline-flex items-center px-2.5 py-1 text-[11px] font-medium leading-none rounded-md border transition-colors ${colors.bg} ${colors.text} ${colors.border}`}
-        >
-          {pillText}
-        </span>
-
-        {/* Action / Navigation Affordance Arrow */}
-        <div className="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-50 group-hover:bg-[#E7EDFF] transition-colors shrink-0">
-          {isDone ? (
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="20" height="20" rx="4" fill="#059669" />
-              <path d="M6 10L9 13L14 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          ) : (
-            <svg
-              className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0F47F2] group-hover:translate-x-0.5 transition-all duration-200"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M3.33334 8H12.6667M12.6667 8L8 3.33333M12.6667 8L8 12.6667"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-        </div>
-      </div>
-
-      {/* Call Notes / Tags (If present) */}
-      {(latestCallNote || (latestCallTags && latestCallTags.length > 0)) && (
-        <div className="bg-slate-50 border border-slate-200/70 rounded-lg p-2 text-[11px] text-[#475569] flex flex-col gap-1.5 mt-0.5">
-          {latestCallTags && latestCallTags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {latestCallTags.map(tag => (
-                <span
-                  key={tag}
-                  className="bg-white border border-slate-200 px-1.5 py-0.5 rounded text-[10px] text-slate-700 font-medium"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-          {latestCallNote && (
-            <div className="flex items-start gap-1.5 text-xs">
-              <span className="text-slate-400 shrink-0 mt-0.5">💬</span>
-              <span className="leading-tight text-[#475569] italic">{latestCallNote}</span>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

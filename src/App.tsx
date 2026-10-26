@@ -52,7 +52,7 @@ function MainApp() {
     signOut,
     loading: authLoading,
   } = useAuth();
-  const {} = useAuthContext();
+  const { } = useAuthContext();
 
   const [currentPage, setCurrentPage] = useState(() => {
     return sessionStorage.getItem("nxthyre_activeTab") || "dashboard";
@@ -430,7 +430,7 @@ function MainApp() {
             ))}
           </div>
         </aside>
-        
+
         {/* Main Content Skeleton */}
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Header Skeleton */}
@@ -444,7 +444,7 @@ function MainApp() {
               </div>
             </div>
           </div>
-          
+
           {/* Dashboard Skeleton */}
           <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
             <div className="flex flex-col lg:flex-row gap-4">
@@ -484,7 +484,7 @@ function MainApp() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Right Sidebar */}
               <aside className="w-96 hidden lg:flex flex-col gap-4 shrink-0 animate-pulse">
                 <div className="bg-white rounded-xl h-[350px] border border-[#E5E7EB] p-5">

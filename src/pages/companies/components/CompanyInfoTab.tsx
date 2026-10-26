@@ -149,7 +149,7 @@ const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ data, onBack }) => {
                         </div>
                         <h3 className="text-lg font-bold text-slate-900 tracking-tight">Company Overview</h3>
                     </div>
-                    
+
                     {companyOverview !== PH ? (
                         <p className="text-sm leading-relaxed text-slate-600 font-normal">
                             {companyOverview}
@@ -203,18 +203,18 @@ const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ data, onBack }) => {
                     ].map((stat, idx) => (
                         <div
                             key={idx}
-                            className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between gap-3"
+                            className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-4"
                         >
-                            <div className="flex items-center justify-between">
+                            <div className={`p-3 rounded-xl ${stat.bg} ${stat.border} border shrink-0`}>
+                                {stat.icon}
+                            </div>
+                            <div className="flex flex-col min-w-0">
                                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                                     {stat.label}
                                 </span>
-                                <div className={`p-2 rounded-xl ${stat.bg} ${stat.border} border`}>
-                                    {stat.icon}
+                                <div className="text-2xl font-bold text-slate-900 tracking-tight mt-0.5">
+                                    {stat.value !== PH ? stat.value : '--'}
                                 </div>
-                            </div>
-                            <div className="text-2xl font-bold text-slate-900 tracking-tight">
-                                {stat.value !== PH ? stat.value : '--'}
                             </div>
                         </div>
                     ))}
@@ -232,30 +232,26 @@ const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ data, onBack }) => {
                     {founders.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {founders.map((founder: any, i: number) => {
-                                const initials = getInitials(founder.name);
                                 return (
                                     <div
                                         key={i}
-                                        className="bg-slate-50/80 hover:bg-white rounded-xl p-4 border border-slate-200/70 shadow-2xs hover:shadow-md transition-all duration-200 flex items-start gap-3.5"
+                                        className="bg-slate-50/80 hover:bg-white rounded-xl p-4 border border-slate-200/70 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col gap-1.5"
                                     >
-                                        <div className="w-11 h-11 rounded-full  bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
-                                            {initials}
-                                        </div>
-                                        <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                        <div className="flex items-center justify-between gap-2">
                                             <span className="text-sm font-bold text-slate-900 truncate">
                                                 {founder.name || PH}
                                             </span>
                                             {founder.title && founder.title !== PH && (
-                                                <span className="text-[11px] font-semibold text-[#0F47F2] bg-indigo-50/80 px-2 py-0.5 rounded-md self-start border border-indigo-100">
+                                                <span className="text-[11px] font-semibold text-[#0F47F2] bg-indigo-50/80 px-2 py-0.5 rounded-md self-start border border-indigo-100 shrink-0">
                                                     {founder.title}
                                                 </span>
                                             )}
-                                            {founder.bio && founder.bio !== PH && (
-                                                <p className="text-xs text-slate-500 leading-relaxed line-clamp-3 mt-1">
-                                                    {founder.bio}
-                                                </p>
-                                            )}
                                         </div>
+                                        {founder.bio && founder.bio !== PH && (
+                                            <p className="text-xs text-slate-500 leading-relaxed line-clamp-3 mt-1">
+                                                {founder.bio}
+                                            </p>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -379,7 +375,7 @@ const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ data, onBack }) => {
                                 {coreValues.map((val: string, i: number) => (
                                     <span
                                         key={i}
-                                        className="px-3 py-1.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/70 text-xs font-semibold"
+                                        className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/70 text-xs font-semibold"
                                     >
                                         {val}
                                     </span>
@@ -427,11 +423,11 @@ const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ data, onBack }) => {
                         </div>
 
                         {awards.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-3">
                                 {awards.map((award: string, i: number) => (
                                     <div
                                         key={i}
-                                        className="p-3.5 rounded-xl bg-gradient-to-br from-amber-50/40 to-indigo-50/30 border border-amber-200/50 flex items-center gap-3"
+                                        className="p-3.5 rounded-xl bg-gradient-to-br from-amber-50/40 to-indigo-50/30 border border-amber-200/50 flex items-center gap-3 w-full"
                                     >
                                         <div className="p-2 rounded-lg bg-amber-100/80 text-amber-700 shrink-0">
                                             <Award className="w-4 h-4" />

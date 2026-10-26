@@ -21,6 +21,9 @@ import {
     ArrowDown,
     ArrowUpDown,
     MoreHorizontal,
+    MoreVertical,
+    Play,
+    Pause,
 } from "lucide-react";
 import CreateWorkspaceModal from "./components/CreateWorkspaceModal";
 import JoinWorkspaceModal from "./components/JoinWorkspaceModal";
@@ -192,8 +195,8 @@ export default function Companies() {
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<
         "All" | "Active" | "Paused" | "Inactive"
-    >("All");
-    const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Inactive" | "Draft">("All");
+    >("Active");
+    const [activeJobFilter, setActiveJobFilter] = useState<"All" | "Active" | "Paused" | "Inactive" | "Draft">("Active");
     const [searchQuery, setSearchQuery] = useState("");
     const [jobSearchQuery, setJobSearchQuery] = useState("");
 
@@ -528,7 +531,7 @@ export default function Companies() {
         if (ws) {
             setSelectedWorkspace(ws);
             setSelectedJob(null);
-            setActiveJobFilter("All");
+            setActiveJobFilter("Active");
             setJobSearchQuery("");
             setSelectedPocEmail(undefined);
             setJobCurrentPage(1);
@@ -633,7 +636,7 @@ export default function Companies() {
                         <div className="lg:col-span-4 flex flex-col">
 
                             <div className="flex items-center justify-between p-4 flex-wrap">
-                                <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex items-center gap-4 flex-wrap">
                                     {(
                                         ["All", "Active", "Paused", "Inactive"] as const
                                     ).map((f) => (
@@ -657,7 +660,7 @@ export default function Companies() {
                                                     activeFilter === f ? "text-white/80" : "text-[#AEAEB2]"
                                                 }
                                             >
-                                                ({filterCounts[f as keyof typeof filterCounts]})
+                                                {filterCounts[f as keyof typeof filterCounts]}
                                             </span>
                                         </button>
                                     ))}
@@ -685,10 +688,10 @@ export default function Companies() {
                                         disabled
                                     >
                                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="#374151" stroke-linecap="round" />
-                                            <path d="M1.6665 8.16216C1.6665 5.25729 1.6665 3.80486 2.50125 2.90243C3.336 2 4.6795 2 7.3665 2H8.63317C11.3202 2 12.6637 2 13.4984 2.90243C14.3332 3.80486 14.3332 5.25729 14.3332 8.16216V8.5045C14.3332 11.4094 14.3332 12.8618 13.4984 13.7642C12.6637 14.6667 11.3202 14.6667 8.63317 14.6667H7.3665C4.6795 14.6667 3.336 14.6667 2.50125 13.7642C1.6665 12.8618 1.6665 11.4094 1.6665 8.5045V8.16216Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M4 5.3335H12" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M12 1.3335V2.66683M4 1.3335V2.66683" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M6.66667 11.3337L6.66666 8.89847C6.66666 8.77063 6.5755 8.66699 6.46305 8.66699H6M9.08644 11.3337L9.98945 8.89977C10.0317 8.78596 9.94189 8.66699 9.81379 8.66699H8.66667" stroke="#374151" strokeLinecap="round" />
+                                            <path d="M1.6665 8.16216C1.6665 5.25729 1.6665 3.80486 2.50125 2.90243C3.336 2 4.6795 2 7.3665 2H8.63317C11.3202 2 12.6637 2 13.4984 2.90243C14.3332 3.80486 14.3332 5.25729 14.3332 8.16216V8.5045C14.3332 11.4094 14.3332 12.8618 13.4984 13.7642C12.6637 14.6667 11.3202 14.6667 8.63317 14.6667H7.3665C4.6795 14.6667 3.336 14.6667 2.50125 13.7642C1.6665 12.8618 1.6665 11.4094 1.6665 8.5045V8.16216Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M4 5.3335H12" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                         24 Feb, 2026
                                     </button> */}
@@ -696,17 +699,17 @@ export default function Companies() {
                                     {/* Add Company Split Button */}
                                     <div className="flex items-center relative">
                                         <button
-                                            className="bg-[#0F47F2] text-white px-4 py-2 rounded-l-lg text-xs font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 h-9 text-nowrap"
+                                            className="bg-white text-[#0F47F2] border border-[#0F47F2] border-r-0 px-4 py-2 rounded-l-lg text-xs font-semibold hover:bg-blue-50/60 transition-colors flex items-center gap-1.5 h-9 text-nowrap"
                                             onClick={() => { setShowCreateModal(true); }}
                                         >
-                                            <Plus className="w-4 h-4" /> Add Company
+                                            <Plus className="w-4 h-4 text-[#0F47F2]" /> Add Company
                                         </button>
-                                        <div className="w-[1px] bg-white/20 h-9"></div>
+                                        <div className="w-[1px] bg-[#0F47F2]/30 h-9 border-t border-b border-[#0F47F2]"></div>
                                         <button
                                             onClick={() => setDropdownOpen(!dropdownOpen)}
-                                            className="bg-[#0F47F2] text-white px-2 py-2 rounded-r-lg hover:opacity-90 transition-opacity flex items-center h-9"
+                                            className="bg-white text-[#0F47F2] border border-[#0F47F2] border-l-0 px-2 py-2 rounded-r-lg hover:bg-blue-50/60 transition-colors flex items-center h-9"
                                         >
-                                            <ChevronDown className="w-4 h-4" />
+                                            <ChevronDown className="w-4 h-4 text-[#0F47F2]" />
                                         </button>
 
                                         {dropdownOpen && (
@@ -735,11 +738,11 @@ export default function Companies() {
                                 </div>
                                 {/* <button className="flex items-center gap-2 text-[#AEAEB2] hover:text-[#414141] transition-colors p-2 rounded-lg border border-[#D1D1D6] text-xs" title="Feature Coming Soon" disabled>
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g clip-path="url(#clip0_263_2492)">
-                                            <path d="M6.00016 14.6668H10.0002C13.3335 14.6668 14.6668 13.3335 14.6668 10.0002V6.00016C14.6668 2.66683 13.3335 1.3335 10.0002 1.3335H6.00016C2.66683 1.3335 1.3335 2.66683 1.3335 6.00016V10.0002C1.3335 13.3335 2.66683 14.6668 6.00016 14.6668Z" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M8 1.3335V14.6668" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M1.3335 6.3335H8.00016" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M8 9.66699H14.6667" stroke="#374151" stroke-linecap="round" stroke-linejoin="round" />
+                                        <g clipPath="url(#clip0_263_2492)">
+                                            <path d="M6.00016 14.6668H10.0002C13.3335 14.6668 14.6668 13.3335 14.6668 10.0002V6.00016C14.6668 2.66683 13.3335 1.3335 10.0002 1.3335H6.00016C2.66683 1.3335 1.3335 2.66683 1.3335 6.00016V10.0002C1.3335 13.3335 2.66683 14.6668 6.00016 14.6668Z" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M8 1.3335V14.6668" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M1.3335 6.3335H8.00016" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M8 9.66699H14.6667" stroke="#374151" strokeLinecap="round" strokeLinejoin="round" />
                                         </g>
                                         <defs>
                                             <clipPath id="clip0_263_2492">
@@ -808,15 +811,10 @@ export default function Companies() {
                                                     className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
                                                     onClick={() => handleSort('lastActiveDate')}
                                                 >
-                                                    <div className="flex items-center justify-center">Last Active Date <SortIcon columnKey="lastActiveDate" /></div>
+                                                    <div className="flex items-center justify-center">STATUS<SortIcon columnKey="lastActiveDate" /></div>
                                                 </th>
-                                                <th
-                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
-                                                    onClick={() => handleSort('status')}
-                                                >
-                                                    <div className="flex items-center justify-center">Status <SortIcon columnKey="status" /></div>
-                                                </th>
-                                                <th className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center">
+                                                <th className="px-4 py-3 text-[11px] font-bold uppercase text-[#1F2937] tracking-wider text-center">
+                                                    Actions
                                                 </th>
 
                                             </tr>
@@ -838,7 +836,7 @@ export default function Companies() {
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-20 mx-auto" /></td>
-                                                        <td className="px-6 py-4 text-center"><div className="h-5 bg-gray-200 rounded-full w-14 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-5 bg-gray-200 rounded-full w-24 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center">
                                                             <div className="w-6 h-6 bg-gray-200 rounded-full mx-auto" />
                                                         </td>
@@ -848,7 +846,7 @@ export default function Companies() {
                                             ) : paginatedRows.length === 0 ? (
                                                 <tr>
                                                     <td
-                                                        colSpan={10}
+                                                        colSpan={9}
 
                                                         className="px-6 py-12 text-center text-sm text-[#AEAEB2]"
                                                     >
@@ -886,8 +884,11 @@ export default function Companies() {
                                                                             {row.name}
                                                                         </p>
                                                                         {row.createdBy && (
-                                                                            <p className="text-[11px] text-[#AEAEB2] font-normal truncate max-w-[200px]">
-                                                                                {row.createdBy}
+                                                                            <p
+                                                                                className="text-[11px] text-[#AEAEB2] font-normal truncate max-w-[200px]"
+                                                                                title={row.createdBy}
+                                                                            >
+                                                                                {row.createdBy.includes('@') ? row.createdBy.split('@')[0] : row.createdBy}
                                                                             </p>
                                                                         )}
                                                                     </div>
@@ -925,14 +926,9 @@ export default function Companies() {
 
                                                             {/* Shortlisted */}
                                                             <td className="px-6 py-4 text-center">
-                                                                <div className="flex items-center justify-center gap-1.5">
-                                                                    <span className="text-sm text-[#4B5563]">{row.shortlisted}</span>
-                                                                    {row.shortlistedTrend && (
-                                                                        <span className="text-[10px] font-medium text-[#069855] bg-[#DEF7EC] px-1 py-0.5 rounded">
-                                                                            {row.shortlistedTrend}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
+                                                                <p className="text-sm text-[#4B5563]">
+                                                                    {row.shortlisted}
+                                                                </p>
                                                             </td>
 
                                                             {/* Hired */}
@@ -947,43 +943,47 @@ export default function Companies() {
                                                                 </div>
                                                             </td>
 
-                                                            {/* Last Active Date */}
-                                                            <td className="px-6 py-4 text-center">
-                                                                <p className="text-sm text-[#4B5563]">
-                                                                    {row.lastActiveDate}
-                                                                </p>
-                                                            </td>
-
-                                                            {/* Status */}
+                                                            {/* Last Active Date & Status */}
                                                             <td className="px-6 py-4 text-center">
                                                                 <span
                                                                     onClick={(e) => { e.stopPropagation(); handleStatusToggle(row.workspaceId, row.status); }}
-                                                                    className={`px-3 py-1 rounded-full text-[12px] font-medium ${sty.bg} ${sty.text} cursor-pointer hover:opacity-80 transition-opacity ${statusUpdating === row.workspaceId ? 'opacity-50 pointer-events-none' : ''}`}
+                                                                    className={`inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium ${sty.bg} ${sty.text} cursor-pointer hover:opacity-80 transition-opacity ${statusUpdating === row.workspaceId ? 'opacity-50 pointer-events-none' : ''}`}
+                                                                    title={`Status: ${row.status}. Click to change.`}
                                                                 >
-                                                                    {statusUpdating === row.workspaceId ? '...' : row.status}
+                                                                    {statusUpdating === row.workspaceId ? (
+                                                                        <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+                                                                    ) : row.status === 'Active' ? (
+                                                                        <Play className="w-2.5 h-2.5 fill-current shrink-0" />
+                                                                    ) : (
+                                                                        <Pause className="w-2.5 h-2.5 fill-current shrink-0" />
+                                                                    )}
+                                                                    <span className="whitespace-nowrap">{row.lastActiveDate || '--'}</span>
                                                                 </span>
                                                             </td>
 
                                                             {/* Actions */}
                                                             <td className="px-6 py-4 text-center relative" onClick={(e) => e.stopPropagation()}>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        if (menuOpenId === row.id) { setMenuOpenId(null); return; }
-                                                                        const rect = e.currentTarget.getBoundingClientRect();
-                                                                        const mW = 160, mH = 240, gap = 8;
-                                                                        const openUp = rect.bottom + mH + gap > window.innerHeight;
-                                                                        const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
-                                                                        const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
-                                                                        let left = rect.right - mW;
-                                                                        if (left < 8) left = 8;
-                                                                        if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
-                                                                        setMenuPos({ top, left });
-                                                                        setMenuOpenId(row.id);
-                                                                    }}
-                                                                    className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                                                                >
-                                                                    <MoreHorizontal className="w-4 h-4 text-[#AEAEB2]" />
-                                                                </button>
+                                                                <div className="flex items-center justify-center">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            if (menuOpenId === row.id) { setMenuOpenId(null); return; }
+                                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                                            const mW = 160, mH = 240, gap = 8;
+                                                                            const openUp = rect.bottom + mH + gap > window.innerHeight;
+                                                                            const preferredTop = openUp ? rect.top - mH - gap : rect.bottom + gap;
+                                                                            const top = Math.min(Math.max(8, preferredTop), Math.max(8, window.innerHeight - mH - 8));
+                                                                            let left = rect.right - mW;
+                                                                            if (left < 8) left = 8;
+                                                                            if (left + mW > window.innerWidth - 8) left = window.innerWidth - mW - 8;
+                                                                            setMenuPos({ top, left });
+                                                                            setMenuOpenId(row.id);
+                                                                        }}
+                                                                        className="p-1.5 hover:bg-gray-100 rounded-md transition-colors inline-flex items-center justify-center"
+                                                                        title="Actions"
+                                                                    >
+                                                                        <MoreVertical className="w-4 h-4 text-black font-bold " />
+                                                                    </button>
+                                                                </div>
                                                                 {menuOpenId === row.id && (
                                                                     <div
                                                                         ref={menuRef}

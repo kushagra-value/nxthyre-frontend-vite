@@ -225,7 +225,7 @@ export default function AddNewStageForm({
                     {documentRequired.idProof && (
                       <>
                         <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}
@@ -245,7 +245,7 @@ export default function AddNewStageForm({
                     {documentRequired.marksheets_10th_12th && (
                       <>
                         <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}
@@ -265,7 +265,7 @@ export default function AddNewStageForm({
                     {documentRequired.collegeTranscript && (
                       <>
                         <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}
@@ -285,7 +285,7 @@ export default function AddNewStageForm({
                     {documentRequired.experienceLetters && (
                       <>
                         <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}
@@ -305,7 +305,7 @@ export default function AddNewStageForm({
                     {documentRequired.panCard && (
                       <>
                         <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}
@@ -379,7 +379,7 @@ export default function AddNewStageForm({
                     {reminders.panel24h && (
                       <>
                         <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}
@@ -401,7 +401,7 @@ export default function AddNewStageForm({
                     {reminders.candidate48h && (
                       <>
                         <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}
@@ -423,7 +423,7 @@ export default function AddNewStageForm({
                     {reminders.hr30min && (
                       <>
                         <svg width="10" height="10" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M0.5 2.62248L2.6225 4.74498L6.875 0.5" stroke="#0F47F2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
 
                       </>

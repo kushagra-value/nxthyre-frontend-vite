@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import {
   ThumbsUp,
   ThumbsDown,
   Sparkles,
   ArrowRight,
+  ChevronDown,
 } from "lucide-react";
 
 export interface RoleQuestion {
@@ -26,14 +27,32 @@ interface CallScreeningRoleQuestionsProps {
     totalQuestions: number;
   };
   isLoading?: boolean;
+  screeningScore?: number | null;
+  defaultOpen?: boolean;
 }
 
 export default function CallScreeningRoleQuestions({
-  questions,
+  questions = [],
   followUpSuggestions = [],
   stats,
   isLoading = false,
+  screeningScore,
+  defaultOpen = false,
 }: CallScreeningRoleQuestionsProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  const overallScore = useMemo(() => {
+    if (screeningScore !== undefined && screeningScore !== null) {
+      return screeningScore;
+    }
+    const scoredQuestions = (questions || []).filter(
+      (q) => q.aiScore !== undefined && q.aiScore !== null
+    );
+    if (scoredQuestions.length === 0) return null;
+    const total = scoredQuestions.reduce((acc, q) => acc + (q.aiScore || 0), 0);
+    return Math.round(total / scoredQuestions.length);
+  }, [screeningScore, questions]);
+
   if (!stats) {
     console.error("Stats prop is required but not provided.");
     return null;
@@ -41,7 +60,7 @@ export default function CallScreeningRoleQuestions({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl p-8 shadow-sm flex items-center justify-center py-12">
+      <div className="bg-white rounded-xl p-8 shadow-sm flex items-center justify-center py-12 border border-[#E5E7EB]">
         <div className="animate-spin">
           <div className="w-8 h-8 border-4 border-[#E5E7EB] border-t-[#0F47F2] rounded-full" />
         </div>
@@ -52,9 +71,20 @@ export default function CallScreeningRoleQuestions({
     );
   }
 
-  const completionPercentage = Math.round(
-    (stats.totalAnswered / stats.totalQuestions) * 100
-  );
+  const completionPercentage =
+    stats.totalQuestions > 0
+      ? Math.round((stats.totalAnswered / stats.totalQuestions) * 100)
+      : 0;
+
+  const getScoreBadgeStyles = (score: number) => {
+    if (score >= 70) {
+      return "bg-[#DEF7EC] text-[#059669] border-[#BCF0DA]";
+    }
+    if (score >= 50) {
+      return "bg-[#FFF7D6] text-[#92400E] border-[#FDE68A]";
+    }
+    return "bg-[#FEE9E7] text-[#DC2626] border-[#FCD9BD]";
+  };
 
   const getQuestionStyles = (question: RoleQuestion) => {
     const isConvinced = question.status === "convinced";
@@ -93,52 +123,91 @@ export default function CallScreeningRoleQuestions({
   };
 
   return (
-    <div className="bg-white rounded-xl p-8 shadow-sm flex flex-col gap-6">
-      {/* Header Section */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
+    <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] overflow-hidden transition-all duration-200">
+      {/* Accordion Header */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        className="w-full p-5 sm:p-6 flex flex-wrap items-center justify-between gap-3 text-left hover:bg-gray-50/60 transition-colors select-none focus:outline-none"
+      >
+        <div className="flex items-center gap-2.5">
           <div className="w-2 h-2 rounded-full bg-[#0F47F2]" />
-          <h3 className="text-sm uppercase font-regular text-black tracking-wider">
+          <h3 className="text-sm uppercase font-semibold text-black tracking-wider">
             CALL SCREENING - ROLE QUESTIONS
           </h3>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-[#F5F9FB] px-3 py-1.5 rounded-full border border-[#E5E7EB]">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-            <span className="text-xs font-medium text-[#4B5563]">
-              {stats.convinced} Convinced
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-[#F5F9FB] px-3 py-1.5 rounded-full border border-[#E5E7EB]">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
-            <span className="text-xs font-medium text-[#4B5563]">
-              {stats.notConvinced} Not Convinced
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-[#F5F9FB] px-3 py-1.5 rounded-full border border-[#E5E7EB]">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#AEAEB2]" />
-            <span className="text-xs font-medium text-[#4B5563]">
-              {stats.skipped} Skipped
-            </span>
-          </div>
-        </div>
-      </div>
 
-      {/* Completion Bar */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-black">Completion</span>
-          <span className="text-sm font-normal text-[#0F47F2]">
-            {stats.totalAnswered} / {stats.totalQuestions} answered
-          </span>
-        </div>
-        <div className="w-full h-1.5 bg-[#F3F5F7] rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#0F47F2] rounded-full transition-all"
-            style={{ width: `${completionPercentage}%` }}
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          {/* Progress / Completion Badge */}
+          <div className="flex items-center gap-1.5 bg-[#F5F9FB] px-3 py-1.5 rounded-full border border-[#E5E7EB]">
+            <span className="text-xs font-medium text-[#4B5563]">
+              {stats.totalAnswered} / {stats.totalQuestions} answered
+            </span>
+            <span className="text-xs font-semibold text-[#0F47F2]">
+              ({completionPercentage}%)
+            </span>
+          </div>
+
+          {/* Overall Screening Score Pill */}
+          {overallScore !== null ? (
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${getScoreBadgeStyles(
+                overallScore
+              )}`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Score: {overallScore}%</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 bg-gray-100 text-gray-500 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200">
+              <span>Score: --</span>
+            </div>
+          )}
+
+          {/* Quick Stats Pills */}
+          <div className="hidden md:flex items-center gap-1.5">
+            <div className="flex items-center gap-1 bg-[#F5F9FB] px-2.5 py-1.5 rounded-full border border-[#E5E7EB] text-xs font-medium text-[#4B5563]">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+              <span>{stats.convinced}</span>
+            </div>
+            <div className="flex items-center gap-1 bg-[#F5F9FB] px-2.5 py-1.5 rounded-full border border-[#E5E7EB] text-xs font-medium text-[#4B5563]">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
+              <span>{stats.notConvinced}</span>
+            </div>
+            <div className="flex items-center gap-1 bg-[#F5F9FB] px-2.5 py-1.5 rounded-full border border-[#E5E7EB] text-xs font-medium text-[#4B5563]">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#AEAEB2]" />
+              <span>{stats.skipped}</span>
+            </div>
+          </div>
+
+          {/* Chevron indicator */}
+          <ChevronDown
+            className={`w-5 h-5 text-gray-400 transition-transform duration-200 shrink-0 ${
+              isOpen ? "rotate-180" : ""
+            }`}
           />
         </div>
-      </div>
+      </button>
+
+      {/* Accordion Expanded Content */}
+      {isOpen && (
+        <div className="border-t border-[#E5E7EB] p-6 sm:p-8 flex flex-col gap-6">
+          {/* Completion Bar */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-black">Completion</span>
+              <span className="text-sm font-normal text-[#0F47F2]">
+                {stats.totalAnswered} / {stats.totalQuestions} answered
+              </span>
+            </div>
+            <div className="w-full h-1.5 bg-[#F3F5F7] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#0F47F2] rounded-full transition-all"
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
+          </div>
 
       {/* Questions List */}
       <div className="space-y-4">
@@ -256,6 +325,8 @@ export default function CallScreeningRoleQuestions({
               </div>
             ))}
           </div>
+        </div>
+      )}
         </div>
       )}
     </div>

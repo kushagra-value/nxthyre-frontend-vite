@@ -593,8 +593,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             <path
               d="M6.57227 9.775L7.67227 10.875L10.4223 8.125"
               stroke="#009951"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         );
@@ -634,7 +634,7 @@ const StageDetails: React.FC<StageDetailsProps> = ({
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <g clip-path="url(#clip0_4090_2502)">
+            <g clipPath="url(#clip0_4090_2502)">
               <path
                 fill-rule="evenodd"
                 clip-rule="evenodd"
@@ -1339,8 +1339,8 @@ const StageDetails: React.FC<StageDetailsProps> = ({
                             <path
                               d="M7 1.00781H5.2M7 1.00781V2.80781M7 1.00781L4.9 3.10781M1 7.00781H2.8M1 7.00781V5.20781M1 7.00781L3.1 4.90781"
                               stroke="#818283"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                           </svg>
                         </div>

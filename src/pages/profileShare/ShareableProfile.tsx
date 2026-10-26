@@ -217,8 +217,8 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             <path
               d="M6.57227 9.775L7.67227 10.875L10.4223 8.125"
               stroke="#009951"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         );
@@ -258,7 +258,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <g clip-path="url(#clip0_4090_2502)">
+            <g clipPath="url(#clip0_4090_2502)">
               <path
                 fill-rule="evenodd"
                 clip-rule="evenodd"
@@ -327,7 +327,7 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g clip-path="url(#clip0_4689_3183)">
+                <g clipPath="url(#clip0_4689_3183)">
                   <path
                     d="M12.94 4.6673C12.9405 4.75504 12.9237 4.84201 12.8905 4.92324C12.8573 5.00446 12.8085 5.07834 12.7467 5.14063L5.88667 12.0006L12.7467 18.8606C12.8559 18.9882 12.913 19.1522 12.9065 19.32C12.9 19.4878 12.8304 19.6469 12.7117 19.7657C12.593 19.8844 12.4338 19.954 12.266 19.9604C12.0983 19.9669 11.9342 19.9099 11.8067 19.8006L4 12.0006L11.8067 4.19397C11.9003 4.10223 12.0188 4.04011 12.1475 4.01537C12.2762 3.99064 12.4093 4.00438 12.5303 4.05489C12.6512 4.10539 12.7546 4.19042 12.8274 4.29934C12.9003 4.40827 12.9395 4.53625 12.94 4.6673Z"
                     fill="#4B5563"

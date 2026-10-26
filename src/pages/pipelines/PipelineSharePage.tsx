@@ -513,8 +513,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             <path
               d="M6.57227 9.775L7.67227 10.875L10.4223 8.125"
               stroke="#009951"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         );
@@ -554,7 +554,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <g clip-path="url(#clip0_4090_2502)">
+            <g clipPath="url(#clip0_4090_2502)">
               <path
                 fill-rule="evenodd"
                 clip-rule="evenodd"
@@ -1184,8 +1184,8 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                             <path
                               d="M7 1.00781H5.2M7 1.00781V2.80781M7 1.00781L4.9 3.10781M1 7.00781H2.8M1 7.00781V5.20781M1 7.00781L3.1 4.90781"
                               stroke="#818283"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                           </svg>
                         </div>
@@ -2719,7 +2719,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <g clip-path="url(#clip0_4527_6787)">
+                      <g clipPath="url(#clip0_4527_6787)">
                         <path
                           d="M1.44575 12.473C0.994198 8.48683 0.971838 5.61909 1.36811 1.70893L1.54946 1.67165L1.42577 1.19807C1.42208 1.18395 1.4224 1.17706 1.42299 1.17171C1.43772 1.04016 1.58607 0.882274 1.71679 0.860099C1.71829 0.859848 1.72084 0.859631 1.7235 0.859631C1.72819 0.859631 1.73376 0.860311 1.74056 0.861704L2.22573 0.961614L2.2512 0.778803C3.66308 0.570388 5.09042 0.464844 6.49934 0.464844C7.90846 0.464844 9.33617 0.570445 10.7483 0.778912L10.7741 0.961425L11.2582 0.8617C11.2649 0.860325 11.2706 0.859631 11.2752 0.859631C11.2779 0.859631 11.2804 0.859848 11.2833 0.860321C11.4126 0.882274 11.561 1.04014 11.5758 1.1729C11.5763 1.17715 11.5766 1.18394 11.5729 1.19807L11.4492 1.67165L11.6306 1.70893C12.0269 5.61908 12.0045 8.48676 11.5529 12.4729L11.4489 12.42L11.415 12.448C9.50322 11.4928 8.48066 10.7122 6.86783 8.60855L6.49935 8.12793L6.13088 8.60855C4.4547 10.7948 3.48076 11.5393 1.58776 12.4509L1.55029 12.4198L1.44575 12.473Z"
                           fill="#818283"
@@ -2795,7 +2795,7 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                 <path
                   d="M2.49609 9.28995C2.49609 9.28995 4.46314 6.58449 5.61458 6.21505C6.76603 5.84562 7.80041 9.83024 9.78856 9.28995C11.3424 8.86769 12.4753 5.61328 12.4753 5.61328"
                   stroke="#1CB977"
-                  stroke-linecap="round"
+                  strokeLinecap="round"
                 />
               </svg>
 
@@ -2891,35 +2891,35 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                   d="M10.0017 11.7378C10.9606 11.7378 11.7378 10.9606 11.7378 10.0017C11.7378 9.04292 10.9606 8.26562 10.0017 8.26562C9.04292 8.26562 8.26562 9.04292 8.26562 10.0017C8.26562 10.9606 9.04292 11.7378 10.0017 11.7378Z"
                   stroke="#818283"
                   stroke-miterlimit="10"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M14.5156 8.26562V11.7378"
                   stroke="#818283"
                   stroke-miterlimit="10"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M7.91493 14.1684C7.91493 14.6892 7.7691 15.1823 7.51216 15.599C7.03299 16.4045 6.15104 16.9462 5.13715 16.9462C4.12326 16.9462 3.24131 16.4045 2.76215 15.599C2.5052 15.1823 2.35938 14.6892 2.35938 14.1684C2.35938 12.6337 3.60243 11.3906 5.13715 11.3906C6.67187 11.3906 7.91493 12.6337 7.91493 14.1684Z"
                   stroke="#818283"
                   stroke-miterlimit="10"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M4.05469 14.1649L4.74218 14.8524L6.22135 13.4844"
                   stroke="#818283"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M3.05469 12.2925V7.91753C3.05469 5.48698 4.44358 4.44531 6.52691 4.44531H13.4714C15.5547 4.44531 16.9436 5.48698 16.9436 7.91753V12.0842C16.9436 14.5148 15.5547 15.5564 13.4714 15.5564H7.56858"
                   stroke="#818283"
                   stroke-miterlimit="10"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
 
@@ -2941,36 +2941,36 @@ const PipelineSharePage: React.FC<PipelineSharePageProps> = ({
                   d="M10.0017 11.7378C10.9606 11.7378 11.7378 10.9606 11.7378 10.0017C11.7378 9.04292 10.9606 8.26562 10.0017 8.26562C9.04292 8.26562 8.26562 9.04292 8.26562 10.0017C8.26562 10.9606 9.04292 11.7378 10.0017 11.7378Z"
                   stroke="#818283"
                   stroke-miterlimit="10"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M14.5156 8.26562V11.7378"
                   stroke="#818283"
                   stroke-miterlimit="10"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M5.13715 16.9462C6.67128 16.9462 7.91493 15.7025 7.91493 14.1684C7.91493 12.6343 6.67128 11.3906 5.13715 11.3906C3.60303 11.3906 2.35938 12.6343 2.35938 14.1684C2.35938 15.7025 3.60303 16.9462 5.13715 16.9462Z"
                   stroke="#818283"
                   stroke-miterlimit="10"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M5.31337 13.2969V13.9427C5.31337 14.1858 5.18837 14.4149 4.97310 14.5399L4.44531 14.8594"
                   stroke="#818283"
                   stroke-miterlimit="10"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <path
                   d="M3.05469 12.2231V7.91753C3.05469 5.48698 4.44358 4.44531 6.52691 4.44531H13.4714C15.5547 4.44531 16.9436 5.48698 16.9436 7.91753V12.0842C16.9436 14.5148 15.5547 15.5564 13.4714 15.5564H7.56858"
                   stroke="#818283"
                   stroke-miterlimit="10"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
 

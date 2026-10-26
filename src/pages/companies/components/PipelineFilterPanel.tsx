@@ -11,6 +11,13 @@ export interface FilterOption {
   subLabel?: string;
 }
 
+export interface RecruiterOption {
+  value: string | null;
+  label: string;
+  name: string;
+  count?: number;
+}
+
 export interface PipelineFiltersState {
   location: string[];
   salaryRange: { min: string; max: string };
@@ -18,6 +25,7 @@ export interface PipelineFiltersState {
   designation: string[];
   noticePeriod: { selected: string[]; minDays: string; maxDays: string };
   attention: string[];
+  recruiter?: string | null;
 }
 
 export const EMPTY_PIPELINE_FILTERS: PipelineFiltersState = {
@@ -27,6 +35,7 @@ export const EMPTY_PIPELINE_FILTERS: PipelineFiltersState = {
   designation: [],
   noticePeriod: { selected: [], minDays: "", maxDays: "" },
   attention: [],
+  recruiter: null,
 };
 
 interface PipelineFilterPanelProps {
@@ -36,6 +45,7 @@ interface PipelineFilterPanelProps {
   initialFilters: PipelineFiltersState;
   anchorRef: React.RefObject<HTMLButtonElement | HTMLDivElement>;
   jobId: number;
+  recruiterOptions?: RecruiterOption[];
 }
 
 type TabKey = keyof PipelineFiltersState;
@@ -73,7 +83,23 @@ export default function PipelineFilterPanel({
   initialFilters,
   anchorRef,
   jobId,
+  recruiterOptions,
 }: PipelineFilterPanelProps) {
+  const tabs = useMemo<{ key: TabKey; label: string }[]>(() => {
+    const list: { key: TabKey; label: string }[] = [];
+    if (recruiterOptions && recruiterOptions.length > 0) {
+      list.push({ key: "recruiter", label: "Recruiter" });
+    }
+    list.push(
+      { key: "location", label: "Location" },
+      { key: "salaryRange", label: "Salary Range" },
+      { key: "experience", label: "Experience" },
+      { key: "designation", label: "Designation" },
+      { key: "noticePeriod", label: "Notice Period" },
+      { key: "attention", label: "Attention" },
+    );
+    return list;
+  }, [recruiterOptions]);
   const [activeTab, setActiveTab] = useState<TabKey>("location");
   const [filters, setFilters] = useState<PipelineFiltersState>(initialFilters);
   const [searchQuery, setSearchQuery] = useState("");
@@ -178,9 +204,15 @@ export default function PipelineFilterPanel({
     if (isOpen) {
       setFilters(initialFilters);
       setSearchQuery("");
-      setActiveTab("location");
+      if (initialFilters.recruiter && recruiterOptions && recruiterOptions.length > 0) {
+        setActiveTab("recruiter");
+      } else if (recruiterOptions && recruiterOptions.length > 0) {
+        setActiveTab("recruiter");
+      } else {
+        setActiveTab("location");
+      }
     }
-  }, [isOpen, initialFilters]);
+  }, [isOpen, initialFilters, recruiterOptions]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -238,6 +270,7 @@ export default function PipelineFilterPanel({
   };
 
   const getFilterCount = (tab: TabKey) => {
+    if (tab === "recruiter") return filters.recruiter ? 1 : 0;
     if (tab === "location") return filters.location.length;
     if (tab === "designation") return filters.designation.length;
     if (tab === "attention") return filters.attention.length;
@@ -405,6 +438,92 @@ export default function PipelineFilterPanel({
       );
     }
 
+    if (activeTab === "recruiter") {
+      const filteredRecruiters = (recruiterOptions || []).filter((opt) => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase();
+        return (
+          opt.label.toLowerCase().includes(q) ||
+          opt.name.toLowerCase().includes(q)
+        );
+      });
+
+      return (
+        <div className="flex-1 flex flex-col p-6 bg-white">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-base font-semibold text-[#0F47F2]">Recruiter</h3>
+          </div>
+
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search recruiter..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-[#0F47F2] transition-colors placeholder:text-gray-400"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5 mt-2 h-[300px] overflow-y-auto custom-scrollbar pr-2">
+            {filteredRecruiters.map((opt) => {
+              const isSelected =
+                filters.recruiter === opt.value ||
+                (!filters.recruiter && opt.value === null);
+
+              return (
+                <div
+                  key={opt.value ?? "all"}
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      recruiter: opt.value,
+                    }))
+                  }
+                  className={`p-3 rounded-lg cursor-pointer text-sm transition-colors flex items-center justify-between border ${
+                    isSelected
+                      ? "bg-[#E7EDFF] border-[#0F47F2] text-[#0F47F2] font-semibold"
+                      : "bg-white border-[#E5E7EB] hover:bg-gray-50 text-gray-700"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        isSelected
+                          ? "border-[#0F47F2] bg-[#0F47F2]"
+                          : "border-gray-300 bg-white"
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      )}
+                    </div>
+                    <span className="truncate max-w-[280px]">{opt.name}</span>
+                  </div>
+                  {opt.count !== undefined && (
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${
+                        isSelected
+                          ? "bg-[#0F47F2] text-white"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {opt.count}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+            {filteredRecruiters.length === 0 && (
+              <div className="text-sm text-gray-500 text-center mt-10">
+                No recruiters found.
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     if (activeTab === "attention") {
       return (
         <div className="flex-1 flex flex-col p-6 bg-white">
@@ -425,7 +544,7 @@ export default function PipelineFilterPanel({
       <div className="flex-1 flex flex-col p-6 bg-white">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-base font-semibold text-[#0F47F2]">
-            {TABS.find(t => t.key === activeTab)?.label}
+            {tabs.find(t => t.key === activeTab)?.label}
           </h3>
         </div>
 
@@ -459,7 +578,7 @@ export default function PipelineFilterPanel({
           {/* Left Sidebar */}
           <div className="w-[200px] bg-[#F9FAFB] border-r border-[#E5E7EB] py-4 overflow-y-auto">
             <div className="flex flex-col">
-              {TABS.map((tab) => {
+              {tabs.map((tab) => {
                 const count = getFilterCount(tab.key);
                 return (
                   <button
