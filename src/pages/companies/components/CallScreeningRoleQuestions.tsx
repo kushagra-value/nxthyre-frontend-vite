@@ -301,7 +301,7 @@ export default function CallScreeningRoleQuestions({
             </div>
           );
         })}
-      </div>
+      </div>Suggested questions to evaluate Data Scientist, Machine Learning & Gen Ai Engineer | 10+ Years Experience skills.
 
       {/* AI Follow-up Suggestions */}
       {followUpSuggestions.length > 0 && (

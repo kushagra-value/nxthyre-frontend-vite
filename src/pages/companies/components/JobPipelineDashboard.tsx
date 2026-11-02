@@ -62,6 +62,7 @@ import NxthyreTab from "./NxthyreTab";
 import AddNewStageForm from "../../pipelines/AddNewStageForm";
 import toast from "react-hot-toast";
 import { showToast } from "../../../utils/toast";
+import { toIsoDate } from "../../../utils/dateUtils";
 import * as XLSX from "xlsx";
 import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } from "./PipelineFilterPanel";
 import DateRangeFilter from "./DateRangeFilter";
@@ -2046,8 +2047,11 @@ export default function JobPipelineDashboard({
       }
     }
 
-    if (candidateEditForm.last_working_day !== "") {
-      payload.last_working_day = candidateEditForm.last_working_day;
+    if (candidateEditForm.last_working_day && candidateEditForm.last_working_day.trim() !== "") {
+      const isoLwd = toIsoDate(candidateEditForm.last_working_day);
+      if (isoLwd) {
+        payload.last_working_day = isoLwd;
+      }
     }
 
     if (candidateEditForm.location !== "") {

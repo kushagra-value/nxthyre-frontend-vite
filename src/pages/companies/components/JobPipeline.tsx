@@ -186,12 +186,27 @@ export default function JobPipeline({
           setSelectedCandidate(response.data);
         }
 
-        // Log the candidate response from /candidates/Uuid API endpoint
+        // Fetch fresh candidate details from /candidates/Uuid API endpoint to ensure latest editable fields
         if (response.data?.candidate?.id) {
-          const canRes = await apiClient.get(
-            `/candidates/${response.data.candidate.id}/?job_id=${jobId}`,
-          );
-          console.log("Candidate Uuid API response:", canRes.data);
+          try {
+            const canRes = await apiClient.get(
+              `/candidates/${response.data.candidate.id}/?job_id=${jobId}`,
+            );
+            if (canRes.data?.candidate) {
+              const fresh = canRes.data.candidate;
+              response.data.candidate = {
+                ...response.data.candidate,
+                ...fresh,
+                current_salary: fresh.current_salary ?? response.data.candidate.current_salary,
+                expected_ctc: fresh.expected_ctc ?? response.data.candidate.expected_ctc,
+                notice_period_days: fresh.notice_period_days ?? response.data.candidate.notice_period_days,
+                reason_for_change: fresh.reason_for_change ?? response.data.candidate.reason_for_change,
+              };
+              setSelectedCandidate({ ...response.data });
+            }
+          } catch (e) {
+            console.debug("Could not merge candidate details:", e);
+          }
         }
       }
     } catch (error) {
