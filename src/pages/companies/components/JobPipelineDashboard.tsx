@@ -89,6 +89,8 @@ export interface Stage {
 
 interface CandidateListItem {
   id: number;
+  screening_score?: number | string | null;
+  fit_score?: number | string | null;
   question_analysis?: number | null;
   questioion_analysis?: number | null;
   ai_accuracy_score?: number | null;
@@ -106,6 +108,8 @@ interface CandidateListItem {
     is_background_verified: boolean;
     profile_picture_url?: string | null;
     experience_years: string;
+    screening_score?: number | string | null;
+    fit_score?: number | string | null;
     question_analysis?: number | null;
     questioion_analysis?: number | null;
     ai_accuracy_score?: number | null;
@@ -404,15 +408,41 @@ const statusColor = (
 };
 
 const getQuestionAnalysisScore = (item: CandidateListItem): number | null => {
+  const cand = item.candidate;
+
+  // 1. First priority: Check explicit screening_score fields
+  const screeningScore =
+    item.screening_score ??
+    cand?.screening_score ??
+    (item as any).screening_round_score ??
+    (cand as any)?.screening_round_score ??
+    (item as any).screening_score_value ??
+    (cand as any)?.screening_score_value ??
+    (item as any).screening_round ??
+    (cand as any)?.screening_round ??
+    (item as any).contextual_details?.screening_score ??
+    (cand as any)?.contextual_details?.screening_score ??
+    cand?.job_score?.screening_score;
+
+  if (screeningScore != null && screeningScore !== "" && screeningScore !== "--") {
+    const parsed = Number(String(screeningScore).replace("%", ""));
+    if (!isNaN(parsed)) return Math.round(parsed);
+  }
+
+  // 2. Next: check fit_score if available
+  const fitScore = cand?.fit_score ?? item.fit_score;
+  if (fitScore != null && fitScore !== "" && fitScore !== "--") {
+    const parsed = Number(String(fitScore).replace("%", ""));
+    if (!isNaN(parsed)) return Math.round(parsed);
+  }
+
+  // 3. Fallback: question_analysis / questioion_analysis if no screening score exists
   if (item.question_analysis != null) return Number(item.question_analysis);
   if (item.questioion_analysis != null) return Number(item.questioion_analysis);
-  if ((item as any).screening_score != null) return Number((item as any).screening_score);
 
-  const cand = item.candidate;
   if (cand) {
     if (cand.question_analysis != null) return Number(cand.question_analysis);
     if (cand.questioion_analysis != null) return Number(cand.questioion_analysis);
-    if ((cand as any).screening_score != null) return Number((cand as any).screening_score);
   }
 
   const getAverage = (obj: any) => {
@@ -436,6 +466,7 @@ const getQuestionAnalysisScore = (item: CandidateListItem): number | null => {
 
   const jobScore = item.job_score || (item as any).contextual_details?.job_score_obj || (item as any).job_score_obj;
   if (jobScore) {
+    if (jobScore.screening_score != null) return Number(jobScore.screening_score);
     const jsAvg = getAverage(jobScore);
     if (jsAvg != null) return jsAvg;
     if (jobScore.question_analysis != null) return Number(jobScore.question_analysis);
