@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Search, ChevronRight, X } from "lucide-react";
 import { debounce } from "lodash";
-import { candidateService } from "../../../services/candidateService";
-import { jobPostService } from "../../../services/jobPostService";
+import { callService } from "../../../services/callService";
 
 export interface CallFiltersState {
   location: string[];
@@ -120,7 +119,7 @@ export const CallFiltersDialog: React.FC<CallFiltersDialogProps> = ({
         }
         try {
           setIsSearchingLocation(true);
-          const suggestions = await candidateService.getCitySuggestions(query);
+          const suggestions = await callService.getCitySuggestions(query);
           setLocationSuggestions(suggestions.map((s: string) => ({ value: s, label: s })));
         } catch (error) {
           console.error("Failed to fetch location suggestions", error);
@@ -137,7 +136,7 @@ export const CallFiltersDialog: React.FC<CallFiltersDialogProps> = ({
       debounce(async (query: string, jId: number) => {
         try {
           setIsSearchingDesignation(true);
-          const suggestions = await jobPostService.getDesignationList(jId, query);
+          const suggestions = await callService.getDesignationSuggestions(jId, query);
           setDesignationSuggestions(suggestions.map((s: string) => ({ value: s, label: s })));
         } catch (error) {
           console.error("Failed to fetch designation suggestions", error);

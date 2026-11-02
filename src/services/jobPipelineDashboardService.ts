@@ -123,7 +123,7 @@ export interface ScheduleFollowUpPayload {
   duration_seconds?: number;
   tags?: string[];
   checklist_data?: Record<string, any>;
-  skills_data?: Record<string, boolean>;
+  skills_data?: Record<string, any>;
   call_log_id?: number;
 }
 
@@ -148,7 +148,7 @@ export interface CallLogPayload {
   duration_seconds?: number;
   tags?: string[];
   checklist_data?: Record<string, any>;
-  skills_data?: Record<string, boolean>;
+  skills_data?: Record<string, any>;
   role_questions_data?: any;
   call_mode?: "platform" | "manual";
 }
@@ -162,8 +162,8 @@ export interface CallLogResponse {
   note: string;
   duration_seconds: number;
   tags: string[];
-  checklist_data: Record<string, boolean> | null;
-  skills_data: Record<string, boolean> | null;
+  checklist_data: Record<string, any> | null;
+  skills_data: Record<string, any> | null;
   created_at: string;
 }
 
@@ -586,3 +586,19 @@ export async function bulkReframeQuestions(
   );
   return response.data;
 }
+
+/**
+ * Saves recruiter skill feedback (thumbs up / neutral / thumbs down) for a candidate call.
+ */
+export async function saveSkillsFeedback(args: {
+  candidateId: string;
+  skillsData: Record<string, any>;
+  callUuid?: string;
+}): Promise<CallLogResponse> {
+  return saveCallLog({
+    candidate_id: args.candidateId,
+    call_uuid: args.callUuid,
+    skills_data: args.skillsData,
+  });
+}
+

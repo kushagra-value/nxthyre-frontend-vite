@@ -18,7 +18,7 @@ import PipelineSharePage from "./pages/pipelines/PipelineSharePage";
 import TermsAndConditions from "./components/legal/TermsAndConditions";
 import JobApplicationForm from "./pages/candidates/components/JobApplicationForm";
 import CandidateBackGroundCheck from "./pages/candidates/components/CandidateBackGroundCheck";
-import CandidateCallPage from "./pages/companies/components/CandidateCallPage";
+import CandidateCallPage from "./pages/companies/components/candidate-call-page/CandidateCallPage";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import ShareCandidateListPage from "./pages/pipelines/ShareCandidateListPage";
 import { organizationService } from "./services/organizationService";

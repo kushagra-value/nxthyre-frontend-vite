@@ -1,34 +1,25 @@
 import React from "react";
+import { CallStatsData } from "../../../services/callService";
 
-export interface CallStatsData {
-  totalCalls?: string | number;
-  totalCallsSubtext?: string;
-  totalCallsToday?: string | number;
-  totalCallsTodaySubtext?: string;
-  followUps?: string | number;
-  followUpsSubtext?: string;
-  shortlisted?: string | number;
-  shortlistedSubtext?: string;
-  avgTime?: string;
-  avgTimeSubtext?: string;
-}
+export type { CallStatsData };
 
 interface CallStatsProps {
-  stats?: CallStatsData;
+  stats?: CallStatsData | null;
+  isLoading?: boolean;
 }
 
-export const CallStats: React.FC<CallStatsProps> = ({ stats }) => {
+export const CallStats: React.FC<CallStatsProps> = ({ stats, isLoading = false }) => {
   const data: CallStatsData = {
-    totalCalls: stats?.totalCalls ?? "822",
-    totalCallsSubtext: stats?.totalCallsSubtext ?? "Per month",
-    totalCallsToday: stats?.totalCallsToday ?? "13",
-    totalCallsTodaySubtext: stats?.totalCallsTodaySubtext ?? "vs Target 45",
-    followUps: stats?.followUps ?? "822",
-    followUpsSubtext: stats?.followUpsSubtext ?? "Total Calls today",
-    shortlisted: stats?.shortlisted ?? "822",
-    shortlistedSubtext: stats?.shortlistedSubtext ?? "Total Calls today",
-    avgTime: stats?.avgTime ?? "5min",
-    avgTimeSubtext: stats?.avgTimeSubtext ?? "Avg Time Taken",
+    totalCalls: stats?.totalCalls ?? 0,
+    totalCallsSubtext: stats?.totalCallsSubtext || "Per month",
+    totalCallsToday: stats?.totalCallsToday ?? 0,
+    totalCallsTodaySubtext: stats?.totalCallsTodaySubtext || "vs Target 45",
+    followUps: stats?.followUps ?? 0,
+    followUpsSubtext: stats?.followUpsSubtext || "Total Calls today",
+    shortlisted: stats?.shortlisted ?? 0,
+    shortlistedSubtext: stats?.shortlistedSubtext || "Total Calls today",
+    avgTime: stats?.avgTime || "0min",
+    avgTimeSubtext: stats?.avgTimeSubtext || "Avg Time Taken",
   };
 
   const statItems = [
@@ -71,9 +62,13 @@ export const CallStats: React.FC<CallStatsProps> = ({ stats }) => {
             {item.label}
           </span>
           <div className="flex items-baseline gap-2 mt-1.5">
-            <span className="text-[32px] font-regular text-[#000000] leading-none tracking-tight">
-              {item.value}
-            </span>
+            {isLoading ? (
+              <div className="h-8 w-16 bg-gray-200 animate-pulse rounded my-0.5" />
+            ) : (
+              <span className="text-[32px] font-regular text-[#000000] leading-none tracking-tight">
+                {item.value}
+              </span>
+            )}
             {item.subtext && (
               <span className="text-[12px] font-regular text-[#9CA3AF] whitespace-nowrap">
                 {item.subtext}

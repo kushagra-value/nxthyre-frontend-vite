@@ -1,11 +1,19 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import CallStats from "./components/CallStats";
 import CallToolbar from "./components/CallToolbar";
 import CandidateList from "./components/CandidateList";
+import CallTabs, { CallTabType } from "./components/CallTabs";
+import HistoryTab from "./components/HistoryTab";
+import ShortlistTab from "./components/ShortlistTab";
 import JobDetailsDialog from "./components/JobDetailsDialog";
 import CallFiltersDialog, { CallFiltersState, EMPTY_CALL_FILTERS } from "./components/CallFiltersDialog";
-import { callService, CandidateCallItem } from "../../services/callService";
+import {
+  callService,
+  CandidateCallItem,
+  CallStatsData,
+  CallHistoryItem,
+} from "../../services/callService";
 import { callStateCache } from "./components/callStateCache";
 import { MyWorkspace } from "../../services/organizationService";
 import { Job, jobPostService } from "../../services/jobPostService";
@@ -27,28 +35,64 @@ export const CallPage: React.FC = () => {
   );
   const [isLoadingJobs, setIsLoadingJobs] = useState(false);
 
+  // Active Tab: Call | History | Shortlist
+  const [activeTab, setActiveTab] = useState<CallTabType>(
+    () => cached?.activeTab || "call"
+  );
+
   // Companies & Jobs
   const [companies, setCompanies] = useState<MyWorkspace[]>(() => cached?.companies || []);
   const [jobs, setJobs] = useState<Job[]>(() => cached?.jobs || []);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(() => cached?.selectedCompanyId ?? null);
-  const [selectedJobId, setSelectedJobId] = useState<number | null>(() => cached?.selectedJobId ?? null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(
+    () => cached?.selectedCompanyId ?? null
+  );
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(
+    () => cached?.selectedJobId ?? null
+  );
 
-  // Candidates & Filtering & Pagination
-  const [candidates, setCandidates] = useState<CandidateCallItem[]>(() => cached?.candidates || []);
+  // Tab 1: Candidates & Filtering & Pagination (Call Tab)
+  const [candidates, setCandidates] = useState<CandidateCallItem[]>(
+    () => cached?.candidates || []
+  );
   const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
   const [hasFetched, setHasFetched] = useState(() => cached?.hasFetched || false);
-  const [filters, setFilters] = useState<CallFiltersState>(() => cached?.filters || EMPTY_CALL_FILTERS);
-  const [selectedScoreRange, setSelectedScoreRange] = useState<string | null>(() => cached?.selectedScoreRange || null);
+  const [filters, setFilters] = useState<CallFiltersState>(
+    () => cached?.filters || EMPTY_CALL_FILTERS
+  );
+  const [selectedScoreRange, setSelectedScoreRange] = useState<string | null>(
+    () => cached?.selectedScoreRange || null
+  );
   const [searchQuery, setSearchQuery] = useState<string>(() => cached?.searchQuery || "");
 
   const [currentPage, setCurrentPage] = useState(() => cached?.currentPage || 1);
   const pageSize = 10;
   const [totalCount, setTotalCount] = useState(() => cached?.totalCount || 0);
 
+  // Tab 2: Call History State
+  const [historyItems, setHistoryItems] = useState<CallHistoryItem[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyTotalCount, setHistoryTotalCount] = useState(0);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [hasFetchedHistory, setHasFetchedHistory] = useState(false);
+
+  // Tab 3: Shortlist State
+  const [shortlistCandidates, setShortlistCandidates] = useState<CandidateCallItem[]>([]);
+  const [isLoadingShortlist, setIsLoadingShortlist] = useState(false);
+  const [shortlistTotalCount, setShortlistTotalCount] = useState(0);
+  const [shortlistPage, setShortlistPage] = useState(1);
+  const [hasFetchedShortlist, setHasFetchedShortlist] = useState(false);
+
   // Candidate Details Profile View (JobCandidateProfile)
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [isLoadingCandidateProfile, setIsLoadingCandidateProfile] = useState(false);
   const [stages, setStages] = useState<any[]>(() => cached?.stages || []);
+  const jobsByWorkspaceRef = useRef<Record<number, Job[]>>({});
+
+  // Call Queue Stats
+  const [callStats, setCallStats] = useState<CallStatsData | null>(
+    () => cached?.callStats || null
+  );
+  const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
 
   // Dialog states
   const [isJobDetailsOpen, setIsJobDetailsOpen] = useState(false);
@@ -69,8 +113,34 @@ export const CallPage: React.FC = () => {
     }
   }, []);
 
-  // 1. Initial Page Load: ONLY fetch companies if not already cached.
-  // Reuses cached companies, jobs, and candidates without triggering API calls when returning.
+  // Fetch Call Queue Summary Stats from Backend API
+  const fetchCallStats = useCallback(
+    async (workspaceId?: number | null, jobId?: number | null) => {
+      setIsLoadingStats(true);
+      try {
+        const statsData = await callService.getCallStats({
+          workspace_id: workspaceId || undefined,
+          job_id: jobId || undefined,
+        });
+        if (statsData) {
+          setCallStats(statsData);
+          callStateCache.set({ callStats: statsData });
+        }
+      } catch (err) {
+        console.warn("Failed to fetch call queue stats:", err);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    },
+    []
+  );
+
+  // Fetch call stats on mount
+  useEffect(() => {
+    fetchCallStats(selectedCompanyId, selectedJobId);
+  }, []);
+
+  // Initial Page Load: ONLY fetch companies if not already cached
   useEffect(() => {
     if (companies.length > 0) {
       setIsInitialLoading(false);
@@ -110,6 +180,8 @@ export const CallPage: React.FC = () => {
         sessionStorage.removeItem("nxthyre_last_call_completed");
 
         if (lastCall?.candidateId) {
+          fetchCallStats(selectedCompanyId, selectedJobId);
+
           setCandidates((prev) => {
             const updated = prev.map((item) => {
               const cId = item.candidate?.id || item.id;
@@ -134,16 +206,106 @@ export const CallPage: React.FC = () => {
     }
   }, []);
 
-  // 2. Select Company: Fetch jobs for company only. Candidate calls stay disabled.
+  // Fetch Call History
+  const fetchCallHistory = useCallback(
+    async (jobIdToFetch: number, page: number = 1) => {
+      setIsLoadingHistory(true);
+      try {
+        const res = await callService.getCallHistory(jobIdToFetch, {
+          page,
+          pageSize,
+          search: searchQuery,
+        });
+        setHistoryItems(res.history || []);
+        setHistoryTotalCount(res.total || res.history?.length || 0);
+        setHistoryPage(page);
+        setHasFetchedHistory(true);
+      } catch (err) {
+        console.error("Failed to load call history:", err);
+        showToast.error("Failed to load call history");
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    },
+    [pageSize, searchQuery]
+  );
+
+  // Fetch Shortlisted Candidates
+  const fetchShortlisted = useCallback(
+    async (jobIdToFetch: number, page: number = 1) => {
+      setIsLoadingShortlist(true);
+      try {
+        const res = await callService.getShortlistedCandidates(jobIdToFetch, {
+          page,
+          pageSize,
+          search: searchQuery,
+        });
+        setShortlistCandidates(res.candidates || []);
+        setShortlistTotalCount(res.total || res.candidates?.length || 0);
+        setShortlistPage(page);
+        setHasFetchedShortlist(true);
+      } catch (err) {
+        console.error("Failed to load shortlisted candidates:", err);
+        showToast.error("Failed to load shortlisted candidates");
+      } finally {
+        setIsLoadingShortlist(false);
+      }
+    },
+    [pageSize, searchQuery]
+  );
+
+  // Handle Tab Switch
+  const handleTabChange = (newTab: CallTabType) => {
+    setActiveTab(newTab);
+    callStateCache.set({ activeTab: newTab });
+
+    if (newTab === "history" && selectedJobId && !hasFetchedHistory) {
+      fetchCallHistory(selectedJobId, 1);
+    } else if (newTab === "shortlist" && selectedJobId && !hasFetchedShortlist) {
+      fetchShortlisted(selectedJobId, 1);
+    }
+  };
+
+  // Select Company
   const handleSelectCompany = (companyId: number) => {
+    // Avoid redundant API calls if clicking already selected company with loaded jobs
+    if (companyId === selectedCompanyId && jobs.length > 0) {
+      return;
+    }
+
     setSelectedCompanyId(companyId);
     setSelectedJobId(null);
-    setJobs([]);
     setCandidates([]);
+    setHistoryItems([]);
+    setShortlistCandidates([]);
     setHasFetched(false);
+    setHasFetchedHistory(false);
+    setHasFetchedShortlist(false);
     setTotalCount(0);
+    setHistoryTotalCount(0);
+    setShortlistTotalCount(0);
     setCurrentPage(1);
+    setHistoryPage(1);
+    setShortlistPage(1);
+    fetchCallStats(companyId, null);
 
+    // Reuse in-memory cached jobs for this workspace if already loaded previously
+    if (jobsByWorkspaceRef.current[companyId]?.length) {
+      const cachedJobs = jobsByWorkspaceRef.current[companyId];
+      setJobs(cachedJobs);
+      callStateCache.set({
+        selectedCompanyId: companyId,
+        selectedJobId: null,
+        jobs: cachedJobs,
+        candidates: [],
+        hasFetched: false,
+        totalCount: 0,
+        currentPage: 1,
+      });
+      return;
+    }
+
+    setJobs([]);
     callStateCache.set({
       selectedCompanyId: companyId,
       selectedJobId: null,
@@ -158,6 +320,7 @@ export const CallPage: React.FC = () => {
     callService
       .getJobs(companyId)
       .then((jobList) => {
+        jobsByWorkspaceRef.current[companyId] = jobList;
         setJobs(jobList);
         callStateCache.set({ jobs: jobList });
       })
@@ -170,13 +333,26 @@ export const CallPage: React.FC = () => {
       });
   };
 
-  // 3. Select Job: Set selected job. Candidate calls stay disabled until user clicks Fetch Candidates.
+  // Select Job
   const handleSelectJob = (jobId: number) => {
+    // Avoid redundant resetting if clicking already selected job
+    if (jobId === selectedJobId) {
+      return;
+    }
     setSelectedJobId(jobId);
     setCandidates([]);
+    setHistoryItems([]);
+    setShortlistCandidates([]);
     setHasFetched(false);
+    setHasFetchedHistory(false);
+    setHasFetchedShortlist(false);
     setTotalCount(0);
+    setHistoryTotalCount(0);
+    setShortlistTotalCount(0);
     setCurrentPage(1);
+    setHistoryPage(1);
+    setShortlistPage(1);
+    fetchCallStats(selectedCompanyId, jobId);
 
     callStateCache.set({
       selectedJobId: jobId,
@@ -185,9 +361,15 @@ export const CallPage: React.FC = () => {
       totalCount: 0,
       currentPage: 1,
     });
+
+    if (activeTab === "history") {
+      fetchCallHistory(jobId, 1);
+    } else if (activeTab === "shortlist") {
+      fetchShortlisted(jobId, 1);
+    }
   };
 
-  // 4. Fetch candidates function with pagination
+  // Fetch candidates for call queue
   const fetchCandidates = useCallback(
     async (
       jobIdToFetch: number,
@@ -211,6 +393,8 @@ export const CallPage: React.FC = () => {
         setCurrentPage(page);
         setHasFetched(true);
 
+        fetchCallStats(selectedCompanyId, jobIdToFetch);
+
         callStateCache.set({
           candidates: res.candidates || [],
           totalCount: res.total || res.candidates?.length || 0,
@@ -228,7 +412,7 @@ export const CallPage: React.FC = () => {
     [pageSize]
   );
 
-  // 5. Fetch Candidates button click (On demand)
+  // Fetch Candidates button click
   const handleFetchCandidatesClick = () => {
     if (!selectedCompanyId) {
       showToast.error("Please select a company first");
@@ -239,6 +423,8 @@ export const CallPage: React.FC = () => {
       return;
     }
     fetchCandidates(selectedJobId, filters, 1);
+    fetchCallHistory(selectedJobId, 1);
+    fetchShortlisted(selectedJobId, 1);
     fetchStages(selectedJobId);
   };
 
@@ -251,11 +437,25 @@ export const CallPage: React.FC = () => {
     }
   };
 
-  // Page change handler
+  // Page change handler for Call tab
   const handlePageChange = (newPage: number) => {
     if (selectedJobId && hasFetched) {
       fetchCandidates(selectedJobId, filters, newPage);
     }
+  };
+
+  // Navigate to Kanban Board (Requirement 5)
+  const handleOpenKanban = () => {
+    if (selectedCompanyId) {
+      sessionStorage.setItem("nxthyre_companies_wsId", String(selectedCompanyId));
+    }
+    if (selectedJobId) {
+      sessionStorage.setItem("nxthyre_companies_jobId", String(selectedJobId));
+    }
+    sessionStorage.setItem("nxthyre_activeTab", "companies");
+    window.dispatchEvent(
+      new CustomEvent("tab-switch", { detail: { page: "companies" } })
+    );
   };
 
   // Active filter count calculation
@@ -272,7 +472,7 @@ export const CallPage: React.FC = () => {
     return count;
   }, [filters]);
 
-  // Helper to extract candidate match score
+  // Score helper
   const getCandidateScore = (item: CandidateCallItem): number | null => {
     const cand = item.candidate || {};
     const s =
@@ -288,7 +488,6 @@ export const CallPage: React.FC = () => {
     return isNaN(num) ? null : Math.round(num);
   };
 
-  // Helper to test if score is within range e.g. "80-100"
   const isScoreInRange = (score: number | null, rangeStr: string): boolean => {
     if (score === null) return false;
     const [minStr, maxStr] = rangeStr.split("-");
@@ -297,7 +496,6 @@ export const CallPage: React.FC = () => {
     return score >= min && score <= max;
   };
 
-  // Combined active score ranges from toolbar dropdown & filters dialog
   const activeScoreRanges = useMemo(() => {
     const ranges = new Set<string>();
     if (selectedScoreRange) ranges.add(selectedScoreRange);
@@ -307,7 +505,7 @@ export const CallPage: React.FC = () => {
     return Array.from(ranges);
   }, [selectedScoreRange, filters.scoreRange]);
 
-  // Candidates filtered by Resume Score numerical ranges & search query
+  // Candidates filtered by Score and search query
   const displayCandidates = useMemo(() => {
     let list = candidates;
     if (activeScoreRanges.length > 0) {
@@ -336,6 +534,46 @@ export const CallPage: React.FC = () => {
     }
     return list;
   }, [candidates, activeScoreRanges, searchQuery]);
+
+  // History items filtered by search query
+  const filteredHistoryItems = useMemo(() => {
+    if (!searchQuery.trim()) return historyItems;
+    const q = searchQuery.toLowerCase().trim();
+    return historyItems.filter((item) => {
+      const cand = item.candidate || {};
+      const name = (cand.full_name || "").toLowerCase();
+      const comp = (cand.current_company || "").toLowerCase();
+      const head = (cand.headline || "").toLowerCase();
+      const status = (item.status_display || item.call_status || "").toLowerCase();
+      const outcome = (item.outcome || "").toLowerCase();
+      return (
+        name.includes(q) ||
+        comp.includes(q) ||
+        head.includes(q) ||
+        status.includes(q) ||
+        outcome.includes(q)
+      );
+    });
+  }, [historyItems, searchQuery]);
+
+  // Shortlist candidates filtered by search query
+  const filteredShortlistCandidates = useMemo(() => {
+    if (!searchQuery.trim()) return shortlistCandidates;
+    const q = searchQuery.toLowerCase().trim();
+    return shortlistCandidates.filter((item) => {
+      const cand = item.candidate || {};
+      const name = (cand.full_name || "").toLowerCase();
+      const comp = (cand.current_company || "").toLowerCase();
+      const head = (cand.headline || "").toLowerCase();
+      const loc = (cand.location || "").toLowerCase();
+      return (
+        name.includes(q) ||
+        comp.includes(q) ||
+        head.includes(q) ||
+        loc.includes(q)
+      );
+    });
+  }, [shortlistCandidates, searchQuery]);
 
   // Candidate Actions: Call
   const handleCallCandidate = (item: CandidateCallItem) => {
@@ -396,21 +634,20 @@ export const CallPage: React.FC = () => {
       searchQuery,
       hasFetched,
       stages,
+      activeTab,
     });
 
-    // Navigate to expected call route: /call/:jobId/:candidateId?mode=manual
     navigate(`/call/${effectiveJobId}/${cand.id}?mode=manual`);
   };
 
-  // Candidate Actions: Profile (Renders JobCandidateProfile as in Screenshot 1)
-  const handleViewProfile = async (item: CandidateCallItem) => {
+  // Candidate Actions: Profile
+  const handleViewProfile = async (item: any) => {
     setIsLoadingCandidateProfile(true);
-    const cand = item.candidate || {};
+    const cand = item.candidate || item || {};
     const candidateName = cand.full_name || "Profile";
     const wsName = companies.find((c) => c.id === selectedCompanyId)?.name;
     const jTitle = jobs.find((j) => j.id === selectedJobId)?.title;
 
-    // Update window header for breadcrumbs
     (window as any).__selectedWorkspaceName = wsName;
     (window as any).__selectedJobName = jTitle;
     (window as any).__selectedCandidateName = candidateName;
@@ -419,7 +656,6 @@ export const CallPage: React.FC = () => {
     try {
       let fullCandidateData: any = null;
       if (item.id && String(item.id).length < 20 && !String(item.id).includes("-")) {
-        // Numeric job application ID
         const res = await apiClient.get(`/jobs/applications/${item.id}/`);
         fullCandidateData = res.data;
       } else {
@@ -442,7 +678,9 @@ export const CallPage: React.FC = () => {
           };
         }
       }
-      setSelectedCandidate(fullCandidateData || (item.candidate ? item : { ...item, candidate: item }));
+      setSelectedCandidate(
+        fullCandidateData || (item.candidate ? item : { ...item, candidate: item })
+      );
     } catch (err) {
       console.warn("Using local candidate data for profile view:", err);
       const fallback = item.candidate ? item : { ...item, candidate: item };
@@ -452,7 +690,7 @@ export const CallPage: React.FC = () => {
     }
   };
 
-  // Handle breadcrumb back navigation
+  // Breadcrumb back navigation
   useEffect(() => {
     const handleBreadcrumbNavigate = (e: any) => {
       if (
@@ -513,11 +751,166 @@ export const CallPage: React.FC = () => {
     }
   };
 
-  // Initial Loading Screen (ensures page isn't shown before company & job data arrive)
+  // ── Call Tab Shortlist Handler ──
+  const handleShortlistCandidateFromCallTab = async (item: CandidateCallItem) => {
+    const appId = (item as any).application_id || item.id;
+    try {
+      await callService.shortlistCandidate(appId, undefined, selectedJobId || undefined);
+      showToast.success("Candidate moved to shortlisted");
+      fetchCallStats(selectedCompanyId, selectedJobId);
+      if (selectedJobId) {
+        fetchShortlisted(selectedJobId, shortlistPage);
+      }
+    } catch (err) {
+      showToast.error("Failed to shortlist candidate");
+    }
+  };
+
+  // ── History Action Handlers ──
+  const handleShortlistCandidateFromHistory = async (item: CallHistoryItem) => {
+    const appId = item.application_id || item.id;
+    try {
+      await callService.shortlistCandidate(appId, undefined, selectedJobId || undefined);
+      setHistoryItems((prev) =>
+        prev.map((h) =>
+          h.id === item.id
+            ? {
+                ...h,
+                status_display: "Convinced",
+                outcome: "Moved to shortlisted",
+              }
+            : h
+        )
+      );
+      showToast.success("Candidate moved to shortlisted");
+      fetchCallStats(selectedCompanyId, selectedJobId);
+      if (selectedJobId) {
+        fetchShortlisted(selectedJobId, shortlistPage);
+      }
+    } catch (err) {
+      showToast.error("Failed to shortlist candidate");
+    }
+  };
+
+  const handleArchiveFromHistory = async (item: CallHistoryItem) => {
+    const appId = item.application_id || item.id;
+    try {
+      await callService.archiveCandidate(
+        appId,
+        "Archived by recruiter",
+        undefined,
+        selectedJobId || undefined
+      );
+      setHistoryItems((prev) =>
+        prev.map((h) => (h.id === item.id ? { ...h, is_archived: true } : h))
+      );
+      showToast.success("Candidate archived");
+      fetchCallStats(selectedCompanyId, selectedJobId);
+    } catch (err) {
+      showToast.error("Failed to archive candidate");
+    }
+  };
+
+  const handleRestoreFromHistory = async (item: CallHistoryItem) => {
+    const appId = item.application_id || item.id;
+    try {
+      await callService.restoreCandidate(appId, undefined, selectedJobId || undefined);
+      setHistoryItems((prev) =>
+        prev.map((h) => (h.id === item.id ? { ...h, is_archived: false } : h))
+      );
+      showToast.success("Candidate restored successfully");
+      fetchCallStats(selectedCompanyId, selectedJobId);
+    } catch (err) {
+      showToast.error("Failed to restore candidate");
+    }
+  };
+
+  const handleDeleteFromHistory = async (item: CallHistoryItem) => {
+    const appId = item.application_id || item.id;
+    try {
+      await callService.deleteCandidate(appId, item.candidate_id);
+      setHistoryItems((prev) => prev.filter((h) => h.id !== item.id));
+      showToast.success("Candidate permanently deleted");
+      fetchCallStats(selectedCompanyId, selectedJobId);
+    } catch (err) {
+      showToast.error("Failed to delete candidate permanently");
+    }
+  };
+
+  const handleUpdateOutcome = (
+    item: CallHistoryItem,
+    reason: string,
+    note: string
+  ) => {
+    setHistoryItems((prev) =>
+      prev.map((h) =>
+        h.id === item.id
+          ? {
+              ...h,
+              status_display: reason,
+              outcome: note,
+            }
+          : h
+      )
+    );
+    callStateCache.updateCandidate(item.candidate_id, {
+      latest_manual_call_note: note,
+      latest_manual_call_status: reason,
+    });
+  };
+
+  // ── Shortlist Action Handlers ──
+  const handleArchiveFromShortlist = async (candItem: CandidateCallItem) => {
+    const cId = candItem.candidate?.id || candItem.id;
+    try {
+      await callService.archiveCandidate(
+        candItem.id || cId,
+        "Archived by recruiter",
+        undefined,
+        selectedJobId || undefined
+      );
+      setShortlistCandidates((prev) =>
+        prev.map((c) => {
+          const id = c.candidate?.id || c.id;
+          return id === cId
+            ? { ...c, is_archived: true, latest_call_status: "ARCHIVED" }
+            : c;
+        })
+      );
+      showToast.success("Candidate archived");
+      fetchCallStats(selectedCompanyId, selectedJobId);
+    } catch (err) {
+      showToast.error("Failed to archive candidate");
+    }
+  };
+
+  const handleRestoreFromShortlist = async (candItem: CandidateCallItem) => {
+    const cId = candItem.candidate?.id || candItem.id;
+    try {
+      await callService.restoreCandidate(
+        candItem.id || cId,
+        undefined,
+        selectedJobId || undefined
+      );
+      setShortlistCandidates((prev) =>
+        prev.map((c) => {
+          const id = c.candidate?.id || c.id;
+          return id === cId
+            ? { ...c, is_archived: false, latest_call_status: "ACTIVE" }
+            : c;
+        })
+      );
+      showToast.success("Candidate restored successfully");
+      fetchCallStats(selectedCompanyId, selectedJobId);
+    } catch (err) {
+      showToast.error("Failed to restore candidate");
+    }
+  };
+
+  // Initial Loading Screen
   if (isInitialLoading) {
     return (
       <div className="flex-1 flex flex-col overflow-y-auto bg-[#F4F5F7]">
-        {/* Shimmer Stats */}
         <div className="px-6 lg:px-8 pt-6 pb-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -532,7 +925,6 @@ export const CallPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Shimmer Toolbar (Full-width white band) */}
         <div className="w-full bg-white border-y border-[#E5E7EB] px-6 lg:px-8 py-3.5 my-1">
           <div className="flex items-center justify-between gap-3 font-sans">
             <div className="flex items-center gap-3">
@@ -549,23 +941,23 @@ export const CallPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Loading Indicator & Shimmer Table */}
         <div className="px-6 lg:px-8 py-4 flex-1 flex flex-col gap-3">
           <div className="flex items-center justify-center py-1 gap-2 text-xs text-gray-400 font-medium">
             <Loader2 className="w-3.5 h-3.5 text-[#0F47F2] animate-spin" />
             <span>Loading workspaces, jobs, and candidates...</span>
           </div>
-
         </div>
 
-        {/* Shimmer Table */}
-        <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-xs overflow-hidden">
+        <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-xs overflow-hidden mx-6 lg:mx-8">
           <div className="h-11 bg-white border-b border-[#F0F2F5] px-6 flex items-center">
             <div className="w-full h-3 bg-gray-100 rounded" />
           </div>
           <div className="divide-y divide-[#F0F2F5]">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="px-6 py-4 h-[76px] flex items-center justify-between animate-pulse">
+              <div
+                key={i}
+                className="px-6 py-4 h-[76px] flex items-center justify-between animate-pulse"
+              >
                 <div className="flex flex-col gap-1.5 w-48">
                   <div className="w-32 h-3.5 bg-gray-200 rounded" />
                   <div className="w-24 h-2.5 bg-gray-100 rounded" />
@@ -589,9 +981,8 @@ export const CallPage: React.FC = () => {
       </div>
     );
   }
-  
 
-  // If a candidate is selected, display the full JobCandidateProfile page
+  // Display JobCandidateProfile if candidate is selected
   if (selectedCandidate) {
     return (
       <div className="flex-1 flex flex-col h-full bg-[#F3F5F7] overflow-hidden">
@@ -620,9 +1011,9 @@ export const CallPage: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-y-auto bg-[#F4F5F7] custom-scrollbar">
-      {/* ── Call Statistics Cards (padded on grey canvas) ── */}
+      {/* ── Call Statistics Cards ── */}
       <div className="px-6 lg:px-8 pt-6 pb-2">
-        <CallStats />
+        <CallStats stats={callStats} isLoading={isLoadingStats} />
       </div>
 
       {/* ── Company / Job Selectors & Action Buttons (Full-Width White Band) ── */}
@@ -638,6 +1029,7 @@ export const CallPage: React.FC = () => {
           onUploadCandidates={() => setIsUploadModalOpen(true)}
           onOpenJobDetails={() => setIsJobDetailsOpen(true)}
           onOpenFilters={() => setIsFiltersOpen(true)}
+          onOpenKanban={handleOpenKanban}
           activeFilterCount={activeFilterCount}
           isLoadingCandidates={isLoadingCandidates}
           isLoadingJobs={isLoadingJobs}
@@ -654,24 +1046,79 @@ export const CallPage: React.FC = () => {
         />
       </div>
 
-      {/* ── Candidate Screening Table ── */}
+      {/* ── Candidate Tabs & Tables Container ── */}
       <div className="px-6 lg:px-8 py-4 flex-1">
-        <CandidateList
-          candidates={displayCandidates}
-          isLoading={isLoadingCandidates}
-          hasSelectedJob={Boolean(selectedJobId)}
-          hasFetched={hasFetched}
-          jobId={selectedJobId}
-          onCallCandidate={handleCallCandidate}
-          onViewProfile={handleViewProfile}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          totalCount={totalCount}
-          onPageChange={handlePageChange}
-        />
+        <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+          {/* Tab Strip: Call | History | Shortlist */}
+          <CallTabs activeTab={activeTab} onTabChange={handleTabChange} />
+
+          {/* Tab 1: Call (Existing Calling interface and functionality) */}
+          {activeTab === "call" && (
+            <div className="p-4 bg-[#F4F5F7]">
+              <CandidateList
+                candidates={displayCandidates}
+                isLoading={isLoadingCandidates}
+                hasSelectedJob={Boolean(selectedJobId)}
+                hasFetched={hasFetched}
+                jobId={selectedJobId}
+                onCallCandidate={handleCallCandidate}
+                onViewProfile={handleViewProfile}
+                onShortlistCandidate={handleShortlistCandidateFromCallTab}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
+
+          {/* Tab 2: History (Grouped chronologically by call date) */}
+          {activeTab === "history" && (
+            <HistoryTab
+              historyItems={filteredHistoryItems}
+              isLoading={isLoadingHistory}
+              hasSelectedJob={Boolean(selectedJobId)}
+              jobId={selectedJobId}
+              onCallCandidate={handleCallCandidate}
+              onViewProfile={handleViewProfile}
+              onShortlistCandidate={handleShortlistCandidateFromHistory}
+              onArchiveCandidate={handleArchiveFromHistory}
+              onRestoreCandidate={handleRestoreFromHistory}
+              onDeleteCandidate={handleDeleteFromHistory}
+              onUpdateOutcome={handleUpdateOutcome}
+              currentPage={historyPage}
+              pageSize={pageSize}
+              totalCount={historyTotalCount}
+              onPageChange={(p) => {
+                setHistoryPage(p);
+                if (selectedJobId) fetchCallHistory(selectedJobId, p);
+              }}
+            />
+          )}
+
+          {/* Tab 3: Shortlist (Screenshot 2 view) */}
+          {activeTab === "shortlist" && (
+            <ShortlistTab
+              candidates={filteredShortlistCandidates}
+              isLoading={isLoadingShortlist}
+              hasSelectedJob={Boolean(selectedJobId)}
+              onCallCandidate={handleCallCandidate}
+              onViewProfile={handleViewProfile}
+              onArchiveCandidate={handleArchiveFromShortlist}
+              onRestoreCandidate={handleRestoreFromShortlist}
+              currentPage={shortlistPage}
+              pageSize={pageSize}
+              totalCount={shortlistTotalCount}
+              onPageChange={(p) => {
+                setShortlistPage(p);
+                if (selectedJobId) fetchShortlisted(selectedJobId, p);
+              }}
+            />
+          )}
+        </div>
       </div>
 
-      {/* ── Job Details Dialog (View button left of Filters) ── */}
+      {/* ── Job Details Dialog ── */}
       {isJobDetailsOpen && (
         <JobDetailsDialog
           isOpen={isJobDetailsOpen}
@@ -682,7 +1129,7 @@ export const CallPage: React.FC = () => {
         />
       )}
 
-      {/* ── Complete Filters Dialog (matching Screenshot 2) ── */}
+      {/* ── Call Filters Dialog ── */}
       {isFiltersOpen && (
         <CallFiltersDialog
           isOpen={isFiltersOpen}

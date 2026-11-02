@@ -1,6 +1,6 @@
 import { MyWorkspace } from "../../../services/organizationService";
 import { Job } from "../../../services/jobPostService";
-import { CandidateCallItem } from "../../../services/callService";
+import { CandidateCallItem, CallStatsData } from "../../../services/callService";
 import { CallFiltersState, EMPTY_CALL_FILTERS } from "./CallFiltersDialog";
 
 export interface CallPageState {
@@ -16,6 +16,8 @@ export interface CallPageState {
   searchQuery?: string;
   hasFetched: boolean;
   stages: any[];
+  callStats?: CallStatsData | null;
+  activeTab?: "call" | "history" | "shortlist";
 }
 
 const STORAGE_KEY = "nxthyre_call_listing_cache";
@@ -55,6 +57,7 @@ export const callStateCache = {
       searchQuery: "",
       hasFetched: false,
       stages: [],
+      callStats: null,
     };
 
     inMemoryCache = {

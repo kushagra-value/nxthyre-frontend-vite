@@ -1,4 +1,5 @@
 import apiClient from "./api";
+import { toIsoDate } from "../utils/dateUtils";
 
 export interface CandidateListItem {
   id: string;
@@ -188,6 +189,10 @@ export interface CandidateDetailData {
     status: string;
     linkedin_url?: string;
     total_experience: number;
+    current_salary?: number | string;
+    expected_ctc?: number | string;
+    notice_period_days?: number;
+    reason_for_change?: string;
     github_url?: string;
     twitter_url?: string;
     portfolio_url?: string;
@@ -258,7 +263,6 @@ export interface CandidateDetailData {
     is_background_verified: boolean;
     is_active: boolean;
     is_prevetted: boolean;
-    notice_period_days: number;
     application_type: string;
     stage: string;
     premium_data_unlocked: boolean;
@@ -932,21 +936,65 @@ class CandidateService {
     candidateId: string,
     data: {
       notice_period_days?: number;
+      notice_status?: string;
+      notice_period_status?: string;
+      last_working_day?: string;
+      lwd_date?: string;
+      lwd_days?: string;
       current_salary?: number;
       expected_ctc?: number;
       location?: string;
       exp?: number;
+      relevant_experience?: string;
+      open_to_relocate?: string;
+      reason_for_change?: string;
+      name?: string;
+      full_name?: string;
+      headline?: string;
+      designation?: string;
+      company?: string;
+      [key: string]: any;
     },
   ): Promise<any> {
     try {
+      const cleanData: Record<string, any> = { ...data };
+
+      // Ensure last_working_day is strict YYYY-MM-DD for Django DateField
+      if (cleanData.last_working_day !== undefined) {
+        const iso = toIsoDate(cleanData.last_working_day);
+        if (iso) {
+          cleanData.last_working_day = iso;
+        } else {
+          // If empty string or unparseable, do not send malformed date format
+          delete cleanData.last_working_day;
+        }
+      }
+
+      // Ensure lwd_date is strict YYYY-MM-DD
+      if (cleanData.lwd_date !== undefined) {
+        const iso = toIsoDate(cleanData.lwd_date);
+        if (iso) {
+          cleanData.lwd_date = iso;
+        } else {
+          delete cleanData.lwd_date;
+        }
+      }
+
       const response = await apiClient.patch(
         `/candidates/${candidateId}/editable-fields/`,
-        data,
+        cleanData,
       );
       return response.data;
     } catch (error: any) {
+      const errData = error.response?.data;
+      const errorMsg =
+        errData?.detail ||
+        errData?.error ||
+        (Array.isArray(errData?.last_working_day) ? errData.last_working_day[0] : errData?.last_working_day) ||
+        (typeof errData === "object" ? Object.values(errData)[0] : null) ||
+        "Failed to update candidate fields";
       throw new Error(
-        error.response?.data?.detail || error.response?.data?.error || "Failed to update candidate fields",
+        typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg)
       );
     }
   }
@@ -981,17 +1029,37 @@ class CandidateService {
   async updateCandidateDetails(
     candidateId: string | number,
     payload: {
-      curr_ctc: string | number;
-      expec_ctc: string | number;
-      notice_period: string;
+      curr_ctc?: string | number;
+      expec_ctc?: string | number;
+      notice_period?: string;
+      reason_for_change?: string;
     }
   ): Promise<any> {
     try {
-      // Endpoint is currently not implemented on backend yet.
-      // Uncomment and connect below when backend endpoint is available:
-      const response = await apiClient.patch(`/candidates/${candidateId}/details/`, payload);
-      return response.data;
-      // throw new Error("Candidate update API endpoint is not implemented on the backend yet.");
+      const data: {
+        current_salary?: number;
+        expected_ctc?: number;
+        notice_period_days?: number;
+        reason_for_change?: string;
+      } = {};
+
+      if (payload.curr_ctc !== undefined && payload.curr_ctc !== "") {
+        const num = parseFloat(String(payload.curr_ctc).replace(/[^0-9.]/g, ""));
+        if (!isNaN(num)) data.current_salary = num;
+      }
+      if (payload.expec_ctc !== undefined && payload.expec_ctc !== "") {
+        const num = parseFloat(String(payload.expec_ctc).replace(/[^0-9.]/g, ""));
+        if (!isNaN(num)) data.expected_ctc = num;
+      }
+      if (payload.notice_period !== undefined && payload.notice_period !== "") {
+        const num = parseInt(String(payload.notice_period).replace(/[^0-9]/g, ""), 10);
+        if (!isNaN(num)) data.notice_period_days = num;
+      }
+      if (payload.reason_for_change !== undefined && payload.reason_for_change.trim() !== "") {
+        data.reason_for_change = payload.reason_for_change.trim();
+      }
+
+      return await this.updateCandidateEditableFields(String(candidateId), data);
     } catch (error: any) {
       throw new Error(
         error.response?.data?.detail || error.response?.data?.error || error.message || "Failed to update candidate details"

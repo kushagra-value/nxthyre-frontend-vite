@@ -85,7 +85,7 @@ interface ActiveSession {
   releaseLock?: () => void;
 }
 
-class PermanentUploadError extends Error {}
+class PermanentUploadError extends Error { }
 
 // ─── Telemetry ───────────────────────────────────────
 
@@ -204,11 +204,11 @@ const recLockName = (id: string) => `nxthyre-rec-${id}`;
 const uploadLockName = (id: string) => `nxthyre-upload-${id}`;
 
 function holdLock(name: string): Promise<() => void> {
-  if (!navigator.locks) return Promise.resolve(() => {});
+  if (!navigator.locks) return Promise.resolve(() => { });
   return new Promise((resolveAcquired) => {
     navigator.locks
       .request(name, () => new Promise<void>((release) => resolveAcquired(() => release())))
-      .catch(() => resolveAcquired(() => {}));
+      .catch(() => resolveAcquired(() => { }));
   });
 }
 
@@ -273,7 +273,7 @@ export function hasUnsavedRecording(): boolean {
 
 function trackInFlight<T>(p: Promise<T>): Promise<T> {
   inFlight.add(p);
-  p.finally(() => inFlight.delete(p)).catch(() => {});
+  p.finally(() => inFlight.delete(p)).catch(() => { });
   return p;
 }
 
@@ -407,7 +407,7 @@ async function uploadStoredSession(session: StoredSession, blob: Blob): Promise<
   if (blob.size < MIN_RECORDING_BYTES) {
     reportError("recording_too_small", props, new Error("empty recording"));
     await logStopOnce(session);
-    await deleteSession(session.sessionId).catch(() => {});
+    await deleteSession(session.sessionId).catch(() => { });
     return { status: "empty", bytes: blob.size };
   }
 
@@ -443,7 +443,7 @@ async function uploadStoredSession(session: StoredSession, blob: Blob): Promise<
       lastError: message,
       updatedAt: Date.now(),
     });
-    await putSession(updated).catch(() => {});
+    await putSession(updated).catch(() => { });
     return { status: "failed", permanent, error: message };
   } finally {
     uploadingHere.delete(session.sessionId);
@@ -463,7 +463,7 @@ async function finalize(s: ActiveSession): Promise<UploadResult> {
   try {
     await s.writeQueue;
     const stored = toStored(s, "stopped");
-    await putSession(stored).catch(() => {});
+    await putSession(stored).catch(() => { });
     const blob = new Blob(s.chunks, { type: s.mimeType || "audio/webm" });
     return await uploadStoredSession(stored, blob);
   } catch (err) {
@@ -623,7 +623,7 @@ async function doRecover(): Promise<void> {
 
     if (s.status === "failed") {
       if (Date.now() - s.updatedAt > FAILED_SESSION_TTL_MS) {
-        await deleteSession(s.sessionId).catch(() => {});
+        await deleteSession(s.sessionId).catch(() => { });
       }
       continue;
     }
@@ -684,7 +684,7 @@ export function initManualRecording() {
 
   if (!("indexedDB" in window)) return;
 
-  navigator.storage?.persist?.().catch(() => {});
+  navigator.storage?.persist?.().catch(() => { });
   window.addEventListener("online", () => {
     if (auth.currentUser) void recoverPendingRecordings();
   });

@@ -22,7 +22,7 @@ import {
   PhoneOff,
   ChevronDown,
   Clock,
-  Trash2 ,
+  Trash2,
   MessageSquare,
   X,
   Archive,
@@ -77,7 +77,7 @@ interface JobCandidateProfileProps {
 }
 
 
-let callStats=45
+let callStats = 45
 
 
 
@@ -204,10 +204,11 @@ export default function JobCandidateProfile({
     setLocalPhone(pd.phone || c.phone || "");
   }, [candidate]);
 
-  // ── Candidate Details Editing State (curr_ctc, expec_ctc, notice_period) ──
+  // ── Candidate Details Editing State (curr_ctc, expec_ctc, notice_period, reason_for_change) ──
   const [localCurrCtc, setLocalCurrCtc] = useState<string | number>("");
   const [localExpecCtc, setLocalExpecCtc] = useState<string | number>("");
   const [localNoticePeriod, setLocalNoticePeriod] = useState<string>("");
+  const [localReasonForChange, setLocalReasonForChange] = useState<string>("");
   const [isEditDetailsModalOpen, setIsEditDetailsModalOpen] = useState(false);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [detailsFormError, setDetailsFormError] = useState<string | null>(null);
@@ -215,36 +216,75 @@ export default function JobCandidateProfile({
     curr_ctc: "" as string | number,
     expec_ctc: "" as string | number,
     notice_period: "",
+    reason_for_change: "",
   });
 
   useEffect(() => {
     const c = candidate?.candidate || {};
-    const currVal = c.curr_ctc ?? c.current_ctc ?? c.current_salary_lpa ?? c.current_salary ?? "";
-    const expecVal = c.expec_ctc ?? c.expected_ctc ?? c.expected_ctc_lpa ?? "";
-    const noticeVal = c.notice_period_summary || (c.notice_period_days != null ? `${c.notice_period_days} Days` : (c.notice_period || ""));
-    
+    const currVal = c.current_salary != null ? c.current_salary : (c.current_salary_lpa ?? c.curr_ctc ?? c.current_ctc ?? "");
+    const expecVal = c.expected_ctc != null ? c.expected_ctc : (c.expected_ctc_lpa ?? c.expec_ctc ?? "");
+    const noticeVal = c.notice_period_days != null ? `${c.notice_period_days} Days` : (c.notice_period_summary || c.notice_period || "");
+    const reasonVal = c.reason_for_change || c.reasonForChange || "";
+
     setLocalCurrCtc(currVal);
     setLocalExpecCtc(expecVal);
     setLocalNoticePeriod(noticeVal);
+    setLocalReasonForChange(reasonVal);
   }, [candidate]);
+
+  // Background fetch fresh candidate fields from candidate UUID endpoint to bridge application serializer delays
+  useEffect(() => {
+    const targetCandId = cand.id || candidate?.candidate_id;
+    if (!targetCandId) return;
+
+    candidateService
+      .getCandidateInboundScore(String(targetCandId), String(jobId || 0))
+      .then((res: any) => {
+        const freshCand = res?.candidate || res;
+        if (freshCand) {
+          if (freshCand.current_salary != null) {
+            setLocalCurrCtc(freshCand.current_salary);
+          } else if (freshCand.current_salary_lpa != null) {
+            setLocalCurrCtc(freshCand.current_salary_lpa);
+          }
+          if (freshCand.expected_ctc != null) {
+            setLocalExpecCtc(freshCand.expected_ctc);
+          } else if (freshCand.expected_ctc_lpa != null) {
+            setLocalExpecCtc(freshCand.expected_ctc_lpa);
+          }
+          if (freshCand.notice_period_days != null) {
+            setLocalNoticePeriod(`${freshCand.notice_period_days} Days`);
+          } else if (freshCand.notice_period_summary) {
+            setLocalNoticePeriod(freshCand.notice_period_summary);
+          }
+          if (freshCand.reason_for_change) {
+            setLocalReasonForChange(freshCand.reason_for_change);
+          }
+        }
+      })
+      .catch((err) => {
+        console.debug("Background candidate refresh info:", err);
+      });
+  }, [cand.id, candidate?.candidate_id, jobId]);
 
   const openEditDetailsModal = () => {
     setEditDetailsData({
       curr_ctc: localCurrCtc,
       expec_ctc: localExpecCtc,
       notice_period: localNoticePeriod,
+      reason_for_change: localReasonForChange,
     });
     setDetailsFormError(null);
     setIsEditDetailsModalOpen(true);
   };
 
   const handleSaveCandidateDetails = async () => {
-    const { curr_ctc, expec_ctc, notice_period } = editDetailsData;
+    const { curr_ctc, expec_ctc, notice_period, reason_for_change } = editDetailsData;
     setDetailsFormError(null);
 
     // Validation
     if (curr_ctc !== "" && curr_ctc !== null && curr_ctc !== undefined) {
-      const numVal = Number(curr_ctc);
+      const numVal = Number(String(curr_ctc).replace(/[^0-9.]/g, ""));
       if (isNaN(numVal) && typeof curr_ctc === "number") {
         setDetailsFormError("Current CTC must be a valid number or string.");
         return;
@@ -256,7 +296,7 @@ export default function JobCandidateProfile({
     }
 
     if (expec_ctc !== "" && expec_ctc !== null && expec_ctc !== undefined) {
-      const numVal = Number(expec_ctc);
+      const numVal = Number(String(expec_ctc).replace(/[^0-9.]/g, ""));
       if (isNaN(numVal) && typeof expec_ctc === "number") {
         setDetailsFormError("Expected CTC must be a valid number or string.");
         return;
@@ -275,17 +315,47 @@ export default function JobCandidateProfile({
     setIsSavingDetails(true);
     const targetCandId = cand.id || candidate?.candidate_id || candidate?.id;
     try {
-      // Connect to candidateService.updateCandidateDetails endpoint
-      await candidateService.updateCandidateDetails(targetCandId, {
-        curr_ctc,
-        expec_ctc,
-        notice_period: String(notice_period).trim(),
-      });
+      const payload: {
+        notice_period_days?: number;
+        current_salary?: number;
+        expected_ctc?: number;
+        reason_for_change?: string;
+      } = {};
+
+      const currClean = String(curr_ctc || "").replace(/[^0-9.]/g, "");
+      if (currClean) {
+        const num = parseFloat(currClean);
+        if (!isNaN(num)) payload.current_salary = num;
+      }
+
+      const expClean = String(expec_ctc || "").replace(/[^0-9.]/g, "");
+      if (expClean) {
+        const num = parseFloat(expClean);
+        if (!isNaN(num)) payload.expected_ctc = num;
+      }
+
+      const noticeClean = String(notice_period || "").replace(/[^0-9]/g, "");
+      if (noticeClean) {
+        const num = parseInt(noticeClean, 10);
+        if (!isNaN(num)) payload.notice_period_days = num;
+      }
+
+      if (reason_for_change && reason_for_change.trim()) {
+        payload.reason_for_change = reason_for_change.trim();
+      }
+
+      // Connect to candidateService.updateCandidateEditableFields endpoint
+      await candidateService.updateCandidateEditableFields(String(targetCandId), payload);
 
       // Update local state automatically after API success
-      setLocalCurrCtc(curr_ctc);
-      setLocalExpecCtc(expec_ctc);
-      setLocalNoticePeriod(String(notice_period).trim());
+      setLocalCurrCtc(payload.current_salary ?? curr_ctc);
+      setLocalExpecCtc(payload.expected_ctc ?? expec_ctc);
+      setLocalNoticePeriod(
+        payload.notice_period_days != null
+          ? `${payload.notice_period_days} Days`
+          : String(notice_period).trim()
+      );
+      setLocalReasonForChange(payload.reason_for_change || "");
       showToast.success("Candidate details updated successfully!");
       setIsEditDetailsModalOpen(false);
     } catch (err: any) {
@@ -420,7 +490,7 @@ export default function JobCandidateProfile({
     }
     return index === 0;
   };
-  
+
 
   // ── Feedback Modal State ──
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -461,7 +531,7 @@ export default function JobCandidateProfile({
   }, []);
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
   const [pendingEventAction, setPendingEventAction] = useState<any>(null);
-  const [isSubmittingFeedback,setIsSubmittingFeedback] = useState(false);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   // ── Match Description Editing State ──
   const [isEditingMatchDesc, setIsEditingMatchDesc] = useState(false);
   const [editedMatchDesc, setEditedMatchDesc] = useState("");
@@ -1041,6 +1111,14 @@ export default function JobCandidateProfile({
                       <div className="text-xs text-[#8E8E93] font-medium mb-0.5">Notice period</div>
                       <div className="text-sm font-bold text-black">{localNoticePeriod || "--"}</div>
                     </div>
+                    {localReasonForChange && (
+                      <div>
+                        <div className="text-xs text-[#8E8E93] font-medium mb-0.5">Reason for change</div>
+                        <div className="text-sm font-bold text-black max-w-xs truncate" title={localReasonForChange}>
+                          {localReasonForChange}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* CHANGE 1: Header card actions */}
@@ -1060,12 +1138,13 @@ export default function JobCandidateProfile({
                             premiumData.all_phone_numbers?.[0] ||
                             "--",
                           experience: cand.total_experience != null ? cand.total_experience : "--",
-                          currentCtc: cand.current_salary_lpa ? `${cand.current_salary_lpa}` : "--",
-                          expectedCtc: cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--",
-                          noticePeriod: cand.notice_period_days != null ? `${cand.notice_period_days} Days` : "--",
+                          currentCtc: localCurrCtc ? (String(localCurrCtc).includes("LPA") ? String(localCurrCtc) : `${localCurrCtc} LPA`) : (cand.current_salary_lpa || "--"),
+                          expectedCtc: localExpecCtc ? (String(localExpecCtc).includes("LPA") ? String(localExpecCtc) : `${localExpecCtc} LPA`) : (cand.expected_ctc ? `${cand.expected_ctc} LPA` : "--"),
+                          noticePeriod: localNoticePeriod || (cand.notice_period_days != null ? `${cand.notice_period_days} Days` : "--"),
                           location: cand.location || "--",
                           resumeUrl: premiumData.resume_url || cand.resume_url || "",
                           matchScore: matchScore?.score || cand.job_score?.candidate_match_score?.score || null,
+                          reasonForChange: localReasonForChange || cand.reason_for_change || "",
                         };
                         const candidateIds = candidateList?.map(c => c?.candidate?.id || c?.id).filter(Boolean) || [];
                         sessionStorage.setItem("_nxthyre_call_state", JSON.stringify({
@@ -1257,6 +1336,7 @@ export default function JobCandidateProfile({
                       <svg viewBox="0 0 36 36" className="w-20 h-20">
                         <path
                           className="text-gray-200"
+                          transform="rotate(-90 18 18)"
                           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                           fill="none"
                           stroke="currentColor"
@@ -1634,20 +1714,18 @@ export default function JobCandidateProfile({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-3.5 text-xs sm:text-sm font-medium transition-colors border-b-[3px] text-center min-h-[44px] flex items-center justify-center gap-1 ${
-                  activeTab === tab.id
+                className={`py-3.5 text-xs sm:text-sm font-medium transition-colors border-b-[3px] text-center min-h-[44px] flex items-center justify-center gap-1 ${activeTab === tab.id
                     ? "border-[#0F47F2] text-[#0F47F2] font-semibold"
                     : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
               >
                 <span>{tab.label}</span>
                 {tab.count !== null && tab.count !== undefined && (
                   <span
-                    className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                      activeTab === tab.id
+                    className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${activeTab === tab.id
                         ? "bg-blue-100 text-[#0F47F2]"
                         : "bg-gray-100 text-gray-600"
-                    }`}
+                      }`}
                   >
                     {tab.count}
                   </span>
@@ -2138,9 +2216,8 @@ export default function JobCandidateProfile({
                                 </span>
                               ) : null}
                               <ChevronDown
-                                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-                                  isOpen ? "rotate-180" : ""
-                                }`}
+                                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                                  }`}
                               />
                             </div>
                           </button>
@@ -2233,9 +2310,9 @@ export default function JobCandidateProfile({
                                           typeof item === "string"
                                             ? item
                                             : item.text ||
-                                              item.content ||
-                                              item.statement ||
-                                              "";
+                                            item.content ||
+                                            item.statement ||
+                                            "";
                                         const speaker = item.speaker || item.role;
                                         return (
                                           <div
@@ -2307,11 +2384,10 @@ export default function JobCandidateProfile({
                     <button
                       type="button"
                       onClick={() => setNotesView("my")}
-                      className={`text-xs transition-colors cursor-pointer ${
-                        notesView === "my"
+                      className={`text-xs transition-colors cursor-pointer ${notesView === "my"
                           ? "text-[#0F47F2] font-semibold"
                           : "text-gray-500 hover:text-gray-700"
-                      }`}
+                        }`}
                     >
                       My Notes
                     </button>
@@ -2323,24 +2399,21 @@ export default function JobCandidateProfile({
                       onClick={() =>
                         setNotesView((prev) => (prev === "my" ? "community" : "my"))
                       }
-                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
-                        notesView === "community" ? "bg-[#0F47F2]" : "bg-gray-300"
-                      }`}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${notesView === "community" ? "bg-[#0F47F2]" : "bg-gray-300"
+                        }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition duration-200 ease-in-out mt-0.5 ml-0.5 ${
-                          notesView === "community" ? "translate-x-4" : "translate-x-0"
-                        }`}
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition duration-200 ease-in-out mt-0.5 ml-0.5 ${notesView === "community" ? "translate-x-4" : "translate-x-0"
+                          }`}
                       />
                     </button>
                     <button
                       type="button"
                       onClick={() => setNotesView("community")}
-                      className={`text-xs transition-colors cursor-pointer ${
-                        notesView === "community"
+                      className={`text-xs transition-colors cursor-pointer ${notesView === "community"
                           ? "text-[#0F47F2] font-semibold"
                           : "text-gray-500 hover:text-gray-700"
-                      }`}
+                        }`}
                     >
                       Community Notes
                     </button>
@@ -2446,9 +2519,8 @@ export default function JobCandidateProfile({
                             {/* Vertical Connector Line behind step icons */}
                             {i < filteredStages.length - 1 && (
                               <div
-                                className={`absolute left-[13px] top-7 bottom-0 w-[2px] ${
-                                  isCompleted ? "bg-[#10B981]" : "bg-gray-200"
-                                }`}
+                                className={`absolute left-[13px] top-7 bottom-0 w-[2px] ${isCompleted ? "bg-[#10B981]" : "bg-gray-200"
+                                  }`}
                               />
                             )}
 
@@ -2470,13 +2542,12 @@ export default function JobCandidateProfile({
                             {/* Stage Label */}
                             <div className="pt-0.5">
                               <p
-                                className={`text-sm ${
-                                  isActive
+                                className={`text-sm ${isActive
                                     ? "font-bold text-[#0F47F2]"
                                     : isCompleted
                                       ? "font-semibold text-[#10B981]"
                                       : "font-normal text-gray-500"
-                                }`}
+                                  }`}
                               >
                                 {stage.name}
                               </p>
@@ -2517,9 +2588,8 @@ export default function JobCandidateProfile({
                       {activities.map((act, i) => (
                         <div key={i} className="relative pl-5">
                           <div
-                            className={`w-2 h-2 rounded-full absolute left-0 top-1.5 z-10 ${
-                              act.type === "stage_move" ? "bg-[#10B981]" : "bg-[#0F47F2]"
-                            }`}
+                            className={`w-2 h-2 rounded-full absolute left-0 top-1.5 z-10 ${act.type === "stage_move" ? "bg-[#10B981]" : "bg-[#0F47F2]"
+                              }`}
                           />
                           <p className="font-bold text-black text-xs mb-0.5">
                             {act.description}
@@ -2786,6 +2856,21 @@ export default function JobCandidateProfile({
                       setEditDetailsData((prev) => ({ ...prev, notice_period: e.target.value }))
                     }
                     className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20 focus:border-[#0F47F2]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Reason for Change
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Looking for better growth opportunities"
+                    value={editDetailsData.reason_for_change}
+                    onChange={(e) =>
+                      setEditDetailsData((prev) => ({ ...prev, reason_for_change: e.target.value }))
+                    }
+                    className="w-full px-3.5 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0F47F2]/20 focus:border-[#0F47F2] resize-none"
                   />
                 </div>
               </div>

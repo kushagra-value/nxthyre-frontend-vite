@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect,useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   ChevronDown,
   SlidersHorizontal,
-  UploadCloud,
   Loader2,
   Search,
-  FileText ,
+  FileText,
+  Kanban,
   X,
 } from "lucide-react";
 import { MyWorkspace } from "../../../services/organizationService";
@@ -23,6 +23,7 @@ interface CallToolbarProps {
   onUploadCandidates: () => void;
   onOpenJobDetails: () => void;
   onOpenFilters: () => void;
+  onOpenKanban?: () => void;
   activeFilterCount: number;
   isLoadingCandidates: boolean;
   isLoadingJobs?: boolean;
@@ -45,6 +46,7 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
   onUploadCandidates,
   onOpenJobDetails,
   onOpenFilters,
+  onOpenKanban,
   activeFilterCount,
   isLoadingCandidates,
   isLoadingJobs,
@@ -139,9 +141,8 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
               )}
             </div>
             <ChevronDown
-              className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${
-                isCompanyDropdownOpen ? "rotate-180" : ""
-              }`}
+              className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${isCompanyDropdownOpen ? "rotate-180" : ""
+                }`}
             />
           </button>
 
@@ -187,11 +188,10 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
                           setIsCompanyDropdownOpen(false);
                           setCompanySearchQuery("");
                         }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-left transition cursor-pointer ${
-                          isSelected
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-left transition cursor-pointer ${isSelected
                             ? "bg-[#EEF2FF] text-[#0F47F2] font-semibold"
                             : "text-[#374151] hover:bg-gray-50"
-                        }`}
+                          }`}
                       >
                         <CompanyLogo name={c.name} sizeClassName="w-6 h-6" />
                         <span className="truncate flex-1">{c.name}</span>
@@ -208,39 +208,45 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
           )}
         </div>
 
-        {/* Job Dropdown - increased length/width as requested */}
+        {/* Job Dropdown */}
         <div className="relative min-w-[260px] sm:min-w-[340px] max-w-[460px] flex-1">
-          <select
-            value={selectedJobId || ""}
-            onChange={(e) => {
-              const val = Number(e.target.value);
-              if (val) onSelectJob(val);
-            }}
-            disabled={!selectedCompanyId || isLoadingJobs}
-            className={`w-full h-10 appearance-none bg-white border border-[#D1D5DB] rounded-xl px-4 pr-9 text-xs font-normal text-[#374151] focus:outline-none focus:border-[#0F47F2] transition cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${!selectedCompanyId || isLoadingJobs
-                ? "opacity-60 cursor-not-allowed bg-gray-50"
-                : "hover:border-gray-400"
-              }`}
-          >
-            <option value="" disabled>
-              {isLoadingJobs
-                ? "Loading jobs..."
-                : selectedCompanyId
-                  ? jobs.length > 0
-                    ? "Select Job"
-                    : "No active jobs"
-                  : "Select Job"}
-            </option>
-            {jobs.map((j) => (
-              <option key={j.id} value={j.id}>
-                {j.title}
-              </option>
-            ))}
-          </select>
           {isLoadingJobs ? (
-            <Loader2 className="w-4 h-4 text-gray-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <div className="w-full h-10 flex items-center justify-between bg-gray-50 border border-[#D1D5DB] rounded-xl px-4 text-xs font-normal text-gray-500 shadow-[0_1px_2px_rgba(0,0,0,0.02)] select-none">
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-3.5 h-3.5 text-[#0F47F2] animate-spin shrink-0" />
+                <span className="text-gray-500 font-medium">Loading jobs...</span>
+              </div>
+            </div>
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <>
+              <select
+                value={selectedJobId || ""}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val) onSelectJob(val);
+                }}
+                disabled={!selectedCompanyId}
+                className={`w-full h-10 appearance-none bg-white border border-[#D1D5DB] rounded-xl px-4 pr-9 text-xs font-normal text-[#374151] focus:outline-none focus:border-[#0F47F2] transition cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${
+                  !selectedCompanyId
+                    ? "opacity-60 cursor-not-allowed bg-gray-50"
+                    : "hover:border-gray-400"
+                }`}
+              >
+                <option value="" disabled={Boolean(selectedJobId)}>
+                  {selectedCompanyId
+                    ? jobs.length > 0
+                      ? "Select Job"
+                      : "No active jobs"
+                    : "Select Job"}
+                </option>
+                {jobs.map((j) => (
+                  <option key={j.id} value={j.id}>
+                    {j.title}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </>
           )}
         </div>
 
@@ -249,8 +255,8 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
           onClick={onFetchCandidates}
           disabled={!selectedJobId || isLoadingCandidates}
           className={`h-10 flex items-center justify-center gap-2 py-2 px-4 bg-[#0F47F2] text-white rounded-xl text-xs font-regular transition shadow-xs ${!selectedJobId || isLoadingCandidates
-              ? "opacity-60 cursor-not-allowed"
-              : "hover:bg-[#0c39c2] cursor-pointer"
+            ? "opacity-60 cursor-not-allowed"
+            : "hover:bg-[#0c39c2] cursor-pointer"
             }`}
         >
           {isLoadingCandidates ? (
@@ -268,11 +274,29 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
           onClick={onUploadCandidates}
           disabled={!selectedJobId}
           className={`h-10 flex items-center gap-2 px-4 border border-[#0F47F2] bg-white text-[#0F47F2] rounded-xl text-xs font-medium transition shadow-xs ${!selectedJobId
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-blue-50/50 cursor-pointer"
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:bg-blue-50/50 cursor-pointer"
             }`}
         >
-          <UploadCloud className="w-4 h-4 text-[#0F47F2]" />
+          <svg
+            className="w-4 h-4 text-[#0F47F2]"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17 9.00195C19.175 9.01406 20.3529 9.11051 21.1213 9.8789C22 10.7576 22 12.1718 22 15.0002V16.0002C22 18.8286 22 20.2429 21.1213 21.1215C20.2426 22.0002 18.8284 22.0002 16 22.0002H8C5.17157 22.0002 3.75736 22.0002 2.87868 21.1215C2 20.2429 2 18.8286 2 16.0002L2 15.0002C2 12.1718 2 10.7576 2.87868 9.87889C3.64706 9.11051 4.82497 9.01406 7 9.00195"
+              opacity="0.5"
+            />
+            <path
+              d="M12 15L12 2M9 5.5L12 2L15 5.5"
+              strokeLinejoin="round"
+            />
+          </svg>
           <span>Upload Candidates</span>
         </button>
       </div>
@@ -311,14 +335,27 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
           </button>
         )}
 
+        {/* Kanban Board Navigation Button (matching screenshot) */}
+        {/* <button
+          onClick={onOpenKanban}
+          disabled={!selectedJobId}
+          title="Open Kanban Board"
+          className={`w-10 h-10 flex items-center justify-center bg-white border border-[#4B5563] rounded-xl text-gray-500 transition shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${!selectedJobId
+            ? "opacity-50 cursor-not-allowed"
+            : "cursor-pointer hover:text-gray-800 hover:border-gray-400"
+            }`}
+        >
+          <Kanban className="w-4 h-4" />
+        </button> */}
+
         {/* View Job Details Button (Document Icon from screenshot) */}
         <button
           onClick={onOpenJobDetails}
           disabled={!selectedJobId}
           title="View Job Details"
           className={`w-10 h-10 flex items-center justify-center bg-white border border-[#4B5563] rounded-xl text-gray-500 transition shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${!selectedJobId
-              ? "opacity-50 cursor-not-allowed"
-              : "cursor-pointer hover:text-gray-800 hover:border-gray-400"
+            ? "opacity-50 cursor-not-allowed"
+            : "cursor-pointer hover:text-gray-800 hover:border-gray-400"
             }`}
         >
           <FileText className="w-4 h-4" />
@@ -328,8 +365,8 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
         <button
           onClick={onOpenFilters}
           className={`h-10 flex items-center gap-2 px-4 bg-white border rounded-xl text-xs font-medium transition shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-pointer ${activeFilterCount > 0
-              ? "border-[#0F47F2] text-[#0F47F2] bg-blue-50/30"
-              : "border-[#4B5563] text-gray-700 hover:border-gray-400"
+            ? "border-[#0F47F2] text-[#0F47F2] bg-blue-50/30"
+            : "border-[#4B5563] text-gray-700 hover:border-gray-400"
             }`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />

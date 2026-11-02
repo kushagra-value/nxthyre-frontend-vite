@@ -18,7 +18,7 @@ export interface CandidateAttentionData {
   } | null;
 }
 
-export const formatTimeAgo = (iso?: string): string => {
+export const formatTimeAgo = (iso?: string | null): string => {
   if (!iso) return "--";
   const now = new Date();
   const past = new Date(iso);

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import apiClient from "../../../services/api";
 import { candidateService } from "../../../services/candidateService";
 import { showToast } from "../../../utils/toast";
+import { toIsoDate } from "../../../utils/dateUtils";
 import PipelineFilterPanel, { PipelineFiltersState, EMPTY_PIPELINE_FILTERS } from "./PipelineFilterPanel";
 import { getAttentionPill } from "../../../utils/candidateAttention";
 
@@ -249,8 +250,11 @@ export default function InboundTab({ jobId, isAscendionWorkspace, onSelectCandid
       }
     }
 
-    if (candidateEditForm.last_working_day !== "") {
-      payload.last_working_day = candidateEditForm.last_working_day;
+    if (candidateEditForm.last_working_day && candidateEditForm.last_working_day.trim() !== "") {
+      const isoLwd = toIsoDate(candidateEditForm.last_working_day);
+      if (isoLwd) {
+        payload.last_working_day = isoLwd;
+      }
     }
 
     if (candidateEditForm.location !== "") {

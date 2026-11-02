@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Phone, ChevronLeft, ChevronRight, ExternalLink, Search, FileQuestion } from "lucide-react";
+import { Phone, ChevronLeft, ChevronRight, ExternalLink, Search, FileQuestion, Sparkle } from "lucide-react";
 import { CandidateCallItem } from "../../../services/callService";
 import { formatTimeAgo } from "../../../utils/candidateAttention";
+import ConfirmationDialog from "./ConfirmationDialog";
 
 interface CandidateListProps {
   candidates: CandidateCallItem[];
@@ -11,6 +12,7 @@ interface CandidateListProps {
   jobId: number | null;
   onCallCandidate: (candidateItem: CandidateCallItem) => void;
   onViewProfile: (candidateItem: CandidateCallItem) => void;
+  onShortlistCandidate?: (candidateItem: CandidateCallItem) => Promise<void> | void;
   // Pagination props
   currentPage: number;
   pageSize: number;
@@ -26,12 +28,15 @@ export const CandidateList: React.FC<CandidateListProps> = ({
   jobId,
   onCallCandidate,
   onViewProfile,
+  onShortlistCandidate,
   currentPage,
   pageSize,
   totalCount,
   onPageChange,
 }) => {
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | number | null>(null);
+  const [candidateToShortlist, setCandidateToShortlist] = useState<CandidateCallItem | null>(null);
+  const [isShortlistLoading, setIsShortlistLoading] = useState(false);
 
   // Helper to format CTC
   const formatSalary = (val: string | number | null | undefined): string => {
@@ -371,7 +376,6 @@ export const CandidateList: React.FC<CandidateListProps> = ({
             Please select a company and active job from the selectors above to view candidate screening queue.
           </p>
         </div>
-        {renderPagination()}
       </div>
     );
   }
@@ -391,7 +395,6 @@ export const CandidateList: React.FC<CandidateListProps> = ({
             Click &ldquo;Search Candidates&rdquo; to load the candidate queue for this job.
           </p>
         </div>
-        {renderPagination()}
       </div>
     );
   }
@@ -451,7 +454,6 @@ export const CandidateList: React.FC<CandidateListProps> = ({
             </div>
           </div>
         </div>
-        {renderPagination()}
       </div>
     );
   }
@@ -471,7 +473,6 @@ export const CandidateList: React.FC<CandidateListProps> = ({
             No candidates match the selected filters or search keywords. Try adjusting filters or uploading new resumes.
           </p>
         </div>
-        {renderPagination()}
       </div>
     );
   }
@@ -558,7 +559,7 @@ export const CandidateList: React.FC<CandidateListProps> = ({
                 item.last_active_at ||
                 null;
               const lastCallDisplay = lastCallIso
-                ? formatTimeAgo(lastCallIso)
+                ? formatTimeAgo(lastCallIso || undefined)
                 : "3days ago";
 
               return (
@@ -664,13 +665,13 @@ export const CandidateList: React.FC<CandidateListProps> = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onViewProfile(item);
+                        setCandidateToShortlist(item);
                       }}
-                      title="View candidate details"
-                      className="w-9 h-9 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#6B7280] hover:text-[#111827] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
-                      aria-label="View candidate profile"
+                      title="Shortlist candidate"
+                      className="w-9 h-9 rounded-full bg-[#0F47F2] hover:bg-[#0c39c2] text-white flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                      aria-label="Shortlist candidate"
                     >
-                      <ExternalLink className="w-4 h-4" />
+                      <Sparkle className="w-4 h-4 text-white" /> 
                     </button>
                   </div>
                 </div>
@@ -682,6 +683,35 @@ export const CandidateList: React.FC<CandidateListProps> = ({
 
       {/* ── Standalone Pagination Card matching screenshot ── */}
       {renderPagination()}
+
+      {/* ── Shortlist Confirmation Dialog ── */}
+      <ConfirmationDialog
+        isOpen={Boolean(candidateToShortlist)}
+        onClose={() => setCandidateToShortlist(null)}
+        title="Shortlist Candidate"
+        description={
+          <span>
+            Are you sure you want to move{" "}
+            <strong className="text-gray-900 font-semibold">
+              {candidateToShortlist?.candidate?.full_name || "this candidate"}
+            </strong>{" "}
+            to the shortlisted stage?
+          </span>
+        }
+        confirmText="Shortlist"
+        confirmVariant="primary"
+        isLoading={isShortlistLoading}
+        onConfirm={async () => {
+          if (!candidateToShortlist) return;
+          setIsShortlistLoading(true);
+          try {
+            await onShortlistCandidate?.(candidateToShortlist);
+            setCandidateToShortlist(null);
+          } finally {
+            setIsShortlistLoading(false);
+          }
+        }}
+      />
     </div>
   );
 };
