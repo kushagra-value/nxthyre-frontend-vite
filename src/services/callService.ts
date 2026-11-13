@@ -281,18 +281,28 @@ export const callService = {
   async getCallStats(params?: CallStatsParams): Promise<CallStatsData | null> {
     try {
       const queryParams: Record<string, any> = {};
-      if (params?.workspace_id) queryParams.workspace_id = params.workspace_id;
-      if (params?.job_id) queryParams.job_id = params.job_id;
+      // When job_id is provided, scope stats directly to that job.
+      // Omit workspace_id when job_id is present to prevent backend workspace-job mismatch errors (e.g. {"error":"Job not found."}).
+      if (params?.job_id) {
+        queryParams.job_id = params.job_id;
+      } else if (params?.workspace_id) {
+        queryParams.workspace_id = params.workspace_id;
+      }
       if (params?.recruiter_uid) queryParams.recruiter_uid = params.recruiter_uid;
 
       let response;
       try {
         response = await apiClient.get("/calls/stats/", { params: queryParams });
       } catch (err: any) {
-        // Fallback endpoint if /calls/stats/ is 404 or backend uses /call-queue/stats/
-        if (err?.response?.status === 404) {
+        // Fallback endpoint if /calls/stats/ route is 404 (and not a business validation error)
+        if (err?.response?.status === 404 && !err?.response?.data?.error) {
           response = await apiClient.get("/call-queue/stats/", { params: queryParams });
         } else {
+          // If the server explicitly returned an error (like "Job not found."), log cleanly and gracefully return null
+          if (err?.response?.data?.error) {
+            console.warn("Call stats query returned error from server:", err.response.data.error);
+            return null;
+          }
           throw err;
         }
       }

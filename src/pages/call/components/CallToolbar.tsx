@@ -60,12 +60,16 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
   const companyDropdownRef = useRef<HTMLDivElement>(null);
   const companySearchInputRef = useRef<HTMLInputElement>(null);
 
+  const [isJobDropdownOpen, setIsJobDropdownOpen] = useState(false);
+  const jobDropdownRef = useRef<HTMLDivElement>(null);
+
   const [isScoreDropdownOpen, setIsScoreDropdownOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(Boolean(searchQuery));
   const scoreDropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
+  const selectedJob = jobs.find((j) => j.id === selectedJobId);
 
   const filteredCompanies = useMemo(() => {
     if (!companySearchQuery.trim()) return companies;
@@ -81,6 +85,12 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
         !companyDropdownRef.current.contains(event.target as Node)
       ) {
         setIsCompanyDropdownOpen(false);
+      }
+      if (
+        jobDropdownRef.current &&
+        !jobDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsJobDropdownOpen(false);
       }
       if (
         scoreDropdownRef.current &&
@@ -116,6 +126,7 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
           <button
             type="button"
             onClick={() => {
+              setIsJobDropdownOpen(false);
               setIsCompanyDropdownOpen((prev) => {
                 const next = !prev;
                 if (next) {
@@ -126,18 +137,18 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
                 return next;
               });
             }}
-            className="h-10 flex items-center justify-between gap-2 px-3 bg-white border border-[#D1D5DB] hover:border-gray-400 rounded-xl text-xs font-normal text-[#374151] transition cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-w-[150px] max-w-[220px]"
+            className="h-10 flex items-center justify-between gap-2 px-3 bg-white border border-[#D1D5DB] hover:border-gray-400 rounded-xl text-sm font-normal text-[#374151] transition cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] min-w-[150px] max-w-[220px]"
           >
             <div className="flex items-center gap-2 truncate min-w-0">
               {selectedCompany ? (
                 <>
                   <CompanyLogo name={selectedCompany.name} sizeClassName="w-5 h-5" />
-                  <span className="truncate text-xs font-medium text-[#111827]">
+                  <span className="truncate text-sm font-medium text-[#111827]">
                     {selectedCompany.name}
                   </span>
                 </>
               ) : (
-                <span className="text-xs text-gray-400 font-normal">Select Company</span>
+                <span className="text-sm text-gray-400 font-normal">Select Company</span>
               )}
             </div>
             <ChevronDown
@@ -159,7 +170,7 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
                     placeholder="Search company..."
                     value={companySearchQuery}
                     onChange={(e) => setCompanySearchQuery(e.target.value)}
-                    className="w-full h-8 pl-8 pr-7 bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#0F47F2] rounded-lg text-xs outline-none text-[#374151] transition placeholder:text-gray-400"
+                    className="w-full h-8 pl-8 pr-7 bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#0F47F2] rounded-lg text-sm outline-none text-[#374151] transition placeholder:text-gray-400"
                   />
                   {companySearchQuery && (
                     <button
@@ -174,8 +185,8 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
                 </div>
               </div>
 
-              {/* Company Options List */}
-              <div className="max-h-[450px] overflow-y-auto custom-scrollbar p-1">
+              {/* Company Options List (max 9 options visible, vertical scroll) */}
+              <div className="max-h-[368px] overflow-y-auto custom-scrollbar p-1">
                 {filteredCompanies.length > 0 ? (
                   filteredCompanies.map((c) => {
                     const isSelected = c.id === selectedCompanyId;
@@ -188,7 +199,7 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
                           setIsCompanyDropdownOpen(false);
                           setCompanySearchQuery("");
                         }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-left transition cursor-pointer ${isSelected
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left transition cursor-pointer ${isSelected
                             ? "bg-[#EEF2FF] text-[#0F47F2] font-semibold"
                             : "text-[#374151] hover:bg-gray-50"
                           }`}
@@ -199,7 +210,7 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
                     );
                   })
                 ) : (
-                  <div className="py-6 text-center text-xs text-gray-400">
+                  <div className="py-6 text-center text-sm text-gray-400">
                     No companies found
                   </div>
                 )}
@@ -209,9 +220,9 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
         </div>
 
         {/* Job Dropdown */}
-        <div className="relative min-w-[260px] sm:min-w-[340px] max-w-[460px] flex-1">
+        <div className="relative min-w-[260px] sm:min-w-[340px] max-w-[460px] flex-1" ref={jobDropdownRef}>
           {isLoadingJobs ? (
-            <div className="w-full h-10 flex items-center justify-between bg-gray-50 border border-[#D1D5DB] rounded-xl px-4 text-xs font-normal text-gray-500 shadow-[0_1px_2px_rgba(0,0,0,0.02)] select-none">
+            <div className="w-full h-10 flex items-center justify-between bg-gray-50 border border-[#D1D5DB] rounded-xl px-4 text-sm font-normal text-gray-500 shadow-[0_1px_2px_rgba(0,0,0,0.02)] select-none">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-3.5 h-3.5 text-[#0F47F2] animate-spin shrink-0" />
                 <span className="text-gray-500 font-medium">Loading jobs...</span>
@@ -219,33 +230,68 @@ export const CallToolbar: React.FC<CallToolbarProps> = ({
             </div>
           ) : (
             <>
-              <select
-                value={selectedJobId || ""}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  if (val) onSelectJob(val);
-                }}
+              <button
+                type="button"
                 disabled={!selectedCompanyId}
-                className={`w-full h-10 appearance-none bg-white border border-[#D1D5DB] rounded-xl px-4 pr-9 text-xs font-normal text-[#374151] focus:outline-none focus:border-[#0F47F2] transition cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${
+                onClick={() => {
+                  if (!selectedCompanyId) return;
+                  setIsCompanyDropdownOpen(false);
+                  setIsJobDropdownOpen((prev) => !prev);
+                }}
+                className={`w-full h-10 flex items-center justify-between gap-2 bg-white border border-[#D1D5DB] rounded-xl px-4 text-sm font-normal text-[#374151] focus:outline-none focus:border-[#0F47F2] transition shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${
                   !selectedCompanyId
                     ? "opacity-60 cursor-not-allowed bg-gray-50"
-                    : "hover:border-gray-400"
+                    : "hover:border-gray-400 cursor-pointer"
                 }`}
               >
-                <option value="" disabled={Boolean(selectedJobId)}>
-                  {selectedCompanyId
-                    ? jobs.length > 0
-                      ? "Select Job"
-                      : "No active jobs"
-                    : "Select Job"}
-                </option>
-                {jobs.map((j) => (
-                  <option key={j.id} value={j.id}>
-                    {j.title}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <span className={`truncate ${selectedJob ? "text-[#111827] font-medium" : "text-gray-400"}`}>
+                  {selectedJob
+                    ? selectedJob.title
+                    : selectedCompanyId
+                      ? jobs.length > 0
+                        ? "Select Job"
+                        : "No active jobs"
+                      : "Select Job"}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${
+                    isJobDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isJobDropdownOpen && selectedCompanyId && (
+                <div className="absolute top-full left-0 mt-1.5 w-full bg-white border border-[#E5E7EB] rounded-xl shadow-xl z-50 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                  <div className="max-h-[332px] overflow-y-auto custom-scrollbar p-1">
+                    {jobs.length > 0 ? (
+                      jobs.map((j) => {
+                        const isSelected = j.id === selectedJobId;
+                        return (
+                          <button
+                            key={j.id}
+                            type="button"
+                            onClick={() => {
+                              onSelectJob(j.id);
+                              setIsJobDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center px-3 py-2 rounded-lg text-sm text-left transition cursor-pointer ${
+                              isSelected
+                                ? "bg-[#EEF2FF] text-[#0F47F2] font-semibold"
+                                : "text-[#374151] hover:bg-gray-50"
+                            }`}
+                          >
+                            <span className="truncate flex-1">{j.title}</span>
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="py-6 text-center text-sm text-gray-400">
+                        No active jobs
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

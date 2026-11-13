@@ -203,13 +203,13 @@ export default function PriorityCard({
           )}
         </div>
 
-        {/* Screening Score & Resume Score */}
+        {/* Resume Score & Screening Score */}
         <div className="flex items-center gap-1.5 shrink-0 h-8">
-          {effectiveScreeningScore != null && (
-            <ScoreCircle score={effectiveScreeningScore} label="Screening Score" />
-          )}
           {resumeScore != null && (
             <ScoreCircle score={resumeScore} label="Resume Score" />
+          )}
+          {effectiveScreeningScore != null && (
+            <ScoreCircle score={effectiveScreeningScore} label="Screening Score" />
           )}
         </div>
       </div>

@@ -43,15 +43,10 @@ export const CallStats: React.FC<CallStatsProps> = ({ stats, isLoading = false }
       value: data.shortlisted,
       subtext: data.shortlistedSubtext,
     },
-    {
-      label: "Avg Time Taken",
-      value: data.avgTime,
-      subtext: data.avgTimeSubtext,
-    },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {statItems.map((item, index) => (
         <div
           key={index}

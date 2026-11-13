@@ -174,6 +174,8 @@ export interface MyWorkspace {
   };
   last_active_date?: string | null;
   workspace_status?: string;
+  status_changed_at?: string | null;
+  status_updated_at?: string | null;
 }
 
 export interface WorkspaceStatsCount {

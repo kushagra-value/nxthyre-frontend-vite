@@ -119,7 +119,7 @@ export const CallPage: React.FC = () => {
       setIsLoadingStats(true);
       try {
         const statsData = await callService.getCallStats({
-          workspace_id: workspaceId || undefined,
+          workspace_id: jobId ? undefined : (workspaceId || undefined),
           job_id: jobId || undefined,
         });
         if (statsData) {
@@ -338,6 +338,13 @@ export const CallPage: React.FC = () => {
     // Avoid redundant resetting if clicking already selected job
     if (jobId === selectedJobId) {
       return;
+    }
+    const currentJob = jobs.find((j) => j.id === jobId);
+    const jobWsId = currentJob?.workspace_details?.id || (currentJob as any)?.workspace_id;
+    if (jobWsId && jobWsId !== selectedCompanyId) {
+      setSelectedCompanyId(jobWsId);
+      sessionStorage.setItem("nxthyre_companies_wsId", String(jobWsId));
+      callStateCache.set({ selectedCompanyId: jobWsId });
     }
     setSelectedJobId(jobId);
     setCandidates([]);
@@ -737,8 +744,8 @@ export const CallPage: React.FC = () => {
     const toastId = showToast.loading("Uploading resumes...");
     try {
       const filesArray = Array.from(uploadFiles);
-      await jobPostService.uploadResumes(selectedJobId, filesArray);
-      showToast.success("Candidates uploaded successfully!");
+      const res = await jobPostService.uploadResumes(selectedJobId, filesArray);
+      showToast.success(res?.message || "Candidates uploaded successfully! Resumes queued for processing.");
       setIsUploadModalOpen(false);
       setUploadFiles(null);
       fetchCandidates(selectedJobId, filters, 1);
