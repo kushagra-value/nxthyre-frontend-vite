@@ -350,6 +350,18 @@ export default function Companies() {
             });
     }, [allJobs, pendingJobId, selectedWorkspace, selectedJob]);
 
+    const formatDateIST = (dateValue?: string | null): string => {
+        if (!dateValue) return "--";
+        const trimmed = String(dateValue).trim();
+        const dateOnlyMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (dateOnlyMatch) {
+            return `${dateOnlyMatch[3]}/${dateOnlyMatch[2]}/${dateOnlyMatch[1]}`;
+        }
+        const parsed = new Date(trimmed);
+        if (isNaN(parsed.getTime())) return "--";
+        return parsed.toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' });
+    };
+
     const allRows = useMemo((): CompanyTableRow[] => {
         if (workspaces.length === 0) return companyTableRows;
 
@@ -371,13 +383,12 @@ export default function Companies() {
                 shortlistedTrend: monthlyShortlistedTrend ? `${monthlyShortlistedTrend > 0 ? '+' : ''}${monthlyShortlistedTrend}%` : undefined,
                 hired: ws.hired_candidates_in_workspace_count ?? "--",
                 hiredTrend: monthlyHiredTrend ? `${monthlyHiredTrend > 0 ? '+' : ''}${monthlyHiredTrend}%` : undefined,
-                lastActiveDate: ws.last_active_date
-                    ? new Date(ws.last_active_date).toLocaleDateString('en-GB')
-                    : "--",
+                lastActiveDate: formatDateIST(ws.last_active_date),
+                statusChangedDate: formatDateIST(ws.status_changed_at ?? ws.status_updated_at),
                 status: normalizedStatus as any,
                 createdBy: ws.created_by || undefined,
                 activeJobs: ws.active_jobs_count || "--",
-                createdDate: ws.created_at ? new Date(ws.created_at).toLocaleDateString('en-GB') : "--",
+                createdDate: formatDateIST(ws.created_at),
             };
         });
     }, [workspaces]);
@@ -406,21 +417,32 @@ export default function Companies() {
             : searchedRows.filter((r) => r.status === activeFilter),
         [searchedRows, activeFilter]);
 
-    const handleStatusToggle = async (workspaceId: number, currentStatus: string) => {
-        if (statusUpdating) return;
+    type WorkspaceStatusPayload = "Active" | "Paused" | "Inactive";
 
-        const nextMap: Record<string, string> = {
-            "Active": "Paused",
-            "Paused": "Inactive",
-            "Inactive": "Active"
+    const getNextWorkspaceStatus = (currentStatus: string): WorkspaceStatusPayload => {
+        const nextMap: Record<string, WorkspaceStatusPayload> = {
+            active: "Paused",
+            paused: "Inactive",
+            inactive: "Active",
         };
-        const newStatus = nextMap[currentStatus] || "Active";
+        return nextMap[currentStatus.toLowerCase()] || "Active";
+    };
+
+    const handleStatusUpdate = async (workspaceId: number, targetStatus: WorkspaceStatusPayload) => {
+        if (statusUpdating) return;
 
         setStatusUpdating(workspaceId);
         try {
-            await organizationService.updateWorkspace(workspaceId, { status: newStatus });
+            const updatedWorkspace = await organizationService.updateWorkspace(workspaceId, { status: targetStatus });
             if (isMounted.current) {
-                setWorkspaces(prev => prev.map(w => w.id === workspaceId ? { ...w, workspace_status: newStatus } : w));
+                setWorkspaces(prev => prev.map(w => w.id === workspaceId ? {
+                    ...w,
+                    ...updatedWorkspace,
+                    workspace_status: updatedWorkspace?.workspace_status || targetStatus,
+                    last_active_date: updatedWorkspace?.last_active_date ?? w.last_active_date,
+                    status_changed_at: updatedWorkspace?.status_changed_at ?? w.status_changed_at,
+                    status_updated_at: updatedWorkspace?.status_updated_at ?? w.status_updated_at,
+                } : w));
                 showToast.success("Workspace status updated");
             }
         } catch (err: any) {
@@ -449,7 +471,7 @@ export default function Companies() {
         } else {
             if (['totalJobs', 'totalCandidates', 'shortlisted', 'hired'].includes(key)) {
                 direction = 'desc'; // Number field default: high to low
-            } else if (key === 'lastActiveDate') {
+            } else if (['lastActiveDate', 'statusChangedDate', 'createdDate'].includes(key)) {
                 direction = 'desc'; // Date field default: most recent
             } else {
                 direction = 'asc'; // Text field default: alphabetically
@@ -468,7 +490,7 @@ export default function Companies() {
             let aCom: any = aVal === '--' ? 0 : aVal;
             let bCom: any = bVal === '--' ? 0 : bVal;
 
-            if (sortConfig.key === 'lastActiveDate') {
+            if (['lastActiveDate', 'statusChangedDate', 'createdDate'].includes(sortConfig.key)) {
                 const parseDate = (d: any) => {
                     if (!d || d === '--') return 0;
                     const parts = d.split('/');
@@ -808,10 +830,16 @@ export default function Companies() {
                                                     <div className="flex items-center justify-center">Hired <SortIcon columnKey="hired" /></div>
                                                 </th>
                                                 <th
-                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center"
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center whitespace-nowrap"
                                                     onClick={() => handleSort('lastActiveDate')}
                                                 >
-                                                    <div className="flex items-center justify-center">STATUS<SortIcon columnKey="lastActiveDate" /></div>
+                                                    <div className="flex items-center justify-center">LAD<SortIcon columnKey="lastActiveDate" /></div>
+                                                </th>
+                                                <th
+                                                    className="px-4 py-3 text-[11px] font-semibold uppercase text-[#374151] tracking-wider text-center whitespace-nowrap"
+                                                    onClick={() => handleSort('statusChangedDate')}
+                                                >
+                                                    <div className="flex items-center justify-center">STATUS<SortIcon columnKey="statusChangedDate" /></div>
                                                 </th>
                                                 <th className="px-4 py-3 text-[11px] font-bold uppercase text-[#1F2937] tracking-wider text-center">
                                                     Actions
@@ -836,6 +864,7 @@ export default function Companies() {
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-8 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-20 mx-auto" /></td>
+                                                        <td className="px-6 py-4 text-center"><div className="h-4 bg-gray-200 rounded w-20 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center"><div className="h-5 bg-gray-200 rounded-full w-24 mx-auto" /></td>
                                                         <td className="px-6 py-4 text-center">
                                                             <div className="w-6 h-6 bg-gray-200 rounded-full mx-auto" />
@@ -846,7 +875,7 @@ export default function Companies() {
                                             ) : paginatedRows.length === 0 ? (
                                                 <tr>
                                                     <td
-                                                        colSpan={9}
+                                                        colSpan={10}
 
                                                         className="px-6 py-12 text-center text-sm text-[#AEAEB2]"
                                                     >
@@ -943,10 +972,17 @@ export default function Companies() {
                                                                 </div>
                                                             </td>
 
-                                                            {/* Last Active Date & Status */}
+                                                            {/* Last Active Date (LAD) */}
+                                                            <td className="px-6 py-4 text-center">
+                                                                <p className="text-sm text-[#4B5563] whitespace-nowrap">
+                                                                    {row.lastActiveDate || '--'}
+                                                                </p>
+                                                            </td>
+
+                                                            {/* Status & Status Changed Date */}
                                                             <td className="px-6 py-4 text-center">
                                                                 <span
-                                                                    onClick={(e) => { e.stopPropagation(); handleStatusToggle(row.workspaceId, row.status); }}
+                                                                    onClick={(e) => { e.stopPropagation(); handleStatusUpdate(row.workspaceId, getNextWorkspaceStatus(row.status)); }}
                                                                     className={`inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium ${sty.bg} ${sty.text} cursor-pointer hover:opacity-80 transition-opacity ${statusUpdating === row.workspaceId ? 'opacity-50 pointer-events-none' : ''}`}
                                                                     title={`Status: ${row.status}. Click to change.`}
                                                                 >
@@ -957,7 +993,7 @@ export default function Companies() {
                                                                     ) : (
                                                                         <Pause className="w-2.5 h-2.5 fill-current shrink-0" />
                                                                     )}
-                                                                    <span className="whitespace-nowrap">{row.lastActiveDate || '--'}</span>
+                                                                    <span className="whitespace-nowrap">{row.statusChangedDate || '--'}</span>
                                                                 </span>
                                                             </td>
 
@@ -994,9 +1030,9 @@ export default function Companies() {
                                                                         <button onClick={() => { setMenuOpenId(null); const match = workspaces.find(w => w.id === row.workspaceId); if (match) setEditModalWorkspace(match); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Edit</button>
                                                                         <button onClick={() => { setMenuOpenId(null); const match = workspaces.find(w => w.id === row.workspaceId); if (match) setDeleteModalWorkspace(match); }} className="w-full text-left px-4 py-2 text-sm text-[#DC2626] hover:bg-[#FEE2E2] flex items-center gap-2"> Delete</button>
                                                                         <div className="h-[1px] bg-gray-100 my-1"></div>
-                                                                        <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Active"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Active</button>
-                                                                        <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Paused"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Pause</button>
-                                                                        <button onClick={() => { setMenuOpenId(null); handleStatusToggle(row.workspaceId, "Inactive"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Inactive</button>
+                                                                        <button onClick={() => { setMenuOpenId(null); handleStatusUpdate(row.workspaceId, "Active"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Active</button>
+                                                                        <button onClick={() => { setMenuOpenId(null); handleStatusUpdate(row.workspaceId, "Paused"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Pause</button>
+                                                                        <button onClick={() => { setMenuOpenId(null); handleStatusUpdate(row.workspaceId, "Inactive"); }} className="w-full text-left px-4 py-2 text-sm text-[#4B5563] hover:bg-[#F3F5F7] flex items-center gap-2"> Set Inactive</button>
                                                                     </div>
                                                                 )}
                                                             </td>

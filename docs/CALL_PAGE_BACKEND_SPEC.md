@@ -46,9 +46,13 @@ Powers the 5 metric cards at the top of the Call page. The frontend requests thi
 
 | Parameter | Type | Required | Description |
 | :--- | :--- | :--- | :--- |
-| `workspace_id` | integer | No | Filter stats by company workspace ID. |
-| `job_id` | integer | No | Filter stats by specific job role ID. |
+| `workspace_id` | integer | No | Filter stats by company workspace ID (used when no specific job is selected). |
+| `job_id` | integer | No | Filter stats by specific job role ID (takes precedence; globally unique). |
 | `recruiter_uid` | string | No | Filter by recruiter ID (defaults to authenticated `request.user`). |
+
+> [!IMPORTANT]
+> **Job vs Workspace Scope Note:**
+> When `job_id` is passed, the stats must be queried by `job_id` directly (`job_id=job_id`). Do **not** query `Job.objects.get(id=job_id, workspace_id=workspace_id)` because `job_id` is globally unique, and strict multi-filtering will return `{"error": "Job not found."}` if there is any mismatch in the workspace parameter.
 
 ---
 

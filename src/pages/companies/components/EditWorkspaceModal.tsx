@@ -25,8 +25,10 @@ const EditWorkspaceModal: React.FC<EditWorkspaceModalProps> = ({
 
     useEffect(() => {
         if (workspace && isOpen) {
+            const rawStatus = workspace.workspace_status || "Active";
+            const normalizedStatus = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase();
             setName(workspace.name || "");
-            setStatus(workspace.workspace_status || "Active");
+            setStatus(normalizedStatus);
             setWebsite(workspace.company_research_data?.website || "");
             setDescription(workspace.company_research_data?.company_overview || "");
             setLogo(workspace.company_research_data?.logo || ""); // Note: logo might not be mapped in frontend interface but backend supports it

@@ -25,6 +25,7 @@ export interface CompanyTableRow {
     hired: number | string;
     hiredTrend?: string;
     lastActiveDate: string;
+    statusChangedDate?: string;
     status: 'Active' | 'Paused' | 'Inactive';
     createdBy?: string;
 }

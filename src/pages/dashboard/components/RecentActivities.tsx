@@ -186,20 +186,22 @@ const RecentActivities = () => {
       let startDateStr = "";
       let endDateStr = "";
 
+      const formatYMD = (d: Date) =>
+        d.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+
       const today = new Date();
       if (filterMode === "Today") {
-        startDateStr = today.toISOString().split("T")[0];
+        startDateStr = formatYMD(today);
         endDateStr = startDateStr;
       } else if (filterMode === "This Week") {
-        const firstDay = new Date(
-          today.setDate(today.getDate() - today.getDay()),
-        );
-        startDateStr = firstDay.toISOString().split("T")[0];
-        endDateStr = new Date().toISOString().split("T")[0];
+        const firstDay = new Date(today);
+        firstDay.setDate(today.getDate() - today.getDay());
+        startDateStr = formatYMD(firstDay);
+        endDateStr = formatYMD(new Date());
       } else if (filterMode === "This Month") {
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        startDateStr = firstDay.toISOString().split("T")[0];
-        endDateStr = new Date().toISOString().split("T")[0];
+        startDateStr = formatYMD(firstDay);
+        endDateStr = formatYMD(new Date());
       } else if (filterMode === "Custom") {
         startDateStr = customStartDate;
         endDateStr = customEndDate;
