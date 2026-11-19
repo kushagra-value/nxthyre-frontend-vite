@@ -190,6 +190,7 @@ function MainApp() {
       case "candidatePool":
         return "Candidate Pool";
       case "candidateSearch":
+        if (headerCandidateName) return headerCandidateName;
         return "Candidates";
       case "jobPipeline":
         return "Pipeline Stage";
@@ -221,10 +222,24 @@ function MainApp() {
         return `Companies • ${headerWorkspaceName}`;
       }
     }
+    if (currentPage === "candidateSearch") {
+      if (headerCandidateName) {
+        return "Candidates • Profile";
+      }
+    }
     return getCurrentDateTime();
   };
 
   const handleBreadcrumbNavigate = (index: number) => {
+    if (currentPage === "candidateSearch") {
+      delete (window as any).__selectedCandidateName;
+      setHeaderCandidateName(undefined);
+      window.dispatchEvent(
+        new CustomEvent("breadcrumb-navigate", { detail: { level: "candidates" } }),
+      );
+      window.dispatchEvent(new CustomEvent("header-update"));
+      return;
+    }
     if (currentPage === "call" || currentPage === "calls") {
       delete (window as any).__selectedCandidateName;
       setHeaderCandidateName(undefined);

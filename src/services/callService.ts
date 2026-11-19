@@ -591,13 +591,25 @@ export const callService = {
   ): Promise<boolean> {
     try {
       let targetStageId = stageId;
-      if (!targetStageId && jobId) {
+
+      // Validate or resolve the shortlisted stage using jobId
+      if (jobId) {
         try {
           const res = await apiClient.get(`/jobs/applications/stages/?job_id=${jobId}`);
-          const st = res.data?.find(
-            (s: any) => s.slug === "shortlisted" || s.name.toLowerCase().includes("shortlist")
-          );
-          if (st) targetStageId = st.id;
+          const stages = res.data || [];
+          const archiveStage = stages.find((s: any) => s.slug === "archives");
+
+          // If targetStageId matches the archive stage, discard it so we don't accidentally archive
+          if (targetStageId && archiveStage && targetStageId === archiveStage.id) {
+            targetStageId = undefined;
+          }
+
+          if (!targetStageId) {
+            const st = stages.find(
+              (s: any) => s.slug === "shortlisted" || s.name.toLowerCase().includes("shortlist")
+            );
+            if (st) targetStageId = st.id;
+          }
         } catch {}
       }
 

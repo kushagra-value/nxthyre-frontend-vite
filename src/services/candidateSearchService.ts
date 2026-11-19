@@ -86,6 +86,12 @@ export interface V1Candidate {
     companyName: string;
     jobTitle: string;
   } | null;
+  resume_url?: string;
+  resumeUrl?: string;
+  premium_data?: {
+    resume_url?: string;
+    [key: string]: any;
+  };
 }
 
 export interface V1SearchResponse {

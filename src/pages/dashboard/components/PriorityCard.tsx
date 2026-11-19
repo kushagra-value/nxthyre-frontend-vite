@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Phone,
-  ArrowUpRight,
   ArrowRight,
   Briefcase,
   MapPin,
@@ -174,7 +173,7 @@ export default function PriorityCard({
 
   const initials = getInitials(name);
   const effectiveResumeScore = resumeScore ?? (stageTab === 'sourcing' ? score : null);
-  const effectiveScreeningScore = screeningScore ?? (stageTab !== 'sourcing' ? score : null);
+  const effectiveScreeningScore = screeningScore ?? null;
 
   return (
     <div
@@ -263,9 +262,9 @@ export default function PriorityCard({
           )}
         </div>
 
-        {/* 3rd Change: Icon-only Primary Button + Delete / Archive Button (View Details & 3 dots removed) */}
+        {/* Action Buttons: Phone for Sourcing, Move Stage for Shortlisted & Interview + Delete/Archive */}
         <div className="flex items-center gap-2 shrink-0">
-          {stageTab === 'sourcing' ? (
+          {stageTab === 'sourcing' && (
             /* Sourcing: Phone Icon Only */
             <button
               type="button"
@@ -278,26 +277,10 @@ export default function PriorityCard({
             >
               <Phone className="w-4 h-4 fill-current" />
             </button>
-          ) : stageTab === 'screening' ? (
-            /* Screening: Shortlist / Move Forward Icon Only */
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                (onMoveForward || onShortlist)?.(e);
-              }}
-              disabled={isActionLoading}
-              className="w-9 h-9 rounded-xl bg-[#0F47F2] hover:bg-[#0D3ED4] text-white flex items-center justify-center shadow-2xs hover:shadow-sm transition-all duration-150 active:scale-95 disabled:opacity-50 shrink-0"
-              title="Move Forward (Shortlist)"
-            >
-              {isActionLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin text-white" />
-              ) : (
-                <ArrowUpRight className="w-4 h-4 stroke-[2.2]" />
-              )}
-            </button>
-          ) : (
-            /* Interview: Move Stage Icon Only */
+          )}
+
+          {(stageTab === 'screening' || stageTab === 'interview') && (
+            /* Shortlisted & Interview: Move Stage Icon Only */
             <button
               type="button"
               onClick={(e) => {
