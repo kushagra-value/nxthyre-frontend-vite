@@ -818,11 +818,12 @@ class CandidateService {
 
   async getShareableProfile(
     candidateId: string,
-    jobId: string,
+    jobId?: string,
   ): Promise<ShareableProfileCandidate> {
     try {
+      const queryParam = jobId && jobId.trim() ? `?job_id=${encodeURIComponent(jobId)}` : "";
       const response = await apiClient.get(
-        `/candidates/share/${candidateId}/?job_id=${jobId}`,
+        `/candidates/share/${candidateId}/${queryParam}`,
       );
       return response.data;
     } catch (error: any) {

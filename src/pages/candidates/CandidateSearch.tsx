@@ -22,7 +22,12 @@ import {
   Share2,
   CheckSquare,
   ChevronDown,
+  User,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { showToast } from '../../utils/toast';
+import apiClient from '../../services/api';
+import JobCandidateProfile from '../companies/components/JobCandidateProfile';
 import CandidateFilterPanel, { FiltersState } from './components/CandidateFilterPanel';
 import candidateSearchService, {
   V1Candidate,
@@ -662,8 +667,15 @@ function getPageNumbers(current: number, total: number): (number | '...')[] {
 // ══════════════════════════════════════════════
 
 export default function CandidateSearch() {
+  const navigate = useNavigate();
+
   // ── UI state ──
   const [activeMenuId, setActiveMenuId] = React.useState<string | null>(null);
+  const [loadingResumeId, setLoadingResumeId] = React.useState<string | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = React.useState<any | null>(null);
+  const [isLoadingCandidateProfile, setIsLoadingCandidateProfile] = React.useState(false);
+  const [currentCandidateIndex, setCurrentCandidateIndex] = React.useState<number>(-1);
+  const [candidateStages, setCandidateStages] = React.useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = React.useState(false);
   const [isExportOpen, setIsExportOpen] = React.useState(false);
@@ -979,6 +991,161 @@ export default function CandidateSearch() {
     setActiveMenuId(activeMenuId === id ? null : id);
   };
 
+  React.useEffect(() => {
+    const handleBreadcrumb = () => {
+      setSelectedCandidate(null);
+    };
+    window.addEventListener("breadcrumb-navigate", handleBreadcrumb);
+    return () => window.removeEventListener("breadcrumb-navigate", handleBreadcrumb);
+  }, []);
+
+  const handleViewCandidate = async (c: V1Candidate, index?: number) => {
+    if (typeof index === 'number') {
+      setCurrentCandidateIndex(index);
+    } else {
+      const found = candidates.findIndex((item) => item.id === c.id);
+      setCurrentCandidateIndex(found);
+    }
+
+    setIsLoadingCandidateProfile(true);
+    const provisional = {
+      id: c.id,
+      name: c.name,
+      jobRole: c.jobRole,
+      client: c.client,
+      candidate: {
+        id: c.id,
+        full_name: c.name,
+        email: c.email,
+        phone: c.phone,
+        designation: c.designation,
+        location: c.location,
+        total_experience: c.experience,
+        current_company: c.currentCompany,
+        current_salary: c.currentCtc,
+        expected_ctc: c.expectedCtc,
+        notice_period_days: c.noticePeriod,
+        resume_url: c.resume_url || c.resumeUrl || c.premium_data?.resume_url,
+        premium_data: {
+          email: c.email,
+          phone: c.phone,
+          resume_url: c.resume_url || c.resumeUrl || c.premium_data?.resume_url,
+        },
+      },
+    };
+    setSelectedCandidate(provisional);
+
+    (window as any).__selectedCandidateName = c.name || "Candidate Profile";
+    window.dispatchEvent(new CustomEvent("header-update"));
+
+    if (c.jobRole?.id) {
+      apiClient
+        .get(`/jobs/applications/stages/?job_id=${c.jobRole.id}`)
+        .then((res) => setCandidateStages(res.data || []))
+        .catch(() => setCandidateStages([]));
+    } else {
+      setCandidateStages([]);
+    }
+
+    try {
+      const query = c.jobRole?.id ? `?job_id=${c.jobRole.id}` : '';
+      const res = await apiClient.get(`/candidates/${c.id}/${query}`);
+      if (res.data) {
+        const fullData = res.data;
+        const candData = fullData.candidate || fullData;
+        const merged = {
+          ...c,
+          ...fullData,
+          candidate: {
+            ...c,
+            ...candData,
+            full_name: candData.full_name || c.name,
+            current_salary_lpa: candData.current_salary || c.currentCtc,
+            expected_ctc: candData.expected_ctc || c.expectedCtc,
+            notice_period_summary: candData.notice_period_days != null ? `${candData.notice_period_days} Days` : c.noticePeriod,
+          },
+        };
+        setSelectedCandidate(merged);
+      }
+    } catch (err) {
+      console.warn("Using provisional candidate data for profile:", err);
+    } finally {
+      setIsLoadingCandidateProfile(false);
+    }
+  };
+
+  const handleCandidatePrev = () => {
+    if (currentCandidateIndex > 0) {
+      const prevIndex = currentCandidateIndex - 1;
+      const prevCand = candidates[prevIndex];
+      if (prevCand) {
+        handleViewCandidate(prevCand, prevIndex);
+      }
+    }
+  };
+
+  const handleCandidateNext = () => {
+    if (currentCandidateIndex < candidates.length - 1) {
+      const nextIndex = currentCandidateIndex + 1;
+      const nextCand = candidates[nextIndex];
+      if (nextCand) {
+        handleViewCandidate(nextCand, nextIndex);
+      }
+    }
+  };
+
+  const handleViewResume = async (c: V1Candidate) => {
+    const directUrl =
+      c.resume_url ||
+      c.resumeUrl ||
+      (c as any).resume ||
+      c.premium_data?.resume_url;
+
+    if (directUrl) {
+      window.open(directUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    setLoadingResumeId(c.id);
+    try {
+      // 1. Try candidate details endpoint
+      const details = await candidateService.getCandidateDetails(c.id);
+      const resumeUrl =
+        details?.candidate?.resume_url ||
+        details?.candidate?.premium_data?.resume_url ||
+        (details as any)?.resume_url ||
+        (details as any)?.premium_data?.resume_url;
+
+      if (resumeUrl) {
+        c.resume_url = resumeUrl;
+        window.open(resumeUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      // 2. Try shareable profile endpoint as fallback
+      const shareable = await candidateService.getShareableProfile(
+        c.id,
+        c.jobRole?.id ? String(c.jobRole.id) : undefined
+      );
+      const shareableUrl =
+        shareable?.premium_data?.resume_url ||
+        (shareable as any)?.premium_data_availability?.resume_url;
+
+      if (shareableUrl) {
+        c.resume_url = shareableUrl;
+        window.open(shareableUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      showToast.error("Resume not available for this candidate");
+    } catch (error: any) {
+      console.error("Failed to load candidate resume:", error);
+      showToast.error("Resume not available for this candidate");
+    } finally {
+      setLoadingResumeId(null);
+    }
+  };
+
   // ── Pagination ──
   const pageNumbers = getPageNumbers(currentPage, totalPages);
   const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * PAGE_LIMIT + 1;
@@ -1001,6 +1168,33 @@ export default function CandidateSearch() {
       <td className="p-4"><div className="h-4 bg-gray-200 rounded w-24" /></td>
     </tr>
   );
+
+  // Display JobCandidateProfile if candidate is selected
+  if (selectedCandidate) {
+    return (
+      <div className="flex-1 flex flex-col h-full bg-[#F3F5F7] overflow-hidden">
+        <JobCandidateProfile
+          candidate={selectedCandidate}
+          jobId={selectedCandidate.jobRole?.id || selectedCandidate.jobId || null}
+          workspaceId={selectedCandidate.client?.id || selectedCandidate.workspaceId || undefined}
+          stages={candidateStages}
+          goBack={() => {
+            delete (window as any).__selectedCandidateName;
+            window.dispatchEvent(new CustomEvent("header-update"));
+            setSelectedCandidate(null);
+          }}
+          loading={isLoadingCandidateProfile}
+          currentIndex={currentCandidateIndex >= 0 ? currentCandidateIndex : undefined}
+          totalCandidates={candidates.length}
+          candidateList={candidates}
+          onNavigatePrev={currentCandidateIndex > 0 ? handleCandidatePrev : undefined}
+          onNavigateNext={
+            currentCandidateIndex < candidates.length - 1 ? handleCandidateNext : undefined
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50 h-full custom-scrollbar relative">
@@ -1222,7 +1416,7 @@ export default function CandidateSearch() {
                     </td>
                   </tr>
                 ) : (
-                  candidates.map((c) => (
+                  candidates.map((c, index) => (
                     <tr key={c.id} className="hover:bg-gray-50/50 group relative">
                       <td className="p-4">
                         <input
@@ -1234,8 +1428,13 @@ export default function CandidateSearch() {
                       </td>
                       {/* CANDIDATE: name + actual company */}
                       <td className="p-4">
-                        <div>
-                          <div className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer text-nowrap">{c.name || '—'}</div>
+                        <div
+                          className="cursor-pointer group/cand"
+                          onClick={() => handleViewCandidate(c, index)}
+                        >
+                          <div className="font-semibold text-[#0F47F2] group-hover/cand:underline cursor-pointer text-nowrap">
+                            {c.name || '—'}
+                          </div>
                           <div className="text-xs text-gray-400 mt-0.5">
                             {c.currentCompany || c.client?.name || '—'}
                           </div>
@@ -1264,37 +1463,73 @@ export default function CandidateSearch() {
                       <td className="p-4 text-nowrap">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSelectedIds(new Set([c.id]));
                               setIsModalOpen(true);
                             }}
-                            className="px-4 py-2 bg-[#0F47F2] text-white text-xs font-semibold rounded-[6px] hover:bg-green-600 transition-colors whitespace-nowrap"
+                            className="px-4 py-2 bg-[#0F47F2] text-white text-xs font-semibold rounded-[6px] hover:bg-green-600 transition-colors whitespace-nowrap cursor-pointer"
                           >
                             Move to Pipeline
                           </button>
                           <div className="relative">
                             <button
-                              onClick={() => handleActionClick(c.id)}
-                              className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 focus:outline-none"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleActionClick(c.id);
+                              }}
+                              className="w-8 h-8 rounded border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 focus:outline-none cursor-pointer"
                             >
                               <MoreHorizontal className="w-4 h-4" />
                             </button>
 
                             {activeMenuId === c.id && (
-                              <div className="absolute right-0 top-10 w-40 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.1)] rounded-xl py-2 z-50 border border-gray-100">
+                              <div
+                                onClick={(e) => e.stopPropagation()}
+                                className="absolute right-0 top-10 w-44 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.1)] rounded-xl py-2 z-50 border border-gray-100"
+                              >
+                                <button
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    handleViewCandidate(c, index);
+                                  }}
+                                  className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700 cursor-pointer"
+                                >
+                                  <User className="w-4 h-4 text-gray-500" /> View Candidate
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    handleViewResume(c);
+                                  }}
+                                  disabled={loadingResumeId === c.id}
+                                  className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700 cursor-pointer disabled:opacity-50"
+                                >
+                                  {loadingResumeId === c.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin text-[#0F47F2]" />
+                                  ) : (
+                                    <FileText className="w-4 h-4 text-gray-500" />
+                                  )}
+                                  View Resume
+                                </button>
                                 {c.phone && (
-                                  <a href={`tel:${c.phone}`} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
-                                    <Phone className="w-4 h-4" /> Call
+                                  <a
+                                    href={`tel:${c.phone}`}
+                                    onClick={() => setActiveMenuId(null)}
+                                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700"
+                                  >
+                                    <Phone className="w-4 h-4 text-gray-500" /> Call
                                   </a>
                                 )}
                                 {c.email && (
-                                  <a href={`mailto:${c.email}`} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
-                                    <Mail className="w-4 h-4" /> Mail
+                                  <a
+                                    href={`mailto:${c.email}`}
+                                    onClick={() => setActiveMenuId(null)}
+                                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700"
+                                  >
+                                    <Mail className="w-4 h-4 text-gray-500" /> Mail
                                   </a>
                                 )}
-                                <button className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
-                                  <FileText className="w-4 h-4" /> View Resume
-                                </button>
                               </div>
                             )}
                           </div>

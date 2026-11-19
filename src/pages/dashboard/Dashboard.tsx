@@ -473,18 +473,18 @@ export default function Dashboard() {
       else resumeScore = Math.round(resumeScore);
     }
 
-    // 2. Screening Score
+    // 2. Screening Score - strictly actual screening score, never fallback to resume score
     let screeningScore: number | null = null;
-    if ((item as any).screening_score != null) {
+    if ((item as any).screening_score != null && !isNaN(Number((item as any).screening_score))) {
       screeningScore = Number((item as any).screening_score);
-    } else if (item.screening_round != null && !isNaN(Number(item.screening_round))) {
-      screeningScore = Number(item.screening_round);
-    } else if ((item as any).screening_score_value != null) {
+    } else if ((item as any).screening_score_value != null && !isNaN(Number((item as any).screening_score_value))) {
       screeningScore = Number((item as any).screening_score_value);
-    } else if ((item as any).interview_score != null) {
-      screeningScore = Number((item as any).interview_score);
-    } else if ((item as any).score != null) {
-      screeningScore = Number((item as any).score);
+    } else if (
+      item.screening_round != null &&
+      String(item.screening_round).trim() !== '' &&
+      !isNaN(Number(String(item.screening_round).trim()))
+    ) {
+      screeningScore = Number(String(item.screening_round).trim());
     }
 
     if (screeningScore != null) {
@@ -493,7 +493,7 @@ export default function Dashboard() {
       else screeningScore = Math.round(screeningScore);
     }
 
-    const score = tabKey === 'sourcing' ? resumeScore : (screeningScore ?? resumeScore);
+    const score = tabKey === 'sourcing' ? resumeScore : screeningScore;
     const scoreLabel =
       tabKey === 'sourcing' ? 'Resume Score' : tabKey === 'screening' ? 'Screening Score' : 'Interview Score';
 
@@ -673,7 +673,13 @@ export default function Dashboard() {
     e.stopPropagation();
     setActionLoadingId(card.applicationId);
     try {
-      await callService.shortlistCandidate(card.applicationId, card.nextStageId, card.jobRoleId);
+      // Ensure we never pass an archive stage as the target for shortlisting
+      const targetStageId =
+        card.nextStageId && card.nextStageId !== card.archiveStageId
+          ? card.nextStageId
+          : undefined;
+
+      await callService.shortlistCandidate(card.applicationId, targetStageId, card.jobRoleId);
 
       await dashboardService.completePriorityAction({
         application_id: card.applicationId,
@@ -992,7 +998,7 @@ export default function Dashboard() {
                       : 'bg-white text-[#475569] border border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                  <span>Screening</span>
+                  <span>Shortlisted</span>
                   <span
                     className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                       activeTab === 'screening' ? 'bg-white/20 text-white' : 'bg-purple-50 text-purple-700'
@@ -1262,6 +1268,7 @@ export default function Dashboard() {
           jobRoleId={moveStageCandidate.jobRoleId}
           currentStageName={moveStageCandidate.currentStageName}
           nextStageId={moveStageCandidate.nextStageId}
+          tabKey={moveStageCandidate.stageTab}
           onSuccess={fetchPriorityActions}
         />
       )}

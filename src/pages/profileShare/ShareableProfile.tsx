@@ -88,7 +88,16 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
 
         console.log("Candidate Data:", data);
       } catch (err) {
-        setError("Failed to load candidate profile");
+        try {
+          const detailRes = await candidateService.getCandidateDetails(candidateId);
+          if (detailRes?.candidate) {
+            setCandidateData(detailRes.candidate as any);
+          } else {
+            setError("Failed to load candidate profile");
+          }
+        } catch {
+          setError("Failed to load candidate profile");
+        }
       } finally {
         setLoading(false);
       }
@@ -600,9 +609,9 @@ const ShareableProfile: React.FC<ShareableProfileProps> = ({
             </div>
           )}
 
-          {candidateData?.premium_data?.resume_url &&
+          {(candidateData?.premium_data?.resume_url || candidateData?.resume_url) &&
             (() => {
-              const url = candidateData?.premium_data?.resume_url;
+              const url = (candidateData?.premium_data?.resume_url || candidateData?.resume_url)!;
               const ext = url.split(".").pop()?.toLowerCase() || "";
               let viewerUrl = url;
               let isPdf = false;

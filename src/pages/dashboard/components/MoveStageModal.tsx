@@ -15,6 +15,7 @@ export interface MoveStageModalProps {
   jobRoleId: number;
   currentStageName?: string;
   nextStageId?: number;
+  tabKey?: 'sourcing' | 'screening' | 'interview';
   onSuccess: () => void;
 }
 
@@ -28,6 +29,7 @@ export default function MoveStageModal({
   jobRoleId,
   currentStageName,
   nextStageId,
+  tabKey,
   onSuccess,
 }: MoveStageModalProps) {
   const [stages, setStages] = useState<SortableStage[]>([]);
@@ -101,7 +103,7 @@ export default function MoveStageModal({
       // 2. Mark priority action as completed
       await dashboardService.completePriorityAction({
         application_id: applicationId,
-        tab: 'interview',
+        tab: (tabKey as any) || 'interview',
         action_taken: `Moved to ${targetStageName}`,
       });
 
