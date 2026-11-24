@@ -100,7 +100,7 @@ export default function Dashboard() {
 
   // Pagination (4 candidates per page for a spacious, uncluttered first screen)
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 4;
+  const pageSize = 5;
 
   // Filter States: Company
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
